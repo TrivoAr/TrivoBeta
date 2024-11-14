@@ -8,47 +8,55 @@ export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const { fullname, email, password } = await request.json();
+    // Desestructuración de los datos que llegan del frontend
+    const { email, password, firstname, lastname, rol } = await request.json();
 
-    if (password < 6)
+    // Validación de la contraseña
+    if (password.length < 6) {
       return NextResponse.json(
         { message: "Password must be at least 6 characters" },
         { status: 400 }
       );
+    }
 
+    // Verificar si el correo ya existe
     const userFound = await User.findOne({ email });
 
-    if (userFound)
+    if (userFound) {
       return NextResponse.json(
-        {
-          message: "Email already exists",
-        },
-        {
-          status: 409,
-        }
+        { message: "Email already exists" },
+        { status: 409 }
       );
+    }
 
+    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Crear el nuevo usuario
     const user = new User({
-      fullname,
       email,
       password: hashedPassword,
+      firstname,
+      lastname,
+      rol,
     });
 
+    // Guardar el usuario en la base de datos
     const savedUser = await user.save();
     console.log(savedUser);
 
+    // Retornar una respuesta con los datos del usuario
     return NextResponse.json(
       {
-        fullname,
         email,
+        fullname: `${firstname} ${lastname}`,
         createdAt: savedUser.createdAt,
         updatedAt: savedUser.updatedAt,
       },
       { status: 201 }
     );
   } catch (error) {
+    // Manejo de errores de validación de mongoose
     if (error instanceof mongoose.Error.ValidationError) {
       return NextResponse.json(
         {
@@ -59,6 +67,7 @@ export async function POST(request: Request) {
         }
       );
     }
+    // Respuesta genérica en caso de otro tipo de error
     return NextResponse.error();
   }
 }

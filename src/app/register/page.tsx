@@ -5,25 +5,39 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 function Signup() {
-  const [error, setError] = useState();
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const formData = new FormData(event.currentTarget);
+
+      // Validación de campos obligatorios
+      const firstname = formData.get("firstname")?.toString();
+      const lastname = formData.get("lastname")?.toString();
+      const rol = formData.get("rol")?.toString();
+      const email = formData.get("email")?.toString();
+      const password = formData.get("password")?.toString();
+
+      if (!firstname || !lastname || !rol || !email || !password) {
+        setError("All fields must be filled");
+        return;
+      }
+
       const signupResponse = await axios.post("/api/auth/signup", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        firstname: formData.get("firstname"),
-        lastname: formData.get("lastname"),
-        rol: formData.get("rol"),
+        email,
+        password,
+        firstname,
+        lastname,
+        rol,
       });
+
       console.log(signupResponse);
-      
+
       const res = await signIn("credentials", {
         email: signupResponse.data.email,
-        password: formData.get("password"),
+        password,
         redirect: false,
       });
 
