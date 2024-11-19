@@ -69,3 +69,25 @@ export async function POST(request: Request) {
     return NextResponse.error();
   }
 }
+
+// Obtener las academias filtradas por el dueño del usuario
+export async function GET(req: Request) {
+  try {
+    // Obtener la sesión del usuario
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json(
+        { message: "No autenticado" },
+        { status: 401 }
+      );
+    }
+
+    // Filtrar academias según el dueño_id (session.user.id)
+    const academias = await Academia.find({ dueño_id: session.user.id });
+
+    return NextResponse.json(academias, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener academias:", error);
+    return NextResponse.json({ error: "Error al obtener las academias" }, { status: 500 });
+  }
+}
