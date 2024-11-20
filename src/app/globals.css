@@ -27,3 +27,43 @@ body {
   background-color: #F4F4F4;
   color: #333333;
 }
+
+.form-input {
+  width: 100%;
+  padding: 12px 8px;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #e5e5e5;
+  outline: none;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.form-input:focus {
+  border-color: #ff9a3d;
+}
+
+.form-input:focus + .form-label,
+.form-input:not(:placeholder-shown) + .form-label,
+.peer:focus ~ .form-label {
+  transform: translateY(-24px);
+  font-size: 12px;
+  color: #ff9a3d;
+}
+
+
+.form-label {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  font-size: 16px;
+  color: #999;
+  transition: all 0.3s ease-in-out;
+  pointer-events: none;
+}
+
+
+.relative {
+  position: relative;
+}
+
