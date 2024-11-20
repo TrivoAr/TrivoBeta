@@ -1,7 +1,8 @@
 // src/app/api/academias/route.ts
 import { connectDB } from "@/libs/mongodb";
 import Academia from "@/models/academia";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next"; // Usamos getServerSession para NextAuth
+import { authOptions } from "../../../libs/authOptions"; // Importa las opciones de autenticación
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -11,19 +12,11 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Obtener la sesión del usuario
-    const session = await getSession();
+    const session = await getServerSession(authOptions); // Incluye las opciones de autenticación
     if (!session) {
       return NextResponse.json(
         { message: "No autenticado" },
         { status: 401 }
-      );
-    }
-
-    // Asegurarse de que el usuario tenga permisos
-    if (session.user.role !== "dueño") {
-      return NextResponse.json(
-        { message: "No tienes permisos para crear una academia" },
-        { status: 403 }
       );
     }
 
@@ -41,7 +34,7 @@ export async function POST(request: Request) {
 
     // Crear una nueva instancia de Academia
     const nuevaAcademia = new Academia({
-      dueño_id: session.user.id,
+      dueño_id: session.user.id, // ID del usuario autenticado
       nombre_academia,
       pais,
       provincia,
@@ -74,5 +67,33 @@ export async function POST(request: Request) {
       );
     }
     return NextResponse.error();
+  }
+}
+
+// Obtener todas las academias o las academias de un usuario específico
+export async function GET(request: Request) {
+  try {
+    await connectDB(); // Conectar a la base de datos
+
+    // Obtener la sesión del usuario
+    const session = await getServerSession(authOptions);
+
+    // Verificar si se pasa un parámetro para filtrar por dueño
+    const url = new URL(request.url);
+    const filterByOwner = url.searchParams.get("owner") === "true"; // Si se pasa el parámetro "owner=true", obtenemos las academias del dueño
+
+    let academias;
+    if (filterByOwner && session) {
+      // Filtrar academias según el dueño (session.user.id)
+      academias = await Academia.find({ dueño_id: session.user.id });
+    } else {
+      // Obtener todas las academias si no hay filtro o si el usuario no está autenticado
+      academias = await Academia.find();
+    }
+
+    return NextResponse.json(academias, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener academias:", error);
+    return NextResponse.json({ message: "Error al obtener las academias" }, { status: 500 });
   }
 }

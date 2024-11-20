@@ -1,74 +1,51 @@
 "use client";
-import { FormEvent, useState } from "react";
-import axios, { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 
-function CrearAcademia() {
-  const [error, setError] = useState<string | undefined>(undefined);
-  const router = useRouter();
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import axios from "axios";
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+type Academia = {
+  _id: string;
+  nombre_academia: string;
+  descripcion: string;
+  tipo_disciplina: string;
+  telefono: string;
+};
 
-    try {
-      const formData = new FormData(event.currentTarget);
-      const data = Object.fromEntries(formData.entries());
-      
-      const response = await axios.post("/api/academias", data);
+export default function AcademiasPage() {
+  const [academias, setAcademias] = useState<Academia[]>([]);
 
-      if (response.status === 201) {
-        router.push("/dashboard"); // Redirige si se creó correctamente
-      } else {
-        throw new Error("Error al crear la academia");
+  useEffect(() => {
+    const fetchAcademias = async () => {
+      try {
+        const response = await axios.get("/api/academias");
+        setAcademias(response.data);
+      } catch (error) {
+        console.error("Error fetching academias:", error);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      if (error instanceof AxiosError) {
-        const errorMessage = error.response?.data?.message || "Error en la solicitud";
-        setError(errorMessage);
-      } else {
-        setError("Ocurrió un error desconocido");
-      }
-    }
-  };
+    };
+
+    fetchAcademias();
+  }, []);
 
   return (
-    <div className="justify-center h-[calc(100vh-4rem)] flex items-center">
-      <form onSubmit={handleSubmit} className="bg-neutral-950 px-8 py-10 w-3/12">
-        {error && <div className="bg-red-500 text-white p-2 mb-2">{error}</div>}
-        <h1 className="text-4xl font-bold mb-7">Crear Academia</h1>
-
-        <label className="text-slate-300">Nombre de la Academia:</label>
-        <input type="text" name="nombre_academia" placeholder="Nombre de la Academia" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" required />
-
-        <label className="text-slate-300">País:</label>
-        <input type="text" name="pais" placeholder="País" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" required />
-
-        <label className="text-slate-300">Provincia:</label>
-        <input type="text" name="provincia" placeholder="Provincia" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" required />
-
-        <label className="text-slate-300">Localidad:</label>
-        <input type="text" name="localidad" placeholder="Localidad" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" required />
-
-        <label className="text-slate-300">Descripción:</label>
-        <textarea name="descripcion" placeholder="Descripción" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" />
-
-        <label className="text-slate-300">Tipo de Disciplina:</label>
-        <select name="tipo_disciplina" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" required>
-          <option value="running">Running</option>
-          <option value="trekking">Trekking</option>
-          <option value="otros">Otros</option>
-        </select>
-
-        <label className="text-slate-300">Teléfono:</label>
-        <input type="text" name="telefono" placeholder="Teléfono" className="bg-zinc-800 px-4 py-2 block mb-2 w-full" />
-
-        <button className="bg-blue-500 text-white px-4 py-2 block w-full mt-4">
-          Crear Academia
-        </button>
-      </form>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Explorar Academias</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {academias.map((academia) => (
+          <div key={academia._id} className="border p-4 rounded-lg shadow">
+            <h2 className="text-xl font-semibold">{academia.nombre_academia}</h2>
+            <p>{academia.descripcion}</p>
+            <p>Disciplina: {academia.tipo_disciplina}</p>
+            <p>Teléfono: {academia.telefono}</p>
+            <Link href={`/academias/${academia._id}`}>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+                Ver Detalles
+              </button>
+            </Link>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
-export default CrearAcademia;
