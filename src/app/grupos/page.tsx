@@ -20,7 +20,7 @@ const CrearGrupo = () => {
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
-        const res = await fetch("/api/academias"); // Ruta al endpoint de academias
+        const res = await fetch("/api/academias?owner=true"); // Ruta al endpoint de academias
         const data = await res.json();
         console.log("Academias recibidas:", data); // Debug
         setAcademias(data); // Guardar academias filtradas por el dueño_id del usuario
