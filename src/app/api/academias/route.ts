@@ -70,24 +70,30 @@ export async function POST(request: Request) {
   }
 }
 
-// Obtener las academias filtradas por el dueño del usuario
-export async function GET(req: Request) {
+// Obtener todas las academias o las academias de un usuario específico
+export async function GET(request: Request) {
   try {
+    await connectDB(); // Conectar a la base de datos
+
     // Obtener la sesión del usuario
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json(
-        { message: "No autenticado" },
-        { status: 401 }
-      );
-    }
 
-    // Filtrar academias según el dueño_id (session.user.id)
-    const academias = await Academia.find({ dueño_id: session.user.id });
+    // Verificar si se pasa un parámetro para filtrar por dueño
+    const url = new URL(request.url);
+    const filterByOwner = url.searchParams.get("owner") === "true"; // Si se pasa el parámetro "owner=true", obtenemos las academias del dueño
+
+    let academias;
+    if (filterByOwner && session) {
+      // Filtrar academias según el dueño (session.user.id)
+      academias = await Academia.find({ dueño_id: session.user.id });
+    } else {
+      // Obtener todas las academias si no hay filtro o si el usuario no está autenticado
+      academias = await Academia.find();
+    }
 
     return NextResponse.json(academias, { status: 200 });
   } catch (error) {
     console.error("Error al obtener academias:", error);
-    return NextResponse.json({ error: "Error al obtener las academias" }, { status: 500 });
+    return NextResponse.json({ message: "Error al obtener las academias" }, { status: 500 });
   }
 }
