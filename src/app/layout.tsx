@@ -14,10 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col gap-10 items-center p-10">
         <Providers>
-          <Navbar />
           <div className="container mx-auto">{children}</div>
+          <Navbar />
         </Providers>
       </body>
     </html>
