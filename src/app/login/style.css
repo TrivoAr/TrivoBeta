@@ -1,0 +1,148 @@
+/* Contenedor principal */
+.signin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Logo y título */
+  .signin-logo {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .signin-logo h1 {
+    font-size: 24px;
+    color: #000000;
+    margin-top: 10px;
+  }
+  
+  /* Formulario */
+  .signin-form {
+    width: 300px;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .signin-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+  }
+  
+  .signin-input-container input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    padding: 5px;
+  }
+  
+  .signin-input-container .icon-user,
+  .signin-input-container .icon-lock,
+  .signin-input-container .icon-eye {
+    font-size: 16px;
+    color: #ccc;
+    margin-right: 5px;
+  }
+  
+  /* Enlace de contraseña olvidada */
+  .forgot-password {
+    font-size: 12px;
+    text-align: right;
+    color: #f08c00;
+    text-decoration: none;
+  }
+  
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+  
+  /* Botón principal */
+  .signin-button {
+    background-color: #f08c00;
+    color: white;
+    border: none;
+    padding: 10px 0;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .signin-button:hover {
+    background-color: #d97700;
+  }
+  
+  /* Divisor */
+  .signin-divider {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+  }
+  
+  /* Botón de Google */
+  .google-button {
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  /* Crear cuenta */
+  .create-account {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+  }
+  
+  .create-account a {
+    color: #f08c00;
+    text-decoration: none;
+  }
+  
+  .create-account a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Botón de Google */
+.google-signin-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+  
+  .google-signin-button:hover {
+    border-color: #aaa;
+    background-color: #f8f8f8;
+  }
+  
+  .google-signin-button img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .google-signin-button span {
+    font-size: 14px;
+    color:#555;
+}
