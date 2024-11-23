@@ -1,10 +1,9 @@
 "use client";
 import { FormEvent, useState } from "react";
-import { AxiosError } from "axios";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Image from 'next/image';
-
+import Image from "next/image";
+import "./style.css"; // Asegúrate de importar los estilos
 
 function Signin() {
   const [error, setError] = useState("");
@@ -25,33 +24,51 @@ function Signin() {
   };
 
   return (
-    <div className="justify-center h-[calc(100vh-4rem)] flex items-center">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-neutral-950 px-8 py-10 w-3/12"
-      >
-        {error && <div className="bg-red-500 text-white p-2 mb-2">{error}</div>}
-        <Image src="/assets/Group 17.png" alt="Descripción de la imagen" width={64} height={64} />
+    <div className="signin-container">
+      {/* Logo y título */}
+      <div className="signin-logo">
+        <Image src="/assets/Group 17.png" alt="Klubo Logo" width={120} height={120} />
+        <h1>Klubo</h1>
+      </div>
 
-        <label className="text-slate-300">Email:</label>
-        <input
-          type="email"
-          placeholder="Email"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="email"
-        />
+      {/* Formulario */}
+      <form className="signin-form" onSubmit={handleSubmit}>
+        {error && <div className="signin-error">{error}</div>}
 
-        <label className="text-slate-300">Password:</label>
-        <input
-          type="password"
-          placeholder="Password"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="password"
-        />
+        <div className="signin-input-container">
+          <i className="icon-user"></i>
+          <input type="email" placeholder="Email" name="email" required />
+        </div>
 
-        <button className="bg-blue-500 text-white px-4 py-2 block w-full mt-4">
-          Signup
+        <div className="signin-input-container">
+          <i className="icon-lock"></i>
+          <input type="password" placeholder="Password" name="password" required />
+          <i className="icon-eye"></i>
+        </div>
+
+        <a href="#" className="forgot-password">
+          ¿Olvidaste tu contraseña?
+        </a>
+
+        <button type="submit" className="signin-button">
+          Ingresar
         </button>
+
+        <div className="signin-divider">O ingresar con</div>
+
+        {/* Botón de Google */}
+        <button
+          type="button"
+          className="google-signin-button"
+          onClick={() => signIn("google")}
+        >
+          <Image src="/assets/google-icon.png" alt="Google Icon" width={20} height={20} />
+          <span>Ingresar con Google</span>
+        </button>
+
+        <div className="create-account">
+          ¿Tienes cuenta? <a href="/register">Crear Cuenta</a>
+        </div>
       </form>
     </div>
   );
