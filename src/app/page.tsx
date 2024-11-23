@@ -3,6 +3,7 @@ import KluboImagen from '../../public/assets/Group 17.png';
 import Image from 'next/image';
 import Link from 'next/link';
 
+
 function HomePage() {
   // const { data: session, status } = useSession({
   //   required: true,
@@ -48,6 +49,7 @@ function HomePage() {
         </div>
       </div>
     </div>
+    
   );
 }
 
