@@ -14,12 +14,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex flex-col gap-10 items-center p-10">
+      <body >
         <Providers>
           <div className="container mx-auto">{children}</div>
-          <Navbar />
+          {/* <Navbar /> */}
         </Providers>
       </body>
     </html>
   );
 }
+
+
+
+// className="flex flex-col gap-10 items-center p-10"//
