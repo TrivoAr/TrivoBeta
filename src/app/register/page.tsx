@@ -52,56 +52,99 @@ function Signup() {
   };
 
   return (
-    <div className="justify-center h-[calc(100vh-4rem)] flex items-center">
-      <form onSubmit={handleSubmit} className="bg-neutral-950 px-8 py-10 w-3/12">
-        {error && <div className="bg-red-500 text-white p-2 mb-2">{error}</div>}
-        <h1 className="text-4xl font-bold mb-7">Signup</h1>
-
-        <label className="text-slate-300">First Name:</label>
-        <input
-          type="text"
-          placeholder="First Name"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="firstname"
-        />
-
-        <label className="text-slate-300">Last Name:</label>
-        <input
-          type="text"
-          placeholder="Last Name"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="lastname"
-        />
-
-        <label className="text-slate-300">Email:</label>
-        <input
-          type="email"
-          placeholder="Email"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="email"
-        />
-
-        <label className="text-slate-300">Password:</label>
-        <input
-          type="password"
-          placeholder="Password"
-          className="bg-zinc-800 px-4 py-2 block mb-2 w-full"
-          name="password"
-        />
-
-        <label className="text-slate-300">Role:</label>
-        <select name="rol" className="bg-zinc-800 px-4 py-2 block mb-2 w-full">
-          <option value="alumno">Alumno</option>
-          <option value="profe">Profe</option>
-          <option value="dueño de academia">Dueño de Academia</option>
-        </select>
-
-        <button className="bg-blue-500 text-white px-4 py-2 block w-full mt-4">
-          Signup
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-lg rounded-lg p-6 w-80"
+      >
+        <div className="text-center mb-6">
+          <img
+            src="/assets/Group 17.png"
+            alt="Klubo Logo"
+            className="mx-auto w-25 h-25"
+          />
+          <h1 className="text-xl font-bold text-gray-800">Crear cuenta</h1>
+        </div>
+  
+        {error && (
+          <div className="bg-red-500 text-white text-center py-2 mb-4 rounded">
+            {error}
+          </div>
+        )}
+  
+        <div className="space-y-4">
+          <input
+            type="text"
+            name="firstname"
+            placeholder="Nombre"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <input
+            type="text"
+            name="lastname"
+            placeholder="Apellido"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Contraseña"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirmar contraseña"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+  
+          <select
+            name="rol"
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+          >
+            <option value="" disabled selected>
+              Selecciona un rol
+            </option>
+            <option value="alumno">Alumno</option>
+            <option value="profe">Profe</option>
+            <option value="dueño de academia">Dueño de Academia</option>
+          </select>
+        </div>
+  
+        <div className="flex items-center mt-4">
+          <input type="checkbox" id="terms" className="mr-2" />
+          <label htmlFor="terms" className="text-sm text-gray-600">
+            Acepto los{" "}
+            <a href="#" className="text-orange-500 underline">
+              términos y condiciones
+            </a>
+          </label>
+        </div>
+  
+        <button
+          type="submit"
+          className="w-full mt-6 bg-orange-500 text-white py-2 rounded hover:bg-orange-600"
+        >
+          Crear cuenta
+        </button>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-full mt-2 text-orange-500 py-2 rounded border border-orange-500 hover:bg-orange-50"
+        >
+          Atrás
         </button>
       </form>
     </div>
   );
+  
+
 }
 
 export default Signup;
