@@ -88,121 +88,132 @@ const CrearGrupo = () => {
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h1 className="text-xl font-bold mb-4">Crear Grupo</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="">
+      <h1 className="text-xl font-bold text-center mb-5">Crear Grupo</h1>
+
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-7">
         {/* Academia */}
-        <label className="block mb-2">
-          Academia:
           <select
             name="academia_id"
             value={grupo.academia_id}
             onChange={handleInputChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="bg-[#f4f4f4] border-b text-gray-400"
           >
-            <option value="">Selecciona una academia</option>
+            <option value="">Academia</option>
             {academias.map((academia) => (
               <option key={academia._id} value={academia._id}>
                 {academia.nombre_academia}
               </option>
             ))}
           </select>
-        </label>
+       
+
+
 
         {/* Nombre del grupo */}
-        <label className="block mb-2">
-          Nombre del Grupo:
           <input
             type="text"
             name="nombre_grupo"
             value={grupo.nombre_grupo}
             onChange={handleInputChange}
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Nombre"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
+    
 
         {/* Nivel */}
-        <label className="block mb-2">
-          Nivel:
+        
+          
           <input
             type="text"
             name="nivel"
             value={grupo.nivel}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Dificultad"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
 
         {/* Ubicación */}
-        <label className="block mb-2">
-          Ubicación:
+      
+
           <input
             type="text"
             name="ubicacion"
             value={grupo.ubicacion}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Ubicación"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
+     
 
         {/* Horario */}
-        <label className="block mb-2">
-          Horario:
+        
+          
           <input
             type="text"
             name="horario"
             value={grupo.horario}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Horario"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
 
         {/* Cuota mensual */}
-        <label className="block mb-2">
-          Cuota Mensual:
+        
           <input
             type="text"
             name="cuota_mensual"
             value={grupo.cuota_mensual}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Cuota mensual"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
 
         {/* Descripción */}
-        <label className="block mb-2">
-          Descripción:
           <textarea
             name="descripcion"
             value={grupo.descripcion}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            placeholder="Descripción"
+            className="bg-[#F4F4F4]
+            border-b"
           />
-        </label>
 
         {/* Tipo de Grupo */}
-        <label className="block mb-2">
-          Tipo de Grupo:
+     
           <select
             name="tipo_grupo"
             value={grupo.tipo_grupo}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="bg-[#F4F4F4]
+            border-b text-gray-400"
           >
             <option value="">Selecciona un tipo</option>
             <option value="nivel">Nivel</option>
             <option value="distancia">Distancia</option>
             <option value="otros">Otros</option>
           </select>
-        </label>
 
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700"
+          className="text-sm font-bold w-[300px] bg-[#FF9A3D] rounded-md h-[40px]"
         >
           Crear Grupo
+        </button>
+
+        <button
+          type="submit"
+          className="text-sm font-bold w-[300px] bg-[#f4f4f4] border-2 border-[#FF9A3D] text-[#FF9A3D] rounded-md h-[40px]"
+        >
+          Atras
         </button>
       </form>
     </div>
