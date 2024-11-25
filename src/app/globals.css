@@ -67,82 +67,23 @@ body {
   position: relative;
 }
 
-/* HOME PAGE CSS
-.HomePage {
-  position: relative;
-  width: 375px;
-  height: 812px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+.portada{
+  background-image: linear-gradient(
+      0deg,
+      rgba(0,0,0,0.5),
+      rgba(0,0,0,0.5))
+
+      ,url(https://cdn-5f4f6e14c1ac180394b738c9.closte.com/wp-content/uploads/2018/03/01-1170x635.jpg);
+         background-size: cover;
+         background-repeat: no-repeat;
+         background-position: center center;
+         height: 100vh;
 }
 
-.background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; 
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE y Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
-.content {
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari y Opera */
 }
-
-.logo-container {
-  display: flex;
-  margin-left:90px;
-}
-
-h1 {
-  font-size: 48px;
-  margin-bottom: 10px;
-  font-weight: 700;
-  color: #fff;  
-}
-
-p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  color: #fff;  
-}
-
-.buttons {
-  margin-top: 150px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn1 {
-  background-color: #FA861F; 
-  color:black;
-  border: none;
-  padding: 15px;
-  font-size: 1.1rem;
-  width: 80%;
-  margin: 0 auto;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-.btn2 {
-  border-color :#FA861F;
-  border-style: solid;
-  border-width: 2px;
-  color: #FA861F;
-  padding: 15px;
-  font-size: 1.1rem;
-  width: 80%;
-  margin: 0 auto;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-} */
