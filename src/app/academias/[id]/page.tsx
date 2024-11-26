@@ -94,22 +94,23 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         <ul className="space-y-4">
           {grupos.map((grupo) => (
             <li
-              key={grupo._id}
-              className="border p-4 rounded shadow"
-            >
-              <p>
-                <strong>Nombre:</strong> {grupo.nombre_grupo}
-              </p>
-              <p>
-                <strong>Horario:</strong> {grupo.horario || "No especificado"}
-              </p>
-              <p>
-                <strong>Ubicación:</strong> {grupo.ubicacion || "No especificado"}
-              </p>
-              <p>
-                <strong>Tipo de Grupo:</strong> {grupo.tipo_grupo || "No especificado"}
-              </p>
-            </li>
+            key={grupo._id}
+            className="border p-4 rounded shadow cursor-pointer"
+            onClick={() => router.push(`/grupos/${grupo._id}`)}
+          >
+            <p>
+              <strong>Nombre:</strong> {grupo.nombre_grupo}
+            </p>
+            <p>
+              <strong>Horario:</strong> {grupo.horario || "No especificado"}
+            </p>
+            <p>
+              <strong>Ubicación:</strong> {grupo.ubicacion || "No especificado"}
+            </p>
+            <p>
+              <strong>Tipo de Grupo:</strong> {grupo.tipo_grupo || "No especificado"}
+            </p>
+          </li>
           ))}
         </ul>
       )}
