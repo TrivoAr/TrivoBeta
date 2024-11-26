@@ -1,9 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react"; // Para manejar la sesión del usuario
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+
+type Grupo = {
+  _id: string;
+  nombre_grupo: string;
+  nivel?: string;
+  ubicacion?: string;
+  direccion?: string;
+  horario?: string;
+  descripcion?: string;
+  tipo_grupo?: string;
+};
 
 type Academia = {
   _id: string;
@@ -15,20 +26,25 @@ type Academia = {
 
 export default function AcademiaDetailPage({ params }: { params: { id: string } }) {
   const [academia, setAcademia] = useState<Academia | null>(null);
+  const [grupos, setGrupos] = useState<Grupo[]>([]);
+  const [error, setError] = useState<string | null>(null); // Para manejar errores
   const router = useRouter();
-  const { data: session } = useSession(); // Obtener la sesión de NextAuth
+  const { data: session } = useSession();
 
   useEffect(() => {
-    const fetchAcademia = async () => {
+    const fetchData = async () => {
       try {
+        // Consumir la API de academia y grupos
         const response = await axios.get(`/api/academias/${params.id}`);
-        setAcademia(response.data);
+        setAcademia(response.data.academia);
+        setGrupos(response.data.grupos);
       } catch (error) {
-        console.error("Error fetching academia details:", error);
+        console.error("Error al obtener los datos:", error);
+        setError("Hubo un problema al cargar los datos de la academia.");
       }
     };
 
-    fetchAcademia();
+    fetchData();
   }, [params.id]);
 
   const handleJoinAcademia = async () => {
@@ -40,15 +56,19 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
     try {
       await axios.post("/api/academias/unirse", {
         academia_id: params.id,
-        user_id: session.user.id, // Usar el ID del usuario autenticado
+        user_id: session.user.id,
       });
       alert("Solicitud enviada con éxito. Espera la aprobación.");
-      router.push("/dashboard"); // Redirigir después de unirse
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Error joining academia:", error);
+      console.error("Error al unirse a la academia:", error);
       alert("Hubo un error al enviar la solicitud.");
     }
   };
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   if (!academia) {
     return <div>Cargando...</div>;
@@ -66,6 +86,33 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
       >
         Unirse a esta Academia
       </button>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">Grupos Disponibles</h2>
+      {grupos.length === 0 ? (
+        <p>No hay grupos disponibles para esta academia.</p>
+      ) : (
+        <ul className="space-y-4">
+          {grupos.map((grupo) => (
+            <li
+              key={grupo._id}
+              className="border p-4 rounded shadow"
+            >
+              <p>
+                <strong>Nombre:</strong> {grupo.nombre_grupo}
+              </p>
+              <p>
+                <strong>Horario:</strong> {grupo.horario || "No especificado"}
+              </p>
+              <p>
+                <strong>Ubicación:</strong> {grupo.ubicacion || "No especificado"}
+              </p>
+              <p>
+                <strong>Tipo de Grupo:</strong> {grupo.tipo_grupo || "No especificado"}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

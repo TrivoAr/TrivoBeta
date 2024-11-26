@@ -6,7 +6,7 @@ import axios from "axios";
 type Solicitud = {
   _id: string;
   estado: string;
-  user_id?: { firstname: string; email: string; lastname: string; }; // user_id podría ser undefined
+  user_id?: { firstname: string; email: string; lastname: string }; // user_id podría ser undefined
   academia_id?: { nombre_academia: string }; // academia_id podría ser undefined
 };
 
@@ -39,11 +39,9 @@ export default function SolicitudesPage() {
         estado: nuevoEstado,
       });
 
-      // Actualizar el estado local
+      // Actualizar el estado local para remover la solicitud si ya no está pendiente
       setSolicitudes((prevSolicitudes) =>
-        prevSolicitudes.map((solicitud) =>
-          solicitud._id === id ? { ...solicitud, estado: nuevoEstado } : solicitud
-        )
+        prevSolicitudes.filter((solicitud) => solicitud._id !== id)
       );
     } catch (err) {
       console.error("Error al actualizar la solicitud", err);
