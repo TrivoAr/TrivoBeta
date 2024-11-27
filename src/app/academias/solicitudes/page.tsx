@@ -39,7 +39,7 @@ export default function SolicitudesPage() {
         estado: nuevoEstado,
       });
 
-      // Actualizar el estado local para remover la solicitud si ya no está pendiente
+      // Actualizar el estado local
       setSolicitudes((prevSolicitudes) =>
         prevSolicitudes.filter((solicitud) => solicitud._id !== id)
       );
@@ -54,46 +54,54 @@ export default function SolicitudesPage() {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Solicitudes Pendientes</h1>
+    <div className="flex flex-col items-center p-4">
+      <h1 className="text-2xl font-bold text-center mb-5">Solicitudes</h1>
       {solicitudes.length === 0 ? (
-        <p>No hay solicitudes pendientes.</p>
+        <p>Sin solicitudes pendientes.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="w-[335px] flex flex-col gap-5">
           {solicitudes.map((solicitud) => (
             <li
               key={solicitud._id}
-              className="border p-4 rounded shadow flex justify-between items-center"
+              className="flex h-[56px] justify-between items-center bg-[#d9d9d980] rounded-[20px] shadow-md px-4"
             >
               <div>
-                <p>
-                  <strong>Usuario:</strong>{" "}
+                <p className="font-semibold">
                   {solicitud.user_id
-                    ? `${solicitud.user_id.firstname} ${solicitud.user_id.lastname} (${solicitud.user_id.email})`
+                    ? `${solicitud.user_id.firstname} ${solicitud.user_id.lastname}`
                     : "Usuario no encontrado"}
                 </p>
-                <p>
-                  <strong>Academia:</strong>{" "}
-                  {solicitud.academia_id
-                    ? solicitud.academia_id.nombre_academia
-                    : "Academia no encontrada"}
-                </p>
-                <p>
-                  <strong>Estado:</strong> {solicitud.estado}
-                </p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEstadoChange(solicitud._id, "aceptado")}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                >
-                  Aceptar
-                </button>
+              <div className="flex gap-3">
                 <button
                   onClick={() => handleEstadoChange(solicitud._id, "rechazado")}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-red-500 text-white h-[24px] w-[24px] rounded-full flex justify-center items-center hover:bg-red-600"
                 >
-                  Rechazar
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="20px"
+                    viewBox="0 0 24 24"
+                    width="20px"
+                    fill="#e8eaed"
+                  >
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleEstadoChange(solicitud._id, "aceptado")}
+                  className="bg-green-500 text-white h-[24px] w-[24px] rounded-full flex justify-center items-center hover:bg-green-600"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="20px"
+                    viewBox="0 0 24 24"
+                    width="20px"
+                    fill="#e8eaed"
+                  >
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                  </svg>
                 </button>
               </div>
             </li>
