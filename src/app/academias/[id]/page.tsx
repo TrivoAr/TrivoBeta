@@ -114,6 +114,16 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
           ))}
         </ul>
       )}
+      {/* Botón para ver los miembros */}
+       <div className="mt-8">
+      <button
+       onClick={() => router.push(`/academias/${params.id}/miembros`)}
+      className="bg-blue-500 text-white px-4 py-2 rounded"
+       >
+          Ver Miembros
+        </button>
+      </div>
     </div>
+    
   );
 }
