@@ -87,3 +87,30 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari y Opera */
 }
+
+
+.coverAcademias{
+  background-image: linear-gradient(
+      0deg,
+      rgba(0,0,0,0.5),
+      rgba(0,0,0,0.5))
+
+      ,url(https://i.pinimg.com/736x/fb/03/56/fb035687227a488c48f01fb929401851.jpg);
+         background-size: cover;
+         background-repeat: no-repeat;
+         background-position: center;
+
+}
+
+.gruposCard{
+  background-image: linear-gradient(
+    0deg,
+    rgba(0,0,0,0.5),
+    rgba(0,0,0,0.5))
+
+    ,url(https://www.miguiadeturismo.ar/cdn/contenidos/75_visitar-parque-9-de-julio_foto1.png);
+       background-size: cover;
+       background-repeat: no-repeat;
+       background-position: center center;
+
+}
