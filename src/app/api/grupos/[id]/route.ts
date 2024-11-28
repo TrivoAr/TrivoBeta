@@ -1,3 +1,4 @@
+// src/app/api/grupos/[id]/route.ts
 import { NextResponse } from "next/server";
 import Grupo from "@/models/grupo";
 import Academia from "@/models/academia";
@@ -7,7 +8,7 @@ import { authOptions } from "@/libs/authOptions"; // Ajusta la ruta según tu pr
 // Obtener un grupo por ID
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
-    const grupo = await Grupo.findById(params.id);
+    const grupo = await Grupo.findById(params.id); // Buscar el grupo por ID
 
     if (!grupo) {
       return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
