@@ -20,7 +20,7 @@ function Signin() {
 
     if (res?.error) setError(res.error as string);
 
-    if (res?.ok) return router.push("/dashboard/profile");
+    if (res?.ok) return router.push("/dashboard");
   };
 
   return (
