@@ -3,24 +3,35 @@ import { NextResponse } from "next/server";
 import Grupo from "@/models/grupo";
 import Academia from "@/models/academia";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/libs/authOptions"; // Ajusta la ruta según tu proyecto
+import { authOptions } from "@/libs/authOptions";
+import { connectDB } from "@/libs/mongodb";
+import UsuarioGrupo from "@/models/users_grupo";
 
 // Obtener un grupo por ID
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
-    const grupo = await Grupo.findById(params.id); // Buscar el grupo por ID
+    // Conecta a la base de datos
+    await connectDB();
+
+    // Buscar el grupo por ID
+    const grupo = await Grupo.findById(params.id);
 
     if (!grupo) {
       return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
     }
 
-    return NextResponse.json(grupo, { status: 200 });
+    // Obtener los usuarios que pertenecen a este grupo
+    const alumnos = await UsuarioGrupo.find({ grupo_id: params.id }).populate("user_id");
+
+    return NextResponse.json({ grupo, alumnos }, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener el grupo:", error);
-    return NextResponse.json({ error: "Error al obtener el grupo" }, { status: 500 });
+    console.error("Error al obtener el grupo y sus alumnos:", error);
+    return NextResponse.json(
+      { error: "Error al obtener el grupo y sus alumnos" },
+      { status: 500 }
+    );
   }
 }
-
 // Actualizar un grupo por ID
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
