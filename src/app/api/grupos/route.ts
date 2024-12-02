@@ -17,12 +17,21 @@ export async function POST(req: Request) {
 }
 
 // Obtener todos los grupos
-export async function GET() {
+// src/app/api/grupos/route.ts
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const academiaId = searchParams.get('academiaId'); // Obtener el ID de la academia
+
+  if (!academiaId) {
+    return NextResponse.json({ error: "Academia ID no proporcionado" }, { status: 400 });
+  }
+
   try {
-    const grupos = await Grupo.find().populate("academia_id"); // Obtiene todos los grupos con información de la academia
-    return NextResponse.json(grupos, { status: 200 });
+    // Filtrar los grupos por el ID de la academia
+    const grupos = await Grupo.find({ academia_id: academiaId });
+    return NextResponse.json({ grupos }, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener grupos:", error);
+    console.error("Error al obtener los grupos:", error);
     return NextResponse.json({ error: "Error al obtener los grupos" }, { status: 500 });
   }
 }
