@@ -99,6 +99,7 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
               <td className="border p-2">
                 {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
               </td>
+              
               <td className="">
                 {!miembro.grupo && (
                   <div className="flex justify-between">
