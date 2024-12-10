@@ -114,3 +114,7 @@ body {
        background-position: center center;
 
 }
+
+.overlay{
+  background-color: rgba(0,0,0,0.7);
+}
