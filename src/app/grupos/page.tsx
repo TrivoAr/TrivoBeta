@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 const CrearGrupo = () => {
+  const router = useRouter();
   const [academias, setAcademias] = useState<any[]>([]);
   const [grupo, setGrupo] = useState({
     academia_id: "",
@@ -26,6 +29,7 @@ const CrearGrupo = () => {
         setAcademias(data); // Guardar academias filtradas por el dueño_id del usuario
       } catch (error) {
         console.error("Error al cargar academias:", error);
+        toast.error("Error al cargar las academias");
       } finally {
         setLoading(false); // Finalizar estado de carga
       }
@@ -50,7 +54,7 @@ const CrearGrupo = () => {
       });
 
       if (res.ok) {
-        alert("Grupo creado exitosamente");
+        toast.success("Grupo creado exitosamente");
         setGrupo({
           academia_id: "",
           nombre_grupo: "",
@@ -61,13 +65,14 @@ const CrearGrupo = () => {
           descripcion: "",
           tipo_grupo: "",
         });
+        router.push("/dashboard");
       } else {
         const errorData = await res.json();
-        alert(`Error: ${errorData.error}`);
+        toast.error(`Error: ${errorData.error}`);
       }
     } catch (error) {
       console.error("Error al crear el grupo:", error);
-      alert("Hubo un error al crear el grupo");
+      toast.error("Hubo un error al crear el grupo");
     }
   };
 
@@ -89,118 +94,98 @@ const CrearGrupo = () => {
 
   return (
     <div className="">
+      <Toaster position="top-center" />
       <h1 className="text-xl font-bold text-center mb-5">Crear Grupo</h1>
-
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-7">
         {/* Academia */}
-          <select
-            name="academia_id"
-            value={grupo.academia_id}
-            onChange={handleInputChange}
-            required
-            className="bg-[#f4f4f4] border-b text-gray-400"
-          >
-            <option value="">Academia</option>
-            {academias.map((academia) => (
-              <option key={academia._id} value={academia._id}>
-                {academia.nombre_academia}
-              </option>
-            ))}
-          </select>
-       
-
-
+        <select
+          name="academia_id"
+          value={grupo.academia_id}
+          onChange={handleInputChange}
+          required
+          className="bg-[#f4f4f4] border-b text-gray-400"
+        >
+          <option value="">Academia</option>
+          {academias.map((academia) => (
+            <option key={academia._id} value={academia._id}>
+              {academia.nombre_academia}
+            </option>
+          ))}
+        </select>
 
         {/* Nombre del grupo */}
-          <input
-            type="text"
-            name="nombre_grupo"
-            value={grupo.nombre_grupo}
-            onChange={handleInputChange}
-            required
-            placeholder="Nombre"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
-    
+        <input
+          type="text"
+          name="nombre_grupo"
+          value={grupo.nombre_grupo}
+          onChange={handleInputChange}
+          required
+          placeholder="Nombre"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Nivel */}
-        
-          
-          <input
-            type="text"
-            name="nivel"
-            value={grupo.nivel}
-            onChange={handleInputChange}
-            placeholder="Dificultad"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
+        <input
+          type="text"
+          name="nivel"
+          value={grupo.nivel}
+          onChange={handleInputChange}
+          placeholder="Dificultad"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Ubicación */}
-      
-
-          <input
-            type="text"
-            name="ubicacion"
-            value={grupo.ubicacion}
-            onChange={handleInputChange}
-            placeholder="Ubicación"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
-     
+        <input
+          type="text"
+          name="ubicacion"
+          value={grupo.ubicacion}
+          onChange={handleInputChange}
+          placeholder="Ubicación"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Horario */}
-        
-          
-          <input
-            type="text"
-            name="horario"
-            value={grupo.horario}
-            onChange={handleInputChange}
-            placeholder="Horario"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
+        <input
+          type="text"
+          name="horario"
+          value={grupo.horario}
+          onChange={handleInputChange}
+          placeholder="Horario"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Cuota mensual */}
-        
-          <input
-            type="text"
-            name="cuota_mensual"
-            value={grupo.cuota_mensual}
-            onChange={handleInputChange}
-            placeholder="Cuota mensual"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
+        <input
+          type="text"
+          name="cuota_mensual"
+          value={grupo.cuota_mensual}
+          onChange={handleInputChange}
+          placeholder="Cuota mensual"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Descripción */}
-          <textarea
-            name="descripcion"
-            value={grupo.descripcion}
-            onChange={handleInputChange}
-            placeholder="Descripción"
-            className="bg-[#F4F4F4]
-            border-b"
-          />
+        <textarea
+          name="descripcion"
+          value={grupo.descripcion}
+          onChange={handleInputChange}
+          placeholder="Descripción"
+          className="bg-[#F4F4F4] border-b"
+        />
 
         {/* Tipo de Grupo */}
-     
-          <select
-            name="tipo_grupo"
-            value={grupo.tipo_grupo}
-            onChange={handleInputChange}
-            className="bg-[#F4F4F4]
-            border-b text-gray-400"
-          >
-            <option value="">Selecciona un tipo</option>
-            <option value="nivel">Nivel</option>
-            <option value="distancia">Distancia</option>
-            <option value="otros">Otros</option>
-          </select>
+        <select
+          name="tipo_grupo"
+          value={grupo.tipo_grupo}
+          onChange={handleInputChange}
+          className="bg-[#F4F4F4] border-b text-gray-400"
+        >
+          <option value="">Selecciona un tipo</option>
+          <option value="nivel">Nivel</option>
+          <option value="distancia">Distancia</option>
+          <option value="otros">Otros</option>
+        </select>
 
         <button
           type="submit"

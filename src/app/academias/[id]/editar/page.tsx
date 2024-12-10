@@ -1,0 +1,203 @@
+"use client";
+import { useEffect, useState, FormEvent } from "react";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
+
+export default function EditarAcademia({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    nombre_academia: "",
+    pais: "",
+    provincia: "",
+    localidad: "",
+    descripcion: "",
+    tipo_disciplina: "",
+    telefono: "",
+  });
+  const [loading, setLoading] = useState(true); // Para la carga inicial
+
+  // Función para obtener los datos iniciales
+  const fetchAcademia = async () => {
+    try {
+      const response = await axios.get(`/api/academias/${params.id}`);
+      setFormData(response.data.academia);
+      toast.success("Datos cargados con éxito");
+    } catch (error) {
+      console.error("Error al cargar los datos:", error);
+      toast.error("Error al cargar los datos de la academia.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Manejar la carga inicial
+  useEffect(() => {
+    fetchAcademia();
+  }, []);
+
+  // Manejar el envío del formulario
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const response = await axios.put(`/api/academias/${params.id}/editar`, formData);
+
+      if (response.status === 200) {
+        toast.success("¡Academia actualizada con éxito!");
+        router.push("/dashboard"); // Redirige después de actualizar
+      } else {
+        throw new Error("Error al actualizar la academia");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      if (error instanceof AxiosError) {
+        const errorMessage = error.response?.data?.message || "Error en la solicitud";
+        toast.error(errorMessage);
+      } else {
+        toast.error("Ocurrió un error desconocido");
+      }
+    }
+  };
+
+  // Manejar cambios en los inputs
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Manejar eliminación
+  const handleDelete = async () => {
+    const confirmDelete = confirm("¿Estás seguro de que deseas eliminar esta academia?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await axios.delete(`/api/academias/${params.id}/eliminar`);
+
+      if (response.status === 200) {
+        toast.success("¡Academia eliminada con éxito!");
+        router.push("/dashboard"); // Redirige después de eliminar
+      } else {
+        throw new Error("Error al eliminar la academia");
+      }
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      toast.error("Error al eliminar la academia.");
+    }
+  };
+
+  return (
+    <div className="w-[390px] flex flex-col items-center gap-5">
+      <Toaster position="top-center" /> {/* Para mostrar los toasts */}
+      <p className="text-xl font-bold justify-self-center">Editar Academia</p>
+      
+      {loading ? (
+        <p className="text-center">Cargando datos...</p>
+      ) : (
+        <form onSubmit={handleSubmit} className="w-[80%]">
+          <div className="relative mb-6">
+            <input
+              type="text"
+              name="nombre_academia"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.nombre_academia}
+              onChange={handleChange}
+              required
+            />
+            <label className="form-label">Nombre</label>
+          </div>
+
+          <div className="relative mb-6">
+            <input
+              type="text"
+              name="pais"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.pais}
+              onChange={handleChange}
+              required
+            />
+            <label className="form-label">País</label>
+          </div>
+
+          <div className="relative mb-6">
+            <input
+              type="text"
+              name="provincia"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.provincia}
+              onChange={handleChange}
+              required
+            />
+            <label className="form-label">Provincia</label>
+          </div>
+
+          <div className="relative mb-6">
+            <input
+              type="text"
+              name="localidad"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.localidad}
+              onChange={handleChange}
+              required
+            />
+            <label className="form-label">Localidad</label>
+          </div>
+
+          <div className="relative mb-6">
+            <textarea
+              name="descripcion"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.descripcion}
+              onChange={handleChange}
+            ></textarea>
+            <label className="form-label">Descripción</label>
+          </div>
+
+          <div className="relative mb-6">
+            <select
+              name="tipo_disciplina"
+              className="form-input peer"
+              value={formData.tipo_disciplina}
+              onChange={handleChange}
+              required
+            >
+              <option value="running">Running</option>
+              <option value="trekking">Trekking</option>
+              <option value="otros">Ciclismo</option>
+            </select>
+            <label className="form-label">Tipo de disciplina</label>
+          </div>
+
+          <div className="relative mb-6">
+            <input
+              type="text"
+              name="telefono"
+              className="form-input peer"
+              placeholder=" "
+              value={formData.telefono}
+              onChange={handleChange}
+            />
+            <label className="form-label">Teléfono</label>
+          </div>
+
+          <button className="bg-[#FF9A3D] text-[#333] font-bold px-4 py-2 block w-full mt-4 rounded-[10px]">
+            Guardar Cambios
+          </button>
+
+          <button
+            type="button"
+            className="bg-red-500 text-white font-bold px-4 py-2 block w-full mt-4 rounded-[10px]"
+            onClick={handleDelete} // Eliminar
+          >
+            Eliminar Academia
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}

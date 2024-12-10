@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 type Solicitud = {
   _id: string;
@@ -34,10 +35,17 @@ export default function SolicitudesPage() {
   // Manejar el cambio de estado de una solicitud
   const handleEstadoChange = async (id: string, nuevoEstado: string) => {
     try {
-      await axios.patch("/api/academias/solicitudes", {
-        solicitud_id: id,
-        estado: nuevoEstado,
-      });
+      toast.promise(
+        axios.patch("/api/academias/solicitudes", {
+          solicitud_id: id,
+          estado: nuevoEstado,
+        }),
+        {
+          loading: "Actualizando solicitud...",
+          success: `Solicitud ${nuevoEstado === "aceptado" ? "aceptada" : "rechazada"} correctamente`,
+          error: "Hubo un error al actualizar la solicitud",
+        }
+      );
 
       // Actualizar el estado local
       setSolicitudes((prevSolicitudes) =>
@@ -55,6 +63,7 @@ export default function SolicitudesPage() {
 
   return (
     <div className="flex flex-col items-center p-4">
+      <Toaster position="top-center" />
       <h1 className="text-2xl font-bold text-center mb-5">Solicitudes</h1>
       {solicitudes.length === 0 ? (
         <p>Sin solicitudes pendientes.</p>

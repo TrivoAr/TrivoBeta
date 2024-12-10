@@ -1,9 +1,10 @@
-"use client";
-
+"use client"
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";  // Importar useSession
 
 const MiembrosPage = ({ params }: { params: { id: string } }) => {
+  const { data: session } = useSession();  // Obtener datos de sesión
   const [miembros, setMiembros] = useState<any[]>([]);
   const [grupos, setGrupos] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +64,8 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
       );
 
       alert("Grupo asignado correctamente");
+      // Limpiar la selección de grupo
+      setGrupoSeleccionado(null);
     } catch (error) {
       console.error("Error al asignar el grupo", error);
       setError("Error al asignar el grupo");
@@ -72,6 +75,9 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
   if (cargando) {
     return <div>Cargando...</div>;
   }
+
+  // Verificar el rol del usuario
+  const isDueñoAcademia = session?.user?.role === "dueño de academia";
 
   return (
     <div>
@@ -94,7 +100,7 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
                 {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
               </td>
               <td className="border p-2">
-                {!miembro.grupo && (
+                {!miembro.grupo && isDueñoAcademia && (  // Solo mostrar el formulario de asignación si el usuario es dueño
                   <div>
                     <select
                       className="border p-2 rounded"
