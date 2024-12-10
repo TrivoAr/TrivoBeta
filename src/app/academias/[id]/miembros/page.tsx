@@ -99,9 +99,9 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
               <td className="border p-2">
                 {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
               </td>
-              <td className="border p-2">
-                {!miembro.grupo && isDueñoAcademia && (  // Solo mostrar el formulario de asignación si el usuario es dueño
-                  <div>
+              <td className="">
+                {!miembro.grupo && (
+                  <div className="flex justify-between">
                     <select
                       className="border p-2 rounded"
                       onChange={(e) => setGrupoSeleccionado(e.target.value)}  // Cambiar grupo seleccionado
