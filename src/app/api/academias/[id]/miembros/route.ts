@@ -21,20 +21,28 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       .populate("user_id") // Incluye información del usuario
       .lean();
 
-    // Mapear IDs de los usuarios para buscar sus grupos
+    // Mapear IDs de los usuarios para buscar sus grupos, pero filtrar por esta academia
     const userIds = miembrosAcademia.map((miembro) => miembro.user_id._id);
 
-    // Buscar los grupos relacionados con estos usuarios
-    const grupos = await UsuarioGrupo.find({ user_id: { $in: userIds } })
-      .populate("grupo_id")
+    // Buscar los grupos relacionados con estos usuarios, pero que pertenecen a esta academia
+    const grupos = await UsuarioGrupo.find({ 
+      user_id: { $in: userIds } 
+    })
+      .populate({
+        path: "grupo_id",
+        match: { academia_id: id }, // Solo grupos de esta academia
+      })
       .lean();
 
     // Combinar datos de los miembros con los grupos
     const miembrosConGrupos = miembrosAcademia.map((miembro) => {
-      const grupo = grupos.find((g) => String(g.user_id) === String(miembro.user_id._id));
+      const grupo = grupos.find((g) => 
+        String(g.user_id) === String(miembro.user_id._id) && g.grupo_id
+      );
+
       return {
         ...miembro,
-        grupo: grupo ? grupo.grupo_id : null, // Incluye el grupo asignado si existe
+        grupo: grupo ? grupo.grupo_id : null, // Solo incluir el grupo si pertenece a esta academia
       };
     });
 
@@ -47,6 +55,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     );
   }
 }
+
 
 // Asignar un usuario a un grupo
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -63,7 +72,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       );
     }
 
-    // Verificar que el grupo pertenece a la academia
+    // Verificar que el grupo pertenece a la academia actual
     const grupo = await Grupo.findById(grupo_id);
     if (!grupo || grupo.academia_id.toString() !== id) {
       return NextResponse.json(
@@ -72,15 +81,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       );
     }
 
-    // Crear o actualizar la relación en UsuarioGrupo
-    const usuarioGrupo = await UsuarioGrupo.findOneAndUpdate(
-      { user_id }, // Busca la relación por usuario
-      { grupo_id, fecha_ingreso: new Date() }, // Actualiza o crea la relación
-      { upsert: true, new: true }
-    );
+    // Crear un nuevo documento en UsuarioGrupo para esta relación, no actualizar el existente
+    const nuevoUsuarioGrupo = new UsuarioGrupo({
+      user_id, // ID del usuario
+      grupo_id, // ID del grupo
+      academia_id: id, // ID de la academia
+      fecha_ingreso: new Date(), // Fecha de ingreso
+    });
+
+    await nuevoUsuarioGrupo.save(); // Guardar la nueva relación en la base de datos
 
     return NextResponse.json(
-      { message: "Grupo asignado correctamente", usuarioGrupo },
+      { message: "Grupo asignado correctamente", nuevoUsuarioGrupo },
       { status: 200 }
     );
   } catch (error) {
