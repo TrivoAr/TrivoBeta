@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 
 type Grupo = {
   _id: string;
@@ -27,14 +28,14 @@ type Academia = {
 export default function AcademiaDetailPage({ params }: { params: { id: string } }) {
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [error, setError] = useState<string | null>(null); // Para manejar errores
+  const [error, setError] = useState<string | null>(null);
+  const [hasActiveRequest, setHasActiveRequest] = useState(false); // Estado para solicitudes activas
   const router = useRouter();
   const { data: session } = useSession();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Consumir la API de academia y grupos
         const response = await axios.get(`/api/academias/${params.id}`);
         setAcademia(response.data.academia);
         setGrupos(response.data.grupos);
@@ -44,26 +45,65 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
       }
     };
 
+    const checkActiveRequest = async () => {
+      if (!session || !session.user) return;
+      try {
+        const response = await axios.get(`/api/academias/solicitudes`, {
+          params: {
+            academia_id: params.id,
+            user_id: session.user.id,
+          },
+        });
+        setHasActiveRequest(response.data.hasActiveRequest);
+      } catch (error) {
+        if (error === 404) {
+          console.log("No hay solicitud activa");
+          setHasActiveRequest(false);
+        } else {
+          console.error("Error al verificar solicitud activa:", error);
+        }
+      }
+    };
+    
+
     fetchData();
-  }, [params.id]);
+    checkActiveRequest(); // Verificar solicitud activa
+  }, [params.id, session]);
 
   const handleJoinAcademia = async () => {
     if (!session || !session.user || !session.user.id) {
-      alert("Por favor, inicia sesión para unirte a esta academia.");
+      toast.error("Por favor, inicia sesión para unirte a esta academia.");
       return;
     }
 
-    try {
-      await axios.post("/api/academias/unirse", {
+    toast.promise(
+      axios.post("/api/academias/unirse", {
         academia_id: params.id,
         user_id: session.user.id,
+      }),
+      {
+        loading: "Enviando solicitud...",
+        success: "¡Solicitud enviada con éxito! Espera la aprobación.",
+        error: "Hubo un error al enviar la solicitud.",
+      }
+    )
+      .then(() => {
+        setHasActiveRequest(true); // Deshabilitar botón después de la solicitud
+        router.push("/dashboard");
+      })
+      .catch((err) => {
+        if (err.response?.status === 400 && err.response.data.message.includes("solicitud activa")) {
+          setHasActiveRequest(true);
+          toast.error("Ya tienes una solicitud activa para esta academia.");
+        } else {
+          
+        }
+        console.error("Error al unirse a la academia:", err);
       });
-      alert("Solicitud enviada con éxito. Espera la aprobación.");
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Error al unirse a la academia:", error);
-      alert("Hubo un error al enviar la solicitud.");
-    }
+  };
+  
+  const handleEdit = () => {
+    router.push(`/academias/${params.id}/editar`);
   };
 
   if (error) {
@@ -76,7 +116,32 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
 
   return (
     <div className="flex flex-col items-center">
-      <div className="coverAcademias w-[390px] h-[190px]"></div>
+      <Toaster position="top-center" />
+      <div className="coverAcademias relative w-[390px] h-[190px] bg-black opacity-80"></div>
+      <button
+     type="button"
+     onClick={() => router.back()}
+     className=" absolute top-2 left-2 text-white p-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300">
+    <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 16 16"
+    width="24"
+    height="24">
+    <path
+      fillRule="evenodd"
+      d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+        />
+    </svg>
+</button>
+      <button onClick={() => router.push(`/academias/${params.id}/editar`)} className="absolute top-2 right-2 z-50  p-1 rounded-full shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 512 512"
+      width="25px"
+      height="25px">
+      <path fill="#fcfcfc" d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/>
+      </svg>
+       </button>
 
       <div className="flex justify-center gap-5">
         <div className="logo h-[120px] w-[120px] bg-slate-400 rounded-[50%] relative bottom-[60px] border border-[#333]">
@@ -102,7 +167,10 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         <button className="w-[80px] h-[20px] border border-[#FA861F] text-[#FA861F] rounded-[40px] flex justify-center items-center text-sm">
           Galeria
         </button>
-        <button  onClick={() => router.push(`/academias/${params.id}/miembros`)} className="w-[80px] h-[20px] border border-[#FA861F] text-[#FA861F] rounded-[40px] flex justify-center items-center text-sm">
+        <button
+          onClick={() => router.push(`/academias/${params.id}/miembros`)}
+          className="w-[80px] h-[20px] border border-[#FA861F] text-[#FA861F] rounded-[40px] flex justify-center items-center text-sm"
+        >
           Miembros
         </button>
       </div>
@@ -111,7 +179,15 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         <h2 className="font-bold text-xl">Grupos de entrenamiento</h2>
 
         {grupos.length === 0 ? (
-          <p>No hay grupos disponibles para esta academia.</p>
+          <div>
+            <p>No hay grupos disponibles para esta academia.</p>
+            <button
+              onClick={() => router.push(`/grupos`)}
+              className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+            >
+              Crear grupo
+            </button>
+          </div>
         ) : (
           <ul className="flex flex-col gap-5 justify-center">
             {grupos.map((grupo) => (
@@ -121,56 +197,42 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
                 onClick={() => router.push(`/grupos/${grupo._id}`)}
               >
                 <p className="text-[10px] text-[#f4f4f4] font-bold flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="15px"
-                    viewBox="0 -960 960 960"
-                    width="15px"
-                    fill="#f4f4f4"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" height="15px" viewBox="0 -960 960 960" width="15px" fill="#f4f4f4">
                     <path d="M360-840v-80h240v80H360Zm80 440h80v-240h-80v240Zm40 320q-74 0-139.5-28.5T226-186q-49-49-77.5-114.5T120-440q0-74 28.5-139.5T226-694q49-49 114.5-77.5T480-800q62 0 119 20t107 58l56-56 56 56-56 56q38 50 58 107t20 119q0 74-28.5 139.5T734-186q-49 49-114.5 77.5T480-80Zm0-80q116 0 198-82t82-198q0-116-82-198t-198-82q-116 0-198 82t-82 198q0 116 82 198t198 82Zm0-280Z" />
                   </svg>
                   {grupo.horario} hs
                 </p>
-
                 <p className="text-[#F4F4F4] font-bold text-2xl flex items-center justify-between w-full">
                   {grupo.nombre_grupo}{" "}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="34px"
-                    viewBox="0 -960 960 960"
-                    width="34px"
-                    fill="#F4F4F4"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" height="34px" viewBox="0 -960 960 960" width="34px" fill="#F4F4F4">
                     <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
                   </svg>
                 </p>
-
                 <p className="text-[10px] text-[#f4f4f4] font-bold flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="14px"
-                    viewBox="0 -960 960 960"
-                    width="14px"
-                    fill="#f4f4f4"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#f4f4f4">
                     <path d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Zm0-480Z" />
                   </svg>
                   {grupo.ubicacion}
-            </p>
-          </li>
-          ))}
-        </ul>
-      )}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
 
-
-<button
-        onClick={handleJoinAcademia}
-        className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-      >
-        Unirse
-      </button>
-
+        <button
+          onClick={handleJoinAcademia}
+          disabled={hasActiveRequest} // Deshabilitar si hay solicitud activa
+          className={`border w-[125px] h-[32px] rounded-[10px] self-center ${
+            hasActiveRequest
+              ? "border-gray-400 text-gray-400"
+              : "border-[#FF9A3D] text-[#FF9A3D]"
+          }`}
+        >
+          {hasActiveRequest ? " Solicitud enviada " : "Unirse"}
+        </button>
+       {/* <button onClick={handleEdit} className="btn-icon">
+          ⚙️ {/* Ícono de tuerca }
+        </button>*/}
       </div>
     </div>
   );

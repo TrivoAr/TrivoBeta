@@ -1,9 +1,10 @@
-"use client";
-
+"use client"
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";  // Importar useSession
 
 const MiembrosPage = ({ params }: { params: { id: string } }) => {
+  const { data: session } = useSession();  // Obtener datos de sesión
   const [miembros, setMiembros] = useState<any[]>([]);
   const [grupos, setGrupos] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +64,8 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
       );
 
       alert("Grupo asignado correctamente");
+      // Limpiar la selección de grupo
+      setGrupoSeleccionado(null);
     } catch (error) {
       console.error("Error al asignar el grupo", error);
       setError("Error al asignar el grupo");
@@ -73,35 +76,40 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
     return <div>Cargando...</div>;
   }
 
+  // Verificar el rol del usuario
+  const isDueñoAcademia = session?.user?.role === "dueño de academia";
+
   return (
-    <div>
-      <h1>Miembros de la Academia</h1>
+    <div className="w-[390px] flex flex-col items-center">
+      <h1 className="font-bold">Miembros de la Academia</h1>
       {error && <p className="text-red-500">{error}</p>}
 
-      <table className="min-w-full border-collapse">
+      <table className="w-[90%] border-collapse">
         <thead>
           <tr>
-            <th className="border p-2">Nombre</th>
-            <th className="border p-2">Grupo Actual</th>
-            <th className="border p-2">Asignar Grupo</th>
+            <th className="">Foto</th>
+            <th className="">Nombre</th>
+            <th className="">Grupo</th>
+            <th className="">Asignar</th>
           </tr>
         </thead>
         <tbody>
           {miembros.map((miembro) => (
             <tr key={miembro.user_id._id}>
-              <td className="border p-2">{miembro.user_id.firstname}</td>
-              <td className="border p-2">
+              <td className="flex justify-center"><img className="rounded-full h-[35px] w-[35px]" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="" /></td>
+              <td className="text-sm text-center">{miembro.user_id.firstname}</td>
+              <td className="text-sm text-center">
                 {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
               </td>
-              <td className="border p-2">
+              <td className="">
                 {!miembro.grupo && (
-                  <div>
+                  <div className="flex justify-between">
                     <select
-                      className="border p-2 rounded"
+                      className="bg-[#f4f4f4] w-[70px] text-sm"
                       onChange={(e) => setGrupoSeleccionado(e.target.value)}  // Cambiar grupo seleccionado
                       value={grupoSeleccionado || ""} // El valor seleccionado
                     >
-                      <option value="">-- Seleccionar un Grupo --</option>
+                      <option value="">Grupo</option>
                       {grupos && grupos.length > 0 ? (
                         grupos.map((grupo) => (
                           <option key={grupo._id} value={grupo._id}>
@@ -114,10 +122,10 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
                     </select>
                     <button
                       onClick={() => asignarGrupo(miembro.user_id._id, grupoSeleccionado!)} // Asignar el grupo
-                      className="bg-blue-500 text-white py-2 px-4 rounded mt-2"
+                      className="bg-[#FF9A3D] text-[#333] w-[70px] rounded text-sm"
                       disabled={!grupoSeleccionado}
                     >
-                      Confirmar Asignación
+                      Confirmar
                     </button>
                   </div>
                 )}

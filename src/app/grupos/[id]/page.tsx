@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import ModalEntrenamiento from "@/components/Modals/ModalEntrenamiento";
 import axios from "axios";
 
 type Grupo = {
@@ -30,7 +31,11 @@ type Entrenamiento = {
   descripcion: string;
 };
 
-export default function GrupoDetailPage({ params }: { params: { id: string } }) {
+export default function GrupoDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const [grupo, setGrupo] = useState<Grupo | null>(null);
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
   const [entrenamientoData, setEntrenamientoData] = useState<Entrenamiento>({
@@ -80,7 +85,9 @@ export default function GrupoDetailPage({ params }: { params: { id: string } }) 
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setEntrenamientoData({
       ...entrenamientoData,
       [e.target.name]: e.target.value,
@@ -94,50 +101,98 @@ export default function GrupoDetailPage({ params }: { params: { id: string } }) 
     setEntrenamientoData({ ...entrenamientoData, alumno_id: alumno._id });
   };
 
+
+  const [estadoModal1, cambiarEstadoModal1] = useState(true);
+
   if (error) return <div>{error}</div>;
 
   if (!grupo) return <div>Cargando...</div>;
 
+
+
   return (
     <div className="flex flex-col items-center p-5">
-      <div className="coverAcademias w-[390px] h-[190px] bg-cover bg-center" style={{ backgroundImage: `url('https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg')` }}></div>
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className=" absolute top-2 left-2 bg-black text-white p-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+          width="24"
+          height="24"
+        >
+          <path
+            fillRule="evenodd"
+            d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+          />
+        </svg>
+      </button>
+      <div
+        className="coverAcademias w-[390px] h-[190px] bg-cover bg-center"
+        style={{
+          backgroundImage: `url('https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg')`,
+        }}
+      ></div>
 
       <div className="flex justify-center gap-5 mt-[-60px]">
         <div className="logo h-[120px] w-[120px] bg-slate-400 rounded-full border border-[#333] flex justify-center items-center">
-          <img src="https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg" className="rounded-full" alt="Logo" />
+          <img
+            src="https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
+            className="rounded-full"
+            alt="Logo"
+          />
         </div>
         <div>
           <br />
           <br />
           <br />
-          <h1 className="text-3xl font-bold text-[#333]">{grupo.nombre_grupo}</h1>
-          <p className="text-sm text-[#333]">Ubicación: {grupo.ubicacion || "No especificado"}</p>
-          <p className="text-sm text-[#333]">Horario: {grupo.horario || "No especificado"}</p>
-          <p className="text-sm text-[#333]">Nivel: {grupo.nivel || "No especificado"}</p>
+          <h1 className="text-3xl font-bold text-[#333]">
+            {grupo.nombre_grupo}
+          </h1>
+          <p className="text-sm text-[#333]">
+            Ubicación: {grupo.ubicacion || "No especificado"}
+          </p>
+          <p className="text-sm text-[#333]">
+            Horario: {grupo.horario || "No especificado"}
+          </p>
+          <p className="text-sm text-[#333]">
+            Nivel: {grupo.nivel || "No especificado"}
+          </p>
         </div>
       </div>
 
       <div className="w-[338px] mt-5 mb-5 p-4 bg-white shadow rounded-lg">
-        <h2 className="font-bold text-xl mb-4">Alumnos del Grupo</h2>
+        <h2 className="font-bold text-xl mb-4">Alumnos del grupo</h2>
         {alumnos.length > 0 ? (
           <ul>
             {alumnos.map((alumno) => (
               <li
                 key={alumno._id}
                 className={`flex justify-between items-center mb-3 p-2 rounded-lg ${
-                  userRole === "alumno" ? "cursor-default" : "cursor-pointer hover:bg-gray-100"
+                  userRole === "alumno"
+                    ? "cursor-default"
+                    : "cursor-pointer hover:bg-gray-100"
                 }`}
                 onClick={() => handleAlumnoClick(alumno)}
               >
-                <span className="text-lg">{alumno.firstname} {alumno.lastname}</span>
-                {userRole !== "alumno" && selectedAlumno?._id === alumno._id && (
-                  <button
-                    onClick={() => setIsAssigning(true)}
-                    className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-                  >
-                    Asignar Entrenamiento
-                  </button>
-                )}
+                <span className="text-lg">
+                  {alumno.firstname} {alumno.lastname}
+                </span>
+                {userRole !== "alumno" &&
+                  selectedAlumno?._id === alumno._id && (
+                    <button
+                      onClick={() => {
+                        setIsAssigning(true);
+                        cambiarEstadoModal1(!estadoModal1);
+                      }}
+                      className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+                    >
+                      Entrenamiento
+                    </button>
+                  )}
               </li>
             ))}
           </ul>
@@ -147,36 +202,44 @@ export default function GrupoDetailPage({ params }: { params: { id: string } }) 
       </div>
 
       {/* Asignación de entrenamiento */}
-      {isAssigning && selectedAlumno && (
-        <div className="mt-5 w-[338px] p-4 bg-white shadow rounded-lg">
-          <h3 className="font-bold text-lg mb-3">Asignar Entrenamiento a {selectedAlumno.firstname} {selectedAlumno.lastname}</h3>
-          <input
-            type="date"
-            name="fecha"
-            value={entrenamientoData.fecha}
-            onChange={handleChange}
-            className="mb-4 border p-2 w-full rounded"
-          />
-          <textarea
-            name="descripcion"
-            value={entrenamientoData.descripcion}
-            onChange={handleChange}
-            placeholder="Descripción del entrenamiento"
-            className="mb-4 border p-2 w-full rounded"
-          ></textarea>
-          <button
-            onClick={handleAssignEntrenamiento}
-            className="bg-orange-500 text-white py-2 px-4 rounded-full w-full"
-          >
-            Confirmar Asignación
-          </button>
-          <button
-            onClick={() => setIsAssigning(false)}
-            className="mt-3 bg-gray-500 text-white py-2 px-4 rounded-full w-full"
-          >
-            Cancelar
-          </button>
-        </div>
+
+      {isAssigning && selectedAlumno && estadoModal1 && (
+        <ModalEntrenamiento
+          estado={estadoModal1}
+          cambiarEstado={cambiarEstadoModal1}
+        >
+          <div className="w-full p-2 flex flex-col items-center">
+            <h3 className="font-bold text-center mb-4">
+              {selectedAlumno.firstname} {selectedAlumno.lastname}
+            </h3>
+            <input
+              type="date"
+              name="fecha"
+              value={entrenamientoData.fecha}
+              onChange={handleChange}
+              className="mb-4 border p-2 w-[90%] rounded"
+            />
+            <textarea
+              name="descripcion"
+              value={entrenamientoData.descripcion}
+              onChange={handleChange}
+              placeholder="Descripción del entrenamiento"
+              className="mb-4 border p-2 w-[90%] rounded"
+            ></textarea>
+            <button
+              onClick={handleAssignEntrenamiento}
+              className="bg-[#FF9A3D] text-[#333] py-2 px-4 rounded-full w-[90%] font-bold"
+            >
+              Confirmar
+            </button>
+            <button
+              onClick={() => setIsAssigning(false)}
+              className="mt-3 border-2 border-[#FF9A3D] text-[#FF9A3D] py-2 px-4 rounded-full w-[90%] font-bold"
+            >
+              Cancelar
+            </button>
+          </div>
+        </ModalEntrenamiento>
       )}
     </div>
   );

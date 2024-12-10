@@ -1,5 +1,6 @@
 import Providers from "./Providers";
 import Navbar from "../components/Navbar";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 export const metadata = {
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col gap-10 items-center">
+      <Toaster />
         <Providers>
           <div className="">{children}</div>
            <Navbar /> 
