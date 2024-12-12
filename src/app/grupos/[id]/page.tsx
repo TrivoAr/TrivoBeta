@@ -5,6 +5,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ModalEntrenamiento from "@/components/Modals/ModalEntrenamiento";
 import axios from "axios";
+import { getGroupImage } from "@/app/api/grupos/getGroupImage";
+import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
+
+// Tipos
 
 type Grupo = {
   _id: string;
@@ -47,10 +51,15 @@ export default function GrupoDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
   const [selectedAlumno, setSelectedAlumno] = useState<Alumno | null>(null);
+  const [groupImage, setGroupImage] = useState<string>(
+    "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
+  );
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const router = useRouter();
   const { data: session } = useSession();
 
-  const userRole = session?.user?.role; // Asumiendo que el rol del usuario está en `session.user.role`.
+  const userRole = session?.user?.role;
 
   useEffect(() => {
     const fetchGrupo = async () => {
@@ -58,6 +67,14 @@ export default function GrupoDetailPage({
         const response = await axios.get(`/api/grupos/${params.id}`);
         setGrupo(response.data.grupo);
         setAlumnos(response.data.alumnos.map((item: any) => item.user_id));
+
+        // Intentar obtener la imagen del grupo
+        try {
+          const imageUrl = await getGroupImage("group-image.jpg", params.id);
+          setGroupImage(imageUrl);
+        } catch {
+          console.log("No se encontró una imagen para este grupo, usando predeterminada.");
+        }
       } catch (error) {
         console.error("Error al cargar los detalles del grupo:", error);
         setError("Hubo un problema al cargar los detalles del grupo.");
@@ -95,20 +112,31 @@ export default function GrupoDetailPage({
   };
 
   const handleAlumnoClick = (alumno: Alumno) => {
-    // Si el usuario es alumno, no ejecutamos ninguna acción al hacer clic en otro miembro.
     if (userRole === "alumno") return;
     setSelectedAlumno(alumno);
     setEntrenamientoData({ ...entrenamientoData, alumno_id: alumno._id });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const [estadoModal1, cambiarEstadoModal1] = useState(true);
+    try {
+      setUploadingImage(true);
+      const imageUrl = await saveGroupImage(file, params.id);
+      setGroupImage(imageUrl);
+      alert("Imagen actualizada con éxito.");
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un problema al subir la imagen del grupo.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   if (error) return <div>{error}</div>;
 
   if (!grupo) return <div>Cargando...</div>;
-
-
 
   return (
     <div className="flex flex-col items-center p-5">
@@ -132,15 +160,13 @@ export default function GrupoDetailPage({
       </button>
       <div
         className="coverAcademias w-[390px] h-[190px] bg-cover bg-center"
-        style={{
-          backgroundImage: `url('https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg')`,
-        }}
+        style={{ backgroundImage: `url('${groupImage}')` }}
       ></div>
 
       <div className="flex justify-center gap-5 mt-[-60px]">
         <div className="logo h-[120px] w-[120px] bg-slate-400 rounded-full border border-[#333] flex justify-center items-center">
           <img
-            src="https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
+            src={groupImage}
             className="rounded-full"
             alt="Logo"
           />
@@ -164,6 +190,22 @@ export default function GrupoDetailPage({
         </div>
       </div>
 
+      {userRole !== "alumno" && (
+        <div className="mt-4">
+          <label className="text-sm font-bold" htmlFor="uploadImage">
+            Subir/Actualizar imagen del grupo:
+          </label>
+          <input
+            id="uploadImage"
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="block mt-2"
+          />
+          {uploadingImage && <p>Subiendo imagen...</p>}
+        </div>
+      )}
+
       <div className="w-[338px] mt-5 mb-5 p-4 bg-white shadow rounded-lg">
         <h2 className="font-bold text-xl mb-4">Alumnos del grupo</h2>
         {alumnos.length > 0 ? (
@@ -186,7 +228,6 @@ export default function GrupoDetailPage({
                     <button
                       onClick={() => {
                         setIsAssigning(true);
-                        cambiarEstadoModal1(!estadoModal1);
                       }}
                       className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
                     >
@@ -201,12 +242,10 @@ export default function GrupoDetailPage({
         )}
       </div>
 
-      {/* Asignación de entrenamiento */}
-
-      {isAssigning && selectedAlumno && estadoModal1 && (
+      {isAssigning && selectedAlumno && (
         <ModalEntrenamiento
-          estado={estadoModal1}
-          cambiarEstado={cambiarEstadoModal1}
+          estado={isAssigning}
+          cambiarEstado={setIsAssigning}
         >
           <div className="w-full p-2 flex flex-col items-center">
             <h3 className="font-bold text-center mb-4">
