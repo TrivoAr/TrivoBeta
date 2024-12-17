@@ -1,0 +1,25 @@
+.scroll-container {
+    display: flex;
+    gap: 16px; /* Espacio entre las tarjetas */
+    overflow-x: auto;
+    padding-bottom: 10px; /* Para evitar que las tarjetas toquen el borde inferior */
+    scrollbar-width: thin; /* Personaliza el ancho del scrollbar en Firefox */
+    -ms-overflow-style: none; /* Oculta scrollbar en IE y Edge */
+    scrollbar-width: none;
+  }
+  
+  .scroll-container::-webkit-scrollbar {
+    display: none; /* Oculta el scrollbar en navegadores basados en Webkit */
+  }
+  
+  .academia-card {
+    flex-shrink: 0; /* Evita que las tarjetas se reduzcan de tamaño */
+    width: 250px; /* Ajusta el ancho de cada tarjeta */
+    height: 218px; /* Altura de las tarjetas */
+  }
+  
+  .portada {
+    background-size: cover;
+    background-position: center;
+  }
+  
