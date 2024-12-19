@@ -141,7 +141,7 @@ export default function GrupoDetailPage({
   if (!grupo) return <div>Cargando...</div>;
 
   return (
-    <div className="flex flex-col items-center p-5 w-[390px] bg-[#F4F4F4]">
+    <div className="flex flex-col items-center w-[390px] bg-[#F4F4F4]">
       <button
         type="button"
         onClick={() => router.back()}
@@ -176,30 +176,33 @@ export default function GrupoDetailPage({
           />
         </svg>
       </button>
+
       <div
         className="coverAcademias w-[390px] h-[190px] bg-cover bg-center"
         style={{ backgroundImage: `url('${groupImage}')` }}
       ></div>
 
-      <div className="absolute top-40 logo h-[120px] w-[120px] bg-slate-400 rounded-full border border-[#333] flex justify-center items-center">
-        <img src={groupImage} className="rounded-full" alt="Logo" />
-      </div>
-      {/* info del grupo */}
-      <div className="text-center">
-        <br />
-        <br />
-        <br />
-        <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] leading-[22px] mx-auto mt-[20px]">
+      <div className="absolute top-[135px] logo h-[120px] w-[390px] flex justify-start items-center gap-3 p-8">
+        <img src={groupImage} className="rounded-full w-[120px]" alt="Logo" />
+        <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] leading-[22px] mx-auto mt-[30px]">
           {grupo.nombre_grupo}
         </h1>
+      </div>
 
-        <div className="grid grid-cols-2 gap-6 mt-6 w-[390px]">
+
+      {/* info del grupo */}
+      <div className="mt-[90px]">
+    
+
+        <div className="flex flex-wrap w-[390px]  h-[100px] justify-center">
           {/* Columna izquierda */}
-          <div className="flex items-center gap-2 pl-8">
-            <div className="flex items-center justify-center h-[25px] w-[25px] bg-[#FFE1C5] rounded-full">
+
+
+          <div className="flex items-center  justify-center gap-2 w-[40%]">
+            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 16 16"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -233,11 +236,13 @@ export default function GrupoDetailPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-[25px] w-[25px] bg-[#FFE1C5] rounded-full">
+
+
+          <div className="flex items-center  justify-center gap-2 w-[40%]">
+            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 16 16"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -272,11 +277,11 @@ export default function GrupoDetailPage({
           </div>
 
           {/* Columna derecha */}
-          <div className="flex items-center gap-2 pl-8">
-            <div className="flex items-center justify-center h-[25px] w-[25px] bg-[#FFE1C5] rounded-full">
+          <div className="flex items-center  justify-center gap-2 w-[40%]">
+            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 16 16"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -302,7 +307,7 @@ export default function GrupoDetailPage({
               </svg>
             </div>
             <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Nivel
+              Dificultad
               <br />
               <span className="font-semibold text-black">
                 {grupo.nivel || "No especificado"}
@@ -310,11 +315,11 @@ export default function GrupoDetailPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-[25px] w-[25px] bg-[#FFE1C5] rounded-full">
+          <div className="flex items-center  justify-center gap-2 w-[40%]">
+            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
-                width="16"
-                height="16"
+                width="20"
+                height="20"
                 viewBox="0 0 16 16"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -340,32 +345,32 @@ export default function GrupoDetailPage({
               </svg>
             </div>
             <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Tiempo de entrenamiento
+              Tiempo
               <br />
-              <span className="font-semibold text-black">
+              {<span className="font-semibold text-black">
                 {grupo.descripcion || "No especificado"}
-              </span>
+              </span>}
             </p>
           </div>
         </div>
       </div>
-      <div className="pt-3 flex flex-col gap-2 w-[390px] pl-2">
+      <div className="flex flex-col w-[390px]">
         <div className="">
-          <h2 className="text-xl font-bold text-left text-[#333]">
+          <h2 className="text-xl font-bold p-2 text-[#333]">
             Descripción
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 p-2">
             {grupo.descripcion || "Sin descripción"}
           </p>
-          <hr className="border-t border-gray-300 mt-2 w-[400px]" />
+          <hr className="border-t border-gray-300 mb-2 w-[390px]" />
         </div>
-        <div className="pt-3">
-          <h2 className="text-xl font-bold text-left text-[#333]">Profesor</h2>
-          <p className="text-sm text-gray-500">
+        <div className="">
+          <h2 className="text-xl font-bold text-left text-[#333] p-2">Profesor</h2>
+          <p className="text-sm text-gray-500 p-2">
             info del profesor
             {/* {grupo.profesor || "Sin Profesor"} */}
           </p>
-          <hr className="border-t border-gray-300 mt-2 w-[400px]" />
+          <hr className="border-t border-gray-300 w-[390px] mb-2" />
         </div>
       </div>
 
@@ -385,14 +390,14 @@ export default function GrupoDetailPage({
         </div>
       )}
 
-      <div className="w-[390px] mt-2 mb-2 p-2 bg-white shadow rounded-lg pl-4">
-        <h2 className="font-bold text-xl mb-2">Alumnos del grupo</h2>
+      <div className="w-[95%] mt-2 mb-2 p-2 shadow-lg rounded-lg pl-4">
+        <h2 className="font-bold text-mb mb-2">Alumnos del grupo</h2>
         {alumnos.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-2">
+          <ul className="flex flex-col gap-2">
             {alumnos.map((alumno) => (
               <li
                 key={alumno._id}
-                className={`flex items-center p-1 rounded-lg ${
+                className={`flex items-center gap-3 p-1 rounded-lg ${
                   userRole === "alumno"
                     ? "cursor-default"
                     : "cursor-pointer hover:bg-gray-100"
@@ -439,11 +444,18 @@ export default function GrupoDetailPage({
               onChange={handleChange}
               className="mb-4 border p-2 w-[90%] rounded"
             />
+                 <textarea
+              name="Objetivo"
+              value={entrenamientoData.descripcion}
+              onChange={handleChange}
+              placeholder="0bjetivo"
+              className="mb-4 border p-2 w-[90%] rounded"
+            ></textarea>
             <textarea
               name="descripcion"
               value={entrenamientoData.descripcion}
               onChange={handleChange}
-              placeholder="Descripción del entrenamiento"
+              placeholder="Estimulo"
               className="mb-4 border p-2 w-[90%] rounded"
             ></textarea>
             <button
