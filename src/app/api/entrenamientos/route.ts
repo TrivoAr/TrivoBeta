@@ -1,10 +1,18 @@
 // src/app/api/entrenamientos/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/libs/authOptions"; 
+import { authOptions } from "@/libs/authOptions";
 import Entrenamiento from "@/models/entrenamiento";
 import Grupo from "@/models/grupo";
 import Academia from "@/models/academia";
+import Subscription from "@/models/subscription";
+import webPush from "web-push";
+
+webPush.setVapidDetails(
+  process.env.VAPID_EMAIL!,
+  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+);
 
 export async function POST(req: Request) {
   try {
@@ -14,10 +22,8 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-
     const { alumno_id, grupo_id, fecha, descripcion } = body;
 
-    // Verificar que el usuario sea profesor o dueño de academia
     const grupo = await Grupo.findById(grupo_id);
     const academia = await Academia.findById(grupo?.academia_id);
 
@@ -41,6 +47,19 @@ export async function POST(req: Request) {
     });
 
     await entrenamiento.save();
+
+    // Obtener la suscripción del alumno
+    const subscription = await Subscription.findOne({ user_id: alumno_id });
+
+    if (subscription) {
+      // Enviar la notificación
+      const payload = JSON.stringify({
+        title: "Nuevo entrenamiento asignado",
+        message: `Se te ha asignado un entrenamiento para el día ${fecha}.`,
+      });
+
+      await webPush.sendNotification(subscription, payload);
+    }
 
     return NextResponse.json(entrenamiento, { status: 201 });
   } catch (error) {
