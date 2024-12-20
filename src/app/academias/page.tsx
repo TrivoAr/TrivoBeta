@@ -31,10 +31,10 @@ export default function AcademiasPage() {
 
   return (
     <div className="flex flex-col gap-3 items-center">
-      <div className="topBar h-[70px] w-[390px] flex justify-around items-center">
-        <div className="h-[60px]">
+      <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border">
+        <div className="w-[30%] h-[100%] flex justify-center items-center">
           <img
-            className="rounded-[50%] h-[60px]"
+            className="h-[75px] w-[75px] rounded-full"
             src="https://i.pinimg.com/originals/11/f7/ce/11f7ce1d984a1355d7ad6d3b8d722003.jpg"
             alt=""
           />
@@ -68,13 +68,25 @@ export default function AcademiasPage() {
       </div>
 
       <div className="w-[390px] flex justify-center">
+        <div className="bg-[#f4f4f4] border-2 w-[360px] h-[50px] rounded-full flex flex-row justify-center items-center pl-[3.5%]">
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" href="http://www.w3.org/1999/xlink">
+<rect width="25" height="25" fill="url(#pattern0_446_46)"/>
+<defs>
+<pattern id="pattern0_446_46" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use href="#image0_446_46" transform="scale(0.01)"/>
+</pattern>
+<image id="image0_446_46" width="100" height="100" href="data:image/png;base64,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"/>
+</defs>
+</svg>
+
         <form action="" className="w-[360px]">
           <input
+            className="w-[315px] h-[45px] bg-transparent pl-[1%]"
             type="text"
-            className="bg-[#f4f4f4] border-2 w-[360px] h-[50px] rounded-full"
             placeholder="Buscar academia"
           />
         </form>
+        </div>
       </div>
 
       <div className="w-[390px] flex justify-center gap-7">

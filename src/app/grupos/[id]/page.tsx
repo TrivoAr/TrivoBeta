@@ -198,7 +198,7 @@ export default function GrupoDetailPage({
           {/* Columna izquierda */}
 
 
-          <div className="flex items-center  justify-center gap-2 w-[40%]">
+          <div className="flex items-center  justify-left gap-2 w-[40%]">
             <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
                 width="20"
@@ -277,7 +277,7 @@ export default function GrupoDetailPage({
           </div>
 
           {/* Columna derecha */}
-          <div className="flex items-center  justify-center gap-2 w-[40%]">
+          <div className="flex items-center  justify-left gap-2 w-[40%]">
             <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
                 width="20"
@@ -315,7 +315,7 @@ export default function GrupoDetailPage({
             </p>
           </div>
 
-          <div className="flex items-center  justify-center gap-2 w-[40%]">
+          <div className="flex items-right justify-end gap-2 w-[40%] pr-[3.5%]">
             <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
               <svg
                 width="20"
