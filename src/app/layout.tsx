@@ -16,16 +16,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col gap-10 items-center">
-      <Toaster />
+        <Toaster />
         <Providers>
           <div className="">{children}</div>
-           <Navbar /> 
+          <Navbar />
         </Providers>
       </body>
     </html>
   );
 }
-
-
-
-// className="flex flex-col gap-10 items-center p-10"//
