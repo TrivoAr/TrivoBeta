@@ -8,11 +8,16 @@ import Academia from "@/models/academia";
 import Subscription from "@/models/subscription";
 import webPush from "web-push";
 
-webPush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Validación de las variables de entorno
+const vapidEmail = process.env.VAPID_EMAIL;
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (!vapidEmail || !vapidPublicKey || !vapidPrivateKey) {
+  throw new Error("Las claves VAPID no están correctamente configuradas en las variables de entorno.");
+}
+
+webPush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
 
 export async function POST(req: Request) {
   try {
@@ -58,7 +63,12 @@ export async function POST(req: Request) {
         message: `Se te ha asignado un entrenamiento para el día ${fecha}.`,
       });
 
-      await webPush.sendNotification(subscription, payload);
+      try {
+        await webPush.sendNotification(subscription, payload);
+        console.log("Notificación enviada correctamente.");
+      } catch (error) {
+        console.error("Error al enviar la notificación:", error);
+      }
     }
 
     return NextResponse.json(entrenamiento, { status: 201 });

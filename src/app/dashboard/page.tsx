@@ -1,20 +1,81 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import PushManager from "../../components/PushManager";
 import Eventos1 from "../../../public/assets/Tdah.webp";
 import Eventos2 from "../../../public/assets/jujuy.webp";
 
-const DashboardPage = () => {
+interface Academia {
+  _id: string; // Cambié id a _id para coincidir con lo que normalmente se utiliza en MongoDB
+  nombre_academia: string;
+  pais: string;
+  provincia: string;
+  localidad: string;
+}
+
+interface Entrenamiento {
+  id: string;
+  nombre: string;
+  dia: string;
+  hora: string;
+  ubicacion: string;
+}
+
+const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
+  const [academia, setAcademia] = useState<Academia | null>(null);
+  const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session) {
+      const fetchAcademia = async () => {
+        try {
+          const res = await fetch(`/api/academias?owner=true`);
+          const data = await res.json();
+          console.log(data); // Verifica si el campo _id está presente
+          if (data.length > 0) {
+            setAcademia(data[0]); // Supone que el usuario tiene una academia principal
+          }
+        } catch (error) {
+          console.error("Error fetching academia:", error);
+        }
+      };
+
+      const fetchEntrenamientos = async () => {
+        try {
+          const res = await fetch(`/api/entrenamientos?user=${session.user.id}`);
+          const data = await res.json();
+          setEntrenamientos(data);
+        } catch (error) {
+          console.error("Error fetching entrenamientos:", error);
+        }
+      };
+
+      fetchAcademia();
+      fetchEntrenamientos();
+    }
+  }, [session]);
 
   if (status === "loading") return <p>Cargando...</p>;
 
   if (!session) return <p>No estás autenticado. Por favor, inicia sesión.</p>;
 
+  const handleEntrar = () => {
+    if (academia && academia._id) {
+      router.push(`/academias/${academia._id}`);
+    } else {
+      console.error("Academia ID is not available");
+    }
+  };
+
   return (
+    
     <div className="flex justify-center bg-gray-100 min-h-screen">
+      <PushManager/>
       <div className="w-[389px] p-4 shadow-md bg-white overflow-y-auto h-screen">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -49,17 +110,39 @@ const DashboardPage = () => {
             {/* Grupo principal */}
             <div className="coverAcademias bg-white p-4 rounded-lg shadow flex flex-col">
               <div className="mb-4">
-                <p className="text-lg font-semibold text-white">Running Sport</p>
+                {academia ? (
+                  <>
+                    <p className="text-lg font-semibold text-white">{academia.nombre_academia}</p>
+                    {/* <p className="text-sm text-gray-600 text-white">
+                      {academia.localidad}, {academia.provincia}, {academia.pais}
+                    </p> */}
+                  </>
+                ) : (
+                  <p className="text-gray-500">No tienes una academia principal.</p>
+                )}
               </div>
-              <button className="mt-auto block w-full bg-orange-500 text-white py-2 rounded">
+              <button
+                onClick={handleEntrar}
+                className="mt-auto block w-full bg-orange-500 text-white py-2 rounded"
+              >
                 Entrar
               </button>
             </div>
             {/* Entrenamientos */}
             <div className="space-y-4">
               <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-sm font-medium">Entrenamiento SMT</p>
-                <p className="text-xs text-gray-600">Sáb y Mar · 18 hs · Parque</p>
+                {entrenamientos.length > 0 ? (
+                  entrenamientos.map((entrenamiento) => (
+                    <div key={entrenamiento.id} className="bg-white p-4 rounded-lg shadow">
+                      <p className="text-sm font-medium">{entrenamiento.nombre}</p>
+                      <p className="text-xs text-gray-600">
+                        {entrenamiento.dia} · {entrenamiento.hora} · {entrenamiento.ubicacion}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No tienes entrenamientos programados.</p>
+                )}
               </div>
               <div className="bg-white p-4 rounded-lg shadow">
                 <p className="text-sm font-medium">Entrenamiento SMT</p>
@@ -105,7 +188,7 @@ const DashboardPage = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white rounded-lg shadow">
               <Image
-                src=""
+                src={Eventos1}
                 alt="Carrera"
                 className="w-full h-24 object-cover rounded-t-lg"
               />
@@ -115,8 +198,8 @@ const DashboardPage = () => {
               </div>
             </div>
             <div className="bg-white rounded-lg shadow">
-              <img
-                src="/evento2.png"
+              <Image
+                src={Eventos1}
                 alt="Maratón"
                 className="w-full h-24 object-cover rounded-t-lg"
               />
