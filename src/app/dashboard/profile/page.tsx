@@ -1,24 +1,41 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { getProfileImage } from "@/app/api/profile/getProfileImage"; 
+import { saveProfileImage } from "@/app/api/profile/saveProfileImage"; 
 
 function ProfilePage() {
   const { data: session, status } = useSession();
   const [showPersonalData, setShowPersonalData] = useState(false);
-  const [showObjectives, setShowObjectives] = useState(false); // Estado para los objetivos
-  const [isEditing, setIsEditing] = useState(false); // Estado para edición
+  const [showObjectives, setShowObjectives] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
+  const [uploadingImage, setUploadingImage] = useState(false); 
 
-  // Actualizar formData cuando la sesión cambie
   useEffect(() => {
     if (session?.user) {
       setFormData({
         fullname: session.user.fullname || "",
         email: session.user.email || "",
       });
+
+      // Intentar obtener la imagen del perfil
+      const loadProfileImage = async () => {
+        try {
+          const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+          setProfileImage(imageUrl);
+        } catch (error) {
+          console.error("Error al obtener la imagen del perfil:", error);
+          // Puedes agregar una imagen predeterminada en caso de error
+          setProfileImage("https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg");
+        }
+      };
+
+      loadProfileImage();
     }
   }, [session]);
 
@@ -54,7 +71,7 @@ function ProfilePage() {
     if (!confirmation) return;
   
     try {
-      const { fullname, email } = formData; // Excluir 'rol' aquí
+      const { fullname, email } = formData;
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -76,7 +93,6 @@ function ProfilePage() {
         email: updatedUser.email,
       });
   
-      // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
       setIsEditing(false);
   
       alert("Los cambios se han guardado correctamente. Se cerrará la sesión.");
@@ -86,17 +102,31 @@ function ProfilePage() {
       alert("Ocurrió un error al actualizar el perfil. Inténtalo de nuevo.");
     }
   };
-  
-  
-  
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const imageUrl = await saveProfileImage(file, session?.user.id || "");
+      setProfileImage(imageUrl); // Actualiza la imagen mostrada
+      alert("Imagen actualizada con éxito.");
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un problema al subir la imagen.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   return (
     <div className="flex flex-col justify-between items-center gap-10">
       <div className="containerTop bg-[#E5E5E5] w-[351px] h-[90px] rounded-[30px] flex justify-between items-center shadow-xl">
         <div className="w-[30%] h-[100%] flex justify-center items-center">
-          <img
+        <img
             className="h-[75px] w-[75px] rounded-full"
-            src="https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+            src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
             alt="Avatar"
           />
         </div>
@@ -191,6 +221,16 @@ function ProfilePage() {
                       placeholder="Correo"
                     />
                   </div>
+                  {/* Sección de subida de imagen */}
+                  <div className="mt-4 text-[#E5E5E5]">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        disabled={uploadingImage}
+                      />
+                      {uploadingImage && <p>Subiendo imagen...</p>}
+                    </div>
                   <div className="flex gap-4 mt-3">
                     <button
                       className="bg-green-500 text-white px-4 py-2 rounded shadow-lg"
