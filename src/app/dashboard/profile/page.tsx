@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import TopContainer from "@/components/TopContainer";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -92,35 +93,7 @@ function ProfilePage() {
 
   return (
     <div className="flex flex-col justify-between items-center gap-10">
-      <div className="containerTop bg-[#E5E5E5] w-[351px] h-[90px] rounded-[30px] flex justify-between items-center shadow-xl">
-        <div className="w-[30%] h-[100%] flex justify-center items-center">
-          <img
-            className="h-[75px] w-[75px] rounded-full"
-            src="https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
-            alt="Avatar"
-          />
-        </div>
-
-        <div className="w-[50%]">
-          <p className="text-xs text-[#A0AEC0]">{saludo}</p>
-          <p className="font-bold text-xl">{session?.user.fullname}</p>
-        </div>
-
-        <div className="w-[20%] flex justify-center items-center">
-          <div className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="30px"
-              viewBox="0 0 24 24"
-              width="30px"
-              fill="#999999"
-            >
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
+         <TopContainer/>
       <div className="containerBtnPerfil flex flex-col gap-5">
         {/* Botón para mostrar datos personales */}
         <div
