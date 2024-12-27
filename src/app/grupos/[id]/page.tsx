@@ -7,6 +7,7 @@ import ModalEntrenamiento from "@/components/Modals/ModalEntrenamiento";
 import axios from "axios";
 import { getGroupImage } from "@/app/api/grupos/getGroupImage";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 // Tipos
 
@@ -41,7 +42,7 @@ export default function GrupoDetailPage({
   params: { id: string };
 }) {
   const [grupo, setGrupo] = useState<Grupo | null>(null);
-  const [alumnos, setAlumnos] = useState<Alumno[]>([]);
+  const [alumnos, setAlumnos] = useState<(Alumno & { profileImage?: string })[]>([]);
   const [entrenamientoData, setEntrenamientoData] = useState<Entrenamiento>({
     alumno_id: "",
     grupo_id: params.id,
@@ -64,19 +65,39 @@ export default function GrupoDetailPage({
   useEffect(() => {
     const fetchGrupo = async () => {
       try {
+        // Obtener datos del grupo
         const response = await axios.get(`/api/grupos/${params.id}`);
-        setGrupo(response.data.grupo);
-        setAlumnos(response.data.alumnos.map((item: any) => item.user_id));
+        const alumnosData = response.data.alumnos.map((item: any) => item.user_id);
 
         // Intentar obtener la imagen del grupo
         try {
-          const imageUrl = await getGroupImage("group-image.jpg", params.id);
+          const imageUrl = await getGroupImage("foto_perfil_grupo.jpg", params.id);
           setGroupImage(imageUrl);
         } catch {
           console.log(
             "No se encontró una imagen para este grupo, usando predeterminada."
           );
         }
+
+        // Obtener imágenes de perfil de cada alumno
+        const alumnosWithImages = await Promise.all(
+          alumnosData.map(async (alumno: Alumno) => {
+            try {
+              const imageUrl = await getProfileImage("profile-image.jpg", alumno._id);
+              return { ...alumno, profileImage: imageUrl };
+            } catch (error) {
+              console.error(`Error al obtener imagen del alumno ${alumno._id}:`, error);
+              return {
+                ...alumno,
+                profileImage:
+                  "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+              };
+            }
+          })
+        );
+
+        setGrupo(response.data.grupo);
+        setAlumnos(alumnosWithImages);
       } catch (error) {
         console.error("Error al cargar los detalles del grupo:", error);
         setError("Hubo un problema al cargar los detalles del grupo.");
@@ -406,7 +427,7 @@ export default function GrupoDetailPage({
                 onClick={() => handleAlumnoClick(alumno)}
               >
                 <img
-                  // src={alumno.imagen || "default-avatar.png"}
+                  src={alumno.profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
                   alt={`${alumno.firstname} ${alumno.lastname}`}
                   className="w-10 h-10 rounded-full object-cover"
                 />
