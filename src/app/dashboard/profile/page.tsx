@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import TopContainer from "@/components/TopContainer";
 
+
 function ProfilePage() {
   const { data: session, status } = useSession();
   const [showPersonalData, setShowPersonalData] = useState(false);

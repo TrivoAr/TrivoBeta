@@ -23,6 +23,7 @@ interface Entrenamiento {
   dia: string;
   hora: string;
   ubicacion: string;
+  descripcion: string;
 }
 
 const DashboardPage: React.FC = () => {
@@ -49,12 +50,16 @@ const DashboardPage: React.FC = () => {
       const fetchEntrenamientos = async () => {
         try {
           const res = await fetch(`/api/entrenamientos?user=${session.user.id}`);
+          if (!res.ok) {
+            throw new Error(`Error al obtener entrenamientos: ${res.statusText}`);
+          }
           const data = await res.json();
           setEntrenamientos(data);
         } catch (error) {
           console.error("Error fetching entrenamientos:", error);
         }
       };
+
 
       fetchAcademia();
       fetchEntrenamientos();
@@ -111,7 +116,7 @@ const DashboardPage: React.FC = () => {
                 {entrenamientos.length > 0 ? (
                   entrenamientos.map((entrenamiento) => (
                     <div key={entrenamiento.id} className="bg-white p-4 rounded-lg shadow">
-                      <p className="text-sm font-medium">{entrenamiento.nombre}</p>
+                      <p className="text-sm font-medium">{entrenamiento.descripcion}</p>
                       <p className="text-xs text-gray-600">
                         {entrenamiento.dia} · {entrenamiento.hora} · {entrenamiento.ubicacion}
                       </p>
@@ -120,10 +125,6 @@ const DashboardPage: React.FC = () => {
                 ) : (
                   <p className="text-gray-500">No tienes entrenamientos programados.</p>
                 )}
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-sm font-medium">Entrenamiento SMT</p>
-                <p className="text-xs text-gray-600">Sáb y Mar · 18 hs · Parque</p>
               </div>
             </div>
           </div>

@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { getAcademyImage } from "@/app/api/academias/getAcademyImage"; 
+
+
 
 type Grupo = {
   _id: string;
@@ -32,6 +35,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
   const [hasActiveRequest, setHasActiveRequest] = useState(false); // Estado para solicitudes activas
   const router = useRouter();
   const { data: session } = useSession();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +43,19 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         const response = await axios.get(`/api/academias/${params.id}`);
         setAcademia(response.data.academia);
         setGrupos(response.data.grupos);
+        // Intentar obtener la imagen del perfil
+      const loadProfileImage = async () => {
+        try {
+          const imageUrl = await getAcademyImage("profile-image.jpg", params.id );
+          setProfileImage(imageUrl);
+        } catch (error) {
+          console.error("Error al obtener la imagen del perfil:", error);
+          // Puedes agregar una imagen predeterminada en caso de error
+          setProfileImage("https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg");
+        }
+      };
+
+      loadProfileImage();
       } catch (error) {
         console.error("Error al obtener los datos:", error);
         setError("Hubo un problema al cargar los datos de la academia.");
@@ -146,7 +163,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
       <div className="flex justify-center gap-5">
         <div className="logo h-[120px] w-[120px] bg-slate-400 rounded-[50%] relative bottom-[60px] border border-[#333]">
           <img
-            src="https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
+            src={profileImage || "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"}
             className="rounded-full"
             alt="Logo"
           />

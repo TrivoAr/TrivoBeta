@@ -4,7 +4,7 @@ import { storage } from "@/libs/firebaseConfig";
 
 export const getGroupImage = async (fileName: string, groupId: string): Promise<string> => {
     try {
-      const fileRef = ref(storage, `grupos/${groupId}/${fileName}`);
+      const fileRef = ref(storage, `groups/${groupId}/${fileName}`);
       const downloadUrl = await getDownloadURL(fileRef);
       return downloadUrl;
     } catch (error) {

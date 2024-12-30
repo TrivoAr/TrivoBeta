@@ -3,6 +3,7 @@ import { useEffect, useState, FormEvent } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import { saveAcademyImage } from "@/app/api/academias/saveAcademyImage"; 
 
 export default function EditarAcademia({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
     tipo_disciplina: "",
     telefono: "",
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
+  const [uploadingImage, setUploadingImage] = useState(false); 
   const [loading, setLoading] = useState(true); // Para la carga inicial
 
   // Función para obtener los datos iniciales
@@ -86,6 +89,30 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    const academyId = params.id;  // Asignamos el ID de la academia
+  
+    if (!academyId) {
+      alert("ID de academia no disponible.");
+      return;
+    }
+  
+    try {
+      setUploadingImage(true);
+      const imageUrl = await saveAcademyImage(file, academyId);
+      setProfileImage(imageUrl); // Actualiza la imagen mostrada
+      alert("Imagen actualizada con éxito.");
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un problema al subir la imagen.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+  
   return (
     <div className="w-[390px] flex flex-col items-center gap-5">
       <Toaster position="top-center" /> {/* Para mostrar los toasts */}
@@ -184,7 +211,16 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
             />
             <label className="form-label">Teléfono</label>
           </div>
-
+           {/* Sección de subida de imagen */}
+           <div className="mt-4 text-[#E5E5E5]">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        disabled={uploadingImage}
+                      />
+                      {uploadingImage && <p>Subiendo imagen...</p>}
+                    </div>
           <button className="bg-[#FF9A3D] text-[#333] font-bold px-4 py-2 block w-full mt-4 rounded-[10px]">
             Guardar Cambios
           </button>
