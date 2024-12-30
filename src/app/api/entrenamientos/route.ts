@@ -77,3 +77,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Hubo un problema al asignar el entrenamiento" }, { status: 500 });
   }
 }
+export async function GET(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const userId = url.searchParams.get("user"); // Obtener el ID del usuario desde los parámetros de consulta
+
+    if (!userId) {
+      return NextResponse.json({ error: "Se requiere el ID del usuario" }, { status: 400 });
+    }
+
+    // Buscar los entrenamientos asociados al usuario
+    const entrenamientos = await Entrenamiento.find({ alumno_id: userId });
+
+    if (!entrenamientos || entrenamientos.length === 0) {
+      return NextResponse.json({ message: "No se encontraron entrenamientos para este usuario" }, { status: 404 });
+    }
+
+    return NextResponse.json(entrenamientos, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener entrenamientos:", error);
+    return NextResponse.json({ error: "Hubo un problema al obtener los entrenamientos" }, { status: 500 });
+  }
+}
