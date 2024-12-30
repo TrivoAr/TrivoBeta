@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PushManager from "../../components/PushManager";
 import Eventos1 from "../../../public/assets/Tdah.webp";
 import Eventos2 from "../../../public/assets/jujuy.webp";
+import TopContainer from "@/components/TopContainer";
 
 interface Academia {
   _id: string; // Cambié id a _id para coincidir con lo que normalmente se utiliza en MongoDB
@@ -82,31 +83,7 @@ const DashboardPage: React.FC = () => {
     <div className="flex justify-center bg-gray-100 min-h-screen">
       <PushManager/>
       <div className="w-[389px] p-4 shadow-md bg-white overflow-y-auto h-screen">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <img
-              className="h-[75px] w-[75px] rounded-full"
-              src="https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
-              alt="Avatar"
-            />
-            <div>
-              <h1 className="text-lg font-semibold">{session.user.fullname}</h1>
-              <p className="text-sm text-gray-600">San Miguel de Tucumán</p>
-            </div>
-          </div>
-          <button className="p-2 bg-gray-200 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="30px"
-              viewBox="0 0 24 24"
-              width="30px"
-              fill="#999999"
-            >
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-            </svg>
-          </button>
-        </div>
+       <TopContainer/>
 
         {/* Mis grupos */}
         <div className="mb-6">
