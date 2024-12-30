@@ -93,6 +93,7 @@ function ProfilePage() {
 
   return (
     <div className="flex flex-col justify-between items-center gap-10">
+         <TopContainer/>
       <div className="containerBtnPerfil flex flex-col gap-5">
         {/* Botón para mostrar datos personales */}
         <div
