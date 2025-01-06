@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     await entrenamiento.save();
 
     // Obtener la suscripción del alumno
-    const subscription = await Subscription.findOne({ user_id: alumno_id });
+    /*const subscription = /*await Subscription.findOne({ user_id: alumno_id });
 
     if (subscription) {
       // Enviar la notificación
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error("Error al enviar la notificación:", error);
       }
-    }
+    }*/
 
     return NextResponse.json(entrenamiento, { status: 201 });
   } catch (error) {

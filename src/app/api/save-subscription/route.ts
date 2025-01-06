@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     };
 
     // Guardar la suscripción en la base de datos
-    await Subscription.create(newSubscription);
+    /*await Subscription.create(newSubscription);*/
 
     // Enviar una notificación push a través de Web Push
     const payload = JSON.stringify({
