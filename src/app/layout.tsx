@@ -17,7 +17,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col gap-10 items-center">
-      <script src="https://sdk.mercadopago.com/js/v2"></script>
         <Toaster />
         <Providers>
           <div className="">{children}</div>
