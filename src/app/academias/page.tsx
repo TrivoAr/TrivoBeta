@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
 import "./style.css";
@@ -14,28 +16,73 @@ type Academia = {
 };
 
 export default function AcademiasPage() {
-  const [academias, setAcademias] = useState<Academia[]>([]);
+  const { data: session, status } = useSession();
+  const [academiasRunning, setAcademiasRunning] = useState<Academia[]>([]);
+  const [academiasTrekking, setAcademiasTrekking] = useState<Academia[]>([]);
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+  });
+
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
         const response = await axios.get("/api/academias");
-        setAcademias(response.data);
+
+        // Filtrar academias por tipo_disciplina
+        const runningAcademias = response.data.filter(
+          (academia: Academia) => academia.tipo_disciplina === "running"
+        );
+        const trekkingAcademias = response.data.filter(
+          (academia: Academia) => academia.tipo_disciplina === "trekking"
+        );
+
+        setAcademiasRunning(runningAcademias);
+        setAcademiasTrekking(trekkingAcademias);
       } catch (error) {
         console.error("Error fetching academias:", error);
       }
     };
 
-    fetchAcademias();
-  }, []);
+    const loadProfileImage = async () => {
+      try {
+        if (session?.user?.id) {
+          const imageUrl = await getProfileImage(
+            "profile-image.jpg",
+            session.user.id
+          );
+          setProfileImage(imageUrl);
+        }
+      } catch (error) {
+        console.error("Error al obtener la imagen del perfil:", error);
+        // Imagen predeterminada en caso de error
+        setProfileImage(
+          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+        );
+      }
+    };
+
+    // Si hay una sesión activa
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+      });
+
+      loadProfileImage();
+      fetchAcademias();
+    }
+  }, [session]);
 
   return (
     <div className="flex flex-col gap-3 items-center">
-      <div className="topBar h-[70px] w-[390px] flex justify-around items-center">
-        <div className="h-[60px]">
+      <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
+        <div className="w-[30%] h-[100%] flex justify-center items-center">
           <img
-            className="rounded-[50%] h-[60px]"
-            src="https://i.pinimg.com/originals/11/f7/ce/11f7ce1d984a1355d7ad6d3b8d722003.jpg"
+            className="h-[75px] w-[75px] rounded-full"
+            src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
             alt=""
           />
         </div>
@@ -54,7 +101,7 @@ export default function AcademiasPage() {
             San Miguel de Tucumán
           </p>
         </div>
-        <div className="border rounded-[50%] shadow h-[35px] w-[35px] flex  items-center justify-center">
+        <div className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="25px"
@@ -68,13 +115,25 @@ export default function AcademiasPage() {
       </div>
 
       <div className="w-[390px] flex justify-center">
+        <div className="bg-[#f4f4f4] border-2 w-[360px] h-[50px] rounded-full flex flex-row justify-center items-center pl-[3.5%]">
+        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" href="http://www.w3.org/1999/xlink">
+<rect width="25" height="25" fill="url(#pattern0_446_46)"/>
+<defs>
+<pattern id="pattern0_446_46" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use href="#image0_446_46" transform="scale(0.01)"/>
+</pattern>
+<image id="image0_446_46" width="100" height="100" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGSElEQVR4nO2dSYicRRTHn4JGQYyKF1di3E2MiDpRcCHqUW8aFZJznBjcUDwOJAo5ZA6Nme97//oG2gUPjkETzSHRgAsSjFk0INkkJmZCLsGsmOWQaXl0RSbR6arur9Pfq5r6QUHTNDPv9f97tb56TZRIJBKJRCKRiBhjzB0A5gN4D8BnzLwVwG4Ah5j5tDR5bd/7VT5jPzs/z/Pbq7Y/eOr1+mXGmLnM/BGA/QAaZRozjwL4EMDz8rer9i8YADwEoABwpKwImFicw8xsmPnBqv1VC4BHmfmrCyUCJm4/MvOzVfuvhizL7gSwrgIhGue1tTJO0WRF+nEZdO1g3FDSTgFYMunGGHkSmfkXBQI0/q8x82/GmBk0Gcjz/CUAx6v+0uEW5Rgzv0Axw8zvMPNYiS9pG4CMmV8GMCfLsulZll0N4BJp9vWtxpgn7WdyANtL/L8xZn6bYqPRaFwEYLDDL2UTgNcAXNfp/x8eHr6emV8HsLlDcZaJDxQL7Ypho+gLWZN025Y8z/sArOwgUpdRLN1Um46vz7Ls/gttV1EUDwD4qU3b3qLQB/A2nsS/ASzoZdcwMDBwMYB+ACd8I1e2cyjgBd9x32lmnuf3VGjrTDth8HlwjhZFcRsFuOjb4ungtwCmVm3z8uXLrwDwtecDtHVwcPByCgW77e0jxsparTaFFD1IzLzK0/bFFAJy9mC3IJyRoXGLYmRk5FKfSJEtH+mWSTvM/I3PmFGr1a4kpQCY6jOmMPMa0oysnj2cOFkUxSxSjjFmhp35tfTHGPMYacVzUFxAgQBgoYc/a0nxSZ/L+PUy96dAGGiuUzZ4RL2+k0c5EnUYPdaLFXi3kS/bY3EL0oSdLh52CPI5BQq7j5aPqFqXyHaCR3fV9Y3CXgFgtsu/PM+fIy0A+Nhh8EYKHHafcH5AWrA5T62MfZUCh5nfdPi4jxRlFLYczOWAiALHGHOjR7dVfYakTe9sJcg2igRm3unwdV4IG4kZRQIzs8PXJRqMXBHLyrzsyp2ZP6UAZh9zKBKY+SmHr1s0GLnXMdBNo0jIsmy6I0L+0CDIX62MLIriGooEANc6IuSgBkFa5ubKgQ9FQq1Wm+IQ5FTVNiZBcE6XdbpqPVKXhXMi5JCGfnVPGtRxNkJG1U97JfGZIgHA0+o3UV0LQ8lCp0hg5lccgoxoMPJdh5E5RQKatPJ1qfrNRbmfQZEAYJeje56rJTGu4Vit30CBMzQ0dJOHn9OCOKCSyzIU/wHVftKCrbbQytjNFDholuto9dAxaUHKVXiEcx8FijHmYZd/xphnKKQ0IMl0p0ABsNrh20FNWfzeiXJyjYwCI8/zPo9EuUHSmOHnCmu50xdgKulGh09nANxFGpHEYw9R+ikQACxy+SM7FaQVAE94OHAyz/P7SDlZls10XQYNohv2iRJ7Gabye4UTUa/XrwKwwyPaPyHtyA1ViQIPUb7TeKWt3pwx/uBh/7FgdiAkP8nj6RKnVmkSpd68Pfylj+1S7oMCO3v2qisikaKh+6o3u6nvPcVYF9Js8d9NRwlrT1FkTLm3KluLopjlOWaEfbXCVhX1La0hM5qFvXzyBprrjEW+pTXGte1lqhNVitSbatPZDb24s5c3qwK5Fn1xiiKljdpx1kaVDK6zu20LMz8ie1NlCqmNazuCFMUWMGtLlHHiSBLFG3I/g0ocLtnzjJZb6J2KEuz9F6k3VbLE3057rt0vic+y5pFUVcmOlCav5T2bHSKZ6nAdu056UewF0aM9+JIavWzysAQbKXL23EE1t0YAbVcwq/cJFo+LPSsH9aqdAHCgbKQEK8q4BeSaqsVg5hUSuTZ690zaSDkLMz/ea2G4OcFYff7KO4ny35NHeJzRN0r+XMX7RVHcPdED0g1RmPn3MtN1VcjOq5SrsD/Csq8LIowyc11+msI3ISGJ4h5r5tlc4hG7m7xbrtTZW1xn7E8eHWDmn20h5qUAXixzoT+JohAAN9vftioToXvVpJrGAJIo8YpijLmlal+iAUkUfSCJog8kUfTRDVEA/JnGlC6SRIlYFCluU7Uv0YAkij66tEu8R5L2qvYlGlAyUph5oGofogMdipLEUCRKEkORKEkMRaIkMRSJksRQJEoSQ5EoSQxFpEVfIpFIJBKJBCnkH1fHq2fGsBjtAAAAAElFTkSuQmCC"/>
+</defs>
+</svg>
+
         <form action="" className="w-[360px]">
           <input
+            className="w-[315px] h-[45px] bg-transparent pl-[1%]"
             type="text"
-            className="bg-[#f4f4f4] border-2 w-[360px] h-[50px] rounded-full"
             placeholder="Buscar academia"
           />
         </form>
+        </div>
       </div>
 
       <div className="w-[390px] flex justify-center gap-7">
@@ -126,55 +185,105 @@ export default function AcademiasPage() {
           <p className="text-[11px] text-slate-500">Trekking</p>
         </div>
       </div>
-      <h1 className="text-lg font-bold mb-2">Academias Recomendadas</h1>
+      <h1 className="text-lg font-bold mb-2">Academias de Running Recomendadas</h1>
       <div className="w-[390px]">
-        
-        <div className="scroll-container">
-          {academias.map((academia) => (
-            <div key={academia._id} className="academia-card">
-              <Link href={`/academias/${academia._id}`}>
-                <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
-                  <div
-                    className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url(${academia || "/default.jpg"})`,
-                    }}
-                  ></div>
-                  <h1 className="text-l font-bold text-center p-2">
-                    {academia.nombre_academia}
-                  </h1>
-                  <div className="p-3">
-                    <p className="text-sm flex items-center gap-2">
-                      {/* Reemplaza el ícono si es necesario */}
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 10h11M9 21h11M17 3h11"
-                        />
-                      </svg>
-                      {academia.telefono}
-                    </p>
-                    <p className="text-sm flex items-center gap-2">
-                      <span className="font-bold">Disciplina:</span>{" "}
-                      {academia.tipo_disciplina}
-                    </p>
-                    <p className="text-sm flex items-center gap-2">
-                      <span className="font-bold">Descripción:</span>{" "}
-                      {academia.descripcion}
-                    </p>
-                  </div>
+      {/* Contenedor de academias */}
+      <div className="scroll-container">
+        {academiasRunning.map((academia) => (
+          <div key={academia._id} className="academia-card">
+            <Link href={`/academias/${academia._id}`}>
+              <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
+                <div
+                  className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${academia || "/default.jpg"})`,
+                  }}
+                ></div>
+                <h1 className="text-l font-bold text-center p-2">
+                  {academia.nombre_academia}
+                </h1>
+                <div className="p-3">
+                  <p className="text-sm flex items-center gap-2">
+                    {/* Reemplaza el ícono si es necesario */}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 10h11M9 21h11M17 3h11"
+                      />
+                    </svg>
+                    {academia.telefono}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Disciplina:</span>{" "}
+                    {academia.tipo_disciplina}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Descripción:</span>{" "}
+                    {academia.descripcion}
+                  </p>
                 </div>
-              </Link>
-            </div>
-          ))}
-        </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+      </div>
+      <h1 className="text-lg font-bold mb-2">Academias de Trekking Recomendadas</h1>
+      <div className="w-[390px]">
+      {/* Contenedor de academias */}
+      <div className="scroll-container">
+        {academiasTrekking.map((academia) => (
+          <div key={academia._id} className="academia-card">
+            <Link href={`/academias/${academia._id}`}>
+              <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
+                <div
+                  className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${academia || "/default.jpg"})`,
+                  }}
+                ></div>
+                <h1 className="text-l font-bold text-center p-2">
+                  {academia.nombre_academia}
+                </h1>
+                <div className="p-3">
+                  <p className="text-sm flex items-center gap-2">
+                    {/* Reemplaza el ícono si es necesario */}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 10h11M9 21h11M17 3h11"
+                      />
+                    </svg>
+                    {academia.telefono}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Disciplina:</span>{" "}
+                    {academia.tipo_disciplina}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Descripción:</span>{" "}
+                    {academia.descripcion}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
       </div>
     </div>
   );

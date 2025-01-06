@@ -1,6 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
+import TopContainer from "@/components/TopContainer";
+import { useRouter } from "next/navigation";
+import { saveProfileImage } from "@/app/api/profile/saveProfileImage";
+
+
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -11,7 +16,10 @@ function ProfilePage() {
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
+  const [uploadingImage, setUploadingImage] = useState(false); 
 
+  const router = useRouter();
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
     if (session?.user) {
@@ -86,41 +94,28 @@ function ProfilePage() {
       alert("Ocurrió un error al actualizar el perfil. Inténtalo de nuevo.");
     }
   };
-  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const imageUrl = await saveProfileImage(file, session?.user.id || "");
+      setProfileImage(imageUrl); // Actualiza la imagen mostrada
+      alert("Imagen actualizada con éxito.");
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un problema al subir la imagen.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
   
   
 
   return (
     <div className="flex flex-col justify-between items-center gap-10">
-      <div className="containerTop bg-[#E5E5E5] w-[351px] h-[90px] rounded-[30px] flex justify-between items-center shadow-xl">
-        <div className="w-[30%] h-[100%] flex justify-center items-center">
-          <img
-            className="h-[75px] w-[75px] rounded-full"
-            src="https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
-            alt="Avatar"
-          />
-        </div>
-
-        <div className="w-[50%]">
-          <p className="text-xs text-[#A0AEC0]">{saludo}</p>
-          <p className="font-bold text-xl">{session?.user.fullname}</p>
-        </div>
-
-        <div className="w-[20%] flex justify-center items-center">
-          <div className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="30px"
-              viewBox="0 0 24 24"
-              width="30px"
-              fill="#999999"
-            >
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
+         <TopContainer/>
       <div className="containerBtnPerfil flex flex-col gap-5">
         {/* Botón para mostrar datos personales */}
         <div
@@ -191,6 +186,16 @@ function ProfilePage() {
                       placeholder="Correo"
                     />
                   </div>
+                   {/* Sección de subida de imagen */}
+                   <div className="mt-4 text-[#E5E5E5]">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        disabled={uploadingImage}
+                      />
+                      {uploadingImage && <p>Subiendo imagen...</p>}
+                    </div>
                   <div className="flex gap-4 mt-3">
                     <button
                       className="bg-green-500 text-white px-4 py-2 rounded shadow-lg"
@@ -211,7 +216,7 @@ function ProfilePage() {
           )}
         </div>
 
-        <button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold">
+        <button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold" onClick={() => router.push(`/mercadopago`)}>
           Métodos de pago
           <svg
             xmlns="http://www.w3.org/2000/svg"

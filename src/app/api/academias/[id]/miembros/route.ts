@@ -1,4 +1,3 @@
-// src/app/api/academias/[id]/miembros/route.ts
 import UsuarioAcademia from "@/models/users_academia";
 import UsuarioGrupo from "@/models/users_grupo";
 import Grupo from "@/models/grupo";
@@ -25,8 +24,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const userIds = miembrosAcademia.map((miembro) => miembro.user_id._id);
 
     // Buscar los grupos relacionados con estos usuarios, pero que pertenecen a esta academia
-    const grupos = await UsuarioGrupo.find({ 
-      user_id: { $in: userIds } 
+    const grupos = await UsuarioGrupo.find({
+      user_id: { $in: userIds },
     })
       .populate({
         path: "grupo_id",
@@ -36,8 +35,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     // Combinar datos de los miembros con los grupos
     const miembrosConGrupos = miembrosAcademia.map((miembro) => {
-      const grupo = grupos.find((g) => 
-        String(g.user_id) === String(miembro.user_id._id) && g.grupo_id
+      const grupo = grupos.find(
+        (g) => String(g.user_id) === String(miembro.user_id._id) && g.grupo_id
       );
 
       return {

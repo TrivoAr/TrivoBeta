@@ -7,7 +7,7 @@ const ModalEntrenamiento = ({children, estado, cambiarEstado}) =>{
        
        
             <div className="overlay w-screen h-screen fixed top-0 left-0 flex justify-center items-center">
-                <div className="contenedorModal w-[370px] h-[400px] bg-[#f4f4f4] rounded-[20px] relative">
+                <div className="contenedorModal w-[370px] h-[470px] bg-[#f4f4f4] rounded-[20px] relative">
                   <div className="encabezadoModal flex items-center justify-between border-b h-[60px] p-5">
                     <h1 className="font-semibold">Asignar entrenamiento</h1>
                     </div>  
