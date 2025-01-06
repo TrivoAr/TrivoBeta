@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import TopContainer from "@/components/TopContainer";
+import { useRouter } from "next/navigation";
+import { saveProfileImage } from "@/app/api/profile/saveProfileImage";
+
 
 
 function ProfilePage() {
@@ -13,7 +16,10 @@ function ProfilePage() {
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
+  const [uploadingImage, setUploadingImage] = useState(false); 
 
+  const router = useRouter();
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
     if (session?.user) {
@@ -88,7 +94,22 @@ function ProfilePage() {
       alert("Ocurrió un error al actualizar el perfil. Inténtalo de nuevo.");
     }
   };
-  
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const imageUrl = await saveProfileImage(file, session?.user.id || "");
+      setProfileImage(imageUrl); // Actualiza la imagen mostrada
+      alert("Imagen actualizada con éxito.");
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      alert("Hubo un problema al subir la imagen.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
   
   
 
@@ -165,6 +186,16 @@ function ProfilePage() {
                       placeholder="Correo"
                     />
                   </div>
+                   {/* Sección de subida de imagen */}
+                   <div className="mt-4 text-[#E5E5E5]">
+                      <input
+                        type="file"
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        disabled={uploadingImage}
+                      />
+                      {uploadingImage && <p>Subiendo imagen...</p>}
+                    </div>
                   <div className="flex gap-4 mt-3">
                     <button
                       className="bg-green-500 text-white px-4 py-2 rounded shadow-lg"
@@ -185,7 +216,7 @@ function ProfilePage() {
           )}
         </div>
 
-        <button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold">
+        <button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold" onClick={() => router.push(`/mercadopago`)}>
           Métodos de pago
           <svg
             xmlns="http://www.w3.org/2000/svg"

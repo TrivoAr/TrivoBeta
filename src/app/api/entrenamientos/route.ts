@@ -1,4 +1,3 @@
-// src/app/api/entrenamientos/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
@@ -77,20 +76,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Hubo un problema al asignar el entrenamiento" }, { status: 500 });
   }
 }
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const userId = url.searchParams.get("user"); // Obtener el ID del usuario desde los parámetros de consulta
+    const userId = url.searchParams.get("user");
+    const weekStart = url.searchParams.get("weekStart");
 
     if (!userId) {
       return NextResponse.json({ error: "Se requiere el ID del usuario" }, { status: 400 });
     }
 
-    // Buscar los entrenamientos asociados al usuario
-    const entrenamientos = await Entrenamiento.find({ alumno_id: userId });
+    if (!weekStart) {
+      return NextResponse.json({ error: "Se requiere el inicio de la semana" }, { status: 400 });
+    }
+
+    const startDate = new Date(weekStart);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6); // Fin de la semana
+
+    // Filtrar entrenamientos por usuario y por rango de fechas de la semana
+    const entrenamientos = await Entrenamiento.find({
+      alumno_id: userId,
+      fecha: { $gte: startDate, $lte: endDate },
+    });
 
     if (!entrenamientos || entrenamientos.length === 0) {
-      return NextResponse.json({ message: "No se encontraron entrenamientos para este usuario" }, { status: 404 });
+      return NextResponse.json({ message: "No se encontraron entrenamientos para esta semana" }, { status: 404 });
     }
 
     return NextResponse.json(entrenamientos, { status: 200 });

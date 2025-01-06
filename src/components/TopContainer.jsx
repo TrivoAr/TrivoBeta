@@ -2,10 +2,41 @@
 
 import React from "react";
 import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { getProfileImage } from "@/app/api/profile/getProfileImage"; 
+
 
 const TopContainer = () => {
   const { data: session, status } = useSession();
   const horaActual = new Date().getHours();
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+  });
+  const [profileImage, setProfileImage] = useState(null); 
+
+  useEffect(() => {
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+      });
+
+      // Intentar obtener la imagen del perfil
+      const loadProfileImage = async () => {
+        try {
+          const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+          setProfileImage(imageUrl);
+        } catch (error) {
+          console.error("Error al obtener la imagen del perfil:", error);
+          // Puedes agregar una imagen predeterminada en caso de error
+          setProfileImage("https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg");
+        }
+      };
+
+      loadProfileImage();
+    }
+  }, [session]);
 
   let saludo;
   if (horaActual >= 6 && horaActual < 12) {
@@ -25,7 +56,7 @@ const TopContainer = () => {
       <div className="w-[30%] h-[100%] flex justify-center items-center">
         <img
           className="h-[75px] w-[75px] rounded-full"
-          src="https://i.pinimg.com/originals/11/f7/ce/11f7ce1d984a1355d7ad6d3b8d722003.jpg"
+          src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
           alt="User Profile"
         />
       </div>

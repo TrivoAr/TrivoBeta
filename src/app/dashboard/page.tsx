@@ -49,14 +49,25 @@ const DashboardPage: React.FC = () => {
 
       const fetchEntrenamientos = async () => {
         try {
-          const res = await fetch(`/api/entrenamientos?user=${session.user.id}`);
-          if (!res.ok) {
-            throw new Error(`Error al obtener entrenamientos: ${res.statusText}`);
+          if (session) {
+            // Obtener la fecha de inicio de la semana (domingo)
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay()); // Restar días para llegar al domingo
+            const weekStartISO = weekStart.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+      
+            const res = await fetch(`/api/entrenamientos?user=${session.user.id}&weekStart=${weekStartISO}`);
+            
+            if (!res.ok) {
+              throw new Error(`Error al obtener entrenamientos: ${res.statusText}`);
+            }
+      
+            const data = await res.json();
+            setEntrenamientos(data);
           }
-          const data = await res.json();
-          setEntrenamientos(data);
         } catch (error) {
           console.error("Error fetching entrenamientos:", error);
+          setEntrenamientos([]); // Asegúrate de limpiar en caso de error
         }
       };
 
@@ -82,11 +93,11 @@ const DashboardPage: React.FC = () => {
     
     <div className="flex justify-center bg-gray-100 min-h-screen">
       <PushManager/>
-      <div className="w-[389px] p-4 shadow-md bg-white overflow-y-auto h-screen">
+      <div className="w-[389px] shadow-md bg-white overflow-y-auto h-screen">
        <TopContainer/>
 
         {/* Mis grupos */}
-        <div className="mb-6">
+        <div className="mb-6 p-4">
           <h2 className="text-xl font-semibold mb-3">Mis grupos</h2>
           <div className="grid grid-cols-2 gap-4">
             {/* Grupo principal */}
@@ -111,7 +122,7 @@ const DashboardPage: React.FC = () => {
               </button>
             </div>
             {/* Entrenamientos */}
-            <div className="space-y-4">
+            <div className="space-y-4"  onClick={() => router.push(`/entrenamiento`)}>
               <div className="bg-white p-4 rounded-lg shadow">
                 {entrenamientos.length > 0 ? (
                   entrenamientos.map((entrenamiento) => (
@@ -131,7 +142,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Eventos */}
-        <div>
+        <div className="pl-4 pr-4">
           <h2 className="text-xl font-semibold mb-3">Eventos</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white rounded-lg shadow">
@@ -160,7 +171,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Aventuras */}
-        <div>
+        <div className="pl-4 pr-4">
           <br />
           <h2 className="text-xl font-semibold mb-3">Aventuras</h2>
           <div className="grid grid-cols-2 gap-4">

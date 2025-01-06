@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
 import "./style.css";
@@ -14,15 +16,22 @@ type Academia = {
 };
 
 export default function AcademiasPage() {
+  const { data: session, status } = useSession();
   const [academiasRunning, setAcademiasRunning] = useState<Academia[]>([]);
   const [academiasTrekking, setAcademiasTrekking] = useState<Academia[]>([]);
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+  });
+
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
         const response = await axios.get("/api/academias");
 
-        // Filtrar las academias por tipo_disciplina
+        // Filtrar academias por tipo_disciplina
         const runningAcademias = response.data.filter(
           (academia: Academia) => academia.tipo_disciplina === "running"
         );
@@ -30,7 +39,6 @@ export default function AcademiasPage() {
           (academia: Academia) => academia.tipo_disciplina === "trekking"
         );
 
-        // Guardar las academias filtradas en el estado
         setAcademiasRunning(runningAcademias);
         setAcademiasTrekking(trekkingAcademias);
       } catch (error) {
@@ -38,8 +46,35 @@ export default function AcademiasPage() {
       }
     };
 
-    fetchAcademias();
-  }, []);
+    const loadProfileImage = async () => {
+      try {
+        if (session?.user?.id) {
+          const imageUrl = await getProfileImage(
+            "profile-image.jpg",
+            session.user.id
+          );
+          setProfileImage(imageUrl);
+        }
+      } catch (error) {
+        console.error("Error al obtener la imagen del perfil:", error);
+        // Imagen predeterminada en caso de error
+        setProfileImage(
+          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+        );
+      }
+    };
+
+    // Si hay una sesión activa
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+      });
+
+      loadProfileImage();
+      fetchAcademias();
+    }
+  }, [session]);
 
   return (
     <div className="flex flex-col gap-3 items-center">
@@ -47,7 +82,7 @@ export default function AcademiasPage() {
         <div className="w-[30%] h-[100%] flex justify-center items-center">
           <img
             className="h-[75px] w-[75px] rounded-full"
-            src="https://i.pinimg.com/originals/11/f7/ce/11f7ce1d984a1355d7ad6d3b8d722003.jpg"
+            src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
             alt=""
           />
         </div>
