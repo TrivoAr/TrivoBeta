@@ -1,7 +1,7 @@
-"use client";  // Esto indica que este archivo es un Client Component
+"use client";  
 
 import { useEffect, useState } from "react";
-import MercadoPagoimagen from "../../../public/assets/MercadoPago.png";
+import MercadoPagoimagen from "../../../public/assets/MercadoPago.png";  // Asegúrate de que la imagen esté en la ruta correcta
 
 const Mp = () => {
   const [grupoId, setGrupoId] = useState<string | null>(null);
@@ -33,16 +33,17 @@ const Mp = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: 'Nombre del producto',
-          quantity: 1,
-          unit_price: 100,
+          grupoId,
+          nombreGrupo,
+          fecha,
+          monto,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Error en la solicitud');
       }
-  
+
       const data = await response.json();
       if (data.init_point) {
         window.location.href = data.init_point;
@@ -54,7 +55,6 @@ const Mp = () => {
       alert("Hubo un problema al procesar el pago.");
     }
   };
-  
 
   if (!grupoId || !nombreGrupo || !monto || !fecha) return <div>Cargando...</div>;
 
@@ -62,11 +62,11 @@ const Mp = () => {
     <div className="flex justify-center min-h-screen">
       <div className="w-[389px] p-4 shadow-md bg-[#F4F4F4] overflow-y-auto">
         <div className="pb-2">
-          <h1 className="w-[157px] h-[22px] font-medium text-[20px]">
-            Método de pago
+          <h1 className="text-center h-[22px] text-centerfont-medium text-[20px] ">
+           Detalles del pago
           </h1>
         </div>
-        <div className="w-[339px] h-[473px] bg-[#E5E5E5] rounded-xl">
+        <div className="w-[339px] h-[350px] bg-[#E5E5E5] rounded-xl">
           <div className="w-[100%] p-4">
             <div className="flex items-center gap-1">
               <div className="w-[53px] h-[53px]">
@@ -94,11 +94,11 @@ const Mp = () => {
             <span className="w-[183px] h-[22px] font-medium text-[11px] text-[#A0AEC0] pt-3">
               {fecha}
             </span>
-
+            <br />
             <span className="w-[58px] h-[22px] font-bold text-[14px] text-[#000000] pt-3">
               Detalles
             </span>
-
+            {/*
             <div className="w-full flex justify-between items-start pt-3">
               <span className="font-normal text-[10px] text-[#333333]">
                 Tarjeta
@@ -107,8 +107,8 @@ const Mp = () => {
                 Visa 4052
               </span>
             </div>
-
-            <div className="w-full flex justify-between items-start">
+               */ }
+            <div className="w-full flex justify-between items-start pt-2">
               <span className="font-normal text-[10px] text-[#333333]">
                 Transacción Nº
               </span>
@@ -116,6 +116,7 @@ const Mp = () => {
                 #123456789
               </span>
             </div>
+            
 
             <div className="flex justify-center mt-4 w-[100%]">
               <button onClick={handlePagar} className="w-[80%] h-[40px] bg-[#C2C9D2] rounded-xl">

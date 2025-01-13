@@ -88,7 +88,7 @@ function Signin() {
           Ingresar
         </button>
 
-        <div className="text-center text-sm text-gray-400">O ingresar con</div>
+        {/* <div className="text-center text-sm text-gray-400">O ingresar con</div> */}
 
         {/* Botón de Google */}
         {/* <button

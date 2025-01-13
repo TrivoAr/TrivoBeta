@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
 import "./style.css";
@@ -14,28 +16,73 @@ type Academia = {
 };
 
 export default function AcademiasPage() {
-  const [academias, setAcademias] = useState<Academia[]>([]);
+  const { data: session, status } = useSession();
+  const [academiasRunning, setAcademiasRunning] = useState<Academia[]>([]);
+  const [academiasTrekking, setAcademiasTrekking] = useState<Academia[]>([]);
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+  });
+
+  const [profileImage, setProfileImage] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
         const response = await axios.get("/api/academias");
-        setAcademias(response.data);
+
+        // Filtrar academias por tipo_disciplina
+        const runningAcademias = response.data.filter(
+          (academia: Academia) => academia.tipo_disciplina === "running"
+        );
+        const trekkingAcademias = response.data.filter(
+          (academia: Academia) => academia.tipo_disciplina === "trekking"
+        );
+
+        setAcademiasRunning(runningAcademias);
+        setAcademiasTrekking(trekkingAcademias);
       } catch (error) {
         console.error("Error fetching academias:", error);
       }
     };
 
-    fetchAcademias();
-  }, []);
+    const loadProfileImage = async () => {
+      try {
+        if (session?.user?.id) {
+          const imageUrl = await getProfileImage(
+            "profile-image.jpg",
+            session.user.id
+          );
+          setProfileImage(imageUrl);
+        }
+      } catch (error) {
+        console.error("Error al obtener la imagen del perfil:", error);
+        // Imagen predeterminada en caso de error
+        setProfileImage(
+          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+        );
+      }
+    };
+
+    // Si hay una sesión activa
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+      });
+
+      loadProfileImage();
+      fetchAcademias();
+    }
+  }, [session]);
 
   return (
     <div className="flex flex-col gap-3 items-center">
-      <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border">
+      <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
         <div className="w-[30%] h-[100%] flex justify-center items-center">
           <img
             className="h-[75px] w-[75px] rounded-full"
-            src="https://i.pinimg.com/originals/11/f7/ce/11f7ce1d984a1355d7ad6d3b8d722003.jpg"
+            src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
             alt=""
           />
         </div>
@@ -54,7 +101,7 @@ export default function AcademiasPage() {
             San Miguel de Tucumán
           </p>
         </div>
-        <div className="border rounded-[50%] shadow h-[35px] w-[35px] flex  items-center justify-center">
+        <div className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="25px"
@@ -138,55 +185,105 @@ export default function AcademiasPage() {
           <p className="text-[11px] text-slate-500">Trekking</p>
         </div>
       </div>
-      <h1 className="text-lg font-bold mb-2">Academias Recomendadas</h1>
+      <h1 className="text-lg font-bold mb-2">Academias de Running Recomendadas</h1>
       <div className="w-[390px]">
-        
-        <div className="scroll-container">
-          {academias.map((academia) => (
-            <div key={academia._id} className="academia-card">
-              <Link href={`/academias/${academia._id}`}>
-                <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
-                  <div
-                    className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url(${academia || "/default.jpg"})`,
-                    }}
-                  ></div>
-                  <h1 className="text-l font-bold text-center p-2">
-                    {academia.nombre_academia}
-                  </h1>
-                  <div className="p-3">
-                    <p className="text-sm flex items-center gap-2">
-                      {/* Reemplaza el ícono si es necesario */}
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M3 10h11M9 21h11M17 3h11"
-                        />
-                      </svg>
-                      {academia.telefono}
-                    </p>
-                    <p className="text-sm flex items-center gap-2">
-                      <span className="font-bold">Disciplina:</span>{" "}
-                      {academia.tipo_disciplina}
-                    </p>
-                    <p className="text-sm flex items-center gap-2">
-                      <span className="font-bold">Descripción:</span>{" "}
-                      {academia.descripcion}
-                    </p>
-                  </div>
+      {/* Contenedor de academias */}
+      <div className="scroll-container">
+        {academiasRunning.map((academia) => (
+          <div key={academia._id} className="academia-card">
+            <Link href={`/academias/${academia._id}`}>
+              <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
+                <div
+                  className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${academia || "/default.jpg"})`,
+                  }}
+                ></div>
+                <h1 className="text-l font-bold text-center p-2">
+                  {academia.nombre_academia}
+                </h1>
+                <div className="p-3">
+                  <p className="text-sm flex items-center gap-2">
+                    {/* Reemplaza el ícono si es necesario */}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 10h11M9 21h11M17 3h11"
+                      />
+                    </svg>
+                    {academia.telefono}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Disciplina:</span>{" "}
+                    {academia.tipo_disciplina}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Descripción:</span>{" "}
+                    {academia.descripcion}
+                  </p>
                 </div>
-              </Link>
-            </div>
-          ))}
-        </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+      </div>
+      <h1 className="text-lg font-bold mb-2">Academias de Trekking Recomendadas</h1>
+      <div className="w-[390px]">
+      {/* Contenedor de academias */}
+      <div className="scroll-container">
+        {academiasTrekking.map((academia) => (
+          <div key={academia._id} className="academia-card">
+            <Link href={`/academias/${academia._id}`}>
+              <div className="w-[250px] h-[218px] rounded-[10px] border flex flex-col justify-between shadow-lg">
+                <div
+                  className="portada h-[100px] rounded-t-[10px] bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${academia || "/default.jpg"})`,
+                  }}
+                ></div>
+                <h1 className="text-l font-bold text-center p-2">
+                  {academia.nombre_academia}
+                </h1>
+                <div className="p-3">
+                  <p className="text-sm flex items-center gap-2">
+                    {/* Reemplaza el ícono si es necesario */}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 10h11M9 21h11M17 3h11"
+                      />
+                    </svg>
+                    {academia.telefono}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Disciplina:</span>{" "}
+                    {academia.tipo_disciplina}
+                  </p>
+                  <p className="text-sm flex items-center gap-2">
+                    <span className="font-bold">Descripción:</span>{" "}
+                    {academia.descripcion}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
       </div>
     </div>
   );

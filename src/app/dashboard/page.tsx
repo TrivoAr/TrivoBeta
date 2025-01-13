@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PushManager from "../../components/PushManager";
 import Eventos1 from "../../../public/assets/Tdah.webp";
 import Eventos2 from "../../../public/assets/jujuy.webp";
+import TopContainer from "@/components/TopContainer";
 
 interface Academia {
   _id: string; // Cambié id a _id para coincidir con lo que normalmente se utiliza en MongoDB
@@ -22,6 +23,7 @@ interface Entrenamiento {
   dia: string;
   hora: string;
   ubicacion: string;
+  descripcion: string;
 }
 
 const DashboardPage: React.FC = () => {
@@ -47,13 +49,28 @@ const DashboardPage: React.FC = () => {
 
       const fetchEntrenamientos = async () => {
         try {
-          const res = await fetch(`/api/entrenamientos?user=${session.user.id}`);
-          const data = await res.json();
-          setEntrenamientos(data);
+          if (session) {
+            // Obtener la fecha de inicio de la semana (domingo)
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay()); // Restar días para llegar al domingo
+            const weekStartISO = weekStart.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+      
+            const res = await fetch(`/api/entrenamientos?user=${session.user.id}&weekStart=${weekStartISO}`);
+            
+            if (!res.ok) {
+              throw new Error(`Error al obtener entrenamientos: ${res.statusText}`);
+            }
+      
+            const data = await res.json();
+            setEntrenamientos(data);
+          }
         } catch (error) {
           console.error("Error fetching entrenamientos:", error);
+          setEntrenamientos([]); // Asegúrate de limpiar en caso de error
         }
       };
+
 
       fetchAcademia();
       fetchEntrenamientos();
@@ -76,35 +93,11 @@ const DashboardPage: React.FC = () => {
     
     <div className="flex justify-center bg-gray-100 min-h-screen">
       <PushManager/>
-      <div className="w-[389px] p-4 shadow-md bg-white overflow-y-auto h-screen">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <img
-              className="h-[75px] w-[75px] rounded-full"
-              src="https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
-              alt="Avatar"
-            />
-            <div>
-              <h1 className="text-lg font-semibold">{session.user.fullname}</h1>
-              <p className="text-sm text-gray-600">San Miguel de Tucumán</p>
-            </div>
-          </div>
-          <button className="p-2 bg-gray-200 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="30px"
-              viewBox="0 0 24 24"
-              width="30px"
-              fill="#999999"
-            >
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-            </svg>
-          </button>
-        </div>
+      <div className="w-[389px] shadow-md bg-white overflow-y-auto h-screen">
+       <TopContainer/>
 
         {/* Mis grupos */}
-        <div className="mb-6">
+        <div className="mb-6 p-4">
           <h2 className="text-xl font-semibold mb-3">Mis grupos</h2>
           <div className="grid grid-cols-2 gap-4">
             {/* Grupo principal */}
@@ -129,12 +122,12 @@ const DashboardPage: React.FC = () => {
               </button>
             </div>
             {/* Entrenamientos */}
-            <div className="space-y-4">
+            <div className="space-y-4"  onClick={() => router.push(`/entrenamiento`)}>
               <div className="bg-white p-4 rounded-lg shadow">
                 {entrenamientos.length > 0 ? (
                   entrenamientos.map((entrenamiento) => (
                     <div key={entrenamiento.id} className="bg-white p-4 rounded-lg shadow">
-                      <p className="text-sm font-medium">{entrenamiento.nombre}</p>
+                      <p className="text-sm font-medium">{entrenamiento.descripcion}</p>
                       <p className="text-xs text-gray-600">
                         {entrenamiento.dia} · {entrenamiento.hora} · {entrenamiento.ubicacion}
                       </p>
@@ -144,16 +137,12 @@ const DashboardPage: React.FC = () => {
                   <p className="text-gray-500">No tienes entrenamientos programados.</p>
                 )}
               </div>
-              <div className="bg-white p-4 rounded-lg shadow">
-                <p className="text-sm font-medium">Entrenamiento SMT</p>
-                <p className="text-xs text-gray-600">Sáb y Mar · 18 hs · Parque</p>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Eventos */}
-        <div>
+        <div className="pl-4 pr-4">
           <h2 className="text-xl font-semibold mb-3">Eventos</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white rounded-lg shadow">
@@ -182,7 +171,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Aventuras */}
-        <div>
+        <div className="pl-4 pr-4">
           <br />
           <h2 className="text-xl font-semibold mb-3">Aventuras</h2>
           <div className="grid grid-cols-2 gap-4">
