@@ -165,7 +165,7 @@ const EntrenamientoPage = () => {
           </div>
         ))}
       </div>
-
+        {/* 
       <div className="flex w-[390px] flex-col items-center mt-10">
         <svg xmlns="http://www.w3.org/2000/svg" height="50px" viewBox="0 0 24 24" width="50px" fill="#333">
           <path d="M0 0h24v24H0z" fill="none" />
@@ -173,6 +173,7 @@ const EntrenamientoPage = () => {
         </svg>
         <p className="text-sm">Agregar entrenamiento</p>
       </div>
+      */}
     </div>
   );
 };
