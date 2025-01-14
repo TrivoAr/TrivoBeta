@@ -3,17 +3,18 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { getProfileImage } from "@/app/api/profile/getProfileImage"; 
-
+import { useRouter } from "next/navigation";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 const TopContainer = () => {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const horaActual = new Date().getHours();
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
   });
-  const [profileImage, setProfileImage] = useState(null); 
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     if (session?.user) {
@@ -51,12 +52,21 @@ const TopContainer = () => {
     return <p>Cargando...</p>;
   }
 
+  const handleNotificationClick = () => {
+    if (session?.user?.role === "dueño de academia") {
+      router.push("/academias/solicitudes");
+    } else {
+      // Puedes manejar otros casos aquí si es necesario
+      console.log("Notificación clicada, pero sin redirección específica.");
+    }
+  };
+
   return (
     <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
       <div className="w-[30%] h-[100%] flex justify-center items-center">
         <img
           className="h-[75px] w-[75px] rounded-full"
-          src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
+          src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
           alt="User Profile"
         />
       </div>
@@ -64,7 +74,10 @@ const TopContainer = () => {
         <p className="text-slate-500 text-[12px]">{saludo}</p>
         <p className="flex font-normal text-sm">{session?.user?.fullname || "Usuario no identificado"}</p>
       </div>
-      <div className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center">
+      <div
+        className="rounded-full border border-[#999999] shadow-xl h-[40px] w-[40px] flex justify-center items-center cursor-pointer"
+        onClick={handleNotificationClick}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="25px"

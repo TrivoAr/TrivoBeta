@@ -8,6 +8,7 @@ import PushManager from "../../components/PushManager";
 import Eventos1 from "../../../public/assets/Tdah.webp";
 import Eventos2 from "../../../public/assets/jujuy.webp";
 import TopContainer from "@/components/TopContainer";
+import Link from "next/link";
 
 interface Academia {
   _id: string; // Cambié id a _id para coincidir con lo que normalmente se utiliza en MongoDB
@@ -88,6 +89,9 @@ const DashboardPage: React.FC = () => {
       console.error("Academia ID is not available");
     }
   };
+  const handleSearch = () => {
+    router.push(`/academias`);
+  };
 
   return (
     
@@ -98,28 +102,41 @@ const DashboardPage: React.FC = () => {
 
         {/* Mis grupos */}
         <div className="mb-6 p-4">
+          <div className=" flex justify-between pr-4">
           <h2 className="text-xl font-semibold mb-3">Mis grupos</h2>
+          <Link href="/academias/crear">
+                <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 0 24 24" width="30px" fill="#333"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                </Link>
+                </div>
           <div className="grid grid-cols-2 gap-4">
             {/* Grupo principal */}
             <div className="coverAcademias bg-white p-4 rounded-lg shadow flex flex-col">
               <div className="mb-4">
                 {academia ? (
                   <>
-                    <p className="text-lg font-semibold text-white">{academia.nombre_academia}</p>
+                    <p className="text-lg font-semibold text-white pb-8">{academia.nombre_academia}</p>
                     {/* <p className="text-sm text-gray-600 text-white">
                       {academia.localidad}, {academia.provincia}, {academia.pais}
                     </p> */}
-                  </>
-                ) : (
-                  <p className="text-gray-500">No tienes una academia principal.</p>
-                )}
-              </div>
-              <button
+                    <button
                 onClick={handleEntrar}
-                className="mt-auto block w-full bg-orange-500 text-white py-2 rounded"
+                className="mt-auto block w-full bg-orange-500 text-white py-2 rounded "
               >
                 Entrar
               </button>
+                  </>
+                ) : (
+                  <div>
+                  <p className="text-500 text-white pb-8">No tienes una academia principal.</p>
+                  <button
+                  onClick={handleSearch}
+                  className="mt-auto block w-full bg-orange-500 text-white py-2 rounded"
+                >
+                  Buscar
+                </button>
+                </div>
+                )}
+              </div>
             </div>
             {/* Entrenamientos */}
             <div className="space-y-4"  onClick={() => router.push(`/entrenamiento`)}>
