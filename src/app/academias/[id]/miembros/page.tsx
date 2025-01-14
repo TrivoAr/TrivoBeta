@@ -98,7 +98,7 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="w-[390px] flex flex-col items-center">
-      <h1 className="font-bold">Miembros de la Academia</h1>
+      <h1 className="font-bold mt-10">Miembros de la Academia</h1>
       <br />
       {error && <p className="text-red-500">{error}</p>}
 
@@ -114,9 +114,9 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
         <tbody>
           {miembros.map((miembro) => (
             <tr key={miembro.user_id._id}>
-              <td className="flex justify-center">
+              <td className="flex justify-center mt-3">
                 <img
-                  className="rounded-full h-[35px] w-[35px]"
+                  className="rounded-full h-[35px] w-[35px] "
                   src={miembro.profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
                   alt="Imagen del miembro"
                 />
