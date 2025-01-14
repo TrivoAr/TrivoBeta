@@ -12,18 +12,24 @@ function Signup() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null); // Clear any previous error
     try {
       const formData = new FormData(event.currentTarget);
 
-      // Validación de campos obligatorios
       const firstname = formData.get("firstname")?.toString();
       const lastname = formData.get("lastname")?.toString();
-      const rol = selectedOption; // Usamos el estado seleccionado
+      const rol = selectedOption;
       const email = formData.get("email")?.toString();
       const password = formData.get("password")?.toString();
+      const confirmPassword = formData.get("confirmPassword")?.toString();
 
-      if (!firstname || !lastname || !rol || !email || !password) {
+      if (!firstname || !lastname || !rol || !email || !password || !confirmPassword) {
         setError("All fields must be filled");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Las contraseñas no coinciden");
         return;
       }
 
@@ -49,6 +55,8 @@ function Signup() {
       if (error instanceof AxiosError) {
         const errorMessage = error.response?.data.message;
         setError(errorMessage);
+      } else {
+        setError("An unexpected error occurred");
       }
     }
   };
@@ -130,7 +138,7 @@ function Signup() {
                   onClick={() => handleOptionClick("profe")}
                   className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
                 >
-                  Profe
+                  Profesor
                 </li>
                 <li
                   onClick={() => handleOptionClick("dueño de academia")}
@@ -142,7 +150,6 @@ function Signup() {
             )}
           </div>
 
-          {/* Input oculto para el valor de rol */}
           <input type="hidden" name="rol" value={selectedOption} />
         </div>
 

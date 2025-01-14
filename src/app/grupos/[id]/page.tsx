@@ -10,7 +10,6 @@ import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 // Tipos
-
 type Grupo = {
   _id: string;
   nombre_grupo: string;
@@ -20,6 +19,7 @@ type Grupo = {
   horario?: string;
   descripcion?: string;
   tipo_grupo?: string;
+  cuota_mensual?: string;
 };
 
 type Alumno = {
@@ -34,6 +34,7 @@ type Entrenamiento = {
   grupo_id: string;
   fecha: string;
   descripcion: string;
+  estado: string; // Siempre será "gris"
 };
 
 export default function GrupoDetailPage({
@@ -48,6 +49,7 @@ export default function GrupoDetailPage({
     grupo_id: params.id,
     fecha: "",
     descripcion: "",
+    estado: "gris", // Valor inicial fijo
   });
   const [error, setError] = useState<string | null>(null);
   const [isAssigning, setIsAssigning] = useState(false);
@@ -65,21 +67,16 @@ export default function GrupoDetailPage({
   useEffect(() => {
     const fetchGrupo = async () => {
       try {
-        // Obtener datos del grupo
         const response = await axios.get(`/api/grupos/${params.id}`);
         const alumnosData = response.data.alumnos.map((item: any) => item.user_id);
 
-        // Intentar obtener la imagen del grupo
         try {
           const imageUrl = await getGroupImage("foto_perfil_grupo.jpg", params.id);
           setGroupImage(imageUrl);
         } catch {
-          console.log(
-            "No se encontró una imagen para este grupo, usando predeterminada."
-          );
+          console.log("No se encontró una imagen para este grupo, usando predeterminada.");
         }
 
-        // Obtener imágenes de perfil de cada alumno
         const alumnosWithImages = await Promise.all(
           alumnosData.map(async (alumno: Alumno) => {
             try {
@@ -117,6 +114,7 @@ export default function GrupoDetailPage({
         grupo_id: params.id,
         fecha: "",
         descripcion: "",
+        estado: "gris", // Restablecer valor fijo
       });
       setSelectedAlumno(null);
     } catch (error) {
@@ -156,6 +154,23 @@ export default function GrupoDetailPage({
       setUploadingImage(false);
     }
   };
+
+  const handleIrAPago = () => {
+    if (!grupo) return;
+
+    const { _id, nombre_grupo, cuota_mensual } = grupo;
+    const fecha = new Date().toLocaleString();
+
+    // Almacenar los datos en localStorage
+    localStorage.setItem("grupoId", _id);
+    localStorage.setItem("nombreGrupo", nombre_grupo);
+    localStorage.setItem("monto", cuota_mensual || '0');
+    localStorage.setItem("fecha", fecha);
+
+    // Redirigir a la página de pago
+    router.push("/pagos");
+  };
+
 
   if (error) return <div>{error}</div>;
 
@@ -376,6 +391,7 @@ export default function GrupoDetailPage({
           </div>
         </div>
       </div>
+      <hr className="border-t border-gray-300 w-[390px] mb-2" />
       <div className="flex flex-col w-[390px]">
         <div className="">
           <h2 className="text-xl font-bold p-2 text-[#333]">
@@ -394,23 +410,18 @@ export default function GrupoDetailPage({
           </p>
           <hr className="border-t border-gray-300 w-[390px] mb-2" />
         </div>
+        <div className="">
+          <h2 className="text-xl font-bold text-left text-[#333] p-2">Cuota Mensual</h2>
+          <p className="text-sm text-gray-500 p-2">
+          {grupo.cuota_mensual || "Sin especificar cuota"}
+          </p>
+          <button onClick={handleIrAPago} className="btn-pago">
+          Pagar Cuota
+          </button>
+          <hr className="border-t border-gray-300 w-[390px] mb-2" />
+        </div>
       </div>
 
-      {userRole !== "alumno" && (
-        <div className="mt-4">
-          <label className="text-sm font-bold" htmlFor="uploadImage">
-            Subir/Actualizar imagen del grupo:
-          </label>
-          <input
-            id="uploadImage"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="block mt-2"
-          />
-          {uploadingImage && <p>Subiendo imagen...</p>}
-        </div>
-      )}
 
       <div className="w-[95%] mt-2 mb-2 p-2 shadow-lg rounded-lg pl-4">
         <h2 className="font-bold text-mb mb-2">Alumnos del grupo</h2>

@@ -21,6 +21,11 @@ const EntrenamientoSchema = new Schema(
       type: String,
       required: true,
     },
+    estado: {
+      type: String,
+      required: true,
+      default: "gris"
+    },
   },
   {
     timestamps: true,
