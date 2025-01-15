@@ -80,11 +80,13 @@ export default function AcademiasPage() {
     <div className="flex flex-col gap-3 items-center">
       <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
         <div className="w-[30%] h-[100%] flex justify-center items-center">
+        <Link href="/dashboard/profile">
           <img
             className="h-[75px] w-[75px] rounded-full"
             src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"} // Usa la imagen del perfil
             alt=""
           />
+        </Link>
         </div>
         <div className="flex flex-col items-center">
           <p className="text-slate-500 text-[12px]">Ubicación</p>
