@@ -165,7 +165,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         <div className="logo h-[120px] w-[120px] bg-slate-400 rounded-[50%] relative bottom-[60px] border border-[#333]">
           <img
             src={profileImage || "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"}
-            className="rounded-full"
+            className="rounded-full object-cover h-[120px] w-[120px]"
             alt="Logo"
           />
         </div>
