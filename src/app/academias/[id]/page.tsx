@@ -43,6 +43,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         const response = await axios.get(`/api/academias/${params.id}`);
         setAcademia(response.data.academia);
         setGrupos(response.data.grupos);
+        localStorage.setItem("academia_id", params.id);
         // Intentar obtener la imagen del perfil
       const loadProfileImage = async () => {
         try {
