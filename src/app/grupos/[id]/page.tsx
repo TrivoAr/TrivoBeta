@@ -203,19 +203,24 @@ export default function GrupoDetailPage({
 
   const handleIrAPago = () => {
     if (!grupo) return;
-
+  
     const { _id, nombre_grupo, cuota_mensual } = grupo;
     const fecha = new Date().toLocaleString();
-
+    
+    // Obtener el ID de la academia desde el localStorage
+    const academiaId = localStorage.getItem("academia_id");
+    
     // Almacenar los datos en localStorage
     localStorage.setItem("grupoId", _id);
     localStorage.setItem("nombreGrupo", nombre_grupo);
     localStorage.setItem("monto", cuota_mensual || '0');
     localStorage.setItem("fecha", fecha);
-
+    localStorage.setItem("academiaId", academiaId); // Añadir el academiaId
+    
     // Redirigir a la página de pago
     router.push("/pagos");
   };
+  
 
   if (error) return <div>{error}</div>;
 
