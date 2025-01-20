@@ -34,6 +34,7 @@ type Entrenamiento = {
   grupo_id: string;
   fecha: string;
   descripcion: string;
+  objetivo: string;
   estado: string; // Siempre será "gris"
 };
 
@@ -49,6 +50,7 @@ export default function GrupoDetailPage({
     grupo_id: params.id,
     fecha: "",
     descripcion: "",
+    objetivo: "",
     estado: "gris", // Valor inicial fijo
   });
   const [error, setError] = useState<string | null>(null);
@@ -160,6 +162,7 @@ export default function GrupoDetailPage({
         grupo_id: params.id,
         fecha: "",
         descripcion: "",
+        objetivo: "",
         estado: "gris", // Restablecer valor fijo
       });
       setSelectedAlumno(null);
@@ -528,8 +531,8 @@ export default function GrupoDetailPage({
               className="mb-4 border p-2 w-[90%] rounded"
             />
                  <textarea
-              name="Objetivo"
-              value={entrenamientoData.descripcion}
+              name="objetivo"
+              value={entrenamientoData.objetivo}
               onChange={handleChange}
               placeholder="0bjetivo"
               className="mb-4 border p-2 w-[90%] rounded"
