@@ -15,6 +15,7 @@ function ProfilePage() {
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
+    rol: session.user.role || "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null); 
   const [uploadingImage, setUploadingImage] = useState(false); 
@@ -26,6 +27,7 @@ function ProfilePage() {
       setFormData({
         fullname: session.user.fullname || "",
         email: session.user.email || "",
+        rol: session.user.role || "",
       });
     }
   }, [session]);
@@ -82,6 +84,7 @@ function ProfilePage() {
       setFormData({
         fullname: `${updatedUser.firstname} ${updatedUser.lastname}`,
         email: updatedUser.email,
+        rol: updatedUser.rol,
       });
   
       // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
@@ -215,8 +218,7 @@ function ProfilePage() {
             </div>
           )}
         </div>
-
-        <button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold" onClick={() => router.push(`/mercadopago`)}>
+        {formData.rol=== "dueño de academia" && (<button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold" onClick={() => router.push(`/mercadopago`)}>
           Métodos de pago
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -227,7 +229,8 @@ function ProfilePage() {
           >
             <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
           </svg>
-        </button>
+        </button>)}
+        
 
         {/* Botón para mostrar Objetivos */}
         <div
