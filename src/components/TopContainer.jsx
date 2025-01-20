@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import Link from "next/link";
 
 const TopContainer = () => {
   const { data: session, status } = useSession();
@@ -57,18 +58,20 @@ const TopContainer = () => {
       router.push("/academias/solicitudes");
     } else {
       // Puedes manejar otros casos aquí si es necesario
-      console.log("Notificación clicada, pero sin redirección específica.");
+      router.push("/entrenamiento");
     }
   };
 
   return (
     <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
       <div className="w-[30%] h-[100%] flex justify-center items-center">
+        <Link href="/dashboard/profile">
         <img
           className="h-[75px] w-[75px] rounded-full"
           src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
           alt="User Profile"
         />
+        </Link>
       </div>
       <div className="flex flex-col items-center mr-[5%]">
         <p className="text-slate-500 text-[12px]">{saludo}</p>

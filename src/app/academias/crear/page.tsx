@@ -36,7 +36,7 @@ function CrearAcademia() {
   return (
     <div className="w-[390px] flex flex-col items-center gap-5">
       <Toaster position="top-center" /> {/* Para mostrar los toasts */}
-      <p className="text-xl font-bold justify-self-center">Crear Academia</p>
+      <p className="text-xl font-bold justify-self-center mt-10">Crear Academia</p>
       <form onSubmit={handleSubmit} className="w-[80%]">
         
         <div className="relative mb-6">

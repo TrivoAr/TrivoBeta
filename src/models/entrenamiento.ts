@@ -21,6 +21,10 @@ const EntrenamientoSchema = new Schema(
       type: String,
       required: true,
     },
+    objetivo: {
+      type: String,
+      required: true,
+    },
     estado: {
       type: String,
       required: true,
