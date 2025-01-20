@@ -22,6 +22,7 @@ type Grupo = {
 
 type Academia = {
   _id: string;
+  dueño_id: string;
   nombre_academia: string;
   descripcion: string;
   tipo_disciplina: string;
@@ -43,6 +44,8 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         const response = await axios.get(`/api/academias/${params.id}`);
         setAcademia(response.data.academia);
         setGrupos(response.data.grupos);
+        localStorage.setItem("academia_id", params.id);
+        localStorage.setItem("dueño_id", response.data.academia.dueño_id);
         // Intentar obtener la imagen del perfil
       const loadProfileImage = async () => {
         try {

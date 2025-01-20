@@ -34,6 +34,7 @@ type Entrenamiento = {
   grupo_id: string;
   fecha: string;
   descripcion: string;
+  objetivo: string;
   estado: string; // Siempre será "gris"
 };
 
@@ -49,6 +50,7 @@ export default function GrupoDetailPage({
     grupo_id: params.id,
     fecha: "",
     descripcion: "",
+    objetivo: "",
     estado: "gris", // Valor inicial fijo
   });
   const [error, setError] = useState<string | null>(null);
@@ -58,15 +60,60 @@ export default function GrupoDetailPage({
     "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
   );
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Para controlar el acceso del usuario
 
   const router = useRouter();
   const { data: session } = useSession();
 
   const userRole = session?.user?.role;
+  const userId = session?.user?.id;
 
   useEffect(() => {
+    if (!userId || !params.id) return; // Verificar que el userId y el params.id estén disponibles
+  
+    const checkUserAccess = async () => {
+      try {
+        // Obtener los detalles del grupo primero para obtener el ID de la academia
+        const academiaId = localStorage.getItem("academia_id");
+  
+        // Ahora hacer la solicitud para verificar el acceso con el ID de la academia
+        const response = await axios.get(`/api/academias/${academiaId}/miembros`, {
+          headers: {
+            "user_id": userId,
+          },
+        });
+  
+        console.log('Respuesta de verificación de acceso:', response);
+  
+        // Verificar si el usuario está en la lista de miembros de la academia y tiene un grupo asignado
+        const hasAccess = response.data.miembros.some(
+          (miembro: any) => miembro.user_id._id === userId 
+        );
+  
+        if (hasAccess) {
+          setIsAuthorized(true); // Usuario tiene acceso
+        } else {
+          setIsAuthorized(false); // Usuario no tiene acceso
+        }
+      } catch (error) {
+        console.error('Error al verificar el acceso del usuario:', error);
+        setError("Hubo un problema al verificar el acceso del usuario.");
+      }
+    };
+  
+    checkUserAccess(); // Ejecutar la función para verificar el acceso
+  
+  }, [params.id, userId]);
+
+  useEffect(() => {
+    if (isAuthorized === false) {
+      setError("No tienes acceso a esta academia.");
+      return;
+    }
+
     const fetchGrupo = async () => {
       try {
+        // Si el usuario tiene acceso, cargamos los detalles del grupo
         const response = await axios.get(`/api/grupos/${params.id}`);
         const alumnosData = response.data.alumnos.map((item: any) => item.user_id);
 
@@ -96,13 +143,14 @@ export default function GrupoDetailPage({
         setGrupo(response.data.grupo);
         setAlumnos(alumnosWithImages);
       } catch (error) {
-        console.error("Error al cargar los detalles del grupo:", error);
         setError("Hubo un problema al cargar los detalles del grupo.");
       }
     };
 
-    fetchGrupo();
-  }, [params.id]);
+    if (isAuthorized === true) {
+      fetchGrupo();
+    }
+  }, [isAuthorized, params.id]);
 
   const handleAssignEntrenamiento = async () => {
     try {
@@ -114,6 +162,7 @@ export default function GrupoDetailPage({
         grupo_id: params.id,
         fecha: "",
         descripcion: "",
+        objetivo: "",
         estado: "gris", // Restablecer valor fijo
       });
       setSelectedAlumno(null);
@@ -157,20 +206,24 @@ export default function GrupoDetailPage({
 
   const handleIrAPago = () => {
     if (!grupo) return;
-
+  
     const { _id, nombre_grupo, cuota_mensual } = grupo;
     const fecha = new Date().toLocaleString();
-
+    
+    // Obtener el ID de la academia desde el localStorage
+    const academiaId = localStorage.getItem("academia_id");
+    
     // Almacenar los datos en localStorage
     localStorage.setItem("grupoId", _id);
     localStorage.setItem("nombreGrupo", nombre_grupo);
     localStorage.setItem("monto", cuota_mensual || '0');
     localStorage.setItem("fecha", fecha);
-
+    localStorage.setItem("academiaId", academiaId); // Añadir el academiaId
+    
     // Redirigir a la página de pago
     router.push("/pagos");
   };
-
+  
 
   if (error) return <div>{error}</div>;
 
@@ -478,8 +531,8 @@ export default function GrupoDetailPage({
               className="mb-4 border p-2 w-[90%] rounded"
             />
                  <textarea
-              name="Objetivo"
-              value={entrenamientoData.descripcion}
+              name="objetivo"
+              value={entrenamientoData.objetivo}
               onChange={handleChange}
               placeholder="0bjetivo"
               className="mb-4 border p-2 w-[90%] rounded"

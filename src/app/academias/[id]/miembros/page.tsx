@@ -3,8 +3,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const MiembrosPage = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
   const { data: session } = useSession(); // Obtener datos de sesión
   const [miembros, setMiembros] = useState<any[]>([]);
   const [grupos, setGrupos] = useState<any[]>([]);
@@ -15,6 +18,13 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const dueñoId = localStorage.getItem("dueño_id"); // Obtener dueño_id del localStorage
+
+      if (!session?.user?.id || session.user.id !== dueñoId) {
+        toast.error("No tienes permiso para ver los miembros de esta academia.");
+        router.push("/dashboard"); // Redirige si no está autorizado
+        return;
+      }
         // Obtener los miembros de la academia
         const miembrosResponse = await axios.get(`/api/academias/${params.id}/miembros`);
         const miembrosData = miembrosResponse.data.miembros;
@@ -98,7 +108,8 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="w-[390px] flex flex-col items-center">
-      <h1 className="font-bold">Miembros de la Academia</h1>
+       <Toaster position="top-center" />
+      <h1 className="font-bold mt-10">Miembros de la Academia</h1>
       <br />
       {error && <p className="text-red-500">{error}</p>}
 
@@ -114,9 +125,9 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
         <tbody>
           {miembros.map((miembro) => (
             <tr key={miembro.user_id._id}>
-              <td className="flex justify-center">
+              <td className="flex justify-center mt-3">
                 <img
-                  className="rounded-full h-[35px] w-[35px]"
+                  className="rounded-full h-[35px] w-[35px] "
                   src={miembro.profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
                   alt="Imagen del miembro"
                 />

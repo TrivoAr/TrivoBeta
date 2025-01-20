@@ -58,7 +58,7 @@ const TopContainer = () => {
       router.push("/academias/solicitudes");
     } else {
       // Puedes manejar otros casos aquí si es necesario
-      console.log("Notificación clicada, pero sin redirección específica.");
+      router.push("/entrenamiento");
     }
   };
 

@@ -3,10 +3,12 @@ import { useEffect, useState, FormEvent } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { saveAcademyImage } from "@/app/api/academias/saveAcademyImage"; 
+import { saveAcademyImage } from "@/app/api/academias/saveAcademyImage";
+import { useSession } from "next-auth/react";
 
 export default function EditarAcademia({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     nombre_academia: "",
     pais: "",
@@ -23,6 +25,13 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
   // Función para obtener los datos iniciales
   const fetchAcademia = async () => {
     try {
+      const dueñoId = localStorage.getItem("dueño_id"); // Obtener dueño_id del localStorage
+
+      if (!session?.user?.id || session.user.id !== dueñoId) {
+        toast.error("No tienes permiso para editar esta academia.");
+        router.push("/dashboard"); // Redirige si no está autorizado
+        return;
+      }
       const response = await axios.get(`/api/academias/${params.id}`);
       setFormData(response.data.academia);
       toast.success("Datos cargados con éxito");

@@ -148,7 +148,7 @@ function ProfilePage() {
               {!isEditing ? (
                 <>
                   <p>
-                    <span className="font-bold">Nombre: </span>
+                    <span className="font-bold">Nore: </span>
                     <span className="font-normal text-[#ADADAD]">{formData.fullname}</span>
                   </p>
                   <p>

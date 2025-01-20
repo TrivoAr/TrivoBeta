@@ -18,16 +18,15 @@ const api = {
       const draft = db.concat(message);
       writeFileSync("db/message.db", JSON.stringify(draft, null, 2));
     },
-    async submit(metadata, amount) {
+    async submit(metadata, amount, accessToken) {
       try {
-        // Datos de la preferencia
         const preferenceData = {
           items: [
             {
               id: "grupoPago",
               title: `Pago para ${metadata.nombreGrupo}`,
               quantity: 1,
-              unit_price: parseFloat(amount), // Convierte el monto a número
+              unit_price: parseFloat(amount),
             },
           ],
           metadata: {
@@ -36,32 +35,28 @@ const api = {
             fecha: metadata.fecha,
           },
           back_urls: {
-            success: `${baseUrl}/success`, // URL de éxito
-            failure: `${baseUrl}/failure`, // URL de falla
-            pending: `${baseUrl}/pending`, // URL de pendiente
+            success: `${baseUrl}/success`,
+            failure: `${baseUrl}/failure`,
+            pending: `${baseUrl}/pending`,
           },
           auto_return: "approved",
         };
-
-        // Realizamos la solicitud POST a la API de Mercado Pago
+    
         const response = await axios.post(
           "https://api.mercadopago.com/checkout/preferences",
           preferenceData,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`, // Usamos el access token en los headers
+              Authorization: `Bearer ${accessToken}`, // Usa el accessToken proporcionado
               "Content-Type": "application/json",
             },
           }
         );
-
+    
         if (!response.data.init_point) {
           throw new Error("No se pudo generar el punto de inicio de pago");
         }
-
-        console.log("Respuesta de Mercado Pago:", response.data);
-
-        // Retornamos el punto de inicio de pago
+    
         return response.data.init_point;
       } catch (error) {
         console.error("Error al crear la preferencia:", error);

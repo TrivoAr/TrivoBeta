@@ -15,7 +15,7 @@ function Navbar() {
 
   return (
     <nav
-      className="shadow-xl border h-[65px] w-[351px] rounded-full flex justify-center fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white"
+      className="shadow-xl border h-[65px] w-full fixed bottom-0 left-0 flex justify-center bg-[#E5E5E5]"
       style={{ zIndex: 50 }}
     >
       <div className="flex w-full items-center">

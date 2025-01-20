@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { alumno_id, grupo_id, fecha, descripcion } = body;
+    const { alumno_id, grupo_id, fecha, descripcion, objetivo } = body;
 
     const grupo = await Grupo.findById(grupo_id);
     const academia = await Academia.findById(grupo?.academia_id);
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
       grupo_id,
       fecha,
       descripcion,
+      objetivo,
     });
 
     await entrenamiento.save();
