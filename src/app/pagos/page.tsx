@@ -27,6 +27,7 @@ const Mp = () => {
 
   const handlePagar = async () => {
     try {
+      const duenoId = localStorage.getItem("dueño_id"); // Obtén el dueno_id
       const response = await fetch("/api/pagos", {
         method: "POST",
         headers: {
@@ -37,13 +38,17 @@ const Mp = () => {
           nombreGrupo,
           fecha,
           monto,
+          duenoId, // Enviar el duenoId al backend
         }),
       });
-
+  
       if (!response.ok) {
-        throw new Error('Error en la solicitud');
+        const errorData = await response.json();
+        console.error("Error en el backend:", errorData.error, errorData.details);
+        alert(`Hubo un problema al procesar el pago: ${errorData.error}\nDetalles: ${errorData.details}`);
+        return;
       }
-
+  
       const data = await response.json();
       if (data.init_point) {
         window.location.href = data.init_point;
@@ -52,9 +57,12 @@ const Mp = () => {
       }
     } catch (error) {
       console.error("Error en el pago:", error);
-      alert("Hubo un problema al procesar el pago.");
+      alert(`Hubo un problema al procesar el pago. Detalles: ${error.message}`);
     }
   };
+  
+  
+  
 
   if (!grupoId || !nombreGrupo || !monto || !fecha) return <div>Cargando...</div>;
 

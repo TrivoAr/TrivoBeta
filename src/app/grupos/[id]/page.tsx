@@ -34,6 +34,7 @@ type Entrenamiento = {
   grupo_id: string;
   fecha: string;
   descripcion: string;
+  objetivo: string;
   estado: string; // Siempre será "gris"
 };
 
@@ -49,6 +50,7 @@ export default function GrupoDetailPage({
     grupo_id: params.id,
     fecha: "",
     descripcion: "",
+    objetivo: "",
     estado: "gris", // Valor inicial fijo
   });
   const [error, setError] = useState<string | null>(null);
@@ -160,6 +162,7 @@ export default function GrupoDetailPage({
         grupo_id: params.id,
         fecha: "",
         descripcion: "",
+        objetivo: "",
         estado: "gris", // Restablecer valor fijo
       });
       setSelectedAlumno(null);
@@ -203,19 +206,24 @@ export default function GrupoDetailPage({
 
   const handleIrAPago = () => {
     if (!grupo) return;
-
+  
     const { _id, nombre_grupo, cuota_mensual } = grupo;
     const fecha = new Date().toLocaleString();
-
+    
+    // Obtener el ID de la academia desde el localStorage
+    const academiaId = localStorage.getItem("academia_id");
+    
     // Almacenar los datos en localStorage
     localStorage.setItem("grupoId", _id);
     localStorage.setItem("nombreGrupo", nombre_grupo);
     localStorage.setItem("monto", cuota_mensual || '0');
     localStorage.setItem("fecha", fecha);
-
+    localStorage.setItem("academiaId", academiaId); // Añadir el academiaId
+    
     // Redirigir a la página de pago
     router.push("/pagos");
   };
+  
 
   if (error) return <div>{error}</div>;
 
@@ -523,8 +531,8 @@ export default function GrupoDetailPage({
               className="mb-4 border p-2 w-[90%] rounded"
             />
                  <textarea
-              name="Objetivo"
-              value={entrenamientoData.descripcion}
+              name="objetivo"
+              value={entrenamientoData.objetivo}
               onChange={handleChange}
               placeholder="0bjetivo"
               className="mb-4 border p-2 w-[90%] rounded"
