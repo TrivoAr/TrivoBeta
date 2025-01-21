@@ -195,9 +195,24 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
         </button>
       </div>
 
-      <div className="flex flex-col gap-5 mt-5">
+    <div className="flex flex-col gap-5 mt-5">
+      <div className="flex items-center justify-between">
         <h2 className="font-bold text-xl">Grupos de entrenamiento</h2>
-
+        <button
+              onClick={() => router.push(`/grupos`)}
+              className="flex items-center justify-center"
+            > <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="30px"
+            viewBox="0 0 24 24"
+            width="30px"
+            fill="#333"
+          >
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+          </svg>
+            </button>
+      </div>
         {grupos.length === 0 ? (
           <div>
             <p>No hay grupos disponibles para esta academia.</p>
