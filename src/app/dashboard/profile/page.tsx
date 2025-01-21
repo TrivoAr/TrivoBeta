@@ -15,7 +15,7 @@ function ProfilePage() {
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
-    rol: session.user.role || "",
+    rol: session?.user.role || ""
   });
   const [profileImage, setProfileImage] = useState<string | null>(null); 
   const [uploadingImage, setUploadingImage] = useState(false); 
