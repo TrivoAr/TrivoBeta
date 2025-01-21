@@ -463,15 +463,14 @@ export default function GrupoDetailPage({
           </p>
           <hr className="border-t border-gray-300 w-[390px] mb-2" />
         </div>
-        <div className="">
-          <h2 className="text-xl font-bold text-left text-[#333] p-2">Cuota Mensual</h2>
-          <p className="text-sm text-gray-500 p-2">
+        <div className="rounded-lg p-1 w-full max-w-md mx-auto">
+          <h2 className="text-xl font-bold text-left text-[#333] mb-2">Cuota Mensual</h2>
+          <p className="text-sm text-gray-500 mb-4">
           {grupo.cuota_mensual || "Sin especificar cuota"}
           </p>
-          <button onClick={handleIrAPago} className="btn-pago">
+          <button onClick={handleIrAPago} className="bg-[#FF9A3D] text-#333 text-sm font-semibold w-full py-2 rounded-md hover:bg-[#FFA55C] transition-colors">
           Pagar Cuota
           </button>
-          <hr className="border-t border-gray-300 w-[390px] mb-2" />
         </div>
       </div>
 
