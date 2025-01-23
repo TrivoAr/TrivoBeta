@@ -31,6 +31,11 @@ const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+    rol: session?.user.role || ""
+  });
   const router = useRouter();
 
   useEffect(() => {
@@ -79,6 +84,13 @@ const DashboardPage: React.FC = () => {
       fetchAcademia();
       fetchEntrenamientos();
     }
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+        rol: session.user.role || "",
+      });
+    }
   }, [session]);
 
   if (status === "loading") return <p>Cargando...</p>;
@@ -106,7 +118,8 @@ const DashboardPage: React.FC = () => {
         <div className="mb-6 p-4">
           <div className=" flex justify-between pr-4">
             <h2 className="text-xl font-semibold mb-3">Mis grupos</h2>
-            <Link href="/academias/crear">
+            {formData.rol=== "dueño de academia" && (
+              <Link href="/academias/crear">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 height="30px"
@@ -117,7 +130,7 @@ const DashboardPage: React.FC = () => {
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
               </svg>
-            </Link>
+            </Link>)}
           </div>
           <div className="grid grid-cols-2 gap-4">
             {/* Grupo principal */}
