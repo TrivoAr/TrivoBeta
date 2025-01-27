@@ -2,14 +2,25 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 const Success = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
+  const [grupoId, setGrupoId] = useState<string | null>(null);
+  const [nombreGrupo, setNombreGrupo] = useState<string | null>(null);
+  const [monto, setMonto] = useState<string | null>(null);
+  const [fecha, setFecha] = useState<string | null>(null);
+
 
   const payment_id = searchParams.get("payment_id");
   const status = searchParams.get("status");
   const external_reference = searchParams.get("external_reference");
+  const storedGrupoId = localStorage.getItem("grupoId");
+  const storedNombreGrupo = localStorage.getItem("nombreGrupo");
+  const storedMonto = localStorage.getItem("monto");
+  const storedFecha = localStorage.getItem("fecha");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -27,6 +38,11 @@ const Success = () => {
               payment_id,
               status,
               external_reference,
+              monto: storedMonto, 
+              metodo_pago: "--",
+              usuario_id: session.user.id, 
+              grupo_id: storedGrupoId, 
+              mes_pagado: storedFecha,
             }),
           });
 
