@@ -2,7 +2,7 @@ const { readFileSync, writeFileSync } = require("fs");
 const axios = require("axios");
 
 const accessToken = process.env.MP_ACCESS_TOKEN || "APP_USR-4970861093465590-010315-67d54047f2b166ed4a4b294ad01bf781-2190675569";
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://klubo-mvp-v1.vercel.app/";
 
 const api = {
   message: {
