@@ -35,3 +35,19 @@ export async function POST(req) {
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    // Conectar a la base de datos
+    await connectDB();
+
+    // Obtener todos los pagos
+    const pagos = await Pago.find();
+
+    // Enviar la respuesta con los datos obtenidos
+    return NextResponse.json(pagos, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener los pagos:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
+}
