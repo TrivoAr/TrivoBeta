@@ -1,40 +1,20 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, model, models } from "mongoose";
 
-const PagoSchema = new mongoose.Schema({
-  usuario_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: true,
-  },
-  grupo_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Grupo',
-    required: true,
-  },
-  mes_pagado: {
-    type: String,
-    required: true,
-  },
-  monto: {
-    type: Number,
-    required: true,
-  },
-  estado: {
-    type: String,
-    enum: ['aprobado', 'pendiente', 'rechazado'],
-    default: 'pendiente',
-  },
-  fecha_pago: {
-    type: Date,
-    default: Date.now,
-  },
+const PagoSchema = new Schema({
+  usuario_id: { type: String, required: true },
+  grupo_id: { type: String, required: true },
+  mes_pagado: { type: String, required: true },
+  monto: { type: Number, required: true },
+  estado: { type: String, required: true },
+  fecha_pago: { type: Date, default: Date.now },
   detalle_transaccion: {
     id_transaccion: { type: String, required: true },
     metodo_pago: { type: String, required: true },
-    numero_tarjeta: { type: String },
+    numero_tarjeta: { type: String, required: true },
   },
 });
 
-const Pago = mongoose.model('Pago', PagoSchema);
+// Verifica si ya existe el modelo para evitar la sobreescritura
+const Pago = models.Pago || model("Pago", PagoSchema);
 
 export default Pago;

@@ -1,34 +1,53 @@
-import { connectDB } from "@/libs/mongodb";
-import Pago from "@/models/pago";
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import Pago from "@/models/pago";
+import { connectDB } from "@/libs/mongodb";
 
-// Manejo del POST para registrar un pago
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
-    const body = await req.json(); // Obtén los datos del cuerpo de la solicitud
-    const { payment_id, status, external_reference } = body;
+    await connectDB();
+    
+    const { payment_id, status, external_reference, monto, metodo_pago, usuario_id, grupo_id, mes_pagado } = await req.json();
 
-    // Validación de parámetros
-    if (!payment_id || !status || !external_reference) {
-      return NextResponse.json({ error: "Faltan parámetros necesarios" }, { status: 400 });
+    if (!payment_id || !status || !external_reference || !monto || !metodo_pago || !usuario_id || !grupo_id || !mes_pagado) {
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
-    await connectDB();
-
-    // Se podría ajustar para obtener el grupoId y monto de forma dinámica
     const nuevoPago = new Pago({
-      usuarioId: external_reference,
-      grupoId: "grupoId_placeholder", // Actualiza según sea necesario
-      monto: 25000, // Reemplaza con el valor correcto
-      estado: status,
-      transaccionId: payment_id,
+      usuario_id,
+      grupo_id,
+      mes_pagado,
+      monto,
+      estado: status === "approved" ? "aprobado" : status,
+      fecha_pago: new Date(),
+      detalle_transaccion: {
+        id_transaccion: payment_id,
+        metodo_pago,
+        numero_tarjeta: "**** **** **** 1234", // Esto debería venir de la API de MercadoPago
+      },
     });
 
     await nuevoPago.save();
 
-    return NextResponse.json({ message: "Pago registrado exitosamente" }, { status: 201 });
+    return NextResponse.json({ message: "Pago registrado correctamente" }, { status: 200 });
   } catch (error) {
-    console.error("Error al registrar el pago:", error); // Mejora: Usar un logger en producción
+    console.error("Error al registrar el pago:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    // Conectar a la base de datos
+    await connectDB();
+
+    // Obtener todos los pagos
+    const pagos = await Pago.find();
+
+    // Enviar la respuesta con los datos obtenidos
+    return NextResponse.json(pagos, { status: 200 });
+  } catch (error) {
+    console.error("Error al obtener los pagos:", error);
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
