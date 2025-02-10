@@ -1,8 +1,8 @@
-// src/app/api/academias/route.ts
 import { connectDB } from "@/libs/mongodb";
 import Academia from "@/models/academia";
-import { getServerSession } from "next-auth/next"; // Usamos getServerSession para NextAuth
-import { authOptions } from "../../../libs/authOptions"; // Importa las opciones de autenticación
+import UsuarioAcademia from "@/models/users_academia"; // Importa el modelo de UsuarioAcademia
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../../libs/authOptions";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -11,8 +11,8 @@ export async function POST(request: Request) {
     // Conectar a la base de datos
     await connectDB();
 
-    // Obtener la sesión del usuario
-    const session = await getServerSession(authOptions); // Incluye las opciones de autenticación
+    // Obtener la sesión del usuario autenticado
+    const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json(
         { message: "No autenticado" },
@@ -32,9 +32,9 @@ export async function POST(request: Request) {
       imagen,
     } = await request.json();
 
-    // Crear una nueva instancia de Academia
+    // Crear la nueva academia
     const nuevaAcademia = new Academia({
-      dueño_id: session.user.id, // ID del usuario autenticado
+      dueño_id: session.user.id, // El usuario autenticado será el dueño
       nombre_academia,
       pais,
       provincia,
@@ -48,8 +48,16 @@ export async function POST(request: Request) {
     // Guardar la academia en la base de datos
     const savedAcademia = await nuevaAcademia.save();
 
+    // Agregar al usuario creador como miembro de la academia
+    await UsuarioAcademia.create({
+      user_id: session.user.id,
+      academia_id: savedAcademia._id,
+      estado: "aceptado", // El usuario es automáticamente aceptado como miembro
+    });
+
     return NextResponse.json(
       {
+        message: "Academia creada y usuario agregado como miembro",
         nombre_academia: savedAcademia.nombre_academia,
         pais: savedAcademia.pais,
         provincia: savedAcademia.provincia,
@@ -66,7 +74,11 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    return NextResponse.error();
+    console.error("Error al crear la academia:", error);
+    return NextResponse.json(
+      { message: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
 

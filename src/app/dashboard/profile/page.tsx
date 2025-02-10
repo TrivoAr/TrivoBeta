@@ -4,8 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import TopContainer from "@/components/TopContainer";
 import { useRouter } from "next/navigation";
 import { saveProfileImage } from "@/app/api/profile/saveProfileImage";
-
-
+import Link from "next/link";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -15,10 +14,11 @@ function ProfilePage() {
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || ""
+    rol: session?.user.role || "",
   });
-  const [profileImage, setProfileImage] = useState<string | null>(null); 
-  const [uploadingImage, setUploadingImage] = useState(false); 
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter();
   // Actualizar formData cuando la sesión cambie
@@ -60,9 +60,11 @@ function ProfilePage() {
   };
 
   const handleSave = async () => {
-    const confirmation = window.confirm("¿Estás seguro de que deseas guardar los cambios?");
+    const confirmation = window.confirm(
+      "¿Estás seguro de que deseas guardar los cambios?"
+    );
     if (!confirmation) return;
-  
+
     try {
       const { fullname, email } = formData; // Excluir 'rol' aquí
       const response = await fetch("/api/profile", {
@@ -74,11 +76,11 @@ function ProfilePage() {
           email,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Error al actualizar el perfil");
       }
-  
+
       // Actualiza los datos de la sesión después de guardar los cambios
       const updatedUser = await response.json();
       setFormData({
@@ -86,10 +88,10 @@ function ProfilePage() {
         email: updatedUser.email,
         rol: updatedUser.rol,
       });
-  
+
       // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
       setIsEditing(false);
-  
+
       alert("Los cambios se han guardado correctamente. Se cerrará la sesión.");
       signOut();
     } catch (error) {
@@ -113,12 +115,10 @@ function ProfilePage() {
       setUploadingImage(false);
     }
   };
-  
-  
 
   return (
     <div className="flex flex-col justify-between items-center gap-10">
-         <TopContainer/>
+      <TopContainer />
       <div className="containerBtnPerfil flex flex-col gap-5">
         {/* Botón para mostrar datos personales */}
         <div
@@ -152,15 +152,21 @@ function ProfilePage() {
                 <>
                   <p>
                     <span className="font-bold">Nore: </span>
-                    <span className="font-normal text-[#ADADAD]">{formData.fullname}</span>
+                    <span className="font-normal text-[#ADADAD]">
+                      {formData.fullname}
+                    </span>
                   </p>
                   <p>
                     <span className="font-bold">Email: </span>
-                    <span className="font-normal text-[#ADADAD]">{formData.email}</span>
+                    <span className="font-normal text-[#ADADAD]">
+                      {formData.email}
+                    </span>
                   </p>
                   <p>
                     <span className="font-bold">Rol: </span>
-                    <span className="font-normal text-[#ADADAD]">{session?.user.role}</span>
+                    <span className="font-normal text-[#ADADAD]">
+                      {session?.user.role}
+                    </span>
                   </p>
                   <button
                     className="text-blue-500 underline mt-2"
@@ -189,16 +195,16 @@ function ProfilePage() {
                       placeholder="Correo"
                     />
                   </div>
-                   {/* Sección de subida de imagen */}
-                   <div className="mt-4 text-[#E5E5E5]">
-                      <input
-                        type="file"
-                        onChange={handleImageUpload}
-                        accept="image/*"
-                        disabled={uploadingImage}
-                      />
-                      {uploadingImage && <p>Subiendo imagen...</p>}
-                    </div>
+                  {/* Sección de subida de imagen */}
+                  <div className="mt-4 text-[#E5E5E5]">
+                    <input
+                      type="file"
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      disabled={uploadingImage}
+                    />
+                    {uploadingImage && <p>Subiendo imagen...</p>}
+                  </div>
                   <div className="flex gap-4 mt-3">
                     <button
                       className="bg-green-500 text-white px-4 py-2 rounded shadow-lg"
@@ -218,19 +224,42 @@ function ProfilePage() {
             </div>
           )}
         </div>
-        {formData.rol=== "dueño de academia" && (<button className="w-[351px] flex items-center justify-between p-5 h-[60px] bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold" onClick={() => router.push(`/mercadopago`)}>
-          Métodos de pago
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="24px"
-            viewBox="0 -960 960 960"
-            width="24px"
-            fill="#999"
-          >
-            <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-          </svg>
-        </button>)}
-        
+        <div className="w-[351px] bg-[#E5E5E5] rounded-[10px] shadow-lg">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-full flex items-center justify-between p-5 h-[60px] font-bold"
+            >
+              Métodos de pago
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#999"
+                className={`transition-transform duration-300 ${
+                  isOpen ? "rotate-90" : ""
+                }`}
+              >
+                <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+              </svg>
+            </button>
+
+          {isOpen && (
+            <div className="flex flex-col">
+              {formData.rol === "dueño de academia" && (<button
+                className="p-4 w-full text-left border-t border-gray-300"
+                onClick={() => router.push(`/mercadopago`)}
+              >
+                Token
+              </button>)}
+              <Link href="/historial">
+              <button className="p-4 w-full text-left border-t border-gray-300">
+                Historial de Cobros
+              </button>
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Botón para mostrar Objetivos */}
         <div
