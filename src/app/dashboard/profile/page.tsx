@@ -225,7 +225,6 @@ function ProfilePage() {
           )}
         </div>
         <div className="w-[351px] bg-[#E5E5E5] rounded-[10px] shadow-lg">
-          {formData.rol === "dueño de academia" && (
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="w-full flex items-center justify-between p-5 h-[60px] font-bold"
@@ -244,16 +243,15 @@ function ProfilePage() {
                 <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
               </svg>
             </button>
-          )}
 
           {isOpen && (
             <div className="flex flex-col">
-              <button
+              {formData.rol === "dueño de academia" && (<button
                 className="p-4 w-full text-left border-t border-gray-300"
                 onClick={() => router.push(`/mercadopago`)}
               >
                 Token
-              </button>
+              </button>)}
               <Link href="/historial">
               <button className="p-4 w-full text-left border-t border-gray-300">
                 Historial de Cobros

@@ -29,6 +29,11 @@ export default function HistorialPagos() {
   const [grupos, setGrupos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    fullname: session?.user.fullname || "",
+    email: session?.user.email || "",
+    rol: session?.user.role || ""
+  });
 
   const usuario_id = session?.user?.id;
 
@@ -78,6 +83,13 @@ export default function HistorialPagos() {
         setLoading(false);
       }
     }
+    if (session?.user) {
+      setFormData({
+        fullname: session.user.fullname || "",
+        email: session.user.email || "",
+        rol: session.user.role || "",
+      });
+    }
 
     fetchPagos();
   }, [usuario_id]);
@@ -124,8 +136,8 @@ export default function HistorialPagos() {
                 )}
               </div>
               <div className="text-right">
-                <p className="text-red-500 font-semibold">-${pago.monto}</p>
-                <p className="text-green-500 font-semibold">+${pago.monto}</p>
+              {formData.rol !== "dueño de academia" && ( <p className="text-red-500 font-semibold">-${pago.monto}</p>)}
+                {formData.rol=== "dueño de academia" && ( <p className="text-green-500 font-semibold">+${pago.monto}</p>)}
                 <p className="text-sm text-gray-500">
                   {new Date(pago.fecha_pago).toLocaleTimeString([], {
                     hour: "2-digit",
