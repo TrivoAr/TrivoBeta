@@ -34,6 +34,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hasActiveRequest, setHasActiveRequest] = useState(false); // Estado para solicitudes activas
+  const [esMiembro, setEsMiembro] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -70,6 +71,26 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
       }
     };
 
+    const checkMembership = async () => {
+      if (!session || !session.user) return;
+      try {
+        const miembrosResponse = await axios.get(`/api/academias/${params.id}/miembros`);
+        const miembrosData = miembrosResponse.data.miembros;
+    
+        // Verifica si el usuario está en la lista y su estado es "aceptado"
+        const usuarioEsMiembro = miembrosData.some(
+          (miembro: any) => miembro.user_id._id === session.user.id && miembro.estado === "aceptado"
+        );
+    
+        console.log("Usuario es miembro:", usuarioEsMiembro);
+        setEsMiembro(usuarioEsMiembro);
+      } catch (error) {
+        console.error("Error al verificar membresía:", error);
+      }
+    };
+    
+    
+
     const checkActiveRequest = async () => {
       if (!session || !session.user) return;
       try {
@@ -99,6 +120,7 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
 
     fetchData();
     checkActiveRequest(); // Verificar solicitud activa
+    checkMembership();
   }, [params.id, session]);
 
   const handleJoinAcademia = async () => {
@@ -265,18 +287,17 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
             ))}
           </ul>
         )}
-
-        <button
-          onClick={handleJoinAcademia}
-          disabled={hasActiveRequest} // Deshabilitar si hay solicitud activa
-          className={`border w-[125px] h-[32px] rounded-[10px] self-center ${
-            hasActiveRequest
-              ? "border-gray-400 text-gray-400"
-              : "border-[#FF9A3D] text-[#FF9A3D]"
-          }`}
-        >
-          {hasActiveRequest ? " Solicitud enviada " : "Unirse"}
-        </button>
+       {!esMiembro && (
+  <button
+    onClick={handleJoinAcademia}
+    disabled={hasActiveRequest}
+    className={`border w-[125px] h-[32px] rounded-[10px] self-center ${
+      hasActiveRequest ? "border-gray-400 text-gray-400" : "border-[#FF9A3D] text-[#FF9A3D]"
+    }`}
+  >
+    {hasActiveRequest ? "Solicitud enviada" : "Unirse"}
+  </button>
+)}
        {/* <button onClick={handleEdit} className="btn-icon">
           ⚙️ {/* Ícono de tuerca }
         </button>*/}
