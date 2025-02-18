@@ -19,31 +19,27 @@ const CrearGrupo = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Obtener academias asociadas al usuario logueado
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
-        const res = await fetch("/api/academias?owner=true"); // Ruta al endpoint de academias
+        const res = await fetch("/api/academias?owner=true");
         const data = await res.json();
-        console.log("Academias recibidas:", data); // Debug
-        setAcademias(data); // Guardar academias filtradas por el dueño_id del usuario
+        setAcademias(data);
       } catch (error) {
         console.error("Error al cargar academias:", error);
         toast.error("Error al cargar las academias");
       } finally {
-        setLoading(false); // Finalizar estado de carga
+        setLoading(false);
       }
     };
     fetchAcademias();
   }, []);
 
-  // Manejar cambios en los campos del formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setGrupo({ ...grupo, [name]: value });
   };
 
-  // Enviar formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -76,7 +72,6 @@ const CrearGrupo = () => {
     }
   };
 
-  // Renderización condicional
   if (loading) {
     return <div className="text-center text-gray-500">Cargando...</div>;
   }
@@ -85,20 +80,17 @@ const CrearGrupo = () => {
     return (
       <div className="text-center mt-10 p-4 bg-white rounded shadow">
         <h1 className="text-xl font-bold mb-4">No tienes academias creadas</h1>
-        <p className="text-gray-700">
-          Crea una academia primero para poder gestionar grupos.
-        </p>
+        <p className="text-gray-700">Crea una academia primero para poder gestionar grupos.</p>
       </div>
     );
   }
 
   return (
-    <div className="">
+    <div>
       <Toaster position="top-center" />
       <h1 className="text-xl font-bold text-center mb-5">Crear Grupo</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-        {/* Academia */}
         <select
           name="academia_id"
           value={grupo.academia_id}
@@ -114,7 +106,6 @@ const CrearGrupo = () => {
           ))}
         </select>
 
-        {/* Nombre del grupo */}
         <input
           type="text"
           name="nombre_grupo"
@@ -125,17 +116,19 @@ const CrearGrupo = () => {
           className="bg-[#F4F4F4] border-b"
         />
 
-        {/* Nivel */}
-        <input
-          type="text"
+        <select
           name="nivel"
           value={grupo.nivel}
           onChange={handleInputChange}
-          placeholder="Dificultad"
-          className="bg-[#F4F4F4] border-b"
-        />
+          required
+          className="bg-[#F4F4F4] border-b text-gray-400"
+        >
+          <option value="">Selecciona dificultad</option>
+          <option value="baja">Baja</option>
+          <option value="media">Media</option>
+          <option value="alta">Alta</option>
+        </select>
 
-        {/* Ubicación */}
         <input
           type="text"
           name="ubicacion"
@@ -145,17 +138,15 @@ const CrearGrupo = () => {
           className="bg-[#F4F4F4] border-b"
         />
 
-        {/* Horario */}
         <input
-          type="text"
+          type="time"
           name="horario"
           value={grupo.horario}
           onChange={handleInputChange}
-          placeholder="Horario"
+          required
           className="bg-[#F4F4F4] border-b"
         />
 
-        {/* Cuota mensual */}
         <input
           type="text"
           name="cuota_mensual"
@@ -165,7 +156,6 @@ const CrearGrupo = () => {
           className="bg-[#F4F4F4] border-b"
         />
 
-        {/* Descripción */}
         <textarea
           name="descripcion"
           value={grupo.descripcion}
@@ -174,7 +164,6 @@ const CrearGrupo = () => {
           className="bg-[#F4F4F4] border-b"
         />
 
-        {/* Tipo de Grupo */}
         <select
           name="tipo_grupo"
           value={grupo.tipo_grupo}
@@ -187,18 +176,12 @@ const CrearGrupo = () => {
           <option value="otros">Otros</option>
         </select>
 
-        <button
-          type="submit"
-          className="text-sm font-bold w-[300px] bg-[#FF9A3D] rounded-md h-[40px]"
-        >
+        <button type="submit" className="text-sm font-bold w-[300px] bg-[#FF9A3D] rounded-md h-[40px]">
           Crear Grupo
         </button>
 
-        <button
-          type="submit"
-          className="text-sm font-bold w-[300px] bg-[#f4f4f4] border-2 border-[#FF9A3D] text-[#FF9A3D] rounded-md h-[40px]"
-        >
-          Atras
+        <button type="button" onClick={() => router.back()} className="text-sm font-bold w-[300px] bg-[#f4f4f4] border-2 border-[#FF9A3D] text-[#FF9A3D] rounded-md h-[40px]">
+          Atrás
         </button>
       </form>
     </div>

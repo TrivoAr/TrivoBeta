@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import axios from "axios";
 
 interface Pago {
   _id: string;
@@ -11,11 +12,6 @@ interface Pago {
   monto: number;
   estado: string;
   fecha_pago: string;
-  detalle_transaccion: {
-    id_transaccion: string;
-    metodo_pago: string;
-    numero_tarjeta: string;
-  };
 }
 
 interface Grupo {
@@ -25,130 +21,105 @@ interface Grupo {
 
 export default function HistorialPagos() {
   const { data: session } = useSession();
-  const [pagos, setPagos] = useState<Pago[]>([]);
+  const [pagosPorGrupo, setPagosPorGrupo] = useState<Record<string, Pago[]>>({});
   const [grupos, setGrupos] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
-    email: session?.user.email || "",
-    rol: session?.user.role || ""
-  });
 
   const usuario_id = session?.user?.id;
+  const id_academia = typeof window !== "undefined" ? localStorage.getItem("academia_id") : null;
 
   useEffect(() => {
-    if (!usuario_id) return;
+    if (!usuario_id || !id_academia) return;
 
     async function fetchPagos() {
       try {
-        const response = await fetch("/api/registrar-pago");
-        if (!response.ok) throw new Error("Error al obtener los pagos");
+        const [pagosRes, gruposRes] = await Promise.all([
+          axios.get("/api/registrar-pago"),
+          axios.get(`/api/academias/${id_academia}`)
+        ]);
 
-        const data: Pago[] = await response.json();
+        const pagosData: Pago[] = pagosRes.data;
+        const gruposData: Grupo[] = gruposRes.data.grupos;
 
-        // Filtrar solo los pagos del usuario autenticado
-        const pagosUsuario = data.filter(
-          (pago) => pago.usuario_id === usuario_id
-        );
-
-        // Ordenar pagos por fecha más reciente
-        const pagosOrdenados = pagosUsuario.sort(
-          (a, b) =>
-            new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime()
-        );
-
-        setPagos(pagosOrdenados);
-
-        // Obtener los IDs de los grupos sin repetir
-        const grupoIds = Array.from(
-          new Set(pagosUsuario.map((pago) => pago.grupo_id))
-        );
-
+        // Crear un mapa de grupos
         const gruposMap: Record<string, string> = {};
-        for (const grupoId of grupoIds) {
-          const res = await fetch(`/api/grupos/${grupoId}`);
-          if (!res.ok) {
-            console.error("Error al obtener el grupo:", grupoId);
-            continue;
-          }
-          const { grupo } = await res.json();
+        gruposData.forEach(grupo => {
           gruposMap[grupo._id] = grupo.nombre_grupo;
-        }
-
+        });
         setGrupos(gruposMap);
+
+        // Filtrar solo los pagos de los grupos de esta academia y agruparlos
+        const pagosFiltrados = pagosData.filter(pago => gruposMap[pago.grupo_id]);
+
+        // Agrupar pagos por grupo
+        const pagosAgrupados: Record<string, Pago[]> = {};
+        pagosFiltrados.forEach(pago => {
+          if (!pagosAgrupados[pago.grupo_id]) {
+            pagosAgrupados[pago.grupo_id] = [];
+          }
+          pagosAgrupados[pago.grupo_id].push(pago);
+        });
+
+        // Ordenar los pagos dentro de cada grupo
+        Object.keys(pagosAgrupados).forEach(grupoId => {
+          pagosAgrupados[grupoId].sort(
+            (a, b) => new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime()
+          );
+        });
+
+        setPagosPorGrupo(pagosAgrupados);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        setError("Error al obtener los pagos o los grupos");
       } finally {
         setLoading(false);
       }
     }
-    if (session?.user) {
-      setFormData({
-        fullname: session.user.fullname || "",
-        email: session.user.email || "",
-        rol: session.user.role || "",
-      });
-    }
 
     fetchPagos();
-  }, [usuario_id]);
+  }, [usuario_id, id_academia]);
 
-  if (loading)
-    return <p className="text-center text-gray-500">Cargando pagos...</p>;
+  if (loading) return <p className="text-center text-gray-500">Cargando pagos...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
-    <div className="w-[380px] p-4 max-w-lg mx-auto bg-gray-100 rounded-lg shadow-md">
-      <div className="flex justify-between items-center h-[60px]">
-        <h2 className="text-lg font-semibold">Historial de pagos</h2>
-      </div>
-      <ul className="space-y-4">
-        {pagos.map((pago, index) => (
-          <div key={pago._id}>
-            {(index === 0 ||
-              new Date(pagos[index - 1].fecha_pago).toLocaleDateString() !==
-                new Date(pago.fecha_pago).toLocaleDateString()) && (
-              <div className="text-sm font-semibold text-gray-600 bg-gray-300 px-3 py-1 rounded-md mb-2">
-                {new Date(pago.fecha_pago).toLocaleDateString()}
-              </div>
-            )}
-            <li className="flex items-center bg-white p-4 rounded-lg shadow-sm">
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-10 h-10 rounded-full mr-3"
-              />
-              <div className="flex-1">
-                <p className="font-medium">
-                  {grupos[pago.grupo_id] || "Grupo desconocido"}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Mes:{" "}
-                  {new Date(pago.fecha_pago).toLocaleString("es-ES", {
-                    month: "long",
-                  })}
-                </p>
-                {pago.estado === "aprobado" ? (
-                  <p className="text-sm text-green-500">{pago.estado}</p>
-                ) : (
-                  <p className="text-sm text-red-500">{pago.estado}</p>
-                )}
-              </div>
-              <div className="text-right">
-              {formData.rol !== "dueño de academia" && ( <p className="text-red-500 font-semibold">-${pago.monto}</p>)}
-                {formData.rol=== "dueño de academia" && ( <p className="text-green-500 font-semibold">+${pago.monto}</p>)}
-                <p className="text-sm text-gray-500">
-                  {new Date(pago.fecha_pago).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </li>
+    <div className="w-[380px] p-4 max-w-lg mx-auto">
+<div className="w-full max-w-lg mx-auto bg-gray-100 p-4 rounded-lg shadow-md">
+      <h2 className="text-lg font-semibold text-center mb-4">Historial de pagos</h2>
+      {Object.keys(pagosPorGrupo).length === 0 ? (
+        <p className="text-center text-gray-500">No hay pagos registrados.</p>
+      ) : (
+        Object.keys(pagosPorGrupo).map(grupoId => (
+          <div key={grupoId} className="mb-6">
+            <h3 className="text-md font-bold text-gray-700 bg-gray-300 px-3 py-2 rounded-md">
+              {grupos[grupoId] || "Grupo desconocido"}
+            </h3>
+            <ul className="space-y-2 mt-2">
+              {pagosPorGrupo[grupoId].map(pago => (
+                <li key={pago._id} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      Mes: {new Date(pago.fecha_pago).toLocaleString("es-ES", { month: "long" })}
+                    </p>
+                    <p className={`text-sm ${pago.estado === "aprobado" ? "text-green-500" : "text-red-500"}`}>
+                      {pago.estado}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-semibold ${session?.user.role === "dueño de academia" ? "text-green-500" : "text-red-500"}`}>
+                      {session?.user.role === "dueño de academia" ? `+${pago.monto}` : `-${pago.monto}`}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(pago.fecha_pago).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
-      </ul>
+        ))
+      )}
+    </div>
     </div>
   );
 }

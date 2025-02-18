@@ -102,3 +102,45 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     );
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  const url = new URL(req.url);
+  const user_id = url.searchParams.get("user_id");
+
+  console.log("🔍 Eliminando usuario con ID:", user_id);
+
+  if (!user_id) {
+    return NextResponse.json({ message: "ID del usuario no proporcionado" }, { status: 400 });
+  }
+
+  try {
+    await connectDB(); // Conexión a la base de datos
+
+    const { id } = params; // ID de la academia
+
+    // 1. Eliminar la relación entre el usuario y la academia
+    const eliminarUsuarioAcademia = await UsuarioAcademia.deleteOne({
+      academia_id: id,
+      user_id,
+    });
+
+    if (eliminarUsuarioAcademia.deletedCount === 0) {
+      return NextResponse.json({ message: "El usuario no pertenece a esta academia" }, { status: 404 });
+    }
+
+    // 2. Eliminar la relación entre el usuario y el grupo (si tiene uno)
+    const eliminarUsuarioGrupo = await UsuarioGrupo.deleteOne({
+      user_id,
+    });
+
+    if (eliminarUsuarioGrupo.deletedCount === 0) {
+      console.log(`El usuario ${user_id} no tiene grupo asignado o no se encontró.`);
+    }
+
+    return NextResponse.json({ message: "Usuario eliminado correctamente" }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error al eliminar usuario:", error);
+    return NextResponse.json({ message: "Error al eliminar el usuario", error }, { status: 500 });
+  }
+}
