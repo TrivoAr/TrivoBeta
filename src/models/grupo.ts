@@ -45,6 +45,9 @@ const GrupoSchema = new Schema(
         type: String,
         enum: ["nivel", "distancia", "otros"],
       },
+      tiempo_promedio: {
+        type: String,
+      }
     },
     {
       timestamps: true,

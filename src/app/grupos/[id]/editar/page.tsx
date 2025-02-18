@@ -19,6 +19,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
     objetivos: "",
     cuota_mensual: "",
     tipo_grupo: "",
+    tiempo_promedio: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -114,54 +115,123 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
         <p className="text-center">Cargando datos...</p>
       ) : (
         <form onSubmit={handleSubmit} className="w-[80%]">
-          <div className="relative mb-6">
-            <input
-              type="text"
-              name="nombre_grupo"
-              className="form-input peer"
-              placeholder=" "
-              value={formData.nombre_grupo}
-              onChange={handleChange}
-              required
-            />
-            <label className="form-label">Nombre del Grupo</label>
-          </div>
-          {/* Campos adicionales */}
-          <div className="relative mb-6">
-            <textarea
-              name="descripcion"
-              className="form-input peer"
-              placeholder=" "
-              value={formData.descripcion}
-              onChange={handleChange}
-            ></textarea>
-            <label className="form-label">Descripción</label>
-          </div>
+        <div className="relative mb-6">
+          <input
+            type="text"
+            name="nombre_grupo"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.nombre_grupo}
+            onChange={handleChange}
+            required
+          />
+          <label className="form-label">Nombre del Grupo</label>
+        </div>
 
-          <div className="relative mb-6">
-            <select
-              name="tipo_grupo"
-              className="form-input peer"
-              value={formData.tipo_grupo}
-              onChange={handleChange}
-              required
-            >
-              <option value="nivel">Nivel</option>
-              <option value="distancia">Distancia</option>
-              <option value="otros">Otros</option>
-            </select>
-            <label className="form-label">Tipo de Grupo</label>
-          </div>
+        {/* Campos adicionales */}
+        <div className="relative mb-6">
+          <textarea
+            name="descripcion"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.descripcion}
+            onChange={handleChange}
+          ></textarea>
+          <label className="form-label">Descripción</label>
+        </div>
 
-          <div className="mt-4 text-[#E5E5E5]">
-            <input
-              type="file"
-              onChange={handleImageUpload}
-              accept="image/*"
-              disabled={uploadingImage}
-            />
-            {uploadingImage && <p>Subiendo imagen...</p>}
-          </div>
+        <div className="relative mb-6">
+          <input
+            type="time"
+            name="horario"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.horario}
+            onChange={handleChange}
+            required
+          />
+          <label className="form-label">Horario</label>
+        </div>
+
+        <div className="relative mb-6">
+          <input
+            type="text"
+            name="horario"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.ubicacion}
+            onChange={handleChange}
+            required
+          />
+          <label className="form-label">Ubicación</label>
+        </div>
+
+        <div className="relative mb-6">
+          <input
+            type="text"
+            name="tiempo_promedio"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.tiempo_promedio}
+            onChange={handleChange}
+            required
+          />
+          <label className="form-label">Tiempo promedio</label>
+        </div>
+
+        <div className="relative mb-6">
+          <select
+            name="nivel"
+            className="form-input peer"
+            value={formData.nivel}
+            onChange={handleChange}
+            required
+          >
+             <option value="baja">Baja</option>
+             <option value="media">Media</option>
+             <option value="alta">Alta</option>
+          </select>
+          <label className="form-label">Nivel</label>
+        </div>
+
+        <div className="relative mb-6">
+          <select
+            name="tipo_grupo"
+            className="form-input peer"
+            value={formData.tipo_grupo}
+            onChange={handleChange}
+            required
+          >
+            <option value="nivel">Nivel</option>
+            <option value="distancia">Distancia</option>
+            <option value="otros">Otros</option>
+          </select>
+          <label className="form-label">Tipo de Grupo</label>
+        </div>
+
+        <div className="relative mb-6">
+          <input
+            type="text"
+            name="cuota"
+            className="form-input peer"
+            placeholder=" "
+            value={formData.cuota_mensual}
+            onChange={handleChange}
+            required
+          />
+          <label className="form-label">Cuota</label>
+        </div>
+
+        <div className="mt-4 text-[#E5E5E5]">
+          <input
+            type="file"
+            onChange={handleImageUpload}
+            accept="image/*"
+            disabled={uploadingImage}
+          />
+          {uploadingImage && <p>Subiendo imagen...</p>}
+        </div>
+
 
           <button className="bg-[#FF9A3D] text-[#333] font-bold px-4 py-2 block w-full mt-4 rounded-[10px]">
             Guardar Cambios
