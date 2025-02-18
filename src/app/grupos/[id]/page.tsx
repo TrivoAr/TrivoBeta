@@ -20,6 +20,7 @@ type Grupo = {
   descripcion?: string;
   tipo_grupo?: string;
   cuota_mensual?: string;
+  tiempo_promedio?: string;
 };
 
 type Alumno = {
@@ -450,9 +451,9 @@ export default function GrupoDetailPage({
               Tiempo
               <br />
               
-              {/* {<span className="font-semibold text-black">
-                {grupo.descripcion || "No especificado"}
-              </span>} */}
+              {<span className="font-semibold text-black">
+                {grupo.tiempo_promedio || "No especificado"}
+              </span>} 
             </p>
           </div>
         </div>
