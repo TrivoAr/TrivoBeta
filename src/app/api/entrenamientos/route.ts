@@ -42,14 +42,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No tienes permisos para asignar entrenamientos" }, { status: 403 });
     }
 
-    // Crear el nuevo entrenamiento
+    const fechaAjustada = new Date(fecha);
+    fechaAjustada.setDate(fechaAjustada.getDate() + 1);
+    
     const entrenamiento = new Entrenamiento({
       alumno_id,
       grupo_id,
-      fecha,
+      fecha: fechaAjustada,
       descripcion,
       objetivo,
-    });
+    });    
 
     await entrenamiento.save();
 
