@@ -92,7 +92,7 @@ const TopContainer = () => {
       </div>
       <div
         className={`rounded-full border shadow-xl h-[40px] w-[40px] flex justify-center items-center cursor-pointer ${
-          SolicitudesPendientes ? "bg[#E5E5E5]" : "bg-[#B9B6B5]"
+          SolicitudesPendientes ? "bg[#FF9A3D]" : "bg-[#B9B6B5]"
         }`}
         onClick={handleNotificationClick}
       >
