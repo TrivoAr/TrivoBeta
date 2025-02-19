@@ -18,7 +18,6 @@ export async function POST(req: Request) {
 }
 
 // Obtener todos los grupos
-// src/app/api/grupos/route.ts
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const academiaId = searchParams.get('academiaId'); // Obtener el ID de la academia
@@ -28,7 +27,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Filtrar los grupos por el ID de la academia
+   
     const grupos = await Grupo.find({ academia_id: academiaId });
     return NextResponse.json({ grupos }, { status: 200 });
   } catch (error) {
@@ -75,7 +74,7 @@ export async function PATCH(req: Request) {
 // Eliminar un grupo
 export async function DELETE(req: Request) {
   try {
-    const session = await getServerSession(authOptions); // Obtén la sesión del usuario
+    const session = await getServerSession(authOptions); 
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }

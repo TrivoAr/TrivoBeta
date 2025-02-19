@@ -11,7 +11,7 @@ import TopContainer from "@/components/TopContainer";
 import Link from "next/link";
 
 interface Academia {
-  _id: string; // Cambié id a _id para coincidir con lo que normalmente se utiliza en MongoDB
+  _id: string; 
   nombre_academia: string;
   pais: string;
   provincia: string;
@@ -42,17 +42,23 @@ const DashboardPage: React.FC = () => {
     if (session) {
       const fetchAcademia = async () => {
         try {
-          const res = await fetch(`/api/academias?owner=true`);
+          let url = `/api/academias?owner=true`;
+      
+          if (session?.user.role !== "dueño de academia") {
+            url = `/api/academias?userId=${session.user.id}`; // Nueva API para obtener academias de un usuario
+          }
+      
+          const res = await fetch(url);
           const data = await res.json();
-          console.log(data); // Verifica si el campo _id está presente
+      
           if (data.length > 0) {
-            setAcademia(data[0]); // Supone que el usuario tiene una academia principal
+            setAcademia(data[0]); // Asigna la primera academia encontrada
           }
         } catch (error) {
           console.error("Error fetching academia:", error);
         }
       };
-
+      
       const fetchEntrenamientos = async () => {
         try {
           if (session) {
