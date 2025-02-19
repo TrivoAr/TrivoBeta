@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import TopContainer from "@/components/TopContainer";
 import { useSession } from "next-auth/react";
 
@@ -7,7 +7,27 @@ const Mp = () => {
   const { data: session } = useSession();
   const [publicKey, setPublicKey] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [tokenActual, setTokenActual] = useState("");
+  
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchToken(session.user.id);
+    }
+  }, [session]);
 
+  async function fetchToken(userId) {
+    try {
+      const response = await fetch(`/api/mercado-pago?userId=${userId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setTokenActual(data.token);
+      } else {
+        console.error("Error al obtener el token:", data.message);
+      }
+    } catch (error) {
+      console.error("Error en la petición:", error);
+    }
+  }
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -35,10 +55,10 @@ const Mp = () => {
     <>
       <TopContainer></TopContainer>
       <div>
-        <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
+       <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
         <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
-          <p className="font-light text-sm pl-2 mt-10 self-start">Credenciales de producción</p>
-
+         <p className="font-light text-sm pl-2 mt-2 self-start">Token Actual: {tokenActual || "No disponible"}</p>
+          <p className="font-light text-sm pl-2 mt-2 self-start">Credenciales de producción</p>
           <div className="relative w-[95%]">
             <input
               type="text"

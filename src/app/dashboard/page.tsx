@@ -171,6 +171,7 @@ const DashboardPage: React.FC = () => {
               className="space-y-4"
               onClick={() => router.push(`/entrenamiento`)}
             >
+               <h2 className="text-xl font-semibold mb-3">Mi entrenamiento</h2>
               <div className="bg-white p-4 rounded-lg shadow">
                 {entrenamientos.length > 0 ? (
                   entrenamientos.map((entrenamiento) => (
