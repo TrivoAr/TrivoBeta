@@ -8,15 +8,18 @@ import mongoose from "mongoose";
 
 export async function POST(request: Request) {
   try {
-    // Conectar a la base de datos
     await connectDB();
 
-    // Obtener la sesión del usuario autenticado
     const session = await getServerSession(authOptions);
     if (!session) {
+      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    }
+
+    const academiaExistente = await Academia.findOne({ dueño_id: session.user.id });
+    if (academiaExistente) {
       return NextResponse.json(
-        { message: "No autenticado" },
-        { status: 401 }
+        { message: "Ya tienes una academia registrada. No puedes crear más." },
+        { status: 400 }
       );
     }
 
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
 
     // Crear la nueva academia
     const nuevaAcademia = new Academia({
-      dueño_id: session.user.id, // El usuario autenticado será el dueño
+      dueño_id: session.user.id,
       nombre_academia,
       pais,
       provincia,
@@ -45,14 +48,13 @@ export async function POST(request: Request) {
       imagen,
     });
 
-    // Guardar la academia en la base de datos
     const savedAcademia = await nuevaAcademia.save();
 
     // Agregar al usuario creador como miembro de la academia
     await UsuarioAcademia.create({
       user_id: session.user.id,
       academia_id: savedAcademia._id,
-      estado: "aceptado", // El usuario es automáticamente aceptado como miembro
+      estado: "aceptado",
     });
 
     return NextResponse.json(
@@ -69,37 +71,39 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Error al crear la academia:", error);
-    return NextResponse.json(
-      { message: "Error interno del servidor" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
   }
 }
+
 
 // Obtener todas las academias o las academias de un usuario específico
 export async function GET(request: Request) {
   try {
-    await connectDB(); // Conectar a la base de datos
+    await connectDB(); 
 
-    // Obtener la sesión del usuario
     const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    }
 
-    // Verificar si se pasa un parámetro para filtrar por dueño
     const url = new URL(request.url);
-    const filterByOwner = url.searchParams.get("owner") === "true"; // Si se pasa el parámetro "owner=true", obtenemos las academias del dueño
+    const filterByOwner = url.searchParams.get("owner") === "true";
+    const userId = url.searchParams.get("userId");
 
-    let academias;
-    if (filterByOwner && session) {
-      // Filtrar academias según el dueño (session.user.id)
+    let academias = [];
+
+    if (filterByOwner) {
+
       academias = await Academia.find({ dueño_id: session.user.id });
+    } else if (userId) {
+      // Buscar academias donde el usuario sea miembro
+      const userAcademias = await UsuarioAcademia.find({ user_id: userId }).populate("academia_id");
+      academias = userAcademias.map((ua) => ua.academia_id); // Extrae la info de la academia
     } else {
-      // Obtener todas las academias si no hay filtro o si el usuario no está autenticado
+      // Obtener todas las academias
       academias = await Academia.find();
     }
 
