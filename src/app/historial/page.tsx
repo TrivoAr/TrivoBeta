@@ -31,27 +31,29 @@ export default function HistorialPagos() {
 
   useEffect(() => {
     if (!usuario_id || !id_academia) return;
-
+  
     async function fetchPagos() {
       try {
         const [pagosRes, gruposRes] = await Promise.all([
           axios.get("/api/registrar-pago"),
           axios.get(`/api/academias/${id_academia}`)
         ]);
-
+  
         const pagosData: Pago[] = pagosRes.data;
         const gruposData: Grupo[] = gruposRes.data.grupos;
-
+  
         // Crear un mapa de grupos
         const gruposMap: Record<string, string> = {};
         gruposData.forEach(grupo => {
           gruposMap[grupo._id] = grupo.nombre_grupo;
         });
         setGrupos(gruposMap);
-
-        // Filtrar solo los pagos de los grupos de esta academia y agruparlos
-        const pagosFiltrados = pagosData.filter(pago => gruposMap[pago.grupo_id]);
-
+  
+        // Filtrar pagos para el usuario actual y que pertenezcan a un grupo de la academia
+        const pagosFiltrados = pagosData.filter(
+          (pago) => pago.usuario_id === usuario_id && gruposMap[pago.grupo_id]
+        );
+  
         // Agrupar pagos por grupo
         const pagosAgrupados: Record<string, Pago[]> = {};
         pagosFiltrados.forEach(pago => {
@@ -60,14 +62,14 @@ export default function HistorialPagos() {
           }
           pagosAgrupados[pago.grupo_id].push(pago);
         });
-
-        // Ordenar los pagos dentro de cada grupo
+  
+        // Ordenar los pagos dentro de cada grupo por fecha de pago (descendente)
         Object.keys(pagosAgrupados).forEach(grupoId => {
           pagosAgrupados[grupoId].sort(
             (a, b) => new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime()
           );
         });
-
+  
         setPagosPorGrupo(pagosAgrupados);
       } catch (err) {
         setError("Error al obtener los pagos o los grupos");
@@ -75,10 +77,10 @@ export default function HistorialPagos() {
         setLoading(false);
       }
     }
-
+  
     fetchPagos();
   }, [usuario_id, id_academia]);
-
+  
   if (loading) return <p className="text-center text-gray-500">Cargando pagos...</p>;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
