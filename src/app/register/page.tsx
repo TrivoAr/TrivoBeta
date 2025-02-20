@@ -75,7 +75,7 @@ function Signup() {
           <img
             src="/assets/Isologo - Positivo a color.png"
             alt="Klubo Logo"
-            className="mx-auto w-[135px] h-[100px]"
+            className="mx-auto w-[135px] "
           />
           <h1 className="text-5xl font-medium text-400">Klubo</h1>
           <h1 className="text-xl font-medium text-600">Crear cuenta</h1>
