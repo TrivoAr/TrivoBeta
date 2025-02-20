@@ -45,7 +45,7 @@ function Signin() {
 
       {/* Logo y título */}
       <div className="text-center mb-6">
-        <Image src="/assets/Group 17.png" alt="Klubo Logo" width={120} height={120} />
+        <Image src="/assets/Isologo - Positivo a color.png" alt="Klubo Logo" width={120} height={120} />
         <h1 className="text-xl font-bold text-black mt-2">Klubo</h1>
       </div>
 
