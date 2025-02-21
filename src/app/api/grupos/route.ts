@@ -4,11 +4,12 @@ import Academia from "@/models/academia";
 import { getServerSession } from "next-auth"; // Cambia esto si usas otra configuración de sesión
 import { authOptions } from "../../../libs/authOptions"; // Ajusta la ruta si tienes configuración personalizada de autenticación
 
-// Crear un nuevo grupo
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const nuevoGrupo = await Grupo.create(body); // Crea el grupo con los datos recibidos
+    console.log("Datos recibidos en el backend:", body); // ✅ Verifica aquí
+
+    const nuevoGrupo = await Grupo.create(body);
     return NextResponse.json(nuevoGrupo, { status: 201 });
   } catch (error) {
     console.error("Error al crear grupo:", error);

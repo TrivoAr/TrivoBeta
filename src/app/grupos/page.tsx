@@ -16,6 +16,7 @@ const CrearGrupo = () => {
     cuota_mensual: "",
     descripcion: "",
     tipo_grupo: "",
+    tiempo_promedio: "",
   });
   const [loading, setLoading] = useState(true);
 
@@ -60,6 +61,7 @@ const CrearGrupo = () => {
           cuota_mensual: "",
           descripcion: "",
           tipo_grupo: "",
+          tiempo_promedio: "",
         });
         router.push("/dashboard");
       } else {
@@ -146,7 +148,15 @@ const CrearGrupo = () => {
           required
           className="bg-[#F4F4F4] border-b"
         />
-
+          {/* tiempo */}
+        <input
+          type="text"
+          name="tiempo_promedio"
+          value={grupo.tiempo_promedio}
+          onChange={handleInputChange}
+          placeholder="Tiempo promedio"
+          className="bg-[#F4F4F4] border-b"
+        />
         <input
           type="text"
           name="cuota_mensual"
