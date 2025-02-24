@@ -132,19 +132,13 @@ function Signup() {
                   onClick={() => handleOptionClick("alumno")}
                   className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
                 >
-                  Alumno
-                </li>
-                <li
-                  onClick={() => handleOptionClick("profe")}
-                  className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
-                >
-                  Profesor
+                  alumno
                 </li>
                 <li
                   onClick={() => handleOptionClick("dueño de academia")}
                   className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
                 >
-                  Dueño de Academia
+                  dueño de academia
                 </li>
               </ul>
             )}

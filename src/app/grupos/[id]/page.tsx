@@ -286,7 +286,7 @@ export default function GrupoDetailPage({
       ></div>
 
       <div className="absolute top-[135px] logo h-[120px] w-[390px] flex justify-start items-center gap-3 p-8">
-        <img src={groupImage} className="rounded-full w-[120px]" alt="Logo" />
+        <img src={groupImage} className="rounded-full object-cover h-[120px] w-[120px]" alt="Logo" />
         <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] leading-[22px] mx-auto mt-[30px]">
           {grupo.nombre_grupo}
         </h1>
