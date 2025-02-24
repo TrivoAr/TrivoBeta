@@ -5,7 +5,7 @@ const MercadoPagoCredentialsSchema = new Schema(
     userId: {
       type: String,
       required: true,
-      unique: true, // Cada usuario tiene un único registro de credenciales
+      unique: true,
     },
     publicKey: {
       type: String,
@@ -14,6 +14,10 @@ const MercadoPagoCredentialsSchema = new Schema(
     accessToken: {
       type: String,
       required: true,
+    },
+    hasCredentials: {
+      type: Boolean,
+      default: false, // Indica si el usuario ha agregado credenciales alguna vez
     },
   },
   { timestamps: true }

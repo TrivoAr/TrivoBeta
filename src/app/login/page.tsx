@@ -76,7 +76,7 @@ function Signin() {
           <i className="icon-eye text-gray-400"></i>
         </div>
 
-        <a href="#" className="text-xs text-orange-500 hover:underline text-right">
+        <a href="https://api.whatsapp.com/send?phone=+5493813155745&text=¡Hola! Olvide mi contraseña 🥲" className="text-xs text-orange-500 hover:underline text-right">
           ¿Olvidaste tu contraseña?
         </a>
 
