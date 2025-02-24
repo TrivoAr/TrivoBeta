@@ -3,12 +3,22 @@ import { FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
+import { text } from "stream/consumers";
 
 function CrearAcademia() {
   const router = useRouter();
 
+  const [text, setText] = useState("");
+  const maxChars = 2;
+
+  const handleChange = (event) => {
+    setText(event.target.value);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+  
 
     try {
       const formData = new FormData(event.currentTarget);
@@ -88,7 +98,9 @@ function CrearAcademia() {
             name="descripcion"
             className="form-input peer"
             placeholder=" "
+            maxLength={maxChars}
           ></textarea>
+          
           <label className="form-label">Descripción</label>
         </div>
 
