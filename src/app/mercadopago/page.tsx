@@ -1,5 +1,5 @@
 "use client";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import TopContainer from "@/components/TopContainer";
 import { useSession } from "next-auth/react";
 
@@ -8,7 +8,8 @@ const Mp = () => {
   const [publicKey, setPublicKey] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [tokenActual, setTokenActual] = useState("");
-  
+  const [hasCredentials, setHasCredentials] = useState(false); // Estado para saber si ya tiene credenciales
+
   useEffect(() => {
     if (session?.user?.id) {
       fetchToken(session.user.id);
@@ -20,7 +21,8 @@ const Mp = () => {
       const response = await fetch(`/api/mercado-pago?userId=${userId}`);
       const data = await response.json();
       if (response.ok) {
-        setTokenActual(data.token);
+        setTokenActual(data.token || "No disponible");
+        setHasCredentials(data.hasCredentials || false); // Guardar estado de credenciales
       } else {
         console.error("Error al obtener el token:", data.message);
       }
@@ -28,6 +30,7 @@ const Mp = () => {
       console.error("Error en la petición:", error);
     }
   }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -46,19 +49,36 @@ const Mp = () => {
     const result = await response.json();
     if (result.success) {
       alert("Credenciales guardadas correctamente");
+      setHasCredentials(true); // Actualizar estado después de guardar
     } else {
       alert(`Error: ${result.message}`);
     }
   }
-  
+
   return (
     <>
-      <TopContainer></TopContainer>
+      <TopContainer />
       <div>
-       <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
+        <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
+
+        {hasCredentials ? (
+          <p className="text-green-600 font-medium pl-2 mt-2">
+            ✅ Ya has agregado credenciales de pago.
+          </p>
+        ) : (
+          <p className="text-red-600 font-medium pl-2 mt-2">
+            ⚠️ Aún no has agregado credenciales de pago.
+          </p>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
-         <p className="font-light text-sm pl-2 mt-2 self-start">Token Actual: {tokenActual || "No disponible"}</p>
-          <p className="font-light text-sm pl-2 mt-2 self-start">Credenciales de producción</p>
+          <p className="font-light text-sm pl-2 mt-2 self-start">
+            Token Actual: {tokenActual || "No disponible"}
+          </p>
+          <p className="font-light text-sm pl-2 mt-2 self-start">
+            Credenciales de producción
+          </p>
+
           <div className="relative w-[95%]">
             <input
               type="text"
@@ -94,10 +114,12 @@ const Mp = () => {
           </div>
 
           <p className="font-light text-sm pl-2 self-start text-[#bcbcbc]">
-            Habilita a los checkout de mercado pago para recibir pagos reales en la app
+            Habilita a los checkout de Mercado Pago para recibir pagos reales en la app
           </p>
 
-          <button className="w-[95%] bg-[#FF9A3D] h-[40px] rounded-md mt-10 text-[#333] text-sm font-medium hover:bg-[#e88a35] transition-colors">
+          <button
+            className="w-[95%] bg-[#FF9A3D] h-[40px] rounded-md mt-10 text-[#333] text-sm font-medium hover:bg-[#e88a35] transition-colors"
+          >
             Guardar
           </button>
         </form>

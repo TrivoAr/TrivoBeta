@@ -33,6 +33,8 @@ const UserSchema = new Schema(
       enum: ["alumno", "profe", "dueño de academia"],
       required: [true, "Role is required"],
     },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpire: { type: Date, select: false },
   },
   {
     timestamps: true,

@@ -96,7 +96,7 @@ function CrearAcademia() {
           <select name="tipo_disciplina" className="form-input peer" placeholder=" " required>
             <option value="running">Running</option>
             <option value="trekking">Trekking</option>
-            <option value="otros">Ciclismo</option>
+            <option value="ciclismo">Ciclismo</option>
           </select>
           <label className="form-label">Tipo de disciplina</label>
         </div>

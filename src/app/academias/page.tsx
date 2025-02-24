@@ -20,6 +20,7 @@ export default function AcademiasPage() {
   const [academias, setAcademias] = useState<Academia[]>([]);
   const [academiasRunning, setAcademiasRunning] = useState<Academia[]>([]);
   const [academiasTrekking, setAcademiasTrekking] = useState<Academia[]>([]);
+  const [ciclismoAcademias, setAcademiasCiclismo] = useState<Academia[]>([]);
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("running");
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
@@ -38,9 +39,13 @@ export default function AcademiasPage() {
         const trekkingAcademias = response.data.filter(
           (academia: Academia) => academia.tipo_disciplina === "trekking"
         );
+        const ciclismoAcademias = response.data.filter(
+          (academia: Academia) => academia.tipo_disciplina === "ciclismo"
+        );
 
         setAcademiasRunning(runningAcademias);
         setAcademiasTrekking(trekkingAcademias);
+        setAcademiasCiclismo(ciclismoAcademias);
         setAcademias(response.data);
       } catch (error) {
         console.error("Error fetching academias:", error);
