@@ -35,12 +35,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Academia no encontrada" }, { status: 404 });
     }
 
-    if (
+    /*if (
       academia.dueño_id.toString() !== session.user.id &&
       grupo.profesor_id?.toString() !== session.user.id
     ) {
       return NextResponse.json({ error: "No tienes permisos para asignar entrenamientos" }, { status: 403 });
-    }
+    }*/
 
     const fechaAjustada = new Date(fecha);
     fechaAjustada.setDate(fechaAjustada.getDate() + 1);

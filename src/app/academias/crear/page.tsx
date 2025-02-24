@@ -9,7 +9,7 @@ function CrearAcademia() {
   const router = useRouter();
 
   const [text, setText] = useState("");
-  const maxChars = 2;
+  const maxChars = 60;
 
   const handleChange = (event) => {
     setText(event.target.value);
