@@ -513,14 +513,24 @@ export default function GrupoDetailPage({
                 </span>
                 {userRole !== "alumno" &&
                   selectedAlumno?._id === alumno._id && (
+                     <div> 
                     <button
-                      onClick={() => {
-                        setIsAssigning(true);
-                      }}
-                      className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-                    >
-                      Entrenamiento
-                    </button>
+                    onClick={() => {
+                      setIsAssigning(true);
+                    }}
+                    className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+                  >
+                    Entrenamiento
+                  </button>
+                  <button
+            onClick={() => router.push(`/entrenamiento/${selectedAlumno?._id}`)}
+             className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+          >
+            Ver Historial
+          </button>
+                  </div>
+                   
+                    
                   )}
               </li>
             ))}

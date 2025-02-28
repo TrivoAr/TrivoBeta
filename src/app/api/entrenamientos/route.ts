@@ -90,23 +90,17 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Se requiere el ID del usuario" }, { status: 400 });
     }
 
-    if (!weekStart) {
-      return NextResponse.json({ error: "Se requiere el inicio de la semana" }, { status: 400 });
+    let filter: any = { alumno_id: userId };
+
+    if (weekStart) {
+      const startDate = new Date(weekStart);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6); // Fin de la semana
+
+      filter.fecha = { $gte: startDate, $lte: endDate };
     }
 
-    const startDate = new Date(weekStart);
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 6); // Fin de la semana
-
-    // Filtrar entrenamientos por usuario y por rango de fechas de la semana
-    const entrenamientos = await Entrenamiento.find({
-      alumno_id: userId,
-      fecha: { $gte: startDate, $lte: endDate },
-    });
-
-    if (!entrenamientos || entrenamientos.length === 0) {
-      return NextResponse.json({ message: "No se encontraron entrenamientos para esta semana" }, { status: 404 });
-    }
+    const entrenamientos = await Entrenamiento.find(filter);
 
     return NextResponse.json(entrenamientos, { status: 200 });
   } catch (error) {
