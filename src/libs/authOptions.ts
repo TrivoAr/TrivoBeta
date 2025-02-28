@@ -46,19 +46,15 @@ export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el t
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("TOKEN ANTES:", token);
       if (user) {
         token.user = user;
       }
-      console.log("TOKEN DESPUÉS:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("SESSION CALLBACK:", session, token);
       session.user = token.user as any;
       return session;
     },
   },
-
   secret: process.env.NEXTAUTH_SECRET,
 };
