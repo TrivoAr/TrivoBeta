@@ -19,14 +19,14 @@ function Signin() {
           password: formData.get("password"),
           redirect: false,
         });
-        
-        if (res?.ok) {
-          toast.success("¡Inicio de sesión exitoso!");
-          router.push("/dashboard");
+
+        if (res?.error) {
+          reject(res.error);
+        } else if (res?.ok) {
+          resolve("¡Inicio de sesión exitoso!");
         } else {
-          toast.error(res?.error || "Error desconocido");
+          reject("Ocurrió un error desconocido.");
         }
-        
       }),
       {
         loading: "Autenticando...",

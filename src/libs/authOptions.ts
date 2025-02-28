@@ -47,16 +47,11 @@ export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el t
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.fullname = user.fullname;
-        token.role = user.role;
+        token.user = user;
       }
-      console.log("Token generado:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("Token en session:", token);
       session.user = token.user as any;
       return session;
     },
