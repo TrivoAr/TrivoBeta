@@ -151,7 +151,7 @@ function Signup() {
           <input type="checkbox" id="terms" className="mr-2" required />
           <label htmlFor="terms" className="text-sm text-gray-600">
             Acepto los{" "}
-            <a href="#" className="text-orange-500 underline">
+            <a href="/terminos-condiciones" className="text-orange-500 underline">
               términos y condiciones
             </a>
           </label>
