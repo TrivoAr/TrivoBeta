@@ -86,6 +86,19 @@ const EntrenamientoPage = () => {
     setSelectedEntrenamiento(entrenamiento);
   };
 
+  const traducirEstado = (estado: string) => {
+    switch (estado) {
+      case "gris":
+        return "No iniciado";
+      case "verde":
+        return "Completado";
+      case "rojo":
+        return "No completado";
+      default:
+        return "Desconocido";
+    }
+  };
+
   useEffect(() => {
     fetchEntrenamientos();
   }, [currentWeek, session]);
@@ -205,7 +218,7 @@ const EntrenamientoPage = () => {
               className="mb-4 border p-2 w-[90%] rounded"
             ></textarea>
              <p>
-              <strong>Estado:</strong> {selectedEntrenamiento.estado}
+             <strong>Estado:</strong> {traducirEstado(selectedEntrenamiento.estado)}
             </p>
             <button
               onClick={() => setSelectedEntrenamiento(null)}
