@@ -143,6 +143,10 @@ const Mp = () => {
                 className="w-[100px] h-[26px]"
               />
             </div>
+              {/* Mensaje de advertencia */}
+              <div className="w-full p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 text-sm mt-4">
+              <p>⚠️ Recuerda esperar a que Mercado Pago te redirija de vuelta a la aplicación para confirmar tu pago.</p>
+            </div>
           </div>
         </div>
       </div>

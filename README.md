@@ -1,34 +1,77 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Klubo MVP
 
-## Getting Started
+Klubo es una aplicación diseñada para la gestión de academias y entrenamientos. Este MVP (Minimum Viable Product) proporciona una plataforma para administrar usuarios, academias y entrenamientos con autenticación segura y almacenamiento en MongoDB.
 
-First, run the development server:
+## Tecnologías utilizadas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+- **Next.js**: Framework de React para aplicaciones web modernas.
+- **NextAuth**: Gestión de autenticación y sesiones.
+- **MongoDB**: Base de datos NoSQL para almacenamiento de datos.
+- **Redux**: Manejo del estado global de la aplicación.
+- **bcrypt**: Encriptación de contraseñas.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Características principales
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Autenticación de usuarios con NextAuth.
+- Administración de academias y sus grupos.
+- Visualización y asignación de entrenamientos a los usuarios.
+- Historial de entrenamientos para cada usuario.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Instalación y ejecución
 
-## Learn More
+1. Clonar el repositorio:
+   ```sh
+   git clone https://github.com/men7ar31/Klubo_Mvp.git
+   ```
+2. Navegar al directorio del proyecto:
+   ```sh
+   cd Klubo_Mvp
+   ```
+3. Instalar dependencias:
+   ```sh
+   npm install
+   ```
+4. Configurar las variables de entorno en un archivo `.env`:
+   ```sh
+   NEXTAUTH_URL=http://localhost:3000
+   MONGODB_URI=your_mongodb_connection_string
+   NEXTAUTH_SECRET=your_secret_key
+   ```
+5. Ejecutar la aplicación en modo desarrollo:
+   ```sh
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Uso
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Los administradores pueden gestionar academias y asignar entrenamientos a los usuarios.
+- Los usuarios pueden visualizar su historial de entrenamientos.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Contribución
 
-## Deploy on Vercel
+Si deseas contribuir, por favor sigue estos pasos:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Realiza un fork del repositorio.
+2. Crea una rama con tu nueva funcionalidad:
+   ```sh
+   git checkout -b feature/nueva-funcionalidad
+   ```
+3. Realiza los cambios y confirma los commits:
+   ```sh
+   git commit -m "Descripción de la mejora"
+   ```
+4. Sube los cambios a tu fork:
+   ```sh
+   git push origin feature/nueva-funcionalidad
+   ```
+5. Abre un Pull Request en el repositorio original.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Licencia
+
+Este proyecto está bajo la licencia MIT. Puedes ver más detalles en el archivo LICENSE.
+
+---
+
+¡Gracias por contribuir a Klubo MVP!
+
+
