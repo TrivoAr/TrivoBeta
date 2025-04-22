@@ -16,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex flex-col items-center pb-[65px]">
+      <body className="flex flex-col items-center w-full">
         <Toaster />
         <Providers>
           <div className="">{children}</div>
