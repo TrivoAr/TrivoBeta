@@ -1,12 +1,15 @@
 "use client";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
+import lock from "../../../public/assets/icons/Group 2.svg"
+import user from "../../../public/assets/icons/User.svg"
 
-function Signin() {
+export default function Signin() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -19,7 +22,6 @@ function Signin() {
           password: formData.get("password"),
           redirect: false,
         });
-
         if (res?.error) {
           reject(res.error);
         } else if (res?.ok) {
@@ -34,87 +36,185 @@ function Signin() {
           router.push("/dashboard");
           return "¡Inicio de sesión exitoso!";
         },
-        error: (message) => `Error: ${message}`,
+        error: (msg) => `Error: ${msg}`,
       }
     );
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-[#F4F4F4] font-sans">
+    <div className="flex items-center justify-center min-h-screen w-[380px] bg-[#FEFBF9] font-sans">
       <Toaster position="top-center" />
 
-      {/* Logo y título */}
-      <div className="text-center mb-6">
-        <Image src="/assets/Isologo - Positivo a color.png" alt="Klubo Logo" width={120} height={120} />
-        <h1 className="text-xl font-bold text-black mt-2">Klubo</h1>
+      <div className="w-full h-full bg-[#FEFBF9] overflow-hidden">
+        {/* Logo */}
+        <div className="flex justify-center pt-6 mb-[52px]">
+          <Image
+            src="/assets/Isologo - Positivo a color.png"
+            alt="Klubo Logo"
+            width={180}
+            height={160}
+          />
+        </div>
+
+        <form className="px-6 pb-8 " onSubmit={handleSubmit}>
+          {/* Usuario o Email */}
+          <div className="relative mb-[26px]">
+            {/* Icono a la izquierda */}
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Image src={user} alt="lock icon" width={24} height={24} /> 
+              </div>
+
+            <input
+              type="text"
+              name="email"
+              placeholder="Email"
+              className="w-full h-[55px]  rounded-[4px] bg-[#4444441A] border-[1px] border-[#444444] py-2 pl-10 pr-4 text-base placeholder-gray-500 focus:outline-none"
+              required
+            />
+          </div>
+
+         {/* Contraseña */}
+         <div className="relative mb-[19px]">
+            
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Image src={lock} alt="lock icon" width={16} height={20} /> 
+              </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Contraseña"
+              className="w-full h-[55px]  rounded-[4px] bg-[#4444441A] border-[1px] border-[#444444] py-2 pl-10 pr-10 placeholder-gray-500 focus:outline-none"
+              required
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                /* Ojo abierto */
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-gray-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              ) : (
+                /* Ojo cerrado */
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-gray-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.27 21.27 0 0 1 5-5" />
+                  <path d="M1 1l22 22" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+
+          {/* Olvidaste contraseña */}
+          <div className="text-left mb-[26px]">
+            <a
+              href="https://api.whatsapp.com/send?phone=+5493813155745&text=¡Hola! Olvide mi contraseña 🥲"
+              className="text-[15px] text-orange-500 hover:underline "
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          {/* Botón Login */}
+          <button
+            type="submit"
+            className="w-full bg-[#F7941F] h-[55px] mb-[26px]  rounded-[4px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+          >
+            Login
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center text-gray-400 text-sm my-2 ">
+            <hr className="flex-grow border-t" />
+            <span className="px-2">- O continua con -</span>
+            <hr className="flex-grow border-t" />
+          </div>
+
+          {/* Social Buttons */}
+          <div className="flex justify-center space-x-6 mt-2 mt-[20px]">
+            <button
+              type="button"
+              onClick={() =>
+                toast.promise(signIn("google"), {
+                  loading: "Conectando con Google...",
+                  success: "¡Listo!",
+                  error: "No se pudo conectar con Google.",
+                })
+              }
+            >
+              <Image
+                src="/assets/google-icon.png"
+                alt="Google"
+                width={24}
+                height={24}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                toast.promise(signIn("apple"), {
+                  loading: "Conectando con Apple...",
+                  success: "¡Listo!",
+                  error: "No se pudo conectar con Apple.",
+                })
+              }
+            >
+              <Image
+                src="/assets/apple-icon.png"
+                alt="Apple"
+                width={24}
+                height={24}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                toast.promise(signIn("facebook"), {
+                  loading: "Conectando con Facebook...",
+                  success: "¡Listo!",
+                  error: "No se pudo conectar con Facebook.",
+                })
+              }
+            >
+              <Image
+                src="/assets/facebook-icon.png"
+                alt="Facebook"
+                width={24}
+                height={24}
+              />
+            </button>
+          </div>
+
+          {/* Registro */}
+          <p className="text-center text-sm text-gray-600 mt-4">
+            ¿Todavía no sos parte?{" "}
+            <a href="/register" className="text-orange-500 hover:underline">
+              Unite ahora
+            </a>
+          </p>
+        </form>
       </div>
-
-      {/* Formulario */}
-      <form className="w-80 flex flex-col gap-4" onSubmit={handleSubmit}>
-        {/* Email */}
-        <div className="relative border-b border-gray-300 pb-2 flex items-center">
-          <i className="icon-user text-gray-400 mr-2"></i>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            className="w-full border-none outline-none text-sm p-1 bg-[#F4F4F4]"
-            required
-          />
-        </div>
-
-        {/* Contraseña */}
-        <div className="relative border-b border-gray-300 pb-2 flex items-center">
-          <i className="icon-lock text-gray-400 mr-2"></i>
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            className="w-full border-none outline-none text-sm p-1 bg-[#F4F4F4]"
-            required
-          />
-          <i className="icon-eye text-gray-400"></i>
-        </div>
-
-        <a href="https://api.whatsapp.com/send?phone=+5493813155745&text=¡Hola! Olvide mi contraseña 🥲" className="text-xs text-orange-500 hover:underline text-right">
-          ¿Olvidaste tu contraseña?
-        </a>
-
-        {/* Botón de inicio de sesión */}
-        <button
-          type="submit"
-          className="bg-orange-500 text-white py-2 rounded-full font-medium text-base hover:bg-orange-600"
-        >
-          Ingresar
-        </button>
-
-        {/* <div className="text-center text-sm text-gray-400">O ingresar con</div> */}
-
-        {/* Botón de Google */}
-        {/* <button
-          type="button"
-          className="flex items-center justify-center gap-2 bg-white border border-gray-300 rounded-full py-2 px-4 text-sm font-medium text-gray-600 hover:bg-gray-100"
-          onClick={() =>
-            toast.promise(signIn("google"), {
-              loading: "Conectando con Google...",
-              success: "¡Inicio de sesión con Google exitoso!",
-              error: "No se pudo iniciar sesión con Google.",
-            })
-          }
-        >
-          <Image src="/assets/google-icon.png" alt="Google Icon" width={20} height={20} />
-          <span>Ingresar con Google</span>
-        </button> */}
-
-        <div className="text-center text-sm text-gray-600">
-          ¿Tienes cuenta?{" "}
-          <a href="/register" className="text-orange-500 hover:underline">
-            Crear Cuenta
-          </a>
-        </div>
-      </form>
     </div>
   );
 }
-
-export default Signin;
