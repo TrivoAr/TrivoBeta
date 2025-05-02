@@ -33,7 +33,7 @@ export default function Signin() {
       {
         loading: "Autenticando...",
         success: () => {
-          router.push("/dashboard");
+          router.push("/home");
           return "¡Inicio de sesión exitoso!";
         },
         error: (msg) => `Error: ${msg}`,

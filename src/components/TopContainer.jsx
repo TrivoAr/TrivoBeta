@@ -76,37 +76,60 @@ const TopContainer = () => {
   };
 
   return (
-    <div className="containerTop m-1 bg-[#E5E5E5] h-[90px] w-[380px] flex justify-around items-center rounded-[30px] border shadow-xl">
-      <div className="w-[30%] h-[100%] flex justify-center items-center">
-        <Link href="/dashboard/profile">
-        <img
-          className="h-[75px] w-[75px] rounded-full"
-          src={profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
-          alt="User Profile"
-        />
-        </Link>
-      </div>
-      <div className="flex flex-col items-center mr-[5%]">
-        <p className="text-slate-500 text-[12px]">{saludo}</p>
-        <p className="flex font-normal text-sm">{session?.user?.fullname || "Usuario no identificado"}</p>
-      </div>
-      <div
-        className={`rounded-full border shadow-xl h-[40px] w-[40px] flex justify-center items-center cursor-pointer ${
-          SolicitudesPendientes ? "bg-[#f97316]" : "bg-[#B9B6B5]"
-        }`}
-        onClick={handleNotificationClick}
+    <div className="containerTop  bg-[#FAF9F8] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center ">
+  {/* Avatar */}
+  <Link href="/dashboard/profile">
+    <img
+      className="h-[48px] w-[48px] rounded-[15px] object-cover"
+      src={
+        profileImage ||
+        "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+      }
+      alt="User Profile"
+    />
+  </Link>
+
+  {/* Ubicación */}
+  <div className="flex flex-col items-center justify-center text-center">
+    <p className="text-gray-500 text-[12px]">Ubicación</p>
+    <div className="flex items-center text-[14px] font-medium text-black">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="#f97316"
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        className="mr-1"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="25px"
-          viewBox="0 0 24 24"
-          width="25px"
-          fill="#fff"
-        >
-          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
-        </svg>
-      </div>
+        <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+      </svg>
+      San Miguel de Tucumán
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+        className="ml-1 w-4 h-4"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
     </div>
+  </div>
+
+  {/* Notificación */}
+  <div
+    className="relative cursor-pointer"
+    onClick={handleNotificationClick}
+  >
+    <div className="h-[48px] w-[48px] bg-white border rounded-[15px] shadow-md flex justify-center items-center">
+      <img className="h-[26px] w-[26px]" src="/assets/icons/Notification.png" alt="" />
+    </div>
+    {SolicitudesPendientes && (
+      <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-600 rounded-full border-2 border-white" />
+    )}
+  </div>
+</div>
   );
 };
 
