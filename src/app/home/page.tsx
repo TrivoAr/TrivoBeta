@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import TopContainer from "@/components/TopContainer";
+import EventModal from "@/components/EventModal";
 
 const categories = [
   { label: 'Running', icon: '/assets/icons/Group 33838.png' },
@@ -68,6 +69,8 @@ const discounts = [
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('Running');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const filteredEvents = events.filter(
     (event) => event.category === selectedCategory
@@ -128,14 +131,26 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="flex justify-end">
-                    <button
-                      style={{
-                        background: 'linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)',
-                      }}
-                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
-                    >
-                      Unirse
-                    </button>
+                   <button
+  onClick={() => {
+    setSelectedEvent({
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      location: event.title,
+      mapEmbedUrl: "https://www.google.com/maps/embed?pb=...", // cambia esto por uno real si lo tienes
+      teacher: "Profe Frank",
+      participants: ["👤", "👤", "👤"],
+    });
+    setIsModalOpen(true);
+  }}
+  style={{
+    background: 'linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)',
+  }}
+  className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+>
+  Unirse
+</button>
                   </div>
                 </div>
               </div>
@@ -209,6 +224,13 @@ export default function Home() {
           ))}
         </div>
       </section>
+      <EventModal
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  event={selectedEvent}
+/>
+
     </main>
+    
   );
 }
