@@ -21,6 +21,7 @@
     "eslint-config-next": "13.4.5",
     "firebase": "^11.1.0",
     "formidable": "^3.5.2",
+    "lucide-react": "^0.511.0",
     "mercadopago": "^2.2.0",
     "mongoose": "^7.2.3",
     "next": "^13.4.5",

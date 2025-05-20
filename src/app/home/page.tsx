@@ -48,22 +48,22 @@ const discounts = [
     id: 1,
     title: '20% OFF',
     subtitle: 'en toda la carta',
-    image: '/assets/images/bona-promo.png',
-    logo: '/assets/logos/bona.png',
+    image: '/assets/icons/bonaportada.png',
+    logo: '/assets/icons/bona.png',
   },
   {
     id: 2,
     title: '25% OFF',
     subtitle: 'en la cuota mensual',
-    image: '/assets/images/gym-promo.png',
-    logo: '/assets/logos/rc.png',
+    image: '/assets/icons/rc.png',
+    logo: '/assets/icons/Logo-RC-Gym 1.png',
   },
   {
     id: 3,
     title: '40% OFF',
     subtitle: 'en todas las salas',
-    image: '/assets/images/escape-promo.png',
-    logo: '/assets/logos/escaperoom.png',
+    image: '/assets/icons/gold-rush.png',
+    logo: '/assets/icons/escaperoom.png',
   },
 ];
 
@@ -81,20 +81,24 @@ export default function Home() {
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-       <TopContainer />
+      <TopContainer />
       {/* Categorías */}
       <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
           <button
             key={cat.label}
             onClick={() => setSelectedCategory(cat.label)}
-            className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px] opacity-70 border ${
+            className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px]  border ${
               selectedCategory === cat.label
-                ? 'bg-orange-500 text-white'
-                : 'bg-white text-[#808488]'
+                ? "bg-orange-500 text-white"
+                : "bg-white text-[#808488]"
             } flex flex-col items-center justify-center`}
           >
-            <img src={cat.icon} alt={cat.label} className="w-[25px] h-[25px] object-contain mb-4" />
+            <img
+              src={cat.icon}
+              alt={cat.label}
+              className="w-[25px] h-[25px] object-contain mb-4"
+            />
             <span className="text-[11px] font-semibold leading-none text-center">
               {cat.label}
             </span>
@@ -122,35 +126,58 @@ export default function Home() {
                 <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
                   <div className="flex justify-between items-start">
                     <div className="text-white space-y-1">
-                      <p className="text-sm font-semibold">{event.title}</p>
-                      <p className="text-xs flex items-center gap-1">📅 {event.date}</p>
-                      <p className="text-xs flex items-center gap-1">⏰ {event.time}</p>
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Location.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.title}
+                      </p>
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Calendar.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.date}
+                      </p>
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Clock.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.time}
+                      </p>
                     </div>
                     <span className="bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full">
                       {event.category}
                     </span>
                   </div>
                   <div className="flex justify-end">
-                   <button
-  onClick={() => {
-    setSelectedEvent({
-      title: event.title,
-      date: event.date,
-      time: event.time,
-      location: event.title,
-      mapEmbedUrl: "https://www.google.com/maps/embed?pb=...", // cambia esto por uno real si lo tienes
-      teacher: "Profe Frank",
-      participants: ["👤", "👤", "👤"],
-    });
-    setIsModalOpen(true);
-  }}
-  style={{
-    background: 'linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)',
-  }}
-  className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
->
-  Unirse
-</button>
+                    <button
+                      onClick={() => {
+                        setSelectedEvent({
+                          title: event.title,
+                          date: event.date,
+                          time: event.time,
+                          location: event.title,
+                          mapEmbedUrl:
+                            "https://www.google.com/maps/embed?pb=...", // cambia esto por uno real si lo tienes
+                          teacher: "Profe Frank",
+                          participants: ["👤", "👤", "👤"],
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                      }}
+                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+                    >
+                      Unirse
+                    </button>
                   </div>
                 </div>
               </div>
@@ -172,25 +199,57 @@ export default function Home() {
             {social.map((event) => (
               <div
                 key={event.id}
-                className="flex-shrink-0 w-[240px] h-[180px] bg-[#404040] rounded-2xl p-4 text-white flex flex-col justify-between relative"
+                className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
+                style={{
+                  backgroundImage: `url('/assets/icons/running group 2.png')`, // Cambiá el path si lo tenés en otra carpeta
+                }}
               >
-                <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full">
+                {/* Overlay para oscurecer la imagen */}
+                <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
+                {/* Contenido */}
+                <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
                   {event.category}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold mb-2">{event.title}</p>
-                  <p className="text-xs">📅 {event.date}</p>
-                  <p className="text-xs">⏰ {event.time}</p>
-                  <p className="text-xs">💰 {event.price}</p>
+                {/* Contenido inferior */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
+                  <p className="text-sm font-semibold mb-1">{event.title}</p>
+                  <p className="text-xs flex items-center gap-1 mb-[2px]">
+                    <img
+                      src="/assets/icons/Calendar.svg"
+                      alt=""
+                      className="w-[14px] h-[14px]"
+                    />
+                    {event.date}
+                  </p>
+                  <p className="text-xs flex items-center gap-1 mb-[2px]">
+                    <img
+                      src="/assets/icons/Clock.svg"
+                      alt=""
+                      className="w-[14px] h-[14px]"
+                    />
+                    {event.time}
+                  </p>
+                  <p className="text-xs flex items-center gap-1">
+                    <img
+                      src="/assets/icons/Us Dollar Circled.svg"
+                      alt=""
+                      className="w-[14px] h-[14px]"
+                    />
+                    {event.price}
+                  </p>
+                  <div className="flex justify-end">
+                       <button
+                    className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                    }}
+                  >
+                    Info
+                  </button>
+                  </div>
+                 
                 </div>
-                <button
-                  className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                  style={{
-                    background: 'linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)',
-                  }}
-                >
-                  Info
-                </button>
               </div>
             ))}
           </div>
@@ -199,10 +258,14 @@ export default function Home() {
 
       {/* Kpons Section */}
       <section>
-      <div className="flex justify-between items-center ">
-       <img src="/assets/icons/Group 33832.png" alt="Kpons" className="h-[130px] object-contain" />
-        <button className="text-sm text-gray-400">ver todos</button>
-      </div>
+        <div className="flex justify-between items-center ">
+          <img
+            src="/assets/icons/Group 33832.png"
+            alt="Kpons"
+            className="h-[130px] object-contain"
+          />
+          <button className="text-sm text-gray-400">ver todos</button>
+        </div>
         <div className="space-y-3 mt-[-20px] pb-[80px]">
           {discounts.map((promo) => (
             <div
@@ -210,27 +273,29 @@ export default function Home() {
               className="w-full h-[80px] rounded-xl overflow-hidden relative flex items-center px-4 text-white"
               style={{
                 backgroundImage: `url(${promo.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }}
             >
               <div className="z-10">
                 <p className="text-xl font-bold">{promo.title}</p>
                 <p className="text-sm">{promo.subtitle}</p>
               </div>
-              <img src={promo.logo} alt="Logo" className="ml-auto w-12 h-12 object-contain z-10" />
+              <img
+                src={promo.logo}
+                alt="Logo"
+                className="ml-auto w-12 h-12 object-contain z-10"
+              />
               <div className="absolute inset-0 bg-black bg-opacity-40" />
             </div>
           ))}
         </div>
       </section>
       <EventModal
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  event={selectedEvent}
-/>
-
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        event={selectedEvent}
+      />
     </main>
-    
   );
 }
