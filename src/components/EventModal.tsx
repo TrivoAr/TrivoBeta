@@ -22,7 +22,7 @@ export default function EventModal({ isOpen, onClose, event }: EventModalProps) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50  flex items-end justify-center ">
+    <div className="fixed inset-0 z-50  flex items-end justify-center pb-[80px]">
       <div className="bg-[#aeadad] w-full max-w-md rounded-t-2xl p-4 space-y-4 relative">
         <button className="absolute rounded-[12px] bg-white top-2 right-4 text-[12px] px-1" onClick={onClose}>✕</button>
 
@@ -50,7 +50,7 @@ export default function EventModal({ isOpen, onClose, event }: EventModalProps) 
           Salir
         </button>
 
-        <button onClick={() => router.push(`/event/${eventId}`)}
+        <button onClick={() => router.push(`/social/`)}
         className="block mx-auto text-sm text-gray-600">Más info</button>
       </div>
     </div>
