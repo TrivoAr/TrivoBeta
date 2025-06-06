@@ -1,7 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TopContainer from "@/components/TopContainer";
 import EventModal from "@/components/EventModal";
+
 
 const categories = [
   { label: 'Running', icon: '/assets/icons/Group 33838.png' },
@@ -10,7 +11,37 @@ const categories = [
   { label: 'Otros', icon: '/assets/icons/Mountain.png' },
 ];
 
-const events = [
+type EventType = {
+  _id: string;
+  title: string;
+  date: string;
+  time: string;
+  price: string;
+  image: string;
+  location: string;
+  category: string;
+  locationCoords: {
+      lat: number;
+      lng: number;
+    };
+};
+
+type ModalEvent = {
+  id;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  locationCoords: {
+    lat: number;
+    lng: number;
+  };
+  teacher: string;
+  participants: string[];
+};
+
+
+const socialTeam = [
   {
     id: 1,
     title: 'Parque 9 de julio',
@@ -68,16 +99,44 @@ const discounts = [
 ];
 
 export default function Home() {
-  const [selectedCategory, setSelectedCategory] = useState('Running');
+ const [selectedCategory, setSelectedCategory] = useState('Running');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
+  const [events, setEvents] = useState<EventType[]>([]);
 
-  const filteredEvents = events.filter(
-    (event) => event.category === selectedCategory
-  );
+useEffect(() => {
+  const fetchSalidas = async () => {
+    try {
+      const res = await fetch('/api/social');
+      const rawData = await res.json();
 
-  const destacadas = filteredEvents.filter((e) => e.highlighted);
+      const mappedData = rawData.map((item: any) => ({
+        _id: item._id,
+        title: item.nombre,
+        date: item.fecha,
+        time: item.hora,
+        price: item.duracion, // o podés poner un valor fijo como "Gratis"
+        image: item.imagen,
+        category: item.deporte,
+        location: item.ubicacion,
+        locationCoords: item.locationCoords,
+        highlighted: false, // Podés cambiar esto si tenés un campo para destacar
+      }));
+
+      setEvents(mappedData);
+    } catch (error) {
+      console.error("Error al obtener salidas:", error);
+    }
+  };
+
+  fetchSalidas();
+  
+}, []);
+
+
+  const filteredEvents = events.filter((event) => event.category === selectedCategory);
   const social = filteredEvents;
+
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -113,9 +172,9 @@ export default function Home() {
         </h2>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
-            {destacadas.map((event) => (
+            {social.map((event) => (
               <div
-                key={event.id}
+                key={event._id}
                 className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative"
               >
                 <img
@@ -132,7 +191,7 @@ export default function Home() {
                           alt=""
                           className="w-[14px] h-[14px] object-cover"
                         />{" "}
-                        {event.title}
+                        {event.location}
                       </p>
                       <p className="text-xs flex items-center gap-1">
                         <img
@@ -159,14 +218,14 @@ export default function Home() {
                     <button
                       onClick={() => {
                         setSelectedEvent({
+                          id: event._id,
                           title: event.title,
                           date: event.date,
                           time: event.time,
-                          location: event.title,
-                          mapEmbedUrl:
-                            "https://www.google.com/maps/embed?pb=...", // cambia esto por uno real si lo tienes
-                          teacher: "Profe Frank",
-                          participants: ["👤", "👤", "👤"],
+                          location: event.location,
+                          locationCoords: event.locationCoords, // reemplazá si tenés el link real
+                          teacher: "Profe Frank", // o podrías vincularlo con el `creador_id` si tenés su info
+                          participants: ["👤", "👤", "👤"], // podés mapear esto después
                         });
                         setIsModalOpen(true);
                       }}
@@ -196,9 +255,9 @@ export default function Home() {
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
-            {social.map((event) => (
+            {socialTeam.map((socialTeam) => (
               <div
-                key={event.id}
+                key={socialTeam.id}
                 className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
                 style={{
                   backgroundImage: `url('/assets/icons/running group 2.png')`, // Cambiá el path si lo tenés en otra carpeta
@@ -208,18 +267,20 @@ export default function Home() {
                 <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
                 {/* Contenido */}
                 <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
-                  {event.category}
+                  {socialTeam.category}
                 </div>
                 {/* Contenido inferior */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
-                  <p className="text-sm font-semibold mb-1">{event.title}</p>
+                  <p className="text-sm font-semibold mb-1">
+                    {socialTeam.title}
+                  </p>
                   <p className="text-xs flex items-center gap-1 mb-[2px]">
                     <img
                       src="/assets/icons/Calendar.svg"
                       alt=""
                       className="w-[14px] h-[14px]"
                     />
-                    {event.date}
+                    {socialTeam.date}
                   </p>
                   <p className="text-xs flex items-center gap-1 mb-[2px]">
                     <img
@@ -227,7 +288,7 @@ export default function Home() {
                       alt=""
                       className="w-[14px] h-[14px]"
                     />
-                    {event.time}
+                    {socialTeam.time}
                   </p>
                   <p className="text-xs flex items-center gap-1">
                     <img
@@ -235,20 +296,19 @@ export default function Home() {
                       alt=""
                       className="w-[14px] h-[14px]"
                     />
-                    {event.price}
+                    {socialTeam.price}
                   </p>
                   <div className="flex justify-end">
-                       <button
-                    className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                    }}
-                  >
-                    Info
-                  </button>
+                    <button
+                      className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                      }}
+                    >
+                      Info
+                    </button>
                   </div>
-                 
                 </div>
               </div>
             ))}

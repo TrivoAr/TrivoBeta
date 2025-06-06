@@ -2,6 +2,8 @@ import Providers from "./Providers";
 import Navbar from "../components/Navbar";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+import 'leaflet/dist/leaflet.css';
+
 
 
 export const metadata = {
