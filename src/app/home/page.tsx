@@ -26,18 +26,22 @@ type EventType = {
     };
 };
 
-type ModalEvent = {
-  id;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  locationCoords: {
-    lat: number;
-    lng: number;
-  };
-  teacher: string;
-  participants: string[];
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  event: {
+    id: any;
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    teacher: string;
+    participants: string[];
+    locationCoords: {
+      lat: number;
+      lng: number;
+    };
+  } | null; // Si puede ser null también
 };
 
 
