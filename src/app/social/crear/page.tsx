@@ -49,7 +49,7 @@ export default function CrearSalidaPage() {
     }
 
     return (
-      <MapContainer center={[-26.8333, -65.2167]} zoom={13} className="h-[200px] w-full rounded-md">
+      <MapContainer center={[-26.8333, -65.2167] as [number, number]} zoom={13} className="h-[200px] w-full rounded-md">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <LocationMarker />
       </MapContainer>

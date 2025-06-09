@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 
 // Configuración del icono por defecto de Leaflet
@@ -56,9 +57,10 @@ export default function EventPage({ params }: PageProps) {
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-   const [miembros, setMiembros] = useState<Miembro[]>([]);
+  const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [yaUnido, setYaUnido] = useState(false);
   const router = useRouter();
+  const position: LatLngExpression = [event.locationCoords.lat, event.locationCoords.lng];
 
  useEffect(() => {
     const fetchEvent = async () => {
@@ -244,7 +246,7 @@ export default function EventPage({ params }: PageProps) {
         </h2>
         {event.locationCoords ? (
           <div className="w-full h-48 rounded-xl overflow-hidden border">
-            <MapContainer
+           <MapContainer
               center={[event.locationCoords.lat, event.locationCoords.lng]}
               zoom={15}
               scrollWheelZoom={false}
