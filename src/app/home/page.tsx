@@ -27,17 +27,17 @@ type EventType = {
 };
 
 type ModalEvent = {
-  id;
+  id: any;
   title: string;
   date: string;
   time: string;
   location: string;
+  teacher: string;
+  participants: string[];
   locationCoords: {
     lat: number;
     lng: number;
   };
-  teacher: string;
-  participants: string[];
 };
 
 
