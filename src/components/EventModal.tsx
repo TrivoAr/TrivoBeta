@@ -18,16 +18,17 @@ interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: {
-    id;
+    id: any;
     title: string;
     date: string;
     time: string;
     location: string;
     teacher: string;
     participants: string[];
-    locationCoords: string[] | string | null;
+    locationCoords: { lat: number; lng: number } | string | string[] | null;
   } | null;
 }
+
 
 export default function EventModal({ isOpen, onClose, event }: EventModalProps) {
   const { data: session } = useSession();
