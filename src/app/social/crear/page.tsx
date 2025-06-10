@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -8,12 +9,16 @@ import { storage } from "@/libs/firebaseConfig";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
-// Configurar íconos para que se muestren correctamente
+{/*// Configurar íconos para que se muestren correctamente
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});*/}
+
+const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
+  ssr: false,
 });
 
 interface LatLng {
@@ -38,6 +43,7 @@ export default function CrearSalidaPage() {
 
   const [imagen, setImagen] = useState<File | null>(null);
 
+  {/*}
   function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
     function LocationMarker() {
       useMapEvents({
@@ -55,7 +61,7 @@ export default function CrearSalidaPage() {
       </MapContainer>
     );
   }
-
+*/}
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -133,13 +139,7 @@ export default function CrearSalidaPage() {
 
       <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Organizamos una salida de running" className="w-full px-3 py-2 border rounded-md" />
 
-      <LocationPicker
-        onChange={(latlng) => {
-          handleCoordsChange({ lat: latlng.lat, lng: latlng.lng });
-          setMarkerPos(latlng);
-        }}
-        position={markerPos}
-      />
+       <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
 
       <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear grupo</button>
       <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold">Atrás</button>
