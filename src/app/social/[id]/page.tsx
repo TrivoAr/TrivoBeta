@@ -60,7 +60,7 @@ export default function EventPage({ params }: PageProps) {
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [yaUnido, setYaUnido] = useState(false);
   const router = useRouter();
-  const position: LatLngExpression = [event.locationCoords.lat, event.locationCoords.lng];
+  
 
  useEffect(() => {
     const fetchEvent = async () => {
@@ -120,6 +120,7 @@ export default function EventPage({ params }: PageProps) {
       alert("Error: " + msg);
     }
   };
+
 
   if (loading) return <main className="py-20 text-center">Cargando evento...</main>;
   if (error || !event) return <main className="py-20 text-center">{error || "Evento no encontrado"}</main>;

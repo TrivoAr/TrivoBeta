@@ -1,4 +1,6 @@
 'use client';
+
+import dynamic from "next/dynamic";
 import React, { useEffect, useState }  from 'react';
 import { useRouter } from 'next/navigation';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -7,13 +9,13 @@ import L from 'leaflet';
 import { useSession } from 'next-auth/react';
 
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+{/*delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
-
+*/}
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -29,6 +31,9 @@ interface EventModalProps {
   } | null;
 }
 
+const MapComponent = dynamic(() => import('./MapComponent'), {
+  ssr: false,
+});
 
 export default function EventModal({ isOpen, onClose, event }: EventModalProps) {
   const { data: session } = useSession();
@@ -155,20 +160,10 @@ const handleAccion = async () => {
         </button>
 
         <div className="w-full h-40 rounded-xl overflow-hidden">
-          <MapContainer
-            center={[lat, lng]}
-            zoom={15}
-            scrollWheelZoom={false}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={[lat, lng]}>
-              <Popup>{event.title}</Popup>
-            </Marker>
-          </MapContainer>
+         <MapComponent
+          position={{ lat, lng }}
+          onChange={() => {}}
+        />
         </div>
 
         <div className="text-sm">
