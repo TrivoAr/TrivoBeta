@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import TopContainer from "@/components/TopContainer";
 import EventModal from "@/components/EventModal";
