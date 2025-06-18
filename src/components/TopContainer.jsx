@@ -68,10 +68,10 @@ const TopContainer = () => {
 
   const handleNotificationClick = () => {
     if (session?.user?.role === "dueño de academia") {
-      router.push("/academias/solicitudes");
+      router.push("/social/crear");
     } else {
       // Puedes manejar otros casos aquí si es necesario
-      router.push("/entrenamiento");
+      router.push("/social/crear");
     }
   };
 
@@ -123,7 +123,7 @@ const TopContainer = () => {
     onClick={handleNotificationClick}
   >
     <div className="h-[48px] w-[48px] bg-white border rounded-[15px] shadow-md flex justify-center items-center">
-      <img className="h-[26px] w-[26px]" src="/assets/icons/Notification.png" alt="" />
+      <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
     </div>
     {SolicitudesPendientes && (
       <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-600 rounded-full border-2 border-white" />
