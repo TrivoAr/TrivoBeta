@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import TopContainer from "@/components/TopContainer";
 import EventModal from "@/components/EventModal";
-
+import { useRouter } from 'next/navigation';
 
 const categories = [
   { label: 'Running', icon: '/assets/icons/Group 33838.png' },
@@ -100,10 +100,12 @@ const discounts = [
 ];
 
 export default function Home() {
+  const router = useRouter();
  const [selectedCategory, setSelectedCategory] = useState('Running');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
   const [events, setEvents] = useState<EventType[]>([]);
+  const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
 
 useEffect(() => {
   const fetchSalidas = async () => {
@@ -134,6 +136,36 @@ useEffect(() => {
   
 }, []);
 
+  useEffect(() => {
+  const fetchTeamSocial = async () => {
+    try {
+      const res = await fetch('/api/team-social');
+      const rawData = await res.json();
+
+      const mappedData = rawData.map((item: any) => ({
+        _id: item._id,
+        title: item.nombre,
+        date: item.fecha,
+        time: item.hora,
+        price: item.duracion,
+        image: item.imagen,
+        category: item.deporte,
+        location: item.ubicacion,
+        locationCoords: item.locationCoords,
+      }));
+
+      setTeamSocialEvents(mappedData);
+    } catch (error) {
+      console.error("Error al obtener eventos de Team Social:", error);
+    }
+  };
+
+  fetchTeamSocial();
+}, []);
+
+ const filteredTeamSocial = teamSocialEvents.filter(
+  (event) => event.category === selectedCategory
+);
 
   const filteredEvents = events.filter((event) => event.category === selectedCategory);
   const social = filteredEvents;
@@ -256,63 +288,47 @@ useEffect(() => {
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
-            {socialTeam.map((socialTeam) => (
-              <div
-                key={socialTeam.id}
-                className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('/assets/icons/running group 2.png')`, // Cambiá el path si lo tenés en otra carpeta
-                }}
-              >
-                {/* Overlay para oscurecer la imagen */}
-                <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
-                {/* Contenido */}
-                <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
-                  {socialTeam.category}
-                </div>
-                {/* Contenido inferior */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
-                  <p className="text-sm font-semibold mb-1">
-                    {socialTeam.title}
-                  </p>
-                  <p className="text-xs flex items-center gap-1 mb-[2px]">
-                    <img
-                      src="/assets/icons/Calendar.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    {socialTeam.date}
-                  </p>
-                  <p className="text-xs flex items-center gap-1 mb-[2px]">
-                    <img
-                      src="/assets/icons/Clock.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    {socialTeam.time}
-                  </p>
-                  <p className="text-xs flex items-center gap-1">
-                    <img
-                      src="/assets/icons/Us Dollar Circled.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    {socialTeam.price}
-                  </p>
-                  <div className="flex justify-end">
-                    <button
-                      className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                      }}
-                    >
-                      Info
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+{filteredTeamSocial.map((event) => (
+  <div
+    key={event._id}
+    className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
+    style={{
+      backgroundImage: `url(${event.image})`,
+    }}
+  >
+    <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
+    <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
+      {event.category}
+    </div>
+    <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
+      <p className="text-sm font-semibold mb-1">{event.title}</p>
+      <p className="text-xs flex items-center gap-1 mb-[2px]">
+        <img src="/assets/icons/Calendar.svg" alt="" className="w-[14px] h-[14px]" />
+        {event.date}
+      </p>
+      <p className="text-xs flex items-center gap-1 mb-[2px]">
+        <img src="/assets/icons/Clock.svg" alt="" className="w-[14px] h-[14px]" />
+        {event.time}
+      </p>
+      <p className="text-xs flex items-center gap-1">
+        <img src="/assets/icons/Us Dollar Circled.svg" alt="" className="w-[14px] h-[14px]" />
+        {event.price}
+      </p>
+      <div className="flex justify-end">
+        <button
+         onClick={() => router.push(`/team-social/${event._id}`)}
+          className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
+          style={{
+            background: "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+          }}
+        >
+          Info
+        </button>
+      </div>
+    </div>
+  </div>
+))}
+
           </div>
         </div>
       </section>
