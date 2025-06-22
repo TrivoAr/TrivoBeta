@@ -42,6 +42,13 @@ type ModalEvent = {
   };
 };
 
+type Academia = {
+  _id: string;
+  nombre_academia: string;
+  descripcion: string;
+  tipo_disciplina: string;
+  telefono: string;
+};
 
 const socialTeam = [
   {
@@ -350,7 +357,7 @@ useEffect(() => {
             alt="Kpons"
             className="h-[130px] object-contain"
           />
-          <button className="text-sm text-gray-400">ver todos</button>
+          <button className="text-sm text-gray-400">Próximamente</button>
         </div>
         <div className="space-y-3 mt-[-20px] pb-[80px]">
           {discounts.map((promo) => (

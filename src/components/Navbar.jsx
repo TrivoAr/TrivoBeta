@@ -40,7 +40,7 @@ function Navbar() {
           }
         />
         <NavItem
-          href="/grupos"
+          href="/academias/crear"
           label="Grupos"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
