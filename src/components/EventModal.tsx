@@ -150,7 +150,7 @@ const handleAccion = async () => {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center pb-[80px]">
+    <div className="fixed inset-0 z-[9999999] flex items-end justify-center ">
       <div className="bg-[#aeadad] w-full max-w-md rounded-t-2xl p-4 space-y-4 relative">
         <button
           className="absolute rounded-[12px] bg-white top-2 right-4 text-[12px] px-1"
