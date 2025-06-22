@@ -25,6 +25,7 @@ type EventType = {
       lat: number;
       lng: number;
     };
+  teacher: string;
 };
 
 type ModalEvent = {
@@ -123,7 +124,8 @@ useEffect(() => {
         category: item.deporte,
         location: item.ubicacion,
         locationCoords: item.locationCoords,
-        highlighted: false, // Podés cambiar esto si tenés un campo para destacar
+        highlighted: false,
+        teacher: item.creador_id?.firstname || "Sin profe", // Podés cambiar esto si tenés un campo para destacar
       }));
 
       setEvents(mappedData);
@@ -200,9 +202,14 @@ useEffect(() => {
 
       {/* Salidas destacadas */}
       <section>
+        <div className="flex justify-between items-center mb-3">
         <h2 className="text-2xl font-bold mb-3">
           <span className="text-[#C76C01]">Salidas</span> destacadas
         </h2>
+        <button className="text-sm text-gray-400" onClick={() => router.push(`/social/crear`)}>
+             <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
+          </button>
+        </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
             {social.map((event) => (
@@ -257,7 +264,7 @@ useEffect(() => {
                           time: event.time,
                           location: event.location,
                           locationCoords: event.locationCoords, // reemplazá si tenés el link real
-                          teacher: "Profe Frank", // o podrías vincularlo con el `creador_id` si tenés su info
+                          teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
                           participants: ["👤", "👤", "👤"], // podés mapear esto después
                         });
                         setIsModalOpen(true);
@@ -284,7 +291,9 @@ useEffect(() => {
           <h2 className="text-2xl font-bold">
             <span className="text-[#C76C01]">Social</span> Team
           </h2>
-          <button className="text-sm text-gray-400">ver todos</button>
+          <button className="text-sm text-gray-400" onClick={() => router.push(`/team-social/crear`)}>
+             <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
+          </button>
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">

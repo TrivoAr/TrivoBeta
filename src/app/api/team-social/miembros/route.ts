@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
-import MiembroTeamSocial from "@/models/teamSocial"; // Nuevo modelo
+import MiembroTeamSocial from "@/models/miembrosTeamSocial"; // Modelo correcto
 import User from "@/models/user";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
@@ -12,14 +12,15 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) return new Response("No autorizado", { status: 401 });
 
-  const salidaId = req.nextUrl.searchParams.get("salidaId");
-  if (!salidaId) return new Response("Falta salidaId", { status: 400 });
+  const teamSocialId = req.nextUrl.searchParams.get("teamSocialId");
+  if (!teamSocialId) return new Response("Falta teamSocialId", { status: 400 });
 
-  const miembros = await MiembroTeamSocial.find({ salida_id: salidaId }).populate("usuario_id");
+  // Buscar miembros por teamsocial_id (no salida_id)
+  const miembros = await MiembroTeamSocial.find({ teamsocial_id: teamSocialId }).populate("usuario_id");
 
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
-      const usuario = m.usuario_id;
+      const usuario = m.usuario_id as any; // mongoose document
       let imagenUrl;
 
       try {

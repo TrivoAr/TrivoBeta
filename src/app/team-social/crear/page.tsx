@@ -88,7 +88,7 @@ export default function CrearTeamPage() {
         <span className="text-gray-500">Subir imagen</span>
       </div>
 
-      <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#2B5DFF] to-[#B0C9FF] bg-clip-text text-transparent">
+      <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
         Crear <span className="text-black">Team</span>
       </h2>
 
@@ -126,8 +126,8 @@ export default function CrearTeamPage() {
 
       <MapWithNoSSR position={formData.coords} onChange={handleCoordsChange} />
 
-      <button type="submit" className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#2B5DFF] to-[#B0C9FF] font-bold">Crear Team</button>
-      <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-blue-500 text-blue-500 font-semibold">Atrás</button>
+      <button type="submit" className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear Team</button>
+      <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold">Atrás</button>
     </form>
   );
 }
