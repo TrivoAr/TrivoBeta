@@ -207,7 +207,7 @@ useEffect(() => {
           <span className="text-[#C76C01]">Salidas</span> destacadas
         </h2>
         <button className="text-sm text-gray-400" onClick={() => router.push(`/social/crear`)}>
-             <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
+             <img className="h-[26px] w-[26px] color-black" src="/assets/Logo/add-circle-svgrepo-com.svg" alt="" />
           </button>
         </div>
         <div className="overflow-x-auto scrollbar-hide">
@@ -292,7 +292,7 @@ useEffect(() => {
             <span className="text-[#C76C01]">Social</span> Team
           </h2>
           <button className="text-sm text-gray-400" onClick={() => router.push(`/team-social/crear`)}>
-             <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
+             <img className="h-[26px] w-[26px] color-black" src="/assets/Logo/add-circle-svgrepo-com.svg" alt="" />
           </button>
         </div>
         <div className="overflow-x-auto scrollbar-hide">
