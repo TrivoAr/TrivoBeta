@@ -49,7 +49,7 @@ export default function Signin() {
         {/* Logo */}
         <div className="flex justify-center pt-6 mb-[52px]">
           <Image
-            src="/assets/Isologo - Positivo a color.png"
+            src="/assets/Logo/trivo_negro-removebg-preview.png"
             alt="Klubo Logo"
             width={180}
             height={160}

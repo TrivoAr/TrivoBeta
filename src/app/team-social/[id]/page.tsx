@@ -35,10 +35,10 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
-  creador_id: {
+  creadorId: {
     _id: string;
-    nombre: string;
-    imagen: string;
+    firstname: string;
+    lastname: string;
   };
   locationCoords?: {
     lat: number;
@@ -76,7 +76,7 @@ export default function TeamEventPage({ params }: PageProps) {
 
     const fetchMiembros = async () => {
       try {
-        const res = await fetch(`/api/team-social/miembros?salidaId=${params.id}`);
+        const res = await fetch(`/api/team-social/miembros?teamSocialId=${params.id}`);
         const data = await res.json();
         setMiembros(data);
       } catch (err) {
@@ -84,41 +84,43 @@ export default function TeamEventPage({ params }: PageProps) {
       }
     };
 
-    const checkUnido = async () => {
-      const res = await fetch("/api/team-social/unirse/estado", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ salidaId: params.id }),
-      });
-      const data = await res.json();
-      setYaUnido(data.unido);
-    };
+   const checkUnido = async () => {
+  const res = await fetch("/api/team-social/unirse/estado", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ teamSocialId: params.id }), // 👈 aquí
+  });
+  const data = await res.json();
+  setYaUnido(data.unido);
+};
+
 
     fetchEvent();
     fetchMiembros();
     if (session) checkUnido();
   }, [params.id, session]);
 
-  const handleAccion = async () => {
-    const metodo = yaUnido ? "DELETE" : "POST";
-    const url = yaUnido
-      ? `/api/team-social/unirse?salidaId=${params.id}`
-      : "/api/team-social/unirse";
+ const handleAccion = async () => {
+  const metodo = yaUnido ? "DELETE" : "POST";
+  const url = yaUnido
+    ? `/api/team-social/unirse?teamSocialId=${params.id}` // 👈 aquí
+    : "/api/team-social/unirse";
 
-    const res = await fetch(url, {
-      method: metodo,
-      headers: { "Content-Type": "application/json" },
-      body: yaUnido ? null : JSON.stringify({ salidaId: params.id }),
-    });
+  const res = await fetch(url, {
+    method: metodo,
+    headers: { "Content-Type": "application/json" },
+    body: yaUnido ? null : JSON.stringify({ teamSocialId: params.id }), // 👈 aquí
+  });
 
-    if (res.ok) {
-      alert(yaUnido ? "Has salido del evento" : "¡Te uniste exitosamente!");
-      setYaUnido(!yaUnido);
-    } else {
-      const msg = await res.text();
-      alert("Error: " + msg);
-    }
-  };
+  if (res.ok) {
+    alert(yaUnido ? "Has salido del evento" : "¡Te uniste exitosamente!");
+    setYaUnido(!yaUnido);
+  } else {
+    const msg = await res.text();
+    alert("Error: " + msg);
+  }
+};
+
 
   if (loading) return <main className="py-20 text-center">Cargando evento...</main>;
   if (error || !event) return <main className="py-20 text-center">{error || "Evento no encontrado"}</main>;
@@ -205,8 +207,8 @@ export default function TeamEventPage({ params }: PageProps) {
               src={event.creador_id.imagen || "/assets/icons/person_24dp_E8EAED.svg"}
               alt="Organizador"
               className="h-8 w-8 rounded-full object-cover border"
-            />
-            <span className="text-sm">{event.creador_id.nombre}</span>*/}
+            />*/}
+            <span className="text-sm pr-[20px]">{event.creadorId.firstname}</span>
           </div>
         </div>
       </div>
@@ -251,7 +253,7 @@ export default function TeamEventPage({ params }: PageProps) {
           Contacto
         </h2>
         <p className="text-sm text-[#808488] leading-relaxed">
-          Contacta con Frank para más información:
+          Contacta con {event.creadorId.firstname} para mas información:
         </p>
       </div>
 

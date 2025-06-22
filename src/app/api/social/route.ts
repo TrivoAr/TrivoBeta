@@ -43,8 +43,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-
-    const salidas = await SalidaSocial.find();
+    // ✅ Esta es la única consulta que necesitás
+    const salidas = await SalidaSocial.find().populate('creador_id', 'firstname');
 
     return NextResponse.json(salidas, { status: 200 });
   } catch (error) {

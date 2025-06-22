@@ -9,7 +9,8 @@ export async function GET(
   await connectDB();
 
   try {
-    const team = await TeamSocial.findById(params.id);
+    const team = await TeamSocial.findById(params.id)
+      .populate("creadorId", "firstname"); // 👈 Trae solo estos dos campos
 
     if (!team) {
       return NextResponse.json({ message: "No encontrado" }, { status: 404 });
