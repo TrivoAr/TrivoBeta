@@ -37,7 +37,7 @@ interface EventData {
   imagen: string;
   creador_id: {
     _id: string;
-    nombre: string;
+   firstname: string;
     imagen: string;
   };
   locationCoords?: {
@@ -217,7 +217,7 @@ export default function EventPage({ params }: PageProps) {
   </div>
 </div>
 
-        <div className="text-right ">
+        <div className="text-right">
           <p className="text-sm font-medium text-[#808488] pr-[60px]">
             Organiza
           </p>
@@ -227,7 +227,7 @@ export default function EventPage({ params }: PageProps) {
           alt="Organizador"
           className="h-8 w-8 rounded-full object-cover border"
         />   
-        <span className="text-sm">{event.creador_id.nombre}</span>
+        <span className="text-sm  pr-[20px]">{event.creador_id.firstname}</span>
           </div>
         </div>
       </div>
@@ -275,7 +275,7 @@ export default function EventPage({ params }: PageProps) {
           Contacto
         </h2>
         <p className="text-sm text-[#808488] leading-relaxed">
-          {/*event.descripcion*/}Contacta con Frank para mas información:
+          {/*event.descripcion*/}Contacta con {event.creador_id.firstname} para mas información:
         </p>
       </div>
       <div className="mt-8 mb-[150px]">
