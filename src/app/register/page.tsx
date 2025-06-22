@@ -73,11 +73,11 @@ function Signup() {
       <form onSubmit={handleSubmit}>
         <div className="text-center mb-12">
           <img
-            src="/assets/Isologo - Positivo a color.png"
+            src="/assets/Logo/trivo_negro-removebg-preview.png"
             alt="Klubo Logo"
             className="mx-auto w-[135px] "
           />
-          <h1 className="text-5xl font-medium text-400">Klubo</h1>
+          {/*<h1 className="text-5xl font-medium text-400">Klubo</h1>*/}
           <h1 className="text-xl font-medium text-600">Crear cuenta</h1>
         </div>
 
