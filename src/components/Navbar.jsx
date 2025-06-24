@@ -43,7 +43,7 @@ function Navbar() {
         />
         {rol === "dueño de academia" && (
         <NavItem
-          href="/academias/crear"
+          href="/dashboard"
           label="Grupos"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">

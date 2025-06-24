@@ -115,96 +115,99 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center bg-gray-100 min-h-screen">
-      <PushManager />
-      <div className="w-[389px] shadow-md bg-white overflow-y-auto h-screen">
-        <TopContainer />
+<main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+      <TopContainer />
 
-        {/* Mis grupos */}
-        <div className="mb-6 p-4">
-          <div className=" flex justify-between pr-4">
-            <h2 className="text-xl font-semibold mb-3">Mis grupos</h2>
-            {formData.rol=== "dueño de academia" && (
-              <Link href="/academias/crear">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="30px"
-                viewBox="0 0 24 24"
-                width="30px"
-                fill="#333"
-              >
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-              </svg>
-            </Link>)}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Grupo principal */}
-            <div className="coverAcademias bg-white p-4 rounded-lg shadow flex flex-col">
-              <div className="mb-4">
-                {academia ? (
-                  <>
-                    <p className="text-lg font-semibold text-white pb-8">
-                      {academia.nombre_academia}
+      {/* Grupo principal (como salida destacada) */}
+      <section>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-2xl font-bold mb-3">
+            <span className="text-[#C76C01]">Grupo</span> principal
+          </h2>
+          {formData.rol === "dueño de academia" && (
+            <button onClick={() => router.push("/academias/crear")}>
+              <img
+                className="h-[26px] w-[26px]"
+                src="/assets/Logo/add-circle-svgrepo-com.svg"
+                alt="crear"
+              />
+            </button>
+          )}
+        </div>
+
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex space-x-4">
+            {academia ? (
+              <div className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative">
+                <img
+                  src="/assets/Logo/Trivo T.png"
+                  alt="Academia"
+                  className="w-[200px] h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
+                  <div className="text-white space-y-1">
+                    <p className="text-lg font-semibold">{academia.nombre_academia}</p>
+                    <p className="text-xs">
+                      📍 {academia.localidad}, {academia.provincia}
                     </p>
-                    {/* <p className="text-sm text-gray-600 text-white">
-                      {academia.localidad}, {academia.provincia}, {academia.pais}
-                    </p> */}
+                  </div>
+                  <div className="flex justify-end">
                     <button
                       onClick={handleEntrar}
-                      className="mt-auto block w-full bg-orange-500 text-white py-2 rounded "
+                      style={{
+                        background: "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                      }}
+                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
                     >
                       Entrar
                     </button>
-                  </>
-                ) : (
-                  <div>
-                    <p className="text-500 text-white pb-8">
-                      No tienes una academia principal.
-                    </p>
-                    <button
-                      onClick={handleSearch}
-                      className="mt-auto block w-full bg-orange-500 text-white py-2 rounded"
-                    >
-                      Buscar
-                    </button>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-            {/* Entrenamientos */}
-            <div
-              className="space-y-4"
-              onClick={() => router.push(`/entrenamiento`)}
-            >
-               <h2 className="text-xl font-semibold mb-3">Mi entrenamiento</h2>
-              <div className="bg-white p-4 rounded-lg shadow">
-                {entrenamientos.length > 0 ? (
-                  entrenamientos.map((entrenamiento) => (
-                    <div
-                      key={entrenamiento.id}
-                      className="bg-white p-4 rounded-lg shadow"
-                    >
-                      <p className="text-sm font-medium">
-                        {entrenamiento.descripcion}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {entrenamiento.dia} · {entrenamiento.hora} ·{" "}
-                        {entrenamiento.ubicacion}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">
-                    No tienes entrenamientos programados.
-                  </p>
-                )}
-              </div>
-            </div>
+            ) : (
+              <div className="text-gray-600">No tienes academias aún.</div>
+            )}
           </div>
         </div>
+      </section>
+
+      {/* Entrenamientos */}
+      <section>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-2xl font-bold">
+            <span className="text-[#C76C01]">Mis</span> entrenamientos
+          </h2>
+        </div>
+
+        <div className="space-y-3">
+          {entrenamientos.length > 0 ? (
+            entrenamientos.map((entrenamiento) => (
+              <div
+                key={entrenamiento.id}
+                className="bg-white p-4 rounded-[15px] shadow-md space-y-1"
+              >
+                <p className="text-base font-semibold">{entrenamiento.descripcion}</p>
+                <p className="text-sm text-gray-600">
+                  🗓️ {entrenamiento.dia} · 🕒 {entrenamiento.hora}
+                </p>
+                <p className="text-sm text-gray-600">📍 {entrenamiento.ubicacion}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No tienes entrenamientos programados.</p>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+
+};
+
+export default DashboardPage;
+
 
         {/* Eventos */}
+        {/*
         <div>
   <h2 className="text-xl font-semibold mb-3 pl-4 pr-4">Eventos</h2>
   <div className="scroll-container overflow-x-auto pl-4 pr-4">
@@ -244,8 +247,9 @@ const DashboardPage: React.FC = () => {
       </div>
     </div>
   </div>
-</div>
+</div>*/}
         {/* Aventuras */}
+        {/*
         <div className="pl-4 pr-4">
           <br />
           <h2 className="text-xl font-semibold mb-3">Aventuras</h2>
@@ -273,13 +277,4 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-        <br />
-        <br />
-        <br />
-      </div>
-    </div>
-  );
-};
-
-export default DashboardPage;
+        </div>*/}
