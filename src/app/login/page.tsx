@@ -129,7 +129,7 @@ export default function Signin() {
           {/* Olvidaste contraseña */}
           <div className="text-left mb-[26px]">
             <a
-              href="https://api.whatsapp.com/send?phone=+5493813155745&text=¡Hola! Olvide mi contraseña 🥲"
+              href="#"
               className="text-[15px] text-orange-500 hover:underline "
             >
               ¿Olvidaste tu contraseña?
