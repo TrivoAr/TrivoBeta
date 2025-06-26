@@ -8,10 +8,10 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 const categories = [
-  { label: 'Running', icon: '/assets/icons/Group 33838.png' },
-  { label: 'Ciclismo', icon: '/assets/icons/Cycling.png' },
-  { label: 'Trekking', icon: '/assets/icons/Trekking.png' },
-  { label: 'Otros', icon: '/assets/icons/Mountain.png' },
+  { label: 'Running', icon: '/assets/icons/directions_run_40dp_FFB86A.svg' },
+  { label: 'Ciclismo', icon: '/assets/icons/directions_bike_40dp_FFB86A.svg' },
+  { label: 'Trekking', icon: '/assets/icons/hiking_40dp_FFB86A.svg' },
+  { label: 'Otros', icon: '/assets/icons/terrain_40dp_FFB86A.svg' },
 ];
 
 type EventType = {
@@ -176,21 +176,21 @@ useEffect(() => {
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer />
       {/* Categorías */}
-      <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
           <button
             key={cat.label}
             onClick={() => setSelectedCategory(cat.label)}
-            className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px]  border ${
+            className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px]  border shadow-md ${
               selectedCategory === cat.label
-                ? "bg-orange-500 text-white"
+                ? "border-2 border-orange-200 text-orange-300"
                 : "bg-white text-[#808488]"
             } flex flex-col items-center justify-center`}
           >
             <img
               src={cat.icon}
               alt={cat.label}
-              className="w-[25px] h-[25px] object-contain mb-4"
+              className="w-[25px] h-[25px] object-contain mb-4 border-[#C76C01]"
             />
             <span className="text-[11px] font-semibold leading-none text-center">
               {cat.label}

@@ -76,11 +76,11 @@ const TopContainer = () => {
   };
 
   return (
-    <div className="containerTop  bg-[#FAF9F8] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center ">
+    <div className="containerTop  bg-[#FAF9F8] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
   {/* Avatar */}
   <Link href="/dashboard/profile">
     <img
-      className="h-[48px] w-[48px] rounded-[15px] object-cover"
+      className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
       src={
         profileImage ||
         "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
