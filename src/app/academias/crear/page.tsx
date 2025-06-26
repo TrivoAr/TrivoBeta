@@ -28,7 +28,7 @@ function CrearAcademia() {
 
       if (response.status === 201) {
         toast.success("¡Academia creada con éxito!");
-        router.push("/dashboard"); 
+        router.push("/home"); 
       } else {
         throw new Error("Error al crear la academia");
       }

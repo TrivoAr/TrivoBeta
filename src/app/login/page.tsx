@@ -33,7 +33,7 @@ export default function Signin() {
       {
         loading: "Autenticando...",
         success: () => {
-          router.push("/dashboard");
+          router.push("/home");
           return "¡Inicio de sesión exitoso!";
         },
         error: (msg) => `Error: ${msg}`,
@@ -49,7 +49,7 @@ export default function Signin() {
         {/* Logo */}
         <div className="flex justify-center pt-6 mb-[52px]">
           <Image
-            src="/assets/Isologo - Positivo a color.png"
+            src="/assets/Logo/trivo_negro-removebg-preview.png"
             alt="Klubo Logo"
             width={180}
             height={160}
@@ -129,7 +129,7 @@ export default function Signin() {
           {/* Olvidaste contraseña */}
           <div className="text-left mb-[26px]">
             <a
-              href="https://api.whatsapp.com/send?phone=+5493813155745&text=¡Hola! Olvide mi contraseña 🥲"
+              href="#"
               className="text-[15px] text-orange-500 hover:underline "
             >
               ¿Olvidaste tu contraseña?

@@ -4,7 +4,10 @@ import { useSession, signOut } from "next-auth/react";
 import TopContainer from "@/components/TopContainer";
 import { useRouter } from "next/navigation";
 import { saveProfileImage } from "@/app/api/profile/saveProfileImage";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
+import { FaInstagram, FaFacebookF, FaXTwitter } from 'react-icons/fa6';
+import { Pencil } from 'lucide-react'; 
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -21,6 +24,7 @@ function ProfilePage() {
   const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter();
+  
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
     if (session?.user) {
@@ -30,6 +34,18 @@ function ProfilePage() {
         rol: session.user.role || "",
       });
     }
+     const loadProfileImage = async () => {
+            try {
+              const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+              setProfileImage(imageUrl);
+            } catch (error) {
+              console.error("Error al obtener la imagen del perfil:", error);
+              // Puedes agregar una imagen predeterminada en caso de error
+              setProfileImage("https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg");
+            }
+          };
+    
+          loadProfileImage();
   }, [session]);
 
   const horaActual = new Date().getHours();
@@ -116,195 +132,251 @@ function ProfilePage() {
     }
   };
 
-  return (
-    <div className="flex flex-col justify-between items-center gap-10">
-      <TopContainer />
-      <div className="containerBtnPerfil flex flex-col gap-5">
-        {/* Botón para mostrar datos personales */}
-        <div
-          className={`w-[351px] p-5 bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold transition-all duration-300 ${
-            showPersonalData ? "h-auto" : "h-[60px]"
-          } flex flex-col justify-between`}
-        >
-          <button
-            className="w-full flex items-center justify-between"
-            onClick={handleShowPersonalData}
-          >
-            Datos Personales
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="24px"
-              viewBox="0 -960 960 960"
-              width="24px"
-              fill="#999"
-              className={`transition-transform duration-300 ${
-                showPersonalData ? "rotate-90" : ""
-              }`}
-            >
-              <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-            </svg>
-          </button>
+return (
+  <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
+      {/* Header */}
+      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
+  Perfil
+</h1>
 
-          {/* Mostrar datos personales si showPersonalData es true */}
-          {showPersonalData && (
-            <div className="mt-4">
-              {!isEditing ? (
-                <>
-                  <p>
-                    <span className="font-bold">Nore: </span>
-                    <span className="font-normal text-[#ADADAD]">
-                      {formData.fullname}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="font-bold">Email: </span>
-                    <span className="font-normal text-[#ADADAD]">
-                      {formData.email}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="font-bold">Rol: </span>
-                    <span className="font-normal text-[#ADADAD]">
-                      {session?.user.role}
-                    </span>
-                  </p>
-                  <button
-                    className="text-blue-500 underline mt-2"
-                    onClick={handleEditToggle}
-                  >
-                    Editar
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-col gap-3">
-                    <input
-                      type="text"
-                      name="fullname"
-                      value={formData.fullname}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Nombre completo"
-                    />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Correo"
-                    />
-                  </div>
-                  {/* Sección de subida de imagen */}
-                  <div className="mt-4 text-[#E5E5E5]">
-                    <input
-                      type="file"
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      disabled={uploadingImage}
-                    />
-                    {uploadingImage && <p>Subiendo imagen...</p>}
-                  </div>
-                  <div className="flex gap-4 mt-3">
-                    <button
-                      className="bg-green-500 text-white px-4 py-2 rounded shadow-lg"
-                      onClick={handleSave}
-                    >
-                      Guardar
-                    </button>
-                    <button
-                      className="bg-gray-500 text-white px-4 py-2 rounded shadow-lg"
-                      onClick={handleEditToggle}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="w-[351px] bg-[#E5E5E5] rounded-[10px] shadow-lg">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="w-full flex items-center justify-between p-5 h-[60px] font-bold"
-            >
-              Métodos de pago
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px"
-                fill="#999"
-                className={`transition-transform duration-300 ${
-                  isOpen ? "rotate-90" : ""
-                }`}
-              >
-                <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-              </svg>
-            </button>
 
-          {isOpen && (
-            <div className="flex flex-col">
-              {formData.rol === "dueño de academia" && (<button
-                className="p-4 w-full text-left border-t border-gray-300"
-                onClick={() => router.push(`/mercadopago`)}
-              >
-                Token
-              </button>)}
-              <Link href="/historial">
-              <button className="p-4 w-full text-left border-t border-gray-300">
-                Historial de Cobros
-              </button>
-              </Link>
-            </div>
-          )}
+      {/* Avatar */}
+      <img
+       src={profileImage || "/assets/icons/default-user.png"}
+          alt="Avatar"
+        className="w-24 h-24 rounded-2xl object-cover mb-4"
+      />
+
+      {/* Nombre + editar */}
+      <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-sm mb-6">
+        <span className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left ">{formData.fullname}</span>
+        <img
+                  src='/assets/icons/Edit.svg'
+                  alt=""
+                  className="w-[17px] h-[17px] object-cover"
+                />
+      </div>
+
+      {/* Subtítulo */}
+      <h2 className="text-sm text-[#989898]  mb-2 w-full text-left">Datos personales</h2>
+
+      {/* Cards de Perfil y Objetivos */}
+      <div className="w-full flex flex-col gap-0 mb-6">
+        <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <img
+                  src='/assets/icons/Users.svg'
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+            <span className="text-[#989898] font-medium">Perfil</span>
+          </div>
+          <span className="text-gray-400 text-[28px]">›</span>
         </div>
 
-        {/* Botón para mostrar Objetivos */}
-        <div
-          className={`w-[351px] p-5 bg-[#E5E5E5] rounded-[10px] shadow-lg font-bold transition-all duration-300 ${
-            showObjectives ? "h-auto" : "h-[60px]"
-          } flex flex-col justify-between`}
-        >
-          <button
-            className="w-full flex items-center justify-between"
-            onClick={handleShowObjectives}
-          >
-            Objetivos
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="24px"
-              viewBox="0 -960 960 960"
-              width="24px"
-              fill="#999"
-              className={`transition-transform duration-300 ${
-                showObjectives ? "rotate-90" : ""
-              }`}
-            >
-              <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-            </svg>
-          </button>
-
-          {/* Aunque no muestre datos, el área se expande y colapsa */}
-          {showObjectives && (
-            <div className="mt-4">
-              <p className="font-normal text-[#ADADAD]">Correr 10km</p>
-            </div>
-          )}
+        <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <img
+                  src='/assets/icons/Goal.svg'
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+            <span className="text-[#989898] font-medium">Objetivos</span>
+          </div>
+          <span className="text-gray-400 text-[28px]">›</span>
         </div>
       </div>
 
+      {/* Redes */}
+      <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes</h2>
+      <div className="flex gap-4">
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
+            <FaInstagram className="text-xl text-gray-600" />
+          </div>
+          <span className="text-xs text-gray-600">Instagram</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
+            <FaFacebookF className="text-xl text-gray-600" />
+          </div>
+          <span className="text-xs text-gray-600">Facebook</span>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
+            <FaXTwitter className="text-xl text-gray-600" />
+          </div>
+          <span className="text-xs text-gray-600">X</span>
+        </div>
+      </div>
+      <div className="text-center pt-4">
       <button
-        className="w-[120px] h-[40px] bg-[#E5E5E5] text-[#333] rounded-[10px] shadow-lg"
-        onClick={() => {
-          signOut();
-        }}
+        onClick={() => signOut()}
+        className="w-[140px] mt-[40px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
       >
         Cerrar sesión
       </button>
     </div>
-  );
+
+      {/* Espacio para bottom nav */}
+      <div className="mt-auto"></div>
+   
+  {/* <main className="bg-[#FEFBF9] min-h-screen px-4 py-6 w-[390px] mx-auto text-black space-y-6">
+    <TopContainer />
+
+    
+    <section className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-md">
+      <div className="w-16 h-16 bg-gray-300 rounded-full overflow-hidden">
+        <img
+          src={profileImage || "/assets/icons/default-user.png"}
+          alt="Avatar"
+          className="object-cover w-full h-full"
+        />
+      </div>
+      <div className="flex-1">
+        <h2 className="text-lg font-bold">{formData.fullname}</h2>
+        <p className="text-sm text-gray-500">{formData.email}</p>
+        <p className="text-xs text-gray-400 capitalize">{session?.user.role}</p>
+      </div>
+    </section>
+
+    
+    <section className="bg-white rounded-2xl shadow-md p-4 space-y-4">
+      <button
+        onClick={handleShowPersonalData}
+        className="flex justify-between items-center w-full text-left font-bold"
+      >
+        Datos Personales
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#999"
+          className={`transition-transform duration-300 ${showPersonalData ? "rotate-90" : ""}`}
+        >
+          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+        </svg>
+      </button>
+      {showPersonalData && (
+        <div className="space-y-2 text-sm text-gray-600">
+          {!isEditing ? (
+            <>
+              <p><span className="font-semibold">Nombre: </span>{formData.fullname}</p>
+              <p><span className="font-semibold">Email: </span>{formData.email}</p>
+              <p><span className="font-semibold">Rol: </span>{session?.user.role}</p>
+              <button onClick={handleEditToggle} className="text-[#C76C01] underline text-sm">Editar</button>
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                name="fullname"
+                value={formData.fullname}
+                onChange={handleInputChange}
+                placeholder="Nombre completo"
+                className="w-full p-2 rounded border border-gray-300"
+              />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Correo"
+                className="w-full p-2 rounded border border-gray-300"
+              />
+              <input
+                type="file"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="text-xs"
+              />
+              {uploadingImage && <p className="text-xs text-gray-400">Subiendo imagen...</p>}
+              <div className="flex gap-2">
+                <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded shadow">
+                  Guardar
+                </button>
+                <button onClick={handleEditToggle} className="bg-gray-400 text-white px-4 py-2 rounded shadow">
+                  Cancelar
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </section>
+
+    
+    <section className="bg-white rounded-2xl shadow-md p-4">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex justify-between items-center w-full text-left font-bold"
+      >
+        Métodos de pago
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#999"
+          className={`transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
+        >
+          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="mt-4 space-y-2 text-sm">
+          {formData.rol === "dueño de academia" && (
+            <button onClick={() => router.push("/mercadopago")} className="w-full text-left text-[#C76C01]">
+              Token
+            </button>
+          )}
+          <Link href="/historial">
+            <button className="w-full text-left text-[#C76C01]">Historial de Cobros</button>
+          </Link>
+        </div>
+      )}
+    </section>
+
+   
+    <section className="bg-white rounded-2xl shadow-md p-4">
+      <button
+        onClick={handleShowObjectives}
+        className="flex justify-between items-center w-full text-left font-bold"
+      >
+        Objetivos
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#999"
+          className={`transition-transform duration-300 ${showObjectives ? "rotate-90" : ""}`}
+        >
+          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
+        </svg>
+      </button>
+      {showObjectives && (
+        <div className="mt-4 text-sm text-gray-600">
+          <p>Correr 10km</p>
+        </div>
+      )}
+    </section>
+
+    
+    <div className="text-center pt-4">
+      <button
+        onClick={() => signOut()}
+        className="w-[140px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+  </main> */}
+  
+   </div>
+);
+
 }
 
 export default ProfilePage;
