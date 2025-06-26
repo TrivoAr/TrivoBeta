@@ -2,142 +2,77 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from 'react';
 
 function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const rol = session?.user?.role;
 
-  // Mostrar un loader mientras se verifica la sesión
   if (status === "loading") return null;
-
   if (!session) return null;
 
-  const userRole = session.user?.role;
-
+  const NavItem = (props) => {
+    const { href, icon, label } = props;
+    const isActive = pathname === href;
+    return (
+      <li className="flex flex-col items-center justify-center">
+        <Link href={href} className="flex flex-col items-center justify-center">
+          <div className={`${isActive ? "text-black" : "text-gray-500"}`}>{icon}</div>
+          <span className={`text-sm mt-1 ${isActive ? "text-black font-medium" : "text-gray-500"}`}>
+            {label}
+          </span>
+        </Link>
+      </li>
+    );
+  };
+  
   return (
-    <nav
-      className="shadow-xl border h-[65px] w-full fixed bottom-0 left-0 flex justify-center bg-[#E5E5E5]"
-      style={{ zIndex: 50 }}
-    >
-      <div className="flex w-full items-center">
-
-        <ul className="flex w-full justify-around items-center">
-          {userRole === "dueño de academia" ? (
-            <>
-            <li>
-            <Link className="" href="/dashboard">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="35px"
-            viewBox="0 0 24 24"
-            width="35px"
-            fill="#333"
-          >
-            <path d="M0 0h24v24H0z" fill="none" />
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-        </Link>
-            </li>
-
-              <li>
-                <Link href="/academias">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    enable-background="new 0 0 24 24"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                    fill="#333"
-                  >
-                    <rect fill="none" height="24" width="24" />
-                    <g>
-                      <path d="M12,12.75c1.63,0,3.07,0.39,4.24,0.9c1.08,0.48,1.76,1.56,1.76,2.73L18,18H6l0-1.61c0-1.18,0.68-2.26,1.76-2.73 C8.93,13.14,10.37,12.75,12,12.75z M4,13c1.1,0,2-0.9,2-2c0-1.1-0.9-2-2-2s-2,0.9-2,2C2,12.1,2.9,13,4,13z M5.13,14.1 C4.76,14.04,4.39,14,4,14c-0.99,0-1.93,0.21-2.78,0.58C0.48,14.9,0,15.62,0,16.43V18l4.5,0v-1.61C4.5,15.56,4.73,14.78,5.13,14.1z M20,13c1.1,0,2-0.9,2-2c0-1.1-0.9-2-2-2s-2,0.9-2,2C18,12.1,18.9,13,20,13z M24,16.43c0-0.81-0.48-1.53-1.22-1.85 C21.93,14.21,20.99,14,20,14c-0.39,0-0.76,0.04-1.13,0.1c0.4,0.68,0.63,1.46,0.63,2.29V18l4.5,0V16.43z M12,6c1.66,0,3,1.34,3,3 c0,1.66-1.34,3-3,3s-3-1.34-3-3C9,7.34,10.34,6,12,6z" />
-                    </g>
-                  </svg>
-                </Link>
-              </li>
-
-              <li>
-                <Link href="/academias/crear">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="30px"
-                    viewBox="0 0 24 24"
-                    width="30px"
-                    fill="#333"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
-                  </svg>
-                </Link>
-              </li>
-
-              <li>
-                <Link href="/dashboard/profile">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                    fill="#333"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-            <Link className="" href="/dashboard">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="35px"
-            viewBox="0 0 24 24"
-            width="35px"
-            fill="#333"
-          >
-            <path d="M0 0h24v24H0z" fill="none" />
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-        </Link>
-            </li>
-              <li>
-                <Link href="/academias">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    enable-background="new 0 0 24 24"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                    fill="#333"
-                  >
-                    <rect fill="none" height="24" width="24" />
-                    <g>
-                      <path d="M12,12.75c1.63,0,3.07,0.39,4.24,0.9c1.08,0.48,1.76,1.56,1.76,2.73L18,18H6l0-1.61c0-1.18,0.68-2.26,1.76-2.73 C8.93,13.14,10.37,12.75,12,12.75z M4,13c1.1,0,2-0.9,2-2c0-1.1-0.9-2-2-2s-2,0.9-2,2C2,12.1,2.9,13,4,13z M5.13,14.1 C4.76,14.04,4.39,14,4,14c-0.99,0-1.93,0.21-2.78,0.58C0.48,14.9,0,15.62,0,16.43V18l4.5,0v-1.61C4.5,15.56,4.73,14.78,5.13,14.1z M20,13c1.1,0,2-0.9,2-2c0-1.1-0.9-2-2-2s-2,0.9-2,2C18,12.1,18.9,13,20,13z M24,16.43c0-0.81-0.48-1.53-1.22-1.85 C21.93,14.21,20.99,14,20,14c-0.39,0-0.76,0.04-1.13,0.1c0.4,0.68,0.63,1.46,0.63,2.29V18l4.5,0V16.43z M12,6c1.66,0,3,1.34,3,3 c0,1.66-1.34,3-3,3s-3-1.34-3-3C9,7.34,10.34,6,12,6z" />
-                    </g>
-                  </svg>
-                </Link>
-              </li>
-
-              <li>
-                <Link href="/dashboard/profile">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                    fill="#333"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
-      </div>
+    <nav className="fixed bottom-0 left-0 w-full h-[91px] bg-white border-t shadow-md z-50 flex items-center justify-center rounded-tl-[15px] rounded-tr-[15px]">
+      <ul className="flex items-center gap-[60px]">
+        <NavItem
+          href="/home"
+          label="Inicio"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+          }
+        />
+        {rol === "dueño de academia" && (
+        <NavItem
+          href="/dashboard"
+          label="Grupos"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+          }
+        />)}
+        <NavItem
+          href="/academias"
+          label="Buscar"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM4 9.5C4 6.47 6.47 4 9.5 4S15 6.47 15 9.5 12.53 15 9.5 15 4 12.53 4 9.5z" />
+            </svg>
+          }
+        />
+        <NavItem
+          href="/dashboard/profile"
+          label="Perfil"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+          }
+        />
+      </ul>
     </nav>
   );
 }
