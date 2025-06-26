@@ -133,9 +133,9 @@ function ProfilePage() {
   };
 
 return (
-  <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
+  <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
       {/* Header */}
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
+      <h1 className="text-3xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
   Perfil
 </h1>
 
@@ -144,11 +144,11 @@ return (
       <img
        src={profileImage || "/assets/icons/default-user.png"}
           alt="Avatar"
-        className="w-24 h-24 rounded-2xl object-cover mb-4"
+        className="w-24 h-24 rounded-2xl object-cover mb-4 shadow-md"
       />
 
       {/* Nombre + editar */}
-      <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-sm mb-6">
+      <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-md mb-6">
         <span className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left ">{formData.fullname}</span>
         <img
                   src='/assets/icons/Edit.svg'
@@ -161,7 +161,7 @@ return (
       <h2 className="text-sm text-[#989898]  mb-2 w-full text-left">Datos personales</h2>
 
       {/* Cards de Perfil y Objetivos */}
-      <div className="w-full flex flex-col gap-0 mb-6">
+      <div className="w-full flex flex-col gap-1 mb-6">
         <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <img
@@ -185,34 +185,32 @@ return (
           </div>
           <span className="text-gray-400 text-[28px]">›</span>
         </div>
+
       </div>
 
       {/* Redes */}
       <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes</h2>
       <div className="flex gap-4">
         <div className="flex flex-col items-center gap-1">
-          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
-            <FaInstagram className="text-xl text-gray-600" />
+          <div className="w-14 h-14 bg-white rounded-xl  flex items-center justify-center shadow-md">
+            <FaInstagram className="text-xl text-gray-600 w-7 h-7" />
           </div>
-          <span className="text-xs text-gray-600">Instagram</span>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
-            <FaFacebookF className="text-xl text-gray-600" />
+          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-md">
+            <FaFacebookF className="text-xl text-gray-600 w-7 h-7" />
           </div>
-          <span className="text-xs text-gray-600">Facebook</span>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
-            <FaXTwitter className="text-xl text-gray-600" />
+          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-md">
+            <FaXTwitter className="text-xl text-gray-600 w-7 h-7" />
           </div>
-          <span className="text-xs text-gray-600">X</span>
         </div>
       </div>
       <div className="text-center pt-4">
       <button
         onClick={() => signOut()}
-        className="w-[140px] mt-[40px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+        className="w-[140px] mt-[40px] py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
       >
         Cerrar sesión
       </button>
