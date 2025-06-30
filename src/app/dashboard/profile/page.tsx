@@ -162,8 +162,8 @@ return (
 
       {/* Cards de Perfil y Objetivos */}
       <div className="w-full flex flex-col gap-1 mb-6">
-        <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
+        <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm" onClick={() => router.push("/dashboard/profile/editar")}>
+          <div className="flex items-center gap-3"  >
             <img
                   src='/assets/icons/Users.svg'
                   alt=""
