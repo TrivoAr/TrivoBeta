@@ -69,16 +69,16 @@ function Signup() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#F4F4F4] p-[40px]">
+    <div className="flex justify-center items-center min-h-screen bg-[#FEFBF9] p-[40px]">
       <form onSubmit={handleSubmit}>
         <div className="text-center mb-12">
           <img
             src="/assets/Logo/trivo_negro-removebg-preview.png"
             alt="Klubo Logo"
-            className="mx-auto w-[135px] "
+            className="mx-auto w-[160px]"
           />
           {/*<h1 className="text-5xl font-medium text-400">Klubo</h1>*/}
-          <h1 className="text-xl font-medium text-600">Crear cuenta</h1>
+          <h1 className="text-2xl font-bold text-600 text-[#F7941F]">Forma parte de la tribu</h1>
         </div>
 
         {error && (
@@ -92,37 +92,37 @@ function Signup() {
             type="text"
             name="firstname"
             placeholder="Nombre"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500 bg-[#F4F4F4]"
+            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
           <input
             type="text"
             name="lastname"
             placeholder="Apellido"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500 bg-[#F4F4F4]"
+            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
           <input
             type="email"
             name="email"
             placeholder="Email"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500 bg-[#F4F4F4]"
+            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
           <input
             type="password"
             name="password"
             placeholder="Contraseña"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500 bg-[#F4F4F4]"
+            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
           <input
             type="password"
             name="confirmPassword"
             placeholder="Confirmar contraseña"
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500 bg-[#F4F4F4]"
+            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
 
           <div className="relative w-full">
             <div
               onClick={toggleDropdown}
-              className="w-full px-4 py-2 border rounded bg-[#F4F4F4] cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-4 border shadow-sm text-gray-400 rounded-[15px] bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               {selectedOption || "Selecciona un rol"}
             </div>
@@ -159,14 +159,14 @@ function Signup() {
 
         <button
           type="submit"
-          className="w-full mt-6 bg-orange-500 text-white py-2 rounded-xl hover:bg-orange-600"
+          className="w-full mt-6 bg-[#F7941F] text-white py-2 rounded-xl hover:bg-orange-600"
         >
           Crear cuenta
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="w-full mt-2 text-orange-500 py-2 rounded-xl border border-orange-500 hover:bg-orange-50"
+          className="w-full mt-2 text-[#F7941F] py-2 rounded-xl border border-[#F7941F] hover:bg-orange-50"
         >
           Atrás
         </button>
