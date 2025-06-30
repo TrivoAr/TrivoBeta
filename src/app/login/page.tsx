@@ -47,13 +47,14 @@ export default function Signin() {
 
       <div className="w-full h-full bg-[#FEFBF9] overflow-hidden">
         {/* Logo */}
-        <div className="flex justify-center pt-6 mb-[52px]">
+        <div className="flex flex-col justify-center items-center pt-6 mb-[52px]">
           <Image
             src="/assets/Logo/trivo_negro-removebg-preview.png"
             alt="Klubo Logo"
             width={180}
             height={160}
           />
+          <h1 className="text-xl font-bold text-[#F7941F]">Iniciar Sesion</h1>
         </div>
 
         <form className="px-6 pb-8 " onSubmit={handleSubmit}>
@@ -68,7 +69,7 @@ export default function Signin() {
               type="text"
               name="email"
               placeholder="Email"
-              className="w-full h-[55px]  rounded-[4px] bg-[#4444441A] border-[1px] border-[#444444] py-2 pl-10 pr-4 text-base placeholder-gray-500 focus:outline-none"
+              className="w-full h-[55px]  rounded-[15px] bg-white border-[1px] shadow-sm py-2 pl-10 pr-4 text-base placeholder-gray-500 focus:outline-none"
               required
             />
           </div>
@@ -83,7 +84,7 @@ export default function Signin() {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Contraseña"
-              className="w-full h-[55px]  rounded-[4px] bg-[#4444441A] border-[1px] border-[#444444] py-2 pl-10 pr-10 placeholder-gray-500 focus:outline-none"
+              className="w-full h-[55px]  rounded-[15px] bg-white border-[1px] shadow-sm py-2 pl-10 pr-10 placeholder-gray-500 focus:outline-none"
               required
             />
             <button
@@ -139,9 +140,9 @@ export default function Signin() {
           {/* Botón Login */}
           <button
             type="submit"
-            className="w-full bg-[#F7941F] h-[55px] mb-[26px]  rounded-[4px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+            className="w-full bg-[#F7941F] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
           >
-            Login
+            Iniciar sesion
           </button>
 
           {/* Divider */}
