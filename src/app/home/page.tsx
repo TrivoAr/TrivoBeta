@@ -373,7 +373,7 @@ useEffect(() => {
       <section>
         <div className="flex justify-between items-center mb-3 mt-6">
           <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Grupos de entranamiento</span>
+            <span className="text-[#C76C01]">Grupos de entrenamiento</span>
           </h2>
           {formData.rol=== "dueño de academia" && (
           <button
