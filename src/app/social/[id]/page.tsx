@@ -187,47 +187,54 @@ export default function EventPage({ params }: PageProps) {
       </div>
 
       <div className="flex justify-between items-center mt-4">
-       <div>
-  <p className="text-sm font-medium text-[#808488]">Participantes</p>
-  <div className="flex -space-x-2 mt-1">
-    {miembros.length > 0 ? (
-      <>
-        {miembros.slice(0, 5).map((m) => (
-          <img
-            key={m._id}
-            src={m.imagen}
-            alt={m.nombre}
-            className="h-8 w-8 rounded-full object-cover border"
-            title={m.nombre}
-            onError={(e) =>
-              ((e.target as HTMLImageElement).src =
-                "/assets/icons/person_24dp_E8EAED.svg")
-            }
-          />
-        ))}
-        {miembros.length > 5 && (
-          <div className="h-8 w-8 rounded-full bg-gray-300 text-xs flex items-center justify-center border text-gray-700 font-semibold">
-            +{miembros.length - 5}
+        <div>
+          <p className="text-sm font-medium text-[#808488]">Participantes</p>
+          <div className="flex -space-x-2 mt-1">
+            {miembros.length > 0 ? (
+              <>
+                {miembros.slice(0, 5).map((m) => (
+                  <img
+                    key={m._id}
+                    src={m.imagen}
+                    alt={m.nombre}
+                    className="h-8 w-8 rounded-full object-cover border"
+                    title={m.nombre}
+                    onError={(e) =>
+                      ((e.target as HTMLImageElement).src =
+                        "/assets/icons/person_24dp_E8EAED.svg")
+                    }
+                  />
+                ))}
+                {miembros.length > 5 && (
+                  <div className="h-8 w-8 rounded-full bg-gray-300 text-xs flex items-center justify-center border text-gray-700 font-semibold">
+                    +{miembros.length - 5}
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-gray-500">
+                Nadie se ha unido aún
+              </span>
+            )}
           </div>
-        )}
-      </>
-    ) : (
-      <span className="text-xs text-gray-500">Nadie se ha unido aún</span>
-    )}
-  </div>
-</div>
+        </div>
 
         <div className="text-right">
           <p className="text-sm font-medium text-[#808488] pr-[60px]">
             Organiza
           </p>
           <div className="flex items-center justify-end mt-1 gap-2">
-                    <img
-          src={event.creador_id.imagen || "/assets/icons/person_24dp_E8EAED.svg"}
-          alt="Organizador"
-          className="h-8 w-8 rounded-full object-cover border"
-        />   
-        <span className="text-sm  pr-[20px]">{event.creador_id.firstname}</span>
+            <img
+              src={
+                event.creador_id.imagen ||
+                "/assets/icons/person_24dp_E8EAED.svg"
+              }
+              alt="Organizador"
+              className="h-8 w-8 rounded-full object-cover border"
+            />
+            <span className="text-sm  pr-[20px]">
+              {event.creador_id.firstname}
+            </span>
           </div>
         </div>
       </div>
@@ -247,7 +254,7 @@ export default function EventPage({ params }: PageProps) {
         </h2>
         {event.locationCoords ? (
           <div className="w-full h-48 rounded-xl overflow-hidden border">
-           <MapContainer
+            <MapContainer
               center={[event.locationCoords.lat, event.locationCoords.lng]}
               zoom={15}
               scrollWheelZoom={false}
@@ -275,10 +282,11 @@ export default function EventPage({ params }: PageProps) {
           Contacto
         </h2>
         <p className="text-sm text-[#808488] leading-relaxed">
-          {/*event.descripcion*/}Contacta con {event.creador_id.firstname} para mas información:
+          {/*event.descripcion*/}Contacta con {event.creador_id.firstname} para
+          mas información:
         </p>
       </div>
-      <div className="mt-8 mb-[150px]">
+      <div className="mt-8 mb-[200px]">
         <button
           onClick={handleAccion}
           className={`w-full py-3 rounded-full font-semibold transition ${
@@ -290,6 +298,35 @@ export default function EventPage({ params }: PageProps) {
           {yaUnido ? "Salir " : "Unirse a la salida"}
         </button>
       </div>
+      {/* Barra fija sobre el mapa */}
+       {session?.user?.id === event.creador_id._id && (
+      <div className="fixed bottom-[100px] w-[100%] left-1/2 -translate-x-1/2  px-2">
+        <div className="bg-white shadow-md rounded-xl px-4 py-3 flex justify-between items-center">
+          <div>
+            <p className="text-xs text-gray-400">
+              {new Date(event.fecha).toLocaleDateString()}, {event.hora} hs
+            </p>
+            <p className="font-semibold text-sm text-gray-800">
+              {event.ubicacion}
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button className="bg-gray-100 hover:bg-gray-200 px-3 py-2 text-sm rounded-xl flex items-center gap-1">
+              <img src="/assets/icons/Users-group.svg" className="w-4 h-4" />
+              Participantes
+            </button>
+              <button
+                onClick={() => router.push(`/social/editar/${event._id}`)}
+                className="bg-gray-100 hover:bg-gray-200 px-3 py-2 text-sm rounded-xl flex items-center gap-1"
+              >
+                <img src="/assets/icons/Edit.svg" className="w-4 h-4" />
+                Editar
+              </button>
+            
+          </div>
+        </div>
+      </div>)}
     </main>
   );
 }
