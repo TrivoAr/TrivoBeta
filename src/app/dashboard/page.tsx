@@ -9,9 +9,11 @@ import Eventos1 from "../../../public/assets/Tdah.webp";
 import Eventos2 from "../../../public/assets/jujuy.webp";
 import TopContainer from "@/components/TopContainer";
 import Link from "next/link";
+import EventModal from "@/components/EventModal";
+import { SafelistConfig } from "tailwindcss/types/config";
 
 interface Academia {
-  _id: string; 
+  _id: string;
   nombre_academia: string;
   pais: string;
   provincia: string;
@@ -27,30 +29,62 @@ interface Entrenamiento {
   descripcion: string;
 }
 
+type EventType = {
+  _id: string;
+  title: string;
+  date: string;
+  time: string;
+  price: string;
+  image: string;
+  location: string;
+  category: string;
+  locationCoords: {
+    lat: number;
+    lng: number;
+  };
+  teacher: string;
+};
+
+type ModalEvent = {
+  id: any;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  teacher: string;
+  participants: string[];
+  locationCoords: {
+    lat: number;
+    lng: number;
+  };
+};
+
 const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
+  const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || ""
+    rol: session?.user.role || "",
   });
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (session) {
       const fetchAcademia = async () => {
         try {
           let url = `/api/academias?owner=true`;
-      
+
           if (session?.user.role !== "dueño de academia") {
             url = `/api/academias?userId=${session.user.id}`; // Nueva API para obtener academias de un usuario
           }
-      
+
           const res = await fetch(url);
           const data = await res.json();
-      
+
           if (data.length > 0) {
             setAcademia(data[0]); // Asigna la primera academia encontrada
           }
@@ -58,7 +92,45 @@ const DashboardPage: React.FC = () => {
           console.error("Error fetching academia:", error);
         }
       };
-      
+
+      const fetchSalidaSocial = async () => {
+  try {
+    let url = `/api/social`;
+    console.log("url", url);
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log("data", data);
+
+    // data es un array → filtramos los que el creador sea el user logueado
+    const userId = session?.user.id;
+    const filteredData = data.filter(
+      (item: any) => item.creador_id?._id === userId
+    );
+
+    console.log("filteredData", filteredData);
+
+    const mappedData = filteredData.map((item: any) => ({
+      _id: item._id,
+      title: item.nombre,
+      date: item.fecha,
+      time: item.hora,
+      price: item.precio,
+      image: item.imagen,
+      category: item.deporte,
+      location: item.ubicacion,
+      locationCoords: item.locationCoords,
+      highlighted: false,
+      teacher: item.creador_id?.firstname || "Sin profe",
+    }));
+
+    setSalidaSocial(mappedData);
+
+  } catch (error) {
+    console.error("Error fetching academia:", error);
+  }
+};
+
+
       const fetchEntrenamientos = async () => {
         try {
           if (session) {
@@ -88,6 +160,7 @@ const DashboardPage: React.FC = () => {
       };
 
       fetchAcademia();
+      fetchSalidaSocial();
       fetchEntrenamientos();
     }
     if (session?.user) {
@@ -110,13 +183,104 @@ const DashboardPage: React.FC = () => {
       console.error("Academia ID is not available");
     }
   };
+
   const handleSearch = () => {
     router.push(`/academias`);
   };
 
   return (
-<main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer />
+
+      <section>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-2xl font-bold mb-3">
+            <span className="text-[#C76C01]">Mis</span> salidas
+          </h2>
+          {formData.rol === "dueño de academia" && (
+            <button onClick={() => router.push("/academias/crear")}>
+              <img
+                className="h-[26px] w-[26px]"
+                src="/assets/Logo/add-circle-svgrepo-com.svg"
+                alt="crear"
+              />
+            </button>
+          )}
+        </div>
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex space-x-4">
+            {salidaSocial.map((event) => (
+              <div
+                key={event._id}
+                className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative"
+              >
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
+                  <div className="flex justify-between items-start">
+                    <div className="text-white space-y-1">
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Location.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.location}
+                      </p>
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Calendar.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.date}
+                      </p>
+                      <p className="text-xs flex items-center gap-1">
+                        <img
+                          src="/assets/icons/Clock.svg"
+                          alt=""
+                          className="w-[14px] h-[14px] object-cover"
+                        />{" "}
+                        {event.time}
+                      </p>
+                    </div>
+                    <span className="bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full">
+                      {event.category}
+                    </span>
+                  </div>
+                  <div className="flex justify-end">
+                    {/* <button
+                      onClick={() => {
+                        setSelectedEvent({
+                          id: event._id,
+                          title: event.title,
+                          date: event.date,
+                          time: event.time,
+                          location: event.location,
+                          locationCoords: event.locationCoords, // reemplazá si tenés el link real
+                          teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
+                          participants: ["👤", "👤", "👤"], // podés mapear esto después
+                        });
+                        setIsModalOpen(true);
+                      }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                      }}
+                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+                    >
+                      Unirse
+                    </button> */}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Grupo principal (como salida destacada) */}
       <section>
@@ -146,7 +310,9 @@ const DashboardPage: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
                   <div className="text-white space-y-1">
-                    <p className="text-lg font-semibold">{academia.nombre_academia}</p>
+                    <p className="text-lg font-semibold">
+                      {academia.nombre_academia}
+                    </p>
                     <p className="text-xs">
                       📍 {academia.localidad}, {academia.provincia}
                     </p>
@@ -155,7 +321,8 @@ const DashboardPage: React.FC = () => {
                     <button
                       onClick={handleEntrar}
                       style={{
-                        background: "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                        background:
+                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
                       }}
                       className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
                     >
@@ -186,28 +353,35 @@ const DashboardPage: React.FC = () => {
                 key={entrenamiento.id}
                 className="bg-white p-4 rounded-[15px] shadow-md space-y-1"
               >
-                <p className="text-base font-semibold">{entrenamiento.descripcion}</p>
+                <p className="text-base font-semibold">
+                  {entrenamiento.descripcion}
+                </p>
                 <p className="text-sm text-gray-600">
                   🗓️ {entrenamiento.dia} · 🕒 {entrenamiento.hora}
                 </p>
-                <p className="text-sm text-gray-600">📍 {entrenamiento.ubicacion}</p>
+                <p className="text-sm text-gray-600">
+                  📍 {entrenamiento.ubicacion}
+                </p>
               </div>
             ))
           ) : (
-            <p className="text-gray-500">No tienes entrenamientos programados.</p>
+            <p className="text-gray-500">
+              No tienes entrenamientos programados.
+            </p>
           )}
         </div>
       </section>
     </main>
   );
-
 };
 
 export default DashboardPage;
 
-
-        {/* Eventos */}
-        {/*
+{
+  /* Eventos */
+}
+{
+  /*
         <div>
   <h2 className="text-xl font-semibold mb-3 pl-4 pr-4">Eventos</h2>
   <div className="scroll-container overflow-x-auto pl-4 pr-4">
@@ -247,9 +421,13 @@ export default DashboardPage;
       </div>
     </div>
   </div>
-</div>*/}
-        {/* Aventuras */}
-        {/*
+</div>*/
+}
+{
+  /* Aventuras */
+}
+{
+  /*
         <div className="pl-4 pr-4">
           <br />
           <h2 className="text-xl font-semibold mb-3">Aventuras</h2>
@@ -277,4 +455,5 @@ export default DashboardPage;
               </div>
             </div>
           </div>
-        </div>*/}
+        </div>*/
+}

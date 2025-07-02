@@ -4,6 +4,7 @@ const TeamSocialSchema = new Schema(
   {
     nombre: { type: String, required: true },
     ubicacion: { type: String, required: true },
+    precio: { type: String, required: true },
     deporte: { type: String, required: true },
     fecha: { type: String, required: true },
     hora: { type: String, required: true },

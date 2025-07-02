@@ -22,6 +22,7 @@ export default function CrearTeamPage() {
   const [formData, setFormData] = useState({
     nombre: "",
     ubicacion: "",
+    precio: "",
     deporte: "",
     fecha: "",
     hora: "",
@@ -100,6 +101,10 @@ export default function CrearTeamPage() {
       <label className="block">
         Ubicación
         <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="ciudad o zona" className="w-full px-3 py-2 border rounded-md" />
+      </label>
+       <label className="block">
+        Precio
+        <input name="precio" value={formData.precio} onChange={handleChange} placeholder="$9.999" className="w-full px-3 py-2 border rounded-md" />
       </label>
 
       <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-3 py-2 border rounded-md">
