@@ -33,6 +33,7 @@ export default function CrearSalidaPage() {
   const [formData, setFormData] = useState({
     nombre: "",
     ubicacion: "",
+    precio: "",
     deporte: "",
     fecha: "",
     hora: "",
@@ -123,6 +124,8 @@ export default function CrearSalidaPage() {
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
+        <option value="Trekking">Trekking</option>
+        <option value="Otro">Otro</option>
       </select>
       
       <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />

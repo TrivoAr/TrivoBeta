@@ -19,8 +19,8 @@ function Navbar() {
     return (
       <li className="flex flex-col items-center justify-center">
         <Link href={href} className="flex flex-col items-center justify-center">
-          <div className={`${isActive ? "text-black" : "text-gray-500"}`}>{icon}</div>
-          <span className={`text-sm mt-1 ${isActive ? "text-black font-medium" : "text-gray-500"}`}>
+          <div className={`${isActive ? "text-orange-500" : "text-gray-500"}`}>{icon}</div>
+          <span className={`text-sm mt-1 ${isActive ? "text-orange-400 font-medium" : "text-gray-500"}`}>
             {label}
           </span>
         </Link>
@@ -44,12 +44,16 @@ function Navbar() {
         {rol === "dueño de academia" && (
         <NavItem
           href="/dashboard"
-          label="Grupos"
+          label="Tu tribu"
           icon={
-            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M0 0h24v24H0z" fill="none" />
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-            </svg>
+            // <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+            //   <path d="M0 0h24v24H0z" fill="none" />
+            //   <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            // </svg>
+
+           <svg fill="currentColor" height="30" width="30" version="1.1" id="Layer_1" viewBox="0 0 512.004 512.004" stroke="#000000" stroke-width="0.005120040000000001"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" stroke="#CCCCCC" stroke-width="6.144048"> <g> <g> <g> <polygon points="170.669,512.004 341.335,512.004 256.002,351.194 "></polygon> <path d="M490.669,469.338h-29.483L279.853,106.671l37.909-75.797c5.269-10.539,0.981-23.339-9.557-28.629 c-10.539-5.248-23.317-0.981-28.629,9.557L256.002,58.97l-23.573-47.168c-5.291-10.539-18.091-14.805-28.629-9.557 c-10.539,5.291-14.827,18.091-9.557,28.629l37.909,75.797L50.818,469.338H21.335c-11.797,0-21.333,9.557-21.333,21.333 s9.536,21.333,21.333,21.333h103.381L236.503,290.01c3.435-7.701,11.051-12.672,19.499-12.672 c8.448,0,16.064,4.971,19.499,12.672l111.787,221.995h103.381c11.797,0,21.333-9.557,21.333-21.333 S502.466,469.338,490.669,469.338z"></path> </g> </g> </g> </g><g id="SVGRepo_iconCarrier"> <g> <g> <g> <polygon points="170.669,512.004 341.335,512.004 256.002,351.194 "></polygon> <path d="M490.669,469.338h-29.483L279.853,106.671l37.909-75.797c5.269-10.539,0.981-23.339-9.557-28.629 c-10.539-5.248-23.317-0.981-28.629,9.557L256.002,58.97l-23.573-47.168c-5.291-10.539-18.091-14.805-28.629-9.557 c-10.539,5.291-14.827,18.091-9.557,28.629l37.909,75.797L50.818,469.338H21.335c-11.797,0-21.333,9.557-21.333,21.333 s9.536,21.333,21.333,21.333h103.381L236.503,290.01c3.435-7.701,11.051-12.672,19.499-12.672 c8.448,0,16.064,4.971,19.499,12.672l111.787,221.995h103.381c11.797,0,21.333-9.557,21.333-21.333 S502.466,469.338,490.669,469.338z"></path> </g> </g> </g> </g></svg>
+
+
           }
         />)}
         <NavItem

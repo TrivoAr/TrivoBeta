@@ -29,6 +29,7 @@ interface EventData {
   _id: string;
   nombre: string;
   ubicacion: string;
+  precio: string;
   deporte: string;
   fecha: string;
   hora: string;
@@ -39,6 +40,7 @@ interface EventData {
     _id: string;
     firstname: string;
     lastname: string;
+    imagen: string;
   };
   locationCoords?: {
     lat: number;
@@ -65,6 +67,7 @@ export default function TeamEventPage({ params }: PageProps) {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/team-social/${params.id}`);
+        console.log("Evento:", response.data);
         setEvent(response.data);
       } catch (err) {
         console.error("Error al cargar evento", err);
@@ -78,6 +81,7 @@ export default function TeamEventPage({ params }: PageProps) {
       try {
         const res = await fetch(`/api/team-social/miembros?teamSocialId=${params.id}`);
         const data = await res.json();
+         console.log("miembros", data);
         setMiembros(data);
       } catch (err) {
         console.error("Error al cargar miembros", err);
@@ -129,7 +133,7 @@ export default function TeamEventPage({ params }: PageProps) {
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
       <button
         onClick={() => router.back()}
-        className="text-[#C76C01] text-lg mb-6"
+        className="text-[#C76C01] text-lg mb-6 shadow-md bg-white h-[40px] w-[40px] rounded-full flex justify-center items-center"
       >
         <img src="/assets/icons/Collapse Arrow.svg" alt="callback" />
       </button>
@@ -166,7 +170,7 @@ export default function TeamEventPage({ params }: PageProps) {
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img src="/assets/icons/Usergray.svg" className="w-[14px] h-[14px]" alt="" />
-          <span>Baja</span>
+          <span className="font-bold">${event.precio}</span>
         </div>
       </div>
 
@@ -202,12 +206,12 @@ export default function TeamEventPage({ params }: PageProps) {
 
         <div className="text-right">
           <p className="text-sm font-medium text-[#808488] pr-[60px]">Organiza</p>
-          <div className="flex items-center justify-end mt-1 gap-2">
-            {/*<img
-              src={event.creador_id.imagen || "/assets/icons/person_24dp_E8EAED.svg"}
+          <div className="flex items-center justify-start mt-1 gap-2">
+            <img
+              src={event.creadorId.imagen || "/assets/icons/person_24dp_E8EAED.svg"}
               alt="Organizador"
-              className="h-8 w-8 rounded-full object-cover border"
-            />*/}
+              className="h-6 w-6 rounded-full object-cover border"
+            />
             <span className="text-sm pr-[20px]">{event.creadorId.firstname}</span>
           </div>
         </div>
