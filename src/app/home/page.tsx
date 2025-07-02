@@ -223,6 +223,7 @@ useEffect(() => {
             />
           </button>
         </div>
+        
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
             {social.map((event) => (
