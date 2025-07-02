@@ -6,6 +6,7 @@ import EventModal from "@/components/EventModal";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { data } from 'autoprefixer';
 
 const categories = [
   { label: 'Running', icon: '/assets/icons/directions_run_40dp_FFB86A.svg' },
@@ -104,7 +105,7 @@ useEffect(() => {
         title: item.nombre,
         date: item.fecha,
         time: item.hora,
-        price: item.duracion, // o podés poner un valor fijo como "Gratis"
+        price: item.precio, // o podés poner un valor fijo como "Gratis"
         image: item.imagen,
         category: item.deporte,
         location: item.ubicacion,
@@ -128,18 +129,21 @@ useEffect(() => {
     try {
       const res = await fetch('/api/team-social');
       const rawData = await res.json();
+      console.log("Raw team-social data:", rawData);
 
       const mappedData = rawData.map((item: any) => ({
         _id: item._id,
         title: item.nombre,
         date: item.fecha,
         time: item.hora,
-        price: item.duracion,
+        price: item.precio,
         image: item.imagen,
         category: item.deporte,
         location: item.ubicacion,
         locationCoords: item.locationCoords,
       }));
+
+      
 
       setTeamSocialEvents(mappedData);
     } catch (error) {
@@ -170,6 +174,8 @@ useEffect(() => {
 
   const filteredEvents = events.filter((event) => event.category === selectedCategory);
   const social = filteredEvents;
+
+
 
 
   return (
@@ -217,6 +223,7 @@ useEffect(() => {
             />
           </button>
         </div>
+        
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
             {social.map((event) => (

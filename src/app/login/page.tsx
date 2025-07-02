@@ -96,7 +96,7 @@ export default function Signin() {
                 /* Ojo abierto */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-500"
+                  className="h-5 w-5 text-gray-300"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -111,7 +111,7 @@ export default function Signin() {
                 /* Ojo cerrado */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-500"
+                  className="h-5 w-5 text-gray-300"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -165,7 +165,7 @@ export default function Signin() {
               }
             >
               <Image
-                src="/assets/google-icon.png"
+                src="/assets/google.png"
                 alt="Google"
                 width={24}
                 height={24}
@@ -182,13 +182,13 @@ export default function Signin() {
               }
             >
               <Image
-                src="/assets/apple-icon.png"
+                src="/assets/logotipo-de-apple.png"
                 alt="Apple"
                 width={24}
                 height={24}
               />
             </button>
-            <button
+            {/* <button
               type="button"
               onClick={() =>
                 toast.promise(signIn("facebook"), {
@@ -204,7 +204,7 @@ export default function Signin() {
                 width={24}
                 height={24}
               />
-            </button>
+            </button> */}
           </div>
 
           {/* Registro */}
