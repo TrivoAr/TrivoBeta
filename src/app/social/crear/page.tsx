@@ -109,8 +109,10 @@ export default function CrearSalidaPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 bg-white rounded-xl shadow-md mb-[80px]">
+    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 bg-white rounded-xl shadow-md mb-[80px] bg-[#FEFBF9]">
+     
      <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
+
       <input
         type="file"
         accept="image/*"
@@ -132,26 +134,26 @@ export default function CrearSalidaPage() {
       <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Crear <span className="text-black">salida</span></h2>
       <label className="block">
         Nombre
-         <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="salida en grupo" className="w-full px-3 py-2 border rounded-md" />
+         <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="salida en grupo" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
       </label>
 
       <label className="block">
             Ubicación
-          <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="parque central" className="w-full px-3 py-2 border rounded-md" />
+          <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="parque central" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
     </label>
-      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-3 py-2 border rounded-md">
+      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" >
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
         <option value="Trekking">Trekking</option>
-        <option value="Otro">Otro</option>
+        <option value="Otros">Otros</option>
       </select>
       
-      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
 
       <div className="flex gap-2">
-        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="flex-1 px-3 py-2 border rounded-md" />
-        <select name="duracion" value={formData.duracion} onChange={handleChange} className="flex-1 px-3 py-2 border rounded-md">
+        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="flex-1 px-3 py-4 border rounded-[15px] text-slave-400 sha" />
+        <select name="duracion" value={formData.duracion} onChange={handleChange} className="flex-1 px-3 py-4 border shadow-md rounded-[15px] text-slate-400">
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
           <option value="2 hs">2 hs</option>
@@ -159,12 +161,20 @@ export default function CrearSalidaPage() {
         </select>
       </div>
 
-      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Organizamos una salida de running" className="w-full px-3 py-2 border rounded-md" />
+      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Organizamos una salida de running" className="w-full px-3 py-4 border rounded-[15px]" />
 
+      
        <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
-
+        <p className="text-red-500 text-sm">*Señalar en el mapa la ubicacion para que se guarde la salida</p>
       <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear salida</button>
-      <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold">Atrás</button>
+
+        <div className="w-full flex justify-center">
+          <button type="button" onClick={() => router.back()} className="text-orange-500 font-semibold cente ">Atrás</button>
+
+        </div>
+
+      
+      <div className="mb-[190px]"></div>
     </form>
   );
 }
