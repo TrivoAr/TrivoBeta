@@ -154,7 +154,7 @@ function TermsAndConditions() {
         <p className="text-gray-700">
           Para consultas, reclamos o ejercer derechos legales, podés escribirnos a:
           <br />
-          📧 <a href="mailto:contacto@trivo.app" className="text-orange-500 hover:underline"></a>
+          📧 <a href="mailto:contacto@trivo.app" className="text-orange-500 hover:underline">Klubo.ar@hotmail.com</a>
           <br />
           
         </p>
