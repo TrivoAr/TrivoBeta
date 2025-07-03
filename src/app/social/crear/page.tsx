@@ -29,6 +29,8 @@ interface LatLng {
 export default function CrearSalidaPage() {
   const router = useRouter();
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -69,9 +71,12 @@ export default function CrearSalidaPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImagen(e.target.files[0]);
+      const file = e.target.files[0];
+      setImagen(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
+
 
   const handleCoordsChange = (coords: LatLng) => {
     setFormData(prev => ({ ...prev, coords }));
@@ -105,10 +110,24 @@ export default function CrearSalidaPage() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 bg-white rounded-xl shadow-md mb-[80px]">
-      <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative">
-        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute w-full h-full opacity-0 cursor-pointer" />
-        <span className="text-gray-500">Subir imagen</span>
-      </div>
+     <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+      />
+      {previewUrl ? (
+        <img
+          src={previewUrl}
+          alt="Vista previa"
+          className="w-full h-full object-cover absolute top-0 left-0"
+        />
+      ) : (
+        <span className="text-gray-500 z-0">Subir imagen</span>
+      )}
+    </div>
+
 
       <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Crear <span className="text-black">salida</span></h2>
       <label className="block">
@@ -144,7 +163,7 @@ export default function CrearSalidaPage() {
 
        <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
 
-      <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear grupo</button>
+      <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear salida</button>
       <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold">Atrás</button>
     </form>
   );
