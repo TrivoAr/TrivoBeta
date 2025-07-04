@@ -20,7 +20,7 @@ function Navbar() {
       <li className="flex flex-col items-center justify-center">
         <Link href={href} className="flex flex-col items-center justify-center">
           <div className={`${isActive ? "text-orange-500" : "text-gray-500"}`}>{icon}</div>
-          <span className={`text-sm mt-1 ${isActive ? "text-orange-400 font-medium" : "text-gray-500"}`}>
+          <span className={`text-sm mt-1 ${isActive ? "text-orange-400 font-semibold" : "text-gray-500"}`}>
             {label}
           </span>
         </Link>
@@ -29,8 +29,8 @@ function Navbar() {
   };
   
   return (
-    <nav className="fixed bottom-0 left-0 w-full h-[91px] bg-white border-t shadow-md z-50 flex items-center justify-center rounded-tl-[15px] rounded-tr-[15px]">
-      <ul className="flex items-center gap-[60px]">
+    <nav className="fixed bottom-0 left-0 w-full h-[95px] bg-white border-t shadow-md z-50 flex items-center justify-center rounded-tl-[15px] rounded-tr-[15px]">
+      <ul className="flex items-center gap-[28px]">
         <NavItem
           href="/home"
           label="Inicio"
@@ -57,6 +57,13 @@ function Navbar() {
           }
         />)}
         <NavItem
+          href="/social/crear"
+          label="Crear salida"
+          icon={
+         <svg width="40" height="40" viewBox="0 0 24.00 24.00" fill="none" stroke="currentColor"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.512"></circle> <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="currentColor" stroke-width="1.512" stroke-linecap="round"></path> </g></svg>
+          }
+        />
+        <NavItem
           href="/academias"
           label="Buscar"
           icon={
@@ -66,6 +73,7 @@ function Navbar() {
             </svg>
           }
         />
+
         <NavItem
           href="/dashboard/profile"
           label="Perfil"
