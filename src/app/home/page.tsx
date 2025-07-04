@@ -211,17 +211,6 @@ useEffect(() => {
           <h2 className="text-2xl font-bold mb-3">
             <span className="text-[#C76C01]">Salidas</span> destacadas
           </h2>
-          
-          <button
-            className="text-sm text-gray-400"
-            onClick={() => router.push(`/social/crear`)}
-          >
-            <img
-              className="h-[26px] w-[26px] color-black"
-              src="/assets/Logo/add-circle-svgrepo-com.svg"
-              alt=""
-            />
-          </button>
         </div>
         
         <div className="overflow-x-auto scrollbar-hide">
@@ -305,7 +294,7 @@ useEffect(() => {
           <h2 className="text-2xl font-bold">
             <span className="text-[#C76C01]">Social</span> Team
           </h2>
-          {formData.rol=== "dueño de academia" && (
+          {/* {formData.rol=== "dueño de academia" && (
           <button
             className="text-sm text-gray-400"
             onClick={() => router.push(`/team-social/crear`)}
@@ -315,7 +304,9 @@ useEffect(() => {
               src="/assets/Logo/add-circle-svgrepo-com.svg"
               alt=""
             />
-          </button>)}
+          </button>)} */}
+
+
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
@@ -382,7 +373,7 @@ useEffect(() => {
           <h2 className="text-2xl font-bold mb-3">
             <span className="text-[#C76C01]">Grupos de entrenamiento</span>
           </h2>
-          {formData.rol=== "dueño de academia" && (
+          {/* {formData.rol=== "dueño de academia" && (
           <button
             className="text-sm text-gray-400"
             onClick={() => router.push("/academias/crear")}
@@ -392,7 +383,7 @@ useEffect(() => {
               src="/assets/Logo/add-circle-svgrepo-com.svg"
               alt=""
             />
-          </button>)}
+          </button>)} */}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex space-x-4">
@@ -428,8 +419,8 @@ useEffect(() => {
       </section>
 
       {/* Kpons Section */}
-      <section>
-        <div className="flex justify-between items-center ">
+      <section className='pb-[150px]'>
+        {/* <div className="flex justify-between items-center ">
           <img
             src="/assets/icons/Group 33832.png"
             alt="Kpons"
@@ -460,7 +451,7 @@ useEffect(() => {
               <div className="absolute inset-0 bg-black bg-opacity-40" />
             </div>
           ))}
-        </div>
+        </div> */}
       </section>
       <EventModal
         isOpen={isModalOpen}
