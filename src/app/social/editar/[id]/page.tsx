@@ -11,6 +11,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
+    deporte: "",
     fecha: "",
     hora: "",
     ubicacion: "",
@@ -24,7 +25,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -35,7 +38,10 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData((prevData) => ({ ...prevData, imagen: reader.result as string }));
+        setFormData((prevData) => ({
+          ...prevData,
+          imagen: reader.result as string,
+        }));
       };
       reader.readAsDataURL(file);
     }
@@ -48,33 +54,51 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
+    alert("Salida Guardada");
     router.push("/home");
   };
 
   const handleDelete = async () => {
-    const confirm = window.confirm("¿Estás seguro que querés eliminar esta salida?");
+    const confirm = window.confirm(
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
     if (!confirm) return;
 
     await fetch(`/api/social/${params.id}`, { method: "DELETE" });
     router.push("/home");
   };
 
+  console.log("data", formData);
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#FEFBF9] mb-[40px]">
-      <form onSubmit={handleSubmit} className="w-full max-w-md bg-white rounded-2xl shadow-md p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Editar salida</h1>
+    <div className="flex flex-col justify-center items-center bg-[#FEFBF9]">
+         <button
+            onClick={() => router.back()}
+            className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
+          >
+            <img
+              src="/assets/icons/Collapse Arrow.svg"
+              alt="callback"
+              className="h-[20px] w-[20px]"
+            />
+          </button>
+      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-2xl h-[900px] p-8 mb-4">
+        <div className="mb-4 flex justify-center items-center relative">
+
+          <h1 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+            Editar salida
+          </h1>
         </div>
 
         <div className="space-y-4">
           <input
             type="text"
-            name="titulo"
+            name="nombre"
             placeholder="Título"
             value={formData.nombre}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
 
           <textarea
@@ -83,8 +107,20 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
             value={formData.descripcion}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
+
+          <select
+            name="deporte"
+            value={formData.deporte}
+            onChange={handleChange}
+            className="w-full p-4  border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          >
+            <option value="Running">Running</option>
+            <option value="Ciclismo">Ciclismo</option>
+            <option value="Trekking">Trekking</option>
+            <option value="Otros">Otros</option>
+          </select>
 
           <div className="flex gap-4">
             <input
@@ -93,7 +129,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
               value={formData.fecha.split("T")[0]}
               onChange={handleChange}
               required
-              className="w-1/2 px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
             />
             <input
               type="time"
@@ -101,7 +137,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
               value={formData.hora}
               onChange={handleChange}
               required
-              className="w-1/2 px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
             />
           </div>
 
@@ -112,7 +148,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
             value={formData.ubicacion}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
 
           <div>
@@ -143,7 +179,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           <button
             type="button"
             onClick={handleDelete}
-            className="w-full mt-2 text-[#C76C01] py-3 rounded-xl border border-[#C76C01] hover:bg-orange-50"
+            className="w-full mt-2 text-red-500 py-3"
           >
             Eliminar salida
           </button>
