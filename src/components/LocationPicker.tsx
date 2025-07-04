@@ -35,6 +35,7 @@ export default function LocationPicker({
   return (
     <MapContainer
       center={[-26.8333, -65.2167]}
+
       zoom={13}
       className="h-[200px] w-full rounded-md"
     >
