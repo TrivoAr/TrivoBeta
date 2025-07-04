@@ -76,7 +76,7 @@ const TopContainer = () => {
   };
 
   return (
-    <div className="containerTop  bg-[#FAF9F8] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
+    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
   {/* Avatar */}
   <Link href="/dashboard/profile">
     <img
@@ -123,7 +123,7 @@ const TopContainer = () => {
     onClick={handleNotificationClick}
   >
     <div className="h-[48px] w-[48px] bg-white border rounded-[15px] shadow-md flex justify-center items-center">
-      <img className="h-[26px] w-[26px] color-black" src="/assets/icons/add_circle_24dp_E8EAED.svg" alt="" />
+      <img className="h-[26px] w-[26px] color-black" src="/assets/icons/Notification.svg" alt="" />
     </div>
     {SolicitudesPendientes && (
       <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-600 rounded-full border-2 border-white" />

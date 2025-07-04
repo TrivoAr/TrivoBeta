@@ -67,6 +67,12 @@ body {
   pointer-events: none;
 }
 
+.EventModal{
+   background-color: rgba(111, 111, 111, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
 
 .relative {
   position: relative;
