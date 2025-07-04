@@ -10,11 +10,13 @@ function Navbar() {
   const pathname = usePathname();
   const rol = session?.user?.role;
 
+
+
   if (status === "loading") return null;
   if (!session) return null;
 
   const NavItem = (props) => {
-    const { href, icon, label } = props;
+    const { href, icon, label, onClick } = props;
     const isActive = pathname === href;
     return (
       <li className="flex flex-col items-center justify-center">
@@ -41,7 +43,7 @@ function Navbar() {
             </svg>
           }
         />
-        {rol === "dueño de academia" && (
+        
         <NavItem
           href="/dashboard"
           label="Tu tribu"
@@ -55,8 +57,9 @@ function Navbar() {
 
 
           }
-        />)}
+        />
         <NavItem
+          
           href="/social/crear"
           label="Crear salida"
           icon={
