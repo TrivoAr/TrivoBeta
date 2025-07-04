@@ -32,17 +32,19 @@ export default function CrearSalidaPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
 
-  const [formData, setFormData] = useState({
-    nombre: "",
-    ubicacion: "",
-    precio: "",
-    deporte: "",
-    fecha: "",
-    hora: "",
-    duracion: "",
-    descripcion: "",
-    coords: null as LatLng | null,
-  });
+ const [formData, setFormData] = useState({
+  nombre: "",
+  ubicacion: "",
+  precio: "",
+  deporte: "",
+  fecha: "",
+  hora: "",
+  duracion: "",
+  descripcion: "",
+  whatsappLink: "",
+  telefonoOrganizador: "",
+  coords: null as LatLng | null,
+});
 
   const [imagen, setImagen] = useState<File | null>(null);
 
@@ -162,6 +164,27 @@ export default function CrearSalidaPage() {
       </div>
 
       <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Organizamos una salida de running" className="w-full px-3 py-4 border rounded-[15px]" />
+            <label className="block">
+        Link del grupo de WhatsApp
+        <input
+          name="whatsappLink"
+          value={formData.whatsappLink || ""}
+          onChange={handleChange}
+          placeholder="https://chat.whatsapp.com/..."
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
+
+      <label className="block">
+        Número de teléfono del organizador
+        <input
+          name="telefonoOrganizador"
+          value={formData.telefonoOrganizador || ""}
+          onChange={handleChange}
+          placeholder="+5491123456789"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
 
       
        <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />

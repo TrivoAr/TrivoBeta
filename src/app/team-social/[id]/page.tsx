@@ -193,7 +193,7 @@ export default function TeamEventPage({ params }: PageProps) {
                   />
                 ))}
                 {miembros.length > 2 && (
-                  <div className="h-8 w-8 rounded-full bg-gray-300 text-xs flex items-center justify-center border text-gray-700 font-semibold">
+                  <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-400 font-semibold">
                     +{miembros.length - 2}
                   </div>
                 )}
@@ -293,7 +293,7 @@ export default function TeamEventPage({ params }: PageProps) {
 
 
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-  <div className="bg-[#FEFBF9] shadow-md rounded-xl h-[100px] border px-2  flex justify-between items-center">
+  <div className="bg-[#FEFBF9] shadow-md h-[100px] border px-2  flex justify-between items-center">
     <div className="ml-4">
       <p className="font-semibold text-2xl text-gray-500 ">
         ${event.precio}

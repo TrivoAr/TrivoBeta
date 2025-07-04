@@ -166,7 +166,7 @@ export default function EventModal({
 
   return (
     <div className="fixed inset-0 z-[9999999] flex items-end justify-center ">
-      <div className="bg-[#aeadad] w-full max-w-md rounded-t-2xl p-4 space-y-4 relative">
+      <div className="EventModal w-full max-w-md rounded-t-2xl p-4 space-y-4 relative">
         <button
           className="absolute rounded-[12px] bg-white top-2 right-4 text-[12px] px-1"
           onClick={onClose}
@@ -196,27 +196,28 @@ export default function EventModal({
         </div>
 
         <div className="text-sm">
-          <p className="text-xs flex items-center gap-1 text-white pb-[6px]">
+          <p className="text-md flex i font-semibold tems-center gap-1 text-white pb-[6px]">
             {" "}
             <img
               src="/assets/icons/Location.svg"
               alt=""
-              className="w-[14px] h-[14px] object-cover"
+              className="w-[18px] h-[18px] object-cover"
             />{" "}
             {event.location}
           </p>
-          <p className="text-xs flex items-center gap-1  text-white">
+          <p className="text-xs flex items-center gap-1 font-semibold  text-white">
             <img
               src="/assets/icons/Calendar.svg"
               alt=""
               className="w-[14px] h-[14px] object-cover"
             />{" "}
-            {event.date}- {event.time}
+            {event.date} - {event.time} hs
           </p>
         </div>
 
         <div className="text-sm text-white">
-          <p className="text-xs flex items-center gap-1 text-white">
+          <p className="text-md flex items-center gap-1 text-white font-semibold">
+            <p className="font-bold">Organizador:</p>
             <img
               src="/assets/icons/person_24dp_E8EAED.svg"
               alt=""
@@ -225,31 +226,46 @@ export default function EventModal({
             {event.teacher}
           </p>
 
-          <div className="flex items-center gap-2 mt-1">
-            <span>Participantes:</span>
+          <div className="flex flex-col items-start gap-2 mt-1">
+            <span className="font-bold">Participantes:</span>
             <div className="flex gap-1">
-              {miembros.map((m) => (
-                <img
-                  key={m._id}
-                  src={m.imagen}
-                  alt={m.nombre}
-                  className="h-8 w-8 rounded-full object-cover border"
-                  title={m.nombre}
-                />
-              ))}
+              {miembros.length > 0 ? (
+              <>
+                {miembros.slice(0, 2).map((m) => (
+                  <img
+                    key={m._id}
+                    src={m.imagen}
+                    alt={m.nombre}
+                    className="h-8 w-8 rounded-full object-cover border"
+                    title={m.nombre}
+                    onError={(e) =>
+                      ((e.target as HTMLImageElement).src = "/assets/icons/person_24dp_E8EAED.svg")
+                    }
+                  />
+                ))}
+                {miembros.length > 2 && (
+                  <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 border font-semibold">
+                    +{miembros.length - 2}
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-white font-semibold">Nadie se ha unido aún</span>
+            )}
             </div>
           </div>
         </div>
 
-        <button
+        <div className="flex flex-col items-center gap-3">
+          <button
           onClick={handleAccion}
-          className={`w-full py-2 border rounded-full font-semibold transition ${
+          className={`w-[150px] py-2 border rounded-[15px] font-semibold transition ${
             yaUnido
-              ? "border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-              : "border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+              ? "border-red-600  text-red-600"
+              : "border-orange-500 text-orange-500 bg-orange-500 text-white"
           }`}
         >
-          {yaUnido ? "Salir" : "Unirse"}
+          {yaUnido ? "Salir" : "Machear"}
         </button>
 
         <button
@@ -258,6 +274,10 @@ export default function EventModal({
         >
           Más info
         </button>
+
+        </div>
+
+        
       </div>
     </div>
   );
