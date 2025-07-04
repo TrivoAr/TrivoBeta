@@ -38,6 +38,7 @@ interface EventData {
   creador_id: {
     _id: string;
    firstname: string;
+   lastname: string;
     imagen: string;
   };
   locationCoords?: {
@@ -126,19 +127,18 @@ export default function EventPage({ params }: PageProps) {
   if (error || !event) return <main className="py-20 text-center">{error || "Evento no encontrado"}</main>;
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
+    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto h-[1000px]">
       <button
         onClick={() => router.back()}
-        className="text-[#C76C01] text-lg mb-6"
+        className="text-[#C76C01] mb-3 bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center"
       >
-        <img src="/assets/icons/Collapse Arrow.svg" alt="callback" />
+        <img src="/assets/icons/Collapse Arrow.svg" alt="callback" className="h-[20px] w-[20px]"/>
       </button>
 
       <h1 className="text-xl font-semibold mb-4">
-        <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold">
+        {/* <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold">
           {event.deporte}
-        </span>{" "}
-        en {event.nombre}
+        </span>{" "} */} {event.nombre}
       </h1>
 
       <div className="w-full h-[180px] rounded-xl overflow-hidden">
@@ -192,12 +192,12 @@ export default function EventPage({ params }: PageProps) {
           <div className="flex -space-x-2 mt-1">
             {miembros.length > 0 ? (
               <>
-                {miembros.slice(0, 5).map((m) => (
+                {miembros.slice(0, 2).map((m) => (
                   <img
                     key={m._id}
                     src={m.imagen}
                     alt={m.nombre}
-                    className="h-8 w-8 rounded-full object-cover border"
+                    className="h-8 w-8 rounded-full object-cover border shadow-md"
                     title={m.nombre}
                     onError={(e) =>
                       ((e.target as HTMLImageElement).src =
@@ -205,9 +205,9 @@ export default function EventPage({ params }: PageProps) {
                     }
                   />
                 ))}
-                {miembros.length > 5 && (
-                  <div className="h-8 w-8 rounded-full bg-gray-300 text-xs flex items-center justify-center border text-gray-700 font-semibold">
-                    +{miembros.length - 5}
+                {miembros.length > 2 && (
+                  <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
+                    +{miembros.length - 2}
                   </div>
                 )}
               </>
@@ -223,7 +223,7 @@ export default function EventPage({ params }: PageProps) {
           <p className="text-sm font-medium text-[#808488] pr-[60px]">
             Organiza
           </p>
-          <div className="flex items-center justify-end mt-1 gap-2">
+          <div className="flex items-center justify-start mt-1 gap-2">
             <img
               src={
                 event.creador_id.imagen ||
@@ -253,13 +253,13 @@ export default function EventPage({ params }: PageProps) {
           Ubicación
         </h2>
         {event.locationCoords ? (
-          <div className="w-full h-48 rounded-xl overflow-hidden border">
+          <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
             <MapContainer
               center={[event.locationCoords.lat, event.locationCoords.lng]}
               zoom={15}
               scrollWheelZoom={false}
               style={{ height: "100%", width: "100%" }}
-            >
+             className="z-2">
               <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -277,19 +277,28 @@ export default function EventPage({ params }: PageProps) {
           </p>
         )}
       </div>
-      <div className="mt-6 ">
+      <div className="mt-6">
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Contacto
+          Organizador       </h2>
+        <div className="flex w-full justify-center">
+          <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
+            <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
+            <div>
+              <h2 className="text-lg font-bold text-slate-700 mb-1">
+          {event.creador_id.firstname} {event.creador_id.lastname}
         </h2>
-        <p className="text-sm text-[#808488] leading-relaxed">
-          {/*event.descripcion*/}Contacta con {event.creador_id.firstname} para
-          mas información:
-        </p>
+        <button className="text-green-400 font-medium">Contacto</button>
+            </div>
+            
+          </div>
+        </div>
       </div>
-      <div className="mt-8 mb-[200px]">
+
+
+      {/* <div className="mt-8 mb-[200px]">
         <button
           onClick={handleAccion}
-          className={`w-full py-3 rounded-full font-semibold transition ${
+          className={`w-full py-3 rounded-[15px] font-semibold transition ${
             yaUnido
               ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
               : "bg-green-100 text-green-600 hover:bg-green-600 hover:text-white"
@@ -297,9 +306,12 @@ export default function EventPage({ params }: PageProps) {
         >
           {yaUnido ? "Salir " : "Unirse a la salida"}
         </button>
-      </div>
+      </div> */}
+
+
       {/* Barra fija sobre el mapa */}
-       {session?.user?.id === event.creador_id._id && (
+
+       {/* {session?.user?.id === event.creador_id._id && (
       <div className="fixed bottom-[100px] w-[100%] left-1/2 -translate-x-1/2  px-2">
         <div className="bg-white shadow-md rounded-xl px-4 py-3 flex justify-between items-center">
           <div>
@@ -326,7 +338,62 @@ export default function EventPage({ params }: PageProps) {
             
           </div>
         </div>
-      </div>)}
+      </div>)} */}
+
+
+<div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
+  <div className="bg-[#FEFBF9] shadow-md rounded-xl h-[110px] border px-2  flex justify-between items-center">
+    <div>
+      <p className="text-xs text-gray-400">
+        {new Date(event.fecha).toLocaleDateString()}, {event.hora} hs
+      </p>
+      <p className="font-semibold text-sm text-gray-800">
+        {event.ubicacion}
+      </p>
+    </div>
+
+    <div className="flex h-[60px] w-[150px] gap-3">
+
+        <button className="bg-white w-[60px] h-[60px] shadow-md text-sm rounded-full flex items-center justify-center border">
+        <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" />
+      </button>
+    
+
+      {session?.user?.id === event.creador_id._id ? (      
+        
+        // Si es el creador, mostrar botón editar
+        <button
+          onClick={() => router.push(`/social/editar/${event._id}`)}
+          className="bg-white w-[60px] h-[60px]  rounded-full shadow-md flex items-center justify-center border"
+        >
+          <img src="/assets/icons/Edit.svg" className="w-[25px] h-[25px]" />
+        </button>
+
+
+
+
+      ) : (
+        // Si NO es el creador, mostrar botón unirse/salir
+        <button
+          onClick={handleAccion}
+          className={`rounded-full w-[60px] h-[60px] font-semibold transition ${
+            yaUnido
+              ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
+              : "bg-green-100 text-green-600 hover:bg-green-600 hover:text-white"
+          }`}
+        >
+          {yaUnido ? "D" : "M"}
+        </button>
+      )}
+    </div>
+  </div>
+</div>
+
+<div className="pb-[200px]" /> 
+
+
+
+
     </main>
   );
 }
