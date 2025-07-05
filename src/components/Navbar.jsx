@@ -55,14 +55,14 @@ function Navbar() {
                 Salida
               </Link>
               <Link
-                href="/team/crear"
+                href="/team-social/crear"
                 onClick={() => setIsModalOpen(false)}
                 className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
               >
                 Social Team
               </Link>
               <Link
-                href="/grupos/crear"
+                href="/academias/crear"
                 onClick={() => setIsModalOpen(false)}
                 className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
               >
