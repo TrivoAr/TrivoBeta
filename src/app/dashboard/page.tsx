@@ -29,6 +29,12 @@ interface Entrenamiento {
   descripcion: string;
 }
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
 type EventType = {
   _id: string;
   title: string;
@@ -63,6 +69,7 @@ const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
+  const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
@@ -94,42 +101,78 @@ const DashboardPage: React.FC = () => {
       };
 
       const fetchSalidaSocial = async () => {
-  try {
-    let url = `/api/social`;
-    console.log("url", url);
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log("data", data);
+        try {
+          let url = `/api/social`;
+          console.log("url", url);
+          const res = await fetch(url);
+          const data = await res.json();
+          console.log("data", data);
 
-    // data es un array → filtramos los que el creador sea el user logueado
-    const userId = session?.user.id;
-    const filteredData = data.filter(
-      (item: any) => item.creador_id?._id === userId
-    );
+          // data es un array → filtramos los que el creador sea el user logueado
+          const userId = session?.user.id;
+          const filteredData = data.filter(
+            (item: any) => item.creador_id?._id === userId
+          );
 
-    console.log("filteredData", filteredData);
+          console.log("filteredData", filteredData);
 
-    const mappedData = filteredData.map((item: any) => ({
-      _id: item._id,
-      title: item.nombre,
-      date: item.fecha,
-      time: item.hora,
-      price: item.precio,
-      image: item.imagen,
-      category: item.deporte,
-      location: item.ubicacion,
-      locationCoords: item.locationCoords,
-      highlighted: false,
-      teacher: item.creador_id?.firstname || "Sin profe",
-    }));
+          const mappedData = filteredData.map((item: any) => ({
+            _id: item._id,
+            title: item.nombre,
+            date: item.fecha,
+            time: item.hora,
+            price: item.precio,
+            image: item.imagen,
+            category: item.deporte,
+            location: item.ubicacion,
+            locationCoords: item.locationCoords,
+            highlighted: false,
+            teacher: item.creador_id?.firstname || "Sin profe",
+          }));
 
-    setSalidaSocial(mappedData);
+          setSalidaSocial(mappedData);
+        } catch (error) {
+          console.error("Error fetching academia:", error);
+        }
+      };
 
-  } catch (error) {
-    console.error("Error fetching academia:", error);
-  }
-};
+      const fetchSalidaTeamSocial = async () => {
+        try {
+          let url = `/api/team-social`;
+          const res = await fetch(url);
+          const data = await res.json();
+          console.log("social team puto", data);
 
+          // data es un array → filtramos los que el creador sea el user logueado
+
+          const userId = session?.user.id;
+          const filteredData = data.filter(
+            (item: any) => item.creadorId === userId
+          );
+
+          console.log("puto 2:", filteredData);
+
+          const mappedData = filteredData.map((item: any) => ({
+            _id: item._id,
+            title: item.nombre,
+            date: item.fecha,
+            time: item.hora,
+            price: item.precio,
+            image: item.imagen,
+            category: item.deporte,
+            location: item.ubicacion,
+            locationCoords: item.locationCoords,
+            highlighted: false,
+            teacher: item.creador_id?.firstname || "Sin profe",
+          }));
+
+          console.log("puto:", mappedData);
+
+          setSalidaTeamSocial(mappedData);
+        } catch (error) {
+          console.error("Error fetching academia:", error);
+        }
+      };
 
       const fetchEntrenamientos = async () => {
         try {
@@ -161,6 +204,7 @@ const DashboardPage: React.FC = () => {
 
       fetchAcademia();
       fetchSalidaSocial();
+      fetchSalidaTeamSocial();
       fetchEntrenamientos();
     }
     if (session?.user) {
@@ -188,6 +232,28 @@ const DashboardPage: React.FC = () => {
     router.push(`/academias`);
   };
 
+  const handleDelete = async (event) => {
+    const confirm = window.confirm(
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
+    if (!confirm) return;
+
+    await fetch(`/api/social/${event}`, { method: "DELETE" });
+    router.push("/home");
+  };
+
+   const handleDeleteTeamSocial = async (event) => {
+    console.log("datos putos:", event);
+    const confirm = window.confirm(
+      
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
+    if (!confirm) return;
+
+    await fetch(`/api/team-social/${event}`, { method: "DELETE" });
+    router.push("/home");
+  };
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer />
@@ -197,7 +263,7 @@ const DashboardPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-3">
             <span className="text-[#C76C01]">Mis</span> salidas
           </h2>
-          {formData.rol === "dueño de academia" && (
+          {/* {formData.rol === "dueño de academia" && (
             <button onClick={() => router.push("/academias/crear")}>
               <img
                 className="h-[26px] w-[26px]"
@@ -205,141 +271,333 @@ const DashboardPage: React.FC = () => {
                 alt="crear"
               />
             </button>
-          )}
+          )} */}
         </div>
-        <div className="overflow-x-auto scrollbar-hide">
+        <div className="overflow-x-auto h-[245px] scrollbar-hide">
           <div className="flex space-x-4">
-            {salidaSocial.map((event) => (
-              <div
-                key={event._id}
-                className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative"
-              >
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div className="text-white space-y-1">
-                      <p className="text-xs flex items-center gap-1">
-                        <img
-                          src="/assets/icons/Location.svg"
-                          alt=""
-                          className="w-[14px] h-[14px] object-cover"
-                        />{" "}
-                        {event.location}
-                      </p>
-                      <p className="text-xs flex items-center gap-1">
-                        <img
-                          src="/assets/icons/Calendar.svg"
-                          alt=""
-                          className="w-[14px] h-[14px] object-cover"
-                        />{" "}
-                        {event.date}
-                      </p>
-                      <p className="text-xs flex items-center gap-1">
-                        <img
-                          src="/assets/icons/Clock.svg"
-                          alt=""
-                          className="w-[14px] h-[14px] object-cover"
-                        />{" "}
-                        {event.time}
-                      </p>
+            {salidaSocial.length > 0 ? (
+              salidaSocial.map((event) => (
+                <div
+                  key={event._id}
+                  onClick={() => router.push(`/social/${event._id}`)}
+                  className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                >
+                  <div className="h-[115px] bg-slate-200">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                    <p className="font-bold">{event.category}</p>
+                  </div>
+                  <div className="p-3 flex flex-col gap-3">
+                    <div>
+                      <h1 className="font-semibold text-lg">{event.title}</h1>
+                      <div className="flex items-center text-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#f97316"
+                          viewBox="0 0 24 24"
+                          width="13"
+                          height="13"
+                          className="mr-1"
+                        >
+                          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                        </svg>{" "}
+                        <p className="text-slate-400">{event.location}</p>
+                      </div>
                     </div>
-                    <span className="bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full">
-                      {event.category}
-                    </span>
-                  </div>
-                  <div className="flex justify-end">
-                    {/* <button
-                      onClick={() => {
-                        setSelectedEvent({
-                          id: event._id,
-                          title: event.title,
-                          date: event.date,
-                          time: event.time,
-                          location: event.location,
-                          locationCoords: event.locationCoords, // reemplazá si tenés el link real
-                          teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
-                          participants: ["👤", "👤", "👤"], // podés mapear esto después
-                        });
-                        setIsModalOpen(true);
-                      }}
-                      style={{
-                        background:
-                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                      }}
-                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
-                    >
-                      Unirse
-                    </button> */}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Grupo principal (como salida destacada) */}
-      <section>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Grupo</span> principal
-          </h2>
-          {formData.rol === "dueño de academia" && (
-            <button onClick={() => router.push("/academias/crear")}>
-              <img
-                className="h-[26px] w-[26px]"
-                src="/assets/Logo/add-circle-svgrepo-com.svg"
-                alt="crear"
-              />
-            </button>
-          )}
-        </div>
-
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex space-x-4">
-            {academia ? (
-              <div className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative">
-                <img
-                  src="/assets/Logo/Trivo T.png"
-                  alt="Academia"
-                  className="w-[200px] h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
-                  <div className="text-white space-y-1">
-                    <p className="text-lg font-semibold">
-                      {academia.nombre_academia}
-                    </p>
-                    <p className="text-xs">
-                      📍 {academia.localidad}, {academia.provincia}
-                    </p>
+                    <div className="text-slate-400 text-md">
+                      <p>{event.date}</p>
+                      <p className="font-bold">{event.time} hs</p>
+                    </div>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="absolute top-[39%] right-[10px] flex gap-5">
+                    <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center">
+                      <img src="/assets/icons/groups_24dp_E8EAED.svg" alt="" />
+                    </div>
                     <button
-                      onClick={handleEntrar}
-                      style={{
-                        background:
-                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                      }}
-                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+                      onClick={() => router.push(`/social/editar/${event._id}`)}
+                      className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
                     >
-                      Entrar
+                      <img
+                        src="/assets/icons/Edit.svg"
+                        alt=""
+                        className="h-[20px] w-[20px] text-orange-500"
+                      />
+                    </button>
+                  </div>
+                  <div className="absolute top-1 right-[10px]">
+                    <button
+                      onClick={() => handleDelete(event._id)}
+                      className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        height={25}
+                        width={25}
+                        fill="none"
+                        stroke="#6f6d6d"
+                      >
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g
+                          id="SVGRepo_tracerCarrier"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></g>
+                        <g id="SVGRepo_iconCarrier">
+                          {" "}
+                          <path
+                            d="M20.5001 6H3.5"
+                            stroke="#6e6c6c"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                          ></path>{" "}
+                          <path
+                            d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
+                            stroke="#6e6c6c"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                          ></path>{" "}
+                          <path
+                            d="M9.5 11L10 16"
+                            stroke="#6e6c6c"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                          ></path>{" "}
+                          <path
+                            d="M14.5 11L14 16"
+                            stroke="#6e6c6c"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                          ></path>{" "}
+                          <path
+                            d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6"
+                            stroke="#6e6c6c"
+                            stroke-width="1.5"
+                          ></path>{" "}
+                        </g>
+                      </svg>
                     </button>
                   </div>
                 </div>
-              </div>
+              ))
             ) : (
-              <div className="text-gray-600">No tienes academias aún.</div>
+              <div>
+                <p>Sin salidas creadas</p>
+              </div>
             )}
           </div>
         </div>
       </section>
 
+      {/* Social Team */}
+      {formData.rol === "dueño de academia" && (
+        <section>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-2xl font-bold mb-3">
+              <span className="text-[#C76C01]">Mis</span> social Team
+            </h2>
+
+            {/* // <button onClick={() => router.push("/academias/crear")}>
+            //   <img
+            //     className="h-[26px] w-[26px]"
+            //     src="/assets/Logo/add-circle-svgrepo-com.svg"
+            //     alt="crear"
+            //   />
+            // </button> */}
+          </div>
+          <div className="overflow-x-auto h-[245px] scrollbar-hide">
+            <div className="flex space-x-4">
+              {salidaTeamSocial.length > 0 ? (
+                salidaTeamSocial.map((event) => (
+                  <div
+                    key={event._id}
+                    
+                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                  >
+                    <div className="h-[115px] bg-slate-200" onClick={() => router.push(`/team-social/${event._id}`)}>
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                      <p className="font-bold">{event.category}</p>
+                    </div>
+                    <div className="p-3 flex flex-col">
+                      <div className="">
+                        <h1 className="font-semibold text-lg">{event.title}</h1>
+                        <div className="flex items-center text-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="#f97316"
+                            viewBox="0 0 24 24"
+                            width="13"
+                            height="13"
+                            className="mr-1"
+                          >
+                            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                          </svg>{" "}
+                          <p className="text-slate-400">{event.location}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-slate-400 text-md">
+                        <p className="font-semibold text-lg">${event.price}</p>
+                        <p>
+                          {event.date}, {event.time} hs
+                        </p>
+                      </div>
+                    </div>
+                    <div className="absolute top-[39%] right-[10px] flex gap-5">
+                      <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center">
+                        <img
+                          src="/assets/icons/groups_24dp_E8EAED.svg"
+                          alt=""
+                        />
+                      </div>
+                      <button
+                        onClick={() =>
+                          router.push(`/team-social/editar/${event._id}`)
+                        }
+                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                      >
+                        <img
+                          src="/assets/icons/Edit.svg"
+                          alt=""
+                          className="h-[20px] w-[20px] text-orange-500"
+                        />
+                      </button>
+                    </div>
+                    <div className="absolute top-1 right-[10px]">
+                      <button
+                        onClick={() => handleDeleteTeamSocial(event._id)}
+                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          height={25}
+                          width={25}
+                          fill="none"
+                          stroke="#6f6d6d"
+                        >
+                          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                          <g
+                            id="SVGRepo_tracerCarrier"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          ></g>
+                          <g id="SVGRepo_iconCarrier">
+                            {" "}
+                            <path
+                              d="M20.5001 6H3.5"
+                              stroke="#6e6c6c"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            ></path>{" "}
+                            <path
+                              d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
+                              stroke="#6e6c6c"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            ></path>{" "}
+                            <path
+                              d="M9.5 11L10 16"
+                              stroke="#6e6c6c"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            ></path>{" "}
+                            <path
+                              d="M14.5 11L14 16"
+                              stroke="#6e6c6c"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                            ></path>{" "}
+                            <path
+                              d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6"
+                              stroke="#6e6c6c"
+                              stroke-width="1.5"
+                            ></path>{" "}
+                          </g>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <p>Sin salidas creadas</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {formData.rol === "dueño de academia" && (
+        <section>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-2xl font-bold mb-3">
+              <span className="text-[#C76C01]">Grupo</span> principal
+            </h2>
+            {/* {formData.rol === "dueño de academia" && (
+            <button onClick={() => router.push("/academias/crear")}>
+              <img
+                className="h-[26px] w-[26px]"
+                src="/assets/Logo/add-circle-svgrepo-com.svg"
+                alt="crear"
+              />
+            </button>
+          )} */}
+          </div>
+
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex space-x-4">
+              {academia ? (
+                <div className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative">
+                  <img
+                    src="/assets/Logo/Trivo T.png"
+                    alt="Academia"
+                    className="w-[200px] h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
+                    <div className="text-white space-y-1">
+                      <p className="text-lg font-semibold">
+                        {academia.nombre_academia}
+                      </p>
+                      <p className="text-xs">
+                        📍 {academia.localidad}, {academia.provincia}
+                      </p>
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleEntrar}
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                        }}
+                        className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+                      >
+                        Entrar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-600">No tienes academias aún.</div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Entrenamientos */}
-      <section>
+      {/* <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-2xl font-bold">
             <span className="text-[#C76C01]">Mis</span> entrenamientos
@@ -370,7 +628,8 @@ const DashboardPage: React.FC = () => {
             </p>
           )}
         </div>
-      </section>
+      </section> */}
+      <div className="pb-[100px]"></div>
     </main>
   );
 };
