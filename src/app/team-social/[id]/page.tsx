@@ -311,7 +311,7 @@ export default function TeamEventPage({ params }: PageProps) {
         
         // Si es el creador, mostrar botón editar
         <button
-          onClick={() => router.push(`/social/editar/${event._id}`)}
+          onClick={() => router.push(`/team-social/editar/${event._id}`)}
           className="bg-white w-[60px] h-[60px]  rounded-full shadow-md flex items-center justify-center border"
         >
           <img src="/assets/icons/Edit.svg" className="w-[25px] h-[25px]" />
