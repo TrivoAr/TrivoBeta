@@ -243,7 +243,6 @@ const DashboardPage: React.FC = () => {
   };
 
    const handleDeleteTeamSocial = async (event) => {
-    console.log("datos putos:", event);
     const confirm = window.confirm(
       
       "¿Estás seguro que querés eliminar esta salida?"
@@ -279,10 +278,11 @@ const DashboardPage: React.FC = () => {
               salidaSocial.map((event) => (
                 <div
                   key={event._id}
-                  onClick={() => router.push(`/social/${event._id}`)}
+                  
                   className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
                 >
-                  <div className="h-[115px] bg-slate-200">
+                  
+                  <div className="h-[115px] bg-slate-200" onClick={() => router.push(`/social/${event._id}`)}>
                     <img
                       src={event.image}
                       alt={event.title}
@@ -316,7 +316,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="absolute top-[39%] right-[10px] flex gap-5">
-                    <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center">
+                    <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center" onClick={() => router.push(`/social/miembros/${event._id}`)}>
                       <img src="/assets/icons/groups_24dp_E8EAED.svg" alt="" />
                     </div>
                     <button
@@ -455,7 +455,7 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="absolute top-[39%] right-[10px] flex gap-5">
-                      <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center">
+                      <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center" onClick={() => router.push(`/team-social/miembros/${event._id}`)}>
                         <img
                           src="/assets/icons/groups_24dp_E8EAED.svg"
                           alt=""
