@@ -219,6 +219,7 @@ useEffect(() => {
               <div
                 key={event._id}
                 className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative"
+                
               >
                 <img
                   src={event.image}
@@ -253,7 +254,7 @@ useEffect(() => {
                         {event.time}
                       </p>
                     </div>
-                    <span className="bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full">
+                    <span className="bg-[#000000B2] text-white  text-[10px] font-bold px-2 py-[2px] rounded-full">
                       {event.category}
                     </span>
                   </div>
@@ -276,7 +277,7 @@ useEffect(() => {
                         background:
                           "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
                       }}
-                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
+                      className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20"
                     >
                       Unirse
                     </button>
