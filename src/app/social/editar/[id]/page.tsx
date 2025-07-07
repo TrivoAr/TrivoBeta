@@ -15,6 +15,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     fecha: "",
     hora: "",
     ubicacion: "",
+    whatsappLink: "",
+    telefonoOrganizador: "",
     imagen: "",
   });
 
@@ -71,7 +73,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   console.log("data", formData);
 
   return (
-    <div className="flex flex-col justify-center items-center bg-[#FEFBF9]">
+    <div className="flex flex-col justify-center items-center bg-[#FEFBF9] mb-[150px]">
          <button
             onClick={() => router.back()}
             className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
@@ -151,22 +153,74 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
 
+          
+          <input
+            type="text"
+            name="telefonoOrganizador"
+            placeholder="+5491123456789"
+            value={formData.telefonoOrganizador}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          />
+
+          
+          <input
+            type="text"
+            name="whatsappLink"
+            placeholder="https://chat.whatsapp.com/..."
+            value={formData.whatsappLink}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          />
+
           <div>
-            {formData.imagen && (
-              <img
-                src={formData.imagen}
-                alt="Preview"
-                className="w-full h-48 object-cover rounded-xl cursor-pointer mb-2"
-                onClick={() => document.getElementById("fileInput")?.click()}
+            <div className="flex flex-col items-center">
+              {formData.imagen ? (
+                <img
+                  src={formData.imagen}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-xl cursor-pointer mb-2"
+                  onClick={() => document.getElementById("fileInput")?.click()}
+                />
+              ) : (
+                <div
+                  onClick={() => document.getElementById("fileInput")?.click()}
+                  className="w-full h-48 border-2 border-dashed border-orange-300 rounded-xl flex flex-col items-center justify-center cursor-pointer text-orange-400 hover:bg-orange-50 transition"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 mb-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 15a4 4 0 00.88 2.66L5 19h14l1.12-1.34A4 4 0 0021 15V7a4 4 0 00-4-4H7a4 4 0 00-4 4v8z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 11v6m0 0l3-3m-3 3l-3-3"
+                    />
+                  </svg>
+                  <span>Agregar imagen</span>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                id="fileInput"
+                onChange={handleImageChange}
+                className="hidden"
               />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              id="fileInput"
-              onChange={handleImageChange}
-              className="hidden"
-            />
+            </div>
+
           </div>
 
           <button

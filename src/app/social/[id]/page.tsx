@@ -35,6 +35,8 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  telefonoOrganizador: string;
+  whatsappLink: string;
   creador_id: {
     _id: string;
    firstname: string;
@@ -247,7 +249,27 @@ export default function EventPage({ params }: PageProps) {
           {event.descripcion}
         </p>
       </div>
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+          Grupo de Whatsapp
+        </h2>
+          <p className="text-sm text-gray-600 mb-2">
+            Unite al grupo de la salida para más información:
+          </p>
+          {event.whatsappLink && (
+          <div className="flex justify-center mt-2">
+            <a
+              href={event.whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-green-500 text-green-500 px-4 py-2 rounded-md font-medium hover:bg-green-50 transition"
+            >
+              Grupo <img src="/assets/Logo/Whatsapp.svg" alt="Grupo" className="w-5 h-5" />
+            </a>
+          </div>
+        )}
 
+      </div>      
       <div className="mt-6 ">
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Ubicación
@@ -280,18 +302,24 @@ export default function EventPage({ params }: PageProps) {
       <div className="mt-6">
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Organizador       </h2>
-        <div className="flex w-full justify-center">
-          <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
-            <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
-            <div>
-              <h2 className="text-lg font-bold text-slate-700 mb-1">
-          {event.creador_id.firstname} {event.creador_id.lastname}
-        </h2>
-        <button className="text-green-400 font-medium">Contacto</button>
+          <div className="flex w-full justify-center">
+            <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
+              <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
+              <div>
+                <h2 className="text-lg font-bold text-slate-700 mb-1">
+                  {event.creador_id.firstname} {event.creador_id.lastname}
+                </h2>
+                <a
+                  href={`https://wa.me/${event.telefonoOrganizador?.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-500 font-medium"
+                >
+                  Contacto
+                </a>
+              </div>
             </div>
-            
           </div>
-        </div>
       </div>
 
 

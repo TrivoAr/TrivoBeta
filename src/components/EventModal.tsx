@@ -8,13 +8,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useSession } from "next-auth/react";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+
 
 interface EventModalProps {
   isOpen: boolean;
@@ -30,6 +24,9 @@ interface EventModalProps {
     locationCoords: { lat: number; lng: number } | string | string[] | null;
   } | null;
 }
+
+const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
+
 
 const MapComponent = dynamic(() => import("./MapComponent"), {
   ssr: false,
@@ -53,6 +50,20 @@ export default function EventModal({
   const router = useRouter();
   const [miembros, setMiembros] = useState([]);
 
+useEffect(() => {
+  // Asegurarse de que solo corre en el cliente
+  if (typeof window !== "undefined") {
+    const L = require("leaflet");
+    delete L.Icon.Default.prototype._getIconUrl;
+
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl:
+        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    });
+  }
+}, []);
   useEffect(() => {
     console.log("Evento recibido:", event);
   }, [event]);
@@ -183,16 +194,10 @@ export default function EventModal({
           
         /> */}
 
-          <MapContainer
-            center={[lat, lng]}
-            zoom={15}
-            scrollWheelZoom={false}
-            className="w-full h-full"
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker position={[lat, lng]} />
-            <RecenterMap lat={lat} lng={lng} />
-          </MapContainer>
+          <div className="w-full h-40 rounded-xl overflow-hidden">
+  <LeafletMap lat={lat} lng={lng} />
+</div>
+
         </div>
 
         <div className="text-sm">
