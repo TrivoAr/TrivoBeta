@@ -365,9 +365,9 @@ export default function EventPage({ params }: PageProps) {
         // Si es el creador, mostrar botón editar
         <button
           onClick={() => router.push(`/social/editar/${event._id}`)}
-          className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
+          className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-3 font-semibold"
         >
-          <img src="/assets/icons/Edit.svg" className="w-[25px] h-[25px]" />
+          Editar
         </button>
 
 
