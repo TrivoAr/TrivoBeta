@@ -24,6 +24,12 @@ const SalidaSocialSchema = new Schema(
     descripcion: {
       type: String,
     },
+    whatsappLink: {
+      type: String,
+    },
+    telefonoOrganizador: {
+      type: String,
+    },
     imagen: {
       type: String,
     },
