@@ -28,6 +28,8 @@ export default function CrearTeamPage() {
     hora: "",
     duracion: "",
     descripcion: "",
+    whatsappLink: "",
+  telefonoOrganizador: "",
     coords: null as LatLng | null,
   });
 
@@ -83,31 +85,27 @@ export default function CrearTeamPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 bg-white rounded-xl shadow-md mb-[80px]">
-      <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative">
-        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute w-full h-full opacity-0 cursor-pointer" />
-        <span className="text-gray-500">Subir imagen</span>
-      </div>
+    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 rounded-xl mb-[80px]">
 
-      <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
-        Crear <span className="text-black">Team</span>
+      <h2 className="text-center font-bold text-xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+        Crear <span className="text-black">social team </span>
       </h2>
 
       <label className="block">
         Nombre
-        <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="nombre del equipo" className="w-full px-3 py-2 border rounded-md" />
+        <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="nombre del equipo" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
       </label>
 
       <label className="block">
         Ubicación
-        <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="ciudad o zona" className="w-full px-3 py-2 border rounded-md" />
+        <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="ciudad o zona" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
       </label>
        <label className="block">
         Precio
-        <input name="precio" value={formData.precio} onChange={handleChange} placeholder="$9.999" className="w-full px-3 py-2 border rounded-md" />
+        <input name="precio" value={formData.precio} onChange={handleChange} placeholder="$9.999" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
       </label>
 
-      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-3 py-2 border rounded-md">
+      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400">
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
@@ -115,11 +113,13 @@ export default function CrearTeamPage() {
         <option value="Otro">Otro</option>
       </select>
 
-      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-3 py-2 border rounded-md" />
+      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
+
+
 
       <div className="flex gap-2">
-        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="flex-1 px-3 py-2 border rounded-md" />
-        <select name="duracion" value={formData.duracion} onChange={handleChange} className="flex-1 px-3 py-2 border rounded-md">
+        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
+        <select name="duracion" value={formData.duracion} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400">
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
           <option value="2 hs">2 hs</option>
@@ -127,8 +127,21 @@ export default function CrearTeamPage() {
         </select>
       </div>
 
-      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Somos un equipo de ciclismo recreativo..." className="w-full px-3 py-2 border rounded-md" />
+      <p>Descripción</p>
 
+      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Somos un equipo de ciclismo recreativo..." className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
+
+
+    <p>Imagen</p>
+
+        <div className="w-full h-40 bg-white  border shadow-md rounded-md flex items-center justify-center relative">
+        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute w-full h-full opacity-0 cursor-pointer" />
+        <span className="text-gray-500">Subir imagen</span>
+      </div>
+
+
+<p>Dirección</p>
+<p className="text-red-500 font-bold">*Señalar en el mapa para que se guarde la salida</p>
       <MapWithNoSSR position={formData.coords} onChange={handleCoordsChange} />
 
       <button type="submit" className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear Team</button>

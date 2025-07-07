@@ -10,6 +10,7 @@ function EditProfilePage() {
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
+    telnumber: "",
     rol: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -18,9 +19,13 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
+
+      console.log("todos putos",session.user)
+
       setFormData({
         fullname: `${session.user.fullname}`,
         email: session.user.email,
+        telnumber: session.user.telnumber,
         rol: session.user.role,
       });
 
@@ -45,13 +50,18 @@ function EditProfilePage() {
     if (!confirmation) return;
 
     try {
-      const { fullname, email } = formData;
+      const { fullname, email, telnumber } = formData;
+
+      const fullTelNumber = telnumber.startsWith('+549') ? telnumber : `+549${telnumber}`;
+
+
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstname: fullname.split(" ")[0],
           lastname: fullname.split(" ")[1] || "",
+          telnumber: fullTelNumber,
           email,
         }),
       });
@@ -79,6 +89,8 @@ function EditProfilePage() {
     }
   };
 
+  console.log(formData);
+
   return (
     <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
       <h1 className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
@@ -99,6 +111,14 @@ function EditProfilePage() {
         onChange={handleChange}
         className="w-full p-3 rounded-lg border border-gray-300 mb-3"
         placeholder="Nombre completo"
+      />
+        <input
+        type="string"
+        name="telnumber"
+        value={formData.telnumber}
+        onChange={handleChange}
+        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+        placeholder="3814859697"
       />
       <input
         type="email"
