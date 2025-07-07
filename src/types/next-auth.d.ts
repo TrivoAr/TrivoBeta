@@ -6,6 +6,7 @@ declare module "next-auth" {
       id: string;
       email: string;
       fullname: string;
+      telnumber: string;
       role: string; // Aquí incluimos el rol
     };
   }
@@ -14,6 +15,7 @@ declare module "next-auth" {
     id: string;
     email: string;
     fullname: string;
+    telnumber: string;
     role: string;
   }
 }

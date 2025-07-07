@@ -42,6 +42,7 @@ interface Miembro {
   _id: string;
   nombre: string;
   email: string;
+  telnumber: string,
   imagen: string;
 }
 
@@ -71,6 +72,7 @@ export default function EventPage({ params }: PageProps) {
       try {
         const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
         const data = await res.json();
+        console.log("miembro puto", data);
         setMiembros(data);
       } catch (err) {
         console.error("Error al cargar miembros", err);
@@ -199,7 +201,7 @@ export default function EventPage({ params }: PageProps) {
         <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
           <p className="text-white text-xl font-semibold mb-1">{selectedMiembro.nombre}</p>
           <p className="text-white text-sm opacity-80">{selectedMiembro.email}</p>
-          <p className="text-white text-xs mt-2">+54381123456</p>
+          <p className="text-white text-xs mt-2">{selectedMiembro.telnumber}</p>
         </div>
       </div>
 

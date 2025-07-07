@@ -2,12 +2,15 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { Session } from "inspector";
+import { data } from "autoprefixer";
 
 {/*// Configurar íconos para que se muestren correctamente
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -30,6 +33,7 @@ export default function CrearSalidaPage() {
   const router = useRouter();
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+   const { data: session } = useSession();
 
 
  const [formData, setFormData] = useState({
@@ -47,6 +51,8 @@ export default function CrearSalidaPage() {
 });
 
   const [imagen, setImagen] = useState<File | null>(null);
+  const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
+
 
   {/*}
   function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
@@ -95,11 +101,19 @@ export default function CrearSalidaPage() {
       imageUrl = await getDownloadURL(imageRef);
     }
 
-    const salidaData = {
-      ...formData,
-      imagen: imageUrl,
-      locationCoords: formData.coords
-    };
+    // const salidaData = {
+    //   ...formData,
+    //   imagen: imageUrl,
+    //   locationCoords: formData.coords
+    // };
+
+    const coordsToSave = formData.coords || defaultCoords;
+
+const salidaData = {
+  ...formData,
+  imagen: imageUrl,
+  locationCoords: coordsToSave
+};
 
     const res = await fetch("/api/social", {
       method: "POST",
@@ -160,7 +174,7 @@ export default function CrearSalidaPage() {
         Número de teléfono del organizador
         <input
           name="telefonoOrganizador"
-          value={formData.telefonoOrganizador || ""}
+          value={session?.user.telnumber || ""}
           onChange={handleChange}
           placeholder="+5491123456789"
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"

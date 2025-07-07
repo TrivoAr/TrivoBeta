@@ -25,6 +25,8 @@ function Navbar() {
       </>
     );
 
+    console.log(session.user.role);
+
     return (
       <li className="flex flex-col items-center justify-center">
         {href ? (
@@ -54,7 +56,8 @@ function Navbar() {
               >
                 Salida
               </Link>
-              <Link
+              {session.user.role === "dueño de academia" ? (<>
+               <Link
                 href="/team-social/crear"
                 onClick={() => setIsModalOpen(false)}
                 className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
@@ -67,7 +70,8 @@ function Navbar() {
                 className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
               >
                 Grupo de entrenamiento
-              </Link>
+              </Link></>) : null}
+           
               <button onClick={() => setIsModalOpen(false)} className="mt-2 text-sm text-gray-500 hover:underline">
                 Cancelar
               </button>
