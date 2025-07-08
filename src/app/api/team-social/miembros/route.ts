@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   if (!teamSocialId) return new Response("Falta teamSocialId", { status: 400 });
 
   // Buscar miembros por teamsocial_id (no salida_id)
-  const miembros = await MiembroTeamSocial.find({ teamsocial_id: teamSocialId }).populate("usuario_id");
+  const miembros = await MiembroTeamSocial.find({ teamsocial_id: teamSocialId }).populate("usuario_id", "firstname lastname email");
 
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
       return {
         _id: usuario._id,
-        nombre: usuario.fullname || usuario.email,
+        nombre: `${usuario.firstname} ${usuario.lastname}`.trim() || usuario.email,
         email: usuario.email,
         imagen: imagenUrl,
       };

@@ -22,6 +22,8 @@ function ProfilePage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
 
   const router = useRouter();
   
@@ -141,20 +143,18 @@ return (
 
 
       {/* Avatar */}
-      <img
-       src={profileImage || "/assets/icons/default-user.png"}
-          alt="Avatar"
-        className="w-24 h-24 rounded-2xl object-cover mb-4 shadow-md"
-      />
+ <div onClick={() => setShowPreview(true)}>
+  <img
+    src={profileImage || "/assets/icons/default-user.png"}
+    alt="Avatar"
+    className="w-24 h-24 rounded-2xl object-cover mb-4 shadow-md"
+  />
+</div>
+
 
       {/* Nombre + editar */}
       <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-md mb-6">
         <span className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left ">{formData.fullname}</span>
-        <img
-                  src='/assets/icons/Edit.svg'
-                  alt=""
-                  className="w-[17px] h-[17px] object-cover"
-                />
       </div>
 
       {/* Subtítulo */}
@@ -215,6 +215,21 @@ return (
         Cerrar sesión
       </button>
     </div>
+
+    {showPreview && (
+  <div 
+    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+    onClick={() => setShowPreview(false)}
+  >
+    <img
+      src={profileImage || "/assets/icons/default-user.png"}
+      alt="Avatar grande"
+      className="w-[350px] h-[400px] rounded-2xl object-cover shadow-lg"
+    />
+
+    
+  </div>
+)}
 
       {/* Espacio para bottom nav */}
       <div className="mt-auto"></div>
