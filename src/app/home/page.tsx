@@ -173,21 +173,22 @@ export default function Home() {
   const social = filteredEvents;
 
   const today = new Date();
-// "Normalizamos" para que el today sea solo la fecha, sin hora
-today.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
 
-const futureEvents = social.filter((event) => {
-  if (!event.date) return false; // descartar si no tiene fecha
-  const eventDate = new Date(event.date);
-  // Normalizamos también la fecha del evento
-  eventDate.setHours(0, 0, 0, 0);
-  return eventDate >= today;
-});
+  const futureEvents = social.filter((event) => {
+    if (!event.date) return false;
+    console.log("fecha", event.date);
+    console.log("fecha de hoy", today);
 
+    const [year, month, day] = event.date.split("-").map(Number);
+    const eventDate = new Date(year, month - 1, day);
 
+    console.log("fecha", event.date);
+    console.log("fecha del evento", eventDate);
+    console.log("fecha de hoy", today);
 
-
-
+    return eventDate >= today;
+  });
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
