@@ -33,6 +33,15 @@ const UserSchema = new Schema(
       enum: ["alumno", "profe", "dueño de academia"],
       required: [true, "Role is required"],
     },
+
+     telnumber: {
+      type: String,
+      required: [false, ""],
+      minLength: [7, "Last name must be at least 7 characters"],
+      maxLength: [19, "Last name must be at most 20 characters"],
+    },
+
+
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
   },

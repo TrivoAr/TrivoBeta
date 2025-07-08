@@ -9,6 +9,12 @@ const TeamSocialSchema = new Schema(
     fecha: { type: String, required: true },
     hora: { type: String, required: true },
     duracion: { type: String, required: true },
+        whatsappLink: {
+      type: String,
+    },
+    telefonoOrganizador: {
+      type: String,
+    },
     descripcion: { type: String },
     imagen: { type: String },
     locationCoords: {
