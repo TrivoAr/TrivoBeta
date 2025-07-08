@@ -37,7 +37,7 @@ export default function CrearTeamPage() {
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
-
+const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -93,6 +93,8 @@ export default function CrearTeamPage() {
     }
   };
 
+   const coordsToSave = formData.coords || defaultCoords;
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -131,6 +133,7 @@ export default function CrearTeamPage() {
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
+
       <label className="block">
         Precio
         <input
@@ -155,34 +158,40 @@ export default function CrearTeamPage() {
         <option value="Otro">Otro</option>
       </select>
 
-      <input
-        type="date"
-        name="fecha"
-        value={formData.fecha}
-        onChange={handleChange}
-        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
-      />
-
-      <div className="flex gap-2">
-        <input
-          type="time"
-          name="hora"
-          value={formData.hora}
-          onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
-        />
+      <label className="block">
         <select
           name="duracion"
           value={formData.duracion}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
           <option value="2 hs">2 hs</option>
           <option value="3 hs">3 hs</option>
         </select>
-      </div>
+      </label>
+
+      <label className="block">
+        Fecha
+        <input
+          type="date"
+          name="fecha"
+          value={formData.fecha}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        />
+      </label>
+      <label className="block">
+        Hora
+        <input
+          type="time"
+          name="hora"
+          value={formData.hora}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        />
+      </label>
 
       <p>Descripción</p>
 
@@ -214,25 +223,27 @@ export default function CrearTeamPage() {
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
+      <label className="block">
+        Imagen
 
-        <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
-      />
-      {previewUrl ? (
-        <img
-          src={previewUrl}
-          alt="Vista previa"
-          className="w-full h-full object-cover absolute top-0 left-0"
+      <div className="w-full h-40 bg-white shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="absolute w-full h-full opacity-0 cursor-pointer z-10"
         />
-      ) : (
-        <span className="text-gray-500 z-0">Subir imagen</span>
-      )}
-    </div>
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            alt="Vista previa"
+            className="w-full h-full object-cover absolute top-0 left-0"
+          />
+        ) : (
+          <span className="text-gray-500 z-0">Subir imagen</span>
+        )}
+      </div>
+      </label>
 
       <p>Dirección</p>
       <p className="text-red-500 font-bold">
