@@ -32,6 +32,7 @@ export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el t
           id: userFound._id.toString(),
           email: userFound.email,
           fullname: `${userFound.firstname} ${userFound.lastname}`,
+          telnumber: userFound.telnumber,
           role: userFound.rol,
         };
       },

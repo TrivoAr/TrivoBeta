@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Desestructuración de los datos que llegan del frontend
-    const { email, password, firstname, lastname, rol } = await request.json();
+    const { email, password, firstname, lastname, rol, telnumber } = await request.json();
 
     // Validación de la contraseña
     if (password.length < 6) {

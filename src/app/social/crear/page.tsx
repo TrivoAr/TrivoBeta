@@ -2,12 +2,15 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { Session } from "inspector";
+import { data } from "autoprefixer";
 
 {/*// Configurar íconos para que se muestren correctamente
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -30,6 +33,7 @@ export default function CrearSalidaPage() {
   const router = useRouter();
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+   const { data: session } = useSession();
 
 
  const [formData, setFormData] = useState({
@@ -47,6 +51,8 @@ export default function CrearSalidaPage() {
 });
 
   const [imagen, setImagen] = useState<File | null>(null);
+  const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
+
 
   {/*}
   function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
@@ -85,6 +91,7 @@ export default function CrearSalidaPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    alert("Salida creada con exito");
     e.preventDefault();
     let imageUrl = "";
 
@@ -94,11 +101,19 @@ export default function CrearSalidaPage() {
       imageUrl = await getDownloadURL(imageRef);
     }
 
-    const salidaData = {
-      ...formData,
-      imagen: imageUrl,
-      locationCoords: formData.coords
-    };
+    // const salidaData = {
+    //   ...formData,
+    //   imagen: imageUrl,
+    //   locationCoords: formData.coords
+    // };
+
+    const coordsToSave = formData.coords || defaultCoords;
+
+const salidaData = {
+  ...formData,
+  imagen: imageUrl,
+  locationCoords: coordsToSave
+};
 
     const res = await fetch("/api/social", {
       method: "POST",
@@ -111,29 +126,9 @@ export default function CrearSalidaPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 bg-white rounded-xl shadow-md mb-[80px] bg-[#FEFBF9]">
-     
-     <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
+    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 rounded-xl  mb-[80px] bg-[#FEFBF9]">
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
-      />
-      {previewUrl ? (
-        <img
-          src={previewUrl}
-          alt="Vista previa"
-          className="w-full h-full object-cover absolute top-0 left-0"
-        />
-      ) : (
-        <span className="text-gray-500 z-0">Subir imagen</span>
-      )}
-    </div>
-
-
-      <h2 className="text-center font-bold text-lg bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Crear <span className="text-black">salida</span></h2>
+      <h2 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Crear <span className="text-black">salida</span></h2>
       <label className="block">
         Nombre
          <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="salida en grupo" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
@@ -179,7 +174,7 @@ export default function CrearSalidaPage() {
         Número de teléfono del organizador
         <input
           name="telefonoOrganizador"
-          value={formData.telefonoOrganizador || ""}
+          value={session?.user.telnumber || ""}
           onChange={handleChange}
           placeholder="+5491123456789"
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
@@ -189,12 +184,38 @@ export default function CrearSalidaPage() {
       
        <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
         <p className="text-red-500 text-sm">*Señalar en el mapa la ubicacion para que se guarde la salida</p>
+
+
+
+         <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+      />
+      {previewUrl ? (
+        <img
+          src={previewUrl}
+          alt="Vista previa"
+          className="w-full h-full object-cover absolute top-0 left-0"
+        />
+      ) : (
+        <span className="text-gray-500 z-0">Subir imagen</span>
+      )}
+    </div>
+
+
+
       <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear salida</button>
 
         <div className="w-full flex justify-center">
           <button type="button" onClick={() => router.back()} className="text-orange-500 font-semibold cente ">Atrás</button>
 
         </div>
+
+
 
       
       <div className="mb-[190px]"></div>
