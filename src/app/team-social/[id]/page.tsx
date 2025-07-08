@@ -300,10 +300,11 @@ export default function TeamEventPage({ params }: PageProps) {
       </p>
     </div>
 
-    <div className="flex h-[60px] w-[150px] gap-3">
+    <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
 
-        <button className="bg-white w-[60px] h-[60px] shadow-md text-sm rounded-full flex items-center justify-center border">
-        <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" />
+        <button className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2" onClick={() => router.push(`/team-social/miembros/${event._id}`)}>
+        {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
+        <span>Participantes</span>
       </button>
     
 
@@ -312,9 +313,9 @@ export default function TeamEventPage({ params }: PageProps) {
         // Si es el creador, mostrar botón editar
         <button
           onClick={() => router.push(`/team-social/editar/${event._id}`)}
-          className="bg-white w-[60px] h-[60px]  rounded-full shadow-md flex items-center justify-center border"
+          className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-3 font-semibold"
         >
-          <img src="/assets/icons/Edit.svg" className="w-[25px] h-[25px]" />
+          Editar
         </button>
 
 
@@ -324,13 +325,13 @@ export default function TeamEventPage({ params }: PageProps) {
         // Si NO es el creador, mostrar botón unirse/salir
         <button
           onClick={handleAccion}
-          className={`rounded-full w-[60px] h-[60px] font-semibold transition ${
+          className={`rounded-[10px]  p-2 h-[30px] flex justify-center items-center transition shadow-md ${
             yaUnido
               ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
-              : "bg-green-100 text-green-600 hover:bg-green-600 hover:text-white"
+              : "bg-orange-500 text-white hover:text-white"
           }`}
         >
-          {yaUnido ? "D" : "M"}
+          {yaUnido ? "Salir" : "Matchear"}
         </button>
       )}
     </div>

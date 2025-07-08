@@ -32,9 +32,9 @@ export async function PUT(req: Request) {
       }
   
       const body = await req.json();
-      const { firstname, lastname, email } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
+      const { firstname, lastname, telnumber, email } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
   
-      if (!firstname || !lastname || !email) {
+      if (!firstname || !lastname || !telnumber || !email) {
         return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
       }
   
@@ -46,6 +46,7 @@ export async function PUT(req: Request) {
       // Actualiza el perfil, sin modificar 'rol'.
       user.firstname = firstname;
       user.lastname = lastname;
+      user.telnumber = telnumber;
       user.email = email;
   
       // Guarda los cambios en la base de datos

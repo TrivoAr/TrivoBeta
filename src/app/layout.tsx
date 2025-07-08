@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className="flex flex-col items-center w-full">
         <Toaster />
         <Providers>
