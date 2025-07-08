@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
+import { useSession, signOut } from "next-auth/react";
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
@@ -18,6 +19,8 @@ interface LatLng {
 
 export default function CrearTeamPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -29,24 +32,30 @@ export default function CrearTeamPage() {
     duracion: "",
     descripcion: "",
     whatsappLink: "",
-  telefonoOrganizador: "",
+    telefonoOrganizador: "",
     coords: null as LatLng | null,
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImagen(e.target.files[0]);
-    }
-  };
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     setImagen(e.target.files[0]);
+  //      setImagen(file);
+  //     setPreviewUrl(URL.createObjectURL(file));
+  //   }
+  // };
 
   const handleCoordsChange = (coords: LatLng) => {
-    setFormData(prev => ({ ...prev, coords }));
+    setFormData((prev) => ({ ...prev, coords }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,28 +93,61 @@ export default function CrearTeamPage() {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 rounded-xl mb-[80px]">
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImagen(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
 
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-sm mx-auto p-4 space-y-3 rounded-xl mb-[80px]"
+    >
       <h2 className="text-center font-bold text-xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
         Crear <span className="text-black">social team </span>
       </h2>
 
       <label className="block">
         Nombre
-        <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="nombre del equipo" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+        <input
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          placeholder="nombre del equipo"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
       </label>
 
       <label className="block">
         Ubicación
-        <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="ciudad o zona" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+        <input
+          name="ubicacion"
+          value={formData.ubicacion}
+          onChange={handleChange}
+          placeholder="ciudad o zona"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
       </label>
-       <label className="block">
+      <label className="block">
         Precio
-        <input name="precio" value={formData.precio} onChange={handleChange} placeholder="$9.999" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+        <input
+          name="precio"
+          value={formData.precio}
+          onChange={handleChange}
+          placeholder="$9.999"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
       </label>
 
-      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400">
+      <select
+        name="deporte"
+        value={formData.deporte}
+        onChange={handleChange}
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      >
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
@@ -113,13 +155,28 @@ export default function CrearTeamPage() {
         <option value="Otro">Otro</option>
       </select>
 
-      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
-
-
+      <input
+        type="date"
+        name="fecha"
+        value={formData.fecha}
+        onChange={handleChange}
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      />
 
       <div className="flex gap-2">
-        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
-        <select name="duracion" value={formData.duracion} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400">
+        <input
+          type="time"
+          name="hora"
+          value={formData.hora}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        />
+        <select
+          name="duracion"
+          value={formData.duracion}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
           <option value="2 hs">2 hs</option>
@@ -129,23 +186,73 @@ export default function CrearTeamPage() {
 
       <p>Descripción</p>
 
-      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Somos un equipo de ciclismo recreativo..." className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
+      <textarea
+        name="descripcion"
+        value={formData.descripcion}
+        onChange={handleChange}
+        placeholder="Somos un equipo de ciclismo recreativo..."
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      />
+      <label className="block">
+        Link del grupo de WhatsApp
+        <input
+          name="whatsappLink"
+          value={formData.whatsappLink || ""}
+          onChange={handleChange}
+          placeholder="https://chat.whatsapp.com/..."
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
 
+      <label className="block">
+        Número de teléfono del organizador
+        <input
+          name="telefonoOrganizador"
+          value={session?.user.telnumber || ""}
+          onChange={handleChange}
+          placeholder="+5491123456789"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
 
-    <p>Imagen</p>
+        <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
 
-        <div className="w-full h-40 bg-white  border shadow-md rounded-md flex items-center justify-center relative">
-        <input type="file" accept="image/*" onChange={handleImageChange} className="absolute w-full h-full opacity-0 cursor-pointer" />
-        <span className="text-gray-500">Subir imagen</span>
-      </div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+      />
+      {previewUrl ? (
+        <img
+          src={previewUrl}
+          alt="Vista previa"
+          className="w-full h-full object-cover absolute top-0 left-0"
+        />
+      ) : (
+        <span className="text-gray-500 z-0">Subir imagen</span>
+      )}
+    </div>
 
-
-<p>Dirección</p>
-<p className="text-red-500 font-bold">*Señalar en el mapa para que se guarde la salida</p>
+      <p>Dirección</p>
+      <p className="text-red-500 font-bold">
+        *Señalar en el mapa para que se guarde la salida
+      </p>
       <MapWithNoSSR position={formData.coords} onChange={handleCoordsChange} />
 
-      <button type="submit" className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear Team</button>
-      <button type="button" onClick={() => router.back()} className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold">Atrás</button>
+      <button
+        type="submit"
+        className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
+      >
+        Crear Team
+      </button>
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold"
+      >
+        Atrás
+      </button>
     </form>
   );
 }

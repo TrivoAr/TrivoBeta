@@ -187,7 +187,7 @@ const salidaData = {
 
 
 
-         <div className="w-full h-40 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
+         <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
 
       <input
         type="file"
