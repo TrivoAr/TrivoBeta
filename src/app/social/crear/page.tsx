@@ -7,18 +7,20 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
 import { Session } from "inspector";
 import { data } from "autoprefixer";
 
-{/*// Configurar íconos para que se muestren correctamente
+{
+  /*// Configurar íconos para que se muestren correctamente
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});*/}
+});*/
+}
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
@@ -33,28 +35,27 @@ export default function CrearSalidaPage() {
   const router = useRouter();
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-   const { data: session } = useSession();
+  const { data: session } = useSession();
 
-
- const [formData, setFormData] = useState({
-  nombre: "",
-  ubicacion: "",
-  precio: "",
-  deporte: "",
-  fecha: "",
-  hora: "",
-  duracion: "",
-  descripcion: "",
-  whatsappLink: "",
-  telefonoOrganizador: "",
-  coords: null as LatLng | null,
-});
+  const [formData, setFormData] = useState({
+    nombre: "",
+    ubicacion: "",
+    precio: "",
+    deporte: "",
+    fecha: "",
+    hora: "",
+    duracion: "",
+    descripcion: "",
+    whatsappLink: "",
+    telefonoOrganizador: "",
+    coords: null as LatLng | null,
+  });
 
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
 
-
-  {/*}
+  {
+    /*}
   function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
     function LocationMarker() {
       useMapEvents({
@@ -72,8 +73,13 @@ export default function CrearSalidaPage() {
       </MapContainer>
     );
   }
-*/}
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+*/
+  }
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -85,9 +91,8 @@ export default function CrearSalidaPage() {
     }
   };
 
-
   const handleCoordsChange = (coords: LatLng) => {
-    setFormData(prev => ({ ...prev, coords }));
+    setFormData((prev) => ({ ...prev, coords }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,11 +114,11 @@ export default function CrearSalidaPage() {
 
     const coordsToSave = formData.coords || defaultCoords;
 
-const salidaData = {
-  ...formData,
-  imagen: imageUrl,
-  locationCoords: coordsToSave
-};
+    const salidaData = {
+      ...formData,
+      imagen: imageUrl,
+      locationCoords: coordsToSave,
+    };
 
     const res = await fetch("/api/social", {
       method: "POST",
@@ -126,19 +131,40 @@ const salidaData = {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-3 rounded-xl  mb-[80px] bg-[#FEFBF9]">
-
-      <h2 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">Crear <span className="text-black">salida</span></h2>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
+    >
+      <h2 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+        Crear <span className="text-black">salida</span>
+      </h2>
       <label className="block">
         Nombre
-         <input name="nombre" value={formData.nombre} onChange={handleChange} placeholder="salida en grupo" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
+        <input
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          placeholder="salida en grupo"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
       </label>
 
       <label className="block">
-            Ubicación
-          <input name="ubicacion" value={formData.ubicacion} onChange={handleChange} placeholder="parque central" className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white" />
-    </label>
-      <select name="deporte" value={formData.deporte} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" >
+        Ubicación
+        <input
+          name="ubicacion"
+          value={formData.ubicacion}
+          onChange={handleChange}
+          placeholder="parque central"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
+      <select
+        name="deporte"
+        value={formData.deporte}
+        onChange={handleChange}
+        className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      >
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
@@ -146,27 +172,66 @@ const salidaData = {
         <option value="Otros">Otros</option>
       </select>
       
-      <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400" />
-
-      <div className="flex gap-2">
-        <input type="time" name="hora" value={formData.hora} onChange={handleChange} className="flex-1 px-3 py-4 border rounded-[15px] text-slave-400 sha" />
-        <select name="duracion" value={formData.duracion} onChange={handleChange} className="flex-1 px-3 py-4 border shadow-md rounded-[15px] text-slate-400">
+          <label className="block">
+      <select
+          name="duracion"
+          value={formData.duracion}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
           <option value="2 hs">2 hs</option>
           <option value="3 hs">3 hs</option>
         </select>
-      </div>
+     </label>
 
-      <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Organizamos una salida de running" className="w-full px-3 py-4 border rounded-[15px]" />
-            <label className="block">
+      <label className="block">
+        Fecha
+        <input
+          type="date"
+          name="fecha"
+          value={formData.fecha}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        />
+      </label>
+
+      <label className="block">
+        Hora
+           <input
+          type="time"
+          name="hora"
+          value={formData.hora}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        />
+      </label>
+
+      
+ 
+        
+     
+
+      <label className="block">
+        Descripción
+        <textarea
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
+          placeholder="Organizamos una salida de running"
+          className="w-full px-3 py-4 border rounded-[15px] shadow-md"
+        />
+      </label>
+
+      <label className="block">
         Link del grupo de WhatsApp
         <input
           name="whatsappLink"
           value={formData.whatsappLink || ""}
           onChange={handleChange}
           placeholder="https://chat.whatsapp.com/..."
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
 
@@ -177,47 +242,58 @@ const salidaData = {
           value={session?.user.telnumber || ""}
           onChange={handleChange}
           placeholder="+5491123456789"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
+      </label>
+        <label className="block">
+        Imagen
+        <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="Vista previa"
+              className="w-full h-full object-cover absolute top-0 left-0"
+            />
+          ) : (
+            <span className="text-gray-500 z-0">Subir imagen</span>
+          )}
+        </div>
+      </label>
+
+      <label className="block">
+        <p className="text-red-500 text-sm font-bold">
+        *Señalar en el mapa la ubicacion para que se guarde la salida
+      </p>
+      <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
       </label>
 
       
-       <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
-        <p className="text-red-500 text-sm">*Señalar en el mapa la ubicacion para que se guarde la salida</p>
 
+    
 
+      <button
+        type="submit"
+        className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
+      >
+        Crear salida
+      </button>
 
-         <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+      <div className="w-full flex justify-center">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-orange-500 font-semibold cente "
+        >
+          Atrás
+        </button>
+      </div>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="absolute w-full h-full opacity-0 cursor-pointer z-10"
-      />
-      {previewUrl ? (
-        <img
-          src={previewUrl}
-          alt="Vista previa"
-          className="w-full h-full object-cover absolute top-0 left-0"
-        />
-      ) : (
-        <span className="text-gray-500 z-0">Subir imagen</span>
-      )}
-    </div>
-
-
-
-      <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">Crear salida</button>
-
-        <div className="w-full flex justify-center">
-          <button type="button" onClick={() => router.back()} className="text-orange-500 font-semibold cente ">Atrás</button>
-
-        </div>
-
-
-
-      
       <div className="mb-[190px]"></div>
     </form>
   );

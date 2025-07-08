@@ -170,14 +170,20 @@ export default function AcademiaDetailPage({ params }: { params: { id: string } 
   return (
     <div className="flex flex-col items-center">
       <Toaster position="top-center" />
-      <div className="coverAcademias relative w-[390px] h-[190px] bg-black opacity-80"></div>
+      <div className=" relative w-[430px] h-[190px] bg-black opacity-80" style={{backgroundImage: `linear-gradient(
+        0deg,
+        rgba(0,0,0,0.2),
+        rgba(0,0,0,0.2)
+      ), url(${profileImage})`, backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center', }} ></div>
       <button
      type="button"
      onClick={() => router.back()}
-     className=" absolute top-2 left-2 text-white p-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300">
+     className=" absolute top-2 left-2 text-white p-2 rounded-full shadow-md bg-white">
     <svg
     xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
+    fill="orange"
     viewBox="0 0 16 16"
     width="24"
     height="24">

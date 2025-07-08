@@ -51,31 +51,32 @@ type Academia = {
   descripcion: string;
   tipo_disciplina: string;
   telefono: string;
+  imagen: string;
 };
 
-const discounts = [
-  {
-    id: 1,
-    title: "20% OFF",
-    subtitle: "en toda la carta",
-    image: "/assets/icons/bonaportada.png",
-    logo: "/assets/icons/bona.png",
-  },
-  {
-    id: 2,
-    title: "25% OFF",
-    subtitle: "en la cuota mensual",
-    image: "/assets/icons/rc.png",
-    logo: "/assets/icons/Logo-RC-Gym 1.png",
-  },
-  {
-    id: 3,
-    title: "40% OFF",
-    subtitle: "en todas las salas",
-    image: "/assets/icons/gold-rush.png",
-    logo: "/assets/icons/escaperoom.png",
-  },
-];
+// const discounts = [
+//   {
+//     id: 1,
+//     title: "20% OFF",
+//     subtitle: "en toda la carta",
+//     image: "/assets/icons/bonaportada.png",
+//     logo: "/assets/icons/bona.png",
+//   },
+//   {
+//     id: 2,
+//     title: "25% OFF",
+//     subtitle: "en la cuota mensual",
+//     image: "/assets/icons/rc.png",
+//     logo: "/assets/icons/Logo-RC-Gym 1.png",
+//   },
+//   {
+//     id: 3,
+//     title: "40% OFF",
+//     subtitle: "en todas las salas",
+//     image: "/assets/icons/gold-rush.png",
+//     logo: "/assets/icons/escaperoom.png",
+//   },
+// ];
 
 export default function Home() {
   const router = useRouter();
@@ -154,6 +155,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/academias");
         const data = await res.json();
+        console.log("academias", data);
         setAcademias(data);
       } catch (error) {
         console.error("Error al obtener academias:", error);
@@ -174,6 +176,7 @@ export default function Home() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  console.log(academias);
 
   const futureEvents = social.filter((event) => {
     if (!event.date) return false;
@@ -186,6 +189,8 @@ export default function Home() {
     console.log("fecha", event.date);
     console.log("fecha del evento", eventDate);
     console.log("fecha de hoy", today);
+
+    
 
     return eventDate >= today;
   });
