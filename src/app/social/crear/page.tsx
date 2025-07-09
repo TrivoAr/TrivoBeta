@@ -3,10 +3,12 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
+import debounce from "lodash.debounce";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Session } from "inspector";
@@ -36,6 +38,10 @@ export default function CrearSalidaPage() {
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { data: session } = useSession();
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<
+    Array<{ display_name: string; lat: string; lon: string }>
+  >([]);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -46,8 +52,9 @@ export default function CrearSalidaPage() {
     hora: "",
     duracion: "",
     descripcion: "",
+    localidad: "",
     whatsappLink: "",
-    telefonoOrganizador: "",
+    telefonoOrganizador: session?.user.telnumber || "",
     coords: null as LatLng | null,
   });
 
@@ -91,8 +98,38 @@ export default function CrearSalidaPage() {
     }
   };
 
+  // const geocodeAddress = async (address: string) => {
+  //   try {
+  //     const res = await fetch(
+  //       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+  //         address
+  //       )}`
+  //     );
+  //     const data = await res.json();
+  //     if (data && data.length > 0) {
+  //       const { lat, lon } = data[0];
+  //       return { lat: parseFloat(lat), lng: parseFloat(lon) };
+  //     } else {
+  //       alert("No se encontró la dirección");
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al geocodificar:", error);
+  //     return null;
+  //   }
+  // };
+
   const handleCoordsChange = (coords: LatLng) => {
+    setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
+  };
+
+  const handleSelectSuggestion = (item: any) => {
+    const coords = { lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
+    setMarkerPos(coords);
+    setFormData((prev) => ({ ...prev, coords, ubicacion: item.display_name }));
+    setQuery(item.display_name);
+    setSuggestions([]); // cerrar sugerencias
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,6 +157,8 @@ export default function CrearSalidaPage() {
       locationCoords: coordsToSave,
     };
 
+    console.log("que traemos", salidaData);
+
     const res = await fetch("/api/social", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -129,6 +168,35 @@ export default function CrearSalidaPage() {
     if (res.ok) router.push("/home");
     else console.error("Error al crear salida social");
   };
+
+
+
+
+  const fetchSuggestions = (q: string) => {
+    fetch(`/api/search?q=${encodeURIComponent(q)}`)
+      .then((res) => res.json())
+      .then((data) => setSuggestions(data))
+      .catch((err) => {
+        console.error("Error fetching suggestions:", err);
+        setSuggestions([]);
+      });
+  };
+  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
+
+  useEffect(() => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    debouncedFetch(query);
+  }, [query, debouncedFetch]);
+
+  // Cleanup para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [debouncedFetch]);
 
   return (
     <form
@@ -149,17 +217,20 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <label className="block">
-        Ubicación
-        <input
-          name="ubicacion"
-          value={formData.ubicacion}
-          onChange={handleChange}
-          placeholder="parque central"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-        />
-      </label>
       <select
+        name="localidad"
+        value={formData.localidad}
+        onChange={handleChange}
+        className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      >
+        <option value="">Localidad</option>
+        <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
+        <option value="Yerba Buena">Yerba Buena</option>
+        <option value="Tafi Viejo">Tafi Viejo</option>
+        <option value="Otros">Otros</option>
+      </select>
+
+       <select
         name="deporte"
         value={formData.deporte}
         onChange={handleChange}
@@ -171,9 +242,9 @@ export default function CrearSalidaPage() {
         <option value="Trekking">Trekking</option>
         <option value="Otros">Otros</option>
       </select>
-      
-          <label className="block">
-      <select
+
+      <label className="block">
+        <select
           name="duracion"
           value={formData.duracion}
           onChange={handleChange}
@@ -184,7 +255,7 @@ export default function CrearSalidaPage() {
           <option value="2 hs">2 hs</option>
           <option value="3 hs">3 hs</option>
         </select>
-     </label>
+      </label>
 
       <label className="block">
         Fecha
@@ -199,7 +270,7 @@ export default function CrearSalidaPage() {
 
       <label className="block">
         Hora
-           <input
+        <input
           type="time"
           name="hora"
           value={formData.hora}
@@ -207,11 +278,6 @@ export default function CrearSalidaPage() {
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
       </label>
-
-      
- 
-        
-     
 
       <label className="block">
         Descripción
@@ -239,13 +305,13 @@ export default function CrearSalidaPage() {
         Número de teléfono del organizador
         <input
           name="telefonoOrganizador"
-          value={session?.user.telnumber || ""}
+          value={formData.telefonoOrganizador}
           onChange={handleChange}
           placeholder="+5491123456789"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
-        <label className="block">
+      <label className="block">
         Imagen
         <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
           <input
@@ -265,17 +331,37 @@ export default function CrearSalidaPage() {
           )}
         </div>
       </label>
+ 
 
-      <label className="block">
-        <p className="text-red-500 text-sm font-bold">
-        *Señalar en el mapa la ubicacion para que se guarde la salida
-      </p>
-      <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
+      <label className="block relative">
+        Ubicación
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Parque central..."
+          className="w-full px-4 py-4 border shadow-md rounded-[15px]"
+        />
+        {suggestions.length > 0 && (
+          <ul className="absolute z-10 bg-white border mt-1 rounded w-full max-h-40 overflow-y-auto">
+            {suggestions.map((item, idx) => (
+              <li
+                key={idx}
+                onClick={() => handleSelectSuggestion(item)}
+                className="px-2 py-1 cursor-pointer hover:bg-gray-100"
+              >
+                {item.display_name}
+              </li>
+            ))}
+          </ul>
+        )}
       </label>
 
-      
-
-    
+      <label className="block">
+        <MapWithNoSSR
+          position={markerPos || defaultCoords}
+          onChange={handleCoordsChange}
+        />
+      </label>
 
       <button
         type="submit"
