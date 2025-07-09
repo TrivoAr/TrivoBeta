@@ -280,7 +280,9 @@ export default function TeamEventPage({ params }: PageProps) {
           Organizador       </h2>
           <div className="flex w-full justify-center">
             <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
-              <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
+              <div className="rounded-full h-[100px] w-[100px] shadow-md" style={{backgroundImage: `url(${event.creadorId.imagen})`, backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center', }}></div>
               <div>
                 <h2 className="text-lg font-bold text-slate-700 mb-1">
                   {event.creadorId.firstname} {event.creadorId.lastname}
