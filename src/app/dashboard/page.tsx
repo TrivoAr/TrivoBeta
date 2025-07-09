@@ -44,6 +44,7 @@ type EventType = {
   image: string;
   location: string;
   category: string;
+  localidad: string,
   locationCoords: {
     lat: number;
     lng: number;
@@ -58,6 +59,7 @@ type ModalEvent = {
   time: string;
   location: string;
   teacher: string;
+   localidad: string,
   participants: string[];
   locationCoords: {
     lat: number;
@@ -126,6 +128,7 @@ const DashboardPage: React.FC = () => {
             category: item.deporte,
             location: item.ubicacion,
             locationCoords: item.locationCoords,
+             localidad: item.localidad,
             highlighted: false,
             teacher: item.creador_id?.firstname || "Sin profe",
           }));
@@ -162,11 +165,12 @@ const DashboardPage: React.FC = () => {
             category: item.deporte,
             location: item.ubicacion,
             locationCoords: item.locationCoords,
+            localidad: item.localidad,
             highlighted: false,
             teacher: item.creador_id?.firstname || "Sin profe",
           }));
 
-          console.log("puto:", mappedData);
+   
 
           setSalidaTeamSocial(mappedData);
         } catch (error) {
@@ -306,7 +310,7 @@ const DashboardPage: React.FC = () => {
                         >
                           <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
                         </svg>{" "}
-                        <p className="text-slate-400">{event.location}</p>
+                        <p className="text-slate-400">{event.localidad}</p>
                       </div>
                     </div>
 

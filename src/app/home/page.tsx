@@ -23,6 +23,7 @@ type EventType = {
   price: string;
   image: string;
   location: string;
+  localidad: string,
   category: string;
   locationCoords: {
     lat: number;
@@ -37,6 +38,7 @@ type ModalEvent = {
   date: string;
   time: string;
   location: string;
+  localidad: string,
   teacher: string;
   participants: string[];
   locationCoords: {
@@ -107,6 +109,7 @@ export default function Home() {
           price: item.precio, // o podés poner un valor fijo como "Gratis"
           image: item.imagen,
           category: item.deporte,
+          localidad: item.localidad,
           location: item.ubicacion,
           locationCoords: item.locationCoords,
           highlighted: false,
@@ -136,6 +139,7 @@ export default function Home() {
           time: item.hora,
           price: item.precio,
           image: item.imagen,
+          localidad: item.localidad,
           category: item.deporte,
           location: item.ubicacion,
           locationCoords: item.locationCoords,
@@ -249,7 +253,7 @@ export default function Home() {
                             alt=""
                             className="w-[14px] h-[14px] object-cover"
                           />{" "}
-                          {event.location}
+                          {event.localidad}
                         </p>
                         <p className="text-xs flex items-center gap-1">
                           <img
@@ -282,7 +286,8 @@ export default function Home() {
                             date: event.date,
                             time: event.time,
                             location: event.location,
-                            locationCoords: event.locationCoords, // reemplazá si tenés el link real
+                            locationCoords: event.locationCoords,
+                            localidad: event.localidad, // reemplazá si tenés el link real
                             teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
                             participants: ["👤", "👤", "👤"], // podés mapear esto después
                           });

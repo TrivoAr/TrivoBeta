@@ -35,6 +35,7 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  localidad: string;
   telefonoOrganizador: string;
   whatsappLink: string;
   creador_id: {
@@ -160,7 +161,7 @@ export default function EventPage({ params }: PageProps) {
             alt=""
             className="w-[14px] h-[14px] object-cover"
           />
-          <span>{event.ubicacion}</span>
+          <span>{event.localidad}</span>
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img
@@ -378,7 +379,7 @@ export default function EventPage({ params }: PageProps) {
         {new Date(event.fecha).toLocaleDateString()}, {event.hora} hs
       </p>
       <p className="font-semibold text-sm text-gray-800">
-        {event.ubicacion}
+        {event.localidad}
       </p>
     </div>
 
