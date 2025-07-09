@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
   try {
     const apiKey = process.env.LOCATIONIQ_API_KEY;  // poné tu API KEY en .env
-    const url = `https://us1.locationiq.com/v1/autocomplete.php?key=${apiKey}&q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`;
+    const url = `https://us1.locationiq.com/v1/autocomplete.php?key=${apiKey}&q=${encodeURIComponent(query)}&format=json&countrycodes=AR&addressdetails=1&limit=6`;
 
 
     const response = await fetch(url);
