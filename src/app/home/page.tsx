@@ -180,15 +180,12 @@ export default function Home() {
 
   const futureEvents = social.filter((event) => {
     if (!event.date) return false;
-    console.log("fecha", event.date);
-    console.log("fecha de hoy", today);
+    
 
     const [year, month, day] = event.date.split("-").map(Number);
     const eventDate = new Date(year, month - 1, day);
 
-    console.log("fecha", event.date);
-    console.log("fecha del evento", eventDate);
-    console.log("fecha de hoy", today);
+  
 
     
 
