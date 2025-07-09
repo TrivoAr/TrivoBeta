@@ -98,26 +98,6 @@ export default function CrearSalidaPage() {
     }
   };
 
-  // const geocodeAddress = async (address: string) => {
-  //   try {
-  //     const res = await fetch(
-  //       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-  //         address
-  //       )}`
-  //     );
-  //     const data = await res.json();
-  //     if (data && data.length > 0) {
-  //       const { lat, lon } = data[0];
-  //       return { lat: parseFloat(lat), lng: parseFloat(lon) };
-  //     } else {
-  //       alert("No se encontró la dirección");
-  //       return null;
-  //     }
-  //   } catch (error) {
-  //     console.error("Error al geocodificar:", error);
-  //     return null;
-  //   }
-  // };
 
   const handleCoordsChange = (coords: LatLng) => {
     setMarkerPos(coords);
