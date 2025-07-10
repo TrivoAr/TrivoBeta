@@ -11,6 +11,7 @@ import TopContainer from "@/components/TopContainer";
 import Link from "next/link";
 import EventModal from "@/components/EventModal";
 import { SafelistConfig } from "tailwindcss/types/config";
+import TeamSocial from "@/models/teamSocial";
 
 interface Academia {
   _id: string;
@@ -73,6 +74,7 @@ const DashboardPage: React.FC = () => {
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
   const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
+  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
@@ -254,12 +256,14 @@ const DashboardPage: React.FC = () => {
     if (!confirm) return;
 
     await fetch(`/api/team-social/${event}`, { method: "DELETE" });
-    router.push("/home");
+    alert("Salida borrada con exito");
+    router.refresh;
   };
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer />
+      <TopContainer selectedLocalidad={selectedLocalidad}
+  setSelectedLocalidad={setSelectedLocalidad}/>
 
       <section>
         <div className="flex justify-between items-center mb-3">
@@ -276,7 +280,7 @@ const DashboardPage: React.FC = () => {
             </button>
           )} */}
         </div>
-        <div className="overflow-x-auto h-[245px] scrollbar-hide">
+        <div className={`overflow-x-auto scrollbar-hide ${salidaSocial.length > 0 ? 'h-[245px]' : 'h-auto'}`}>
           <div className="flex space-x-4">
             {salidaSocial.length > 0 ? (
               salidaSocial.map((event) => (
@@ -405,16 +409,8 @@ const DashboardPage: React.FC = () => {
             <h2 className="text-2xl font-bold mb-3">
               <span className="text-[#C76C01]">Mis</span> social Team
             </h2>
-
-            {/* // <button onClick={() => router.push("/academias/crear")}>
-            //   <img
-            //     className="h-[26px] w-[26px]"
-            //     src="/assets/Logo/add-circle-svgrepo-com.svg"
-            //     alt="crear"
-            //   />
-            // </button> */}
           </div>
-          <div className="overflow-x-auto h-[245px] scrollbar-hide">
+          <div className={`overflow-x-auto scrollbar-hide ${salidaTeamSocial.length > 0 ? 'h-[245px]' : 'h-auto'}`}>
             <div className="flex space-x-4">
               {salidaTeamSocial.length > 0 ? (
                 salidaTeamSocial.map((event) => (
@@ -447,12 +443,12 @@ const DashboardPage: React.FC = () => {
                           >
                             <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
                           </svg>{" "}
-                          <p className="text-slate-400">{event.location}</p>
+                          <p className="text-slate-400">{event.localidad}</p>
                         </div>
                       </div>
 
                       <div className="text-slate-400 text-md">
-                        <p className="font-semibold text-lg">${event.price}</p>
+                        <p className="font-semibold text-lg">${Number(event.price).toLocaleString("es-AR")}</p>
                         <p>
                           {event.date}, {event.time} hs
                         </p>

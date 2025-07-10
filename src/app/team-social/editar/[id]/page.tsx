@@ -4,43 +4,130 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PATCH } from "@/app/api/grupos/route";
+import dynamic from "next/dynamic";
 
-export default function EditarTeamSalida({ params }: { params: { id: string } }) {
+interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+export default function EditarTeamSalida({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { data: session } = useSession();
   const router = useRouter();
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [markerPos, setMarkerPos] = useState<LatLng>({ lat: 0, lng: 0 });
+    const defaultCoords = { lat: -26.8333, lng: -65.2167 };
+    const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
+  const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
+      ssr: false,
+    });
 
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
     deporte: "",
     fecha: "",
-    precio:"",
+    precio: "",
     hora: "",
     ubicacion: "",
     imagen: "",
+    localidad: "",
+    whatsappLink: "",
+    telefonoOrganizador: "",
+    locationCoords: { lat: 0, lng: 0 },
   });
 
+  // useEffect(() => {
+  //   fetch(`/api/team-social/${params.id}`)
+  //     .then((res) => res.json())
+  //     .then((data) => setFormData(data));
+  // }, [params.id]);
 
+    useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/team-social/${params.id}`);
+        const data = await res.json();
+        setFormData(data);
+        if (data.locationCoords) {
+          setMarkerPos(data.locationCoords);
+        } else {
+          setMarkerPos(defaultCoords);
+        }
+      } catch (err) {
+        console.error("Error cargando datos:", err);
+      }
+    };
 
-  useEffect(() => {
-    fetch(`/api/team-social/${params.id}`)
-      .then((res) => res.json())
-      .then((data) => setFormData(data));
+    fetchData();
   }, [params.id]);
-
-
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
+    // const { name, value } = e.target;
+    // setFormData((prevData) => ({ ...prevData, [name]: value }));
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+    if (name === "ubicacion") {
+      // Debounce
+      if (typingTimeout) clearTimeout(typingTimeout);
+      const timeout = setTimeout(() => {
+        fetchSuggestions(value);
+      }, 500);
+      setTypingTimeout(timeout);
+    }
   };
 
+    const fetchSuggestions = async (query: string) => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
 
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(formData.ubicacion)}`
+      );
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error("Error buscando sugerencias:", err);
+    }
+  };
 
+    const handleCoordsChange = (coords: LatLng) => {
+    setMarkerPos(coords);
+    setFormData((prev) => ({
+      ...prev,
+      lat: coords.lat,
+      lng: coords.lng,
+      locationCoords: coords,
+    }));
+  };
+
+    const handleSuggestionClick = (suggestion: any) => {
+    const coords = {
+      lat: parseFloat(suggestion.lat),
+      lng: parseFloat(suggestion.lon),
+    };
+    setFormData((prev) => ({
+      ...prev,
+      ubicacion: suggestion.display_name,
+      lat: coords.lat,
+      lng: coords.lng,
+    }));
+    setMarkerPos(coords); // 👈 Esto hace que el mapa se actualice
+    setSuggestions([]);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,17 +148,21 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
     await fetch(`/api/team-social/${params.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        ...formData,
+        lat: markerPos.lat,
+        lng: markerPos.lng,
+        locationCoords: markerPos,
+      }),
     });
     alert("Social team actualizado");
     router.push("/home");
   };
 
   const handleDelete = async () => {
-    
     const confirm = window.confirm(
       "¿Estás seguro que querés eliminar esta salida?"
-    );   
+    );
     if (!confirm) return;
 
     await fetch(`/api/team-social/${params.id}`, { method: "DELETE" });
@@ -82,19 +173,21 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
 
   return (
     <div className="flex flex-col justify-center items-center bg-[#FEFBF9]">
-         <button
-            onClick={() => router.back()}
-            className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
-          >
-            <img
-              src="/assets/icons/Collapse Arrow.svg"
-              alt="callback"
-              className="h-[20px] w-[20px]"
-            />
-          </button>
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-2xl h-[900px] p-8 mb-4">
+      <button
+        onClick={() => router.back()}
+        className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
+      >
+        <img
+          src="/assets/icons/Collapse Arrow.svg"
+          alt="callback"
+          className="h-[20px] w-[20px]"
+        />
+      </button>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md rounded-2xl h-[900px] p-8 mb-4"
+      >
         <div className="mb-4 flex justify-center items-center relative">
-
           <h1 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
             Editar Social Team
           </h1>
@@ -110,7 +203,7 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
             required
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
-              <input
+          <input
             type="text"
             name="precio"
             placeholder="Precio"
@@ -128,6 +221,18 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
             required
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
+           <select
+            name="localidad"
+            value={formData.localidad}
+            onChange={handleChange}
+            className="w-full p-4  border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          >
+            <option value="">Localidad</option>
+            <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
+            <option value="Yerba Buena">Yerba Buena</option>
+            <option value="Tafi Viejo">Tafi Viejo</option>
+            <option value="Otros">Otros</option>
+          </select>
 
           <select
             name="deporte"
@@ -159,18 +264,57 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
               className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
             />
           </div>
-
-          <input
+            <input
             type="text"
-            name="ubicacion"
-            placeholder="Ubicación"
-            value={formData.ubicacion}
+            name="telefonoOrganizador"
+            placeholder="+5491123456789"
+            value={formData.telefonoOrganizador}
             onChange={handleChange}
             required
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
 
+          <input
+            type="text"
+            name="whatsappLink"
+            placeholder="https://chat.whatsapp.com/..."
+            value={formData.whatsappLink}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          />
+
+              <div className="relative">
+            <input
+              type="text"
+              name="ubicacion"
+              placeholder="Ubicación"
+              value={formData.ubicacion}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-4 border shadow-md rounded-[15px]"
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute bg-white border rounded-md z-10 w-full max-h-40 overflow-y-auto">
+                {suggestions.map((s, idx) => (
+                  <li
+                    key={idx}
+                    className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    onClick={() => handleSuggestionClick(s)}
+                  >
+                    {s.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <MapWithNoSSR position={markerPos} onChange={handleCoordsChange} />
+          </div>
+
           <div>
+            <p>Cambiar imagen</p>
             {formData.imagen && (
               <img
                 src={formData.imagen}
@@ -204,7 +348,7 @@ export default function EditarTeamSalida({ params }: { params: { id: string } })
           </button>
         </div>
       </form>
-      <div className="pb-[90px]"></div>
+      <div className="pb-[500px]"></div>
     </div>
   );
 }

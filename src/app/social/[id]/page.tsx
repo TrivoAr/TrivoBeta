@@ -275,6 +275,7 @@ export default function EventPage({ params }: PageProps) {
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Ubicación
         </h2>
+        <p className="mb-2"><span className="text-slate-500 font-bold">Direcccion:</span><br />{event.ubicacion}</p>
         {event.locationCoords ? (
           <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
             <MapContainer
