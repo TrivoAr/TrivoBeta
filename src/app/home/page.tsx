@@ -211,7 +211,7 @@ const filteredTeamSocial = teamSocialEvents.filter(
     return eventDate >= today;
   });
 
-  return (
+    return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer selectedLocalidad={selectedLocalidad}
   setSelectedLocalidad={setSelectedLocalidad} />

@@ -12,6 +12,7 @@ import Link from "next/link";
 import EventModal from "@/components/EventModal";
 import { SafelistConfig } from "tailwindcss/types/config";
 import TeamSocial from "@/models/teamSocial";
+import SkeletonCard from "@/components/TopContainer";
 
 interface Academia {
   _id: string;
@@ -73,7 +74,7 @@ const DashboardPage: React.FC = () => {
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
   const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
-  const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
@@ -138,7 +139,9 @@ const DashboardPage: React.FC = () => {
           setSalidaSocial(mappedData);
         } catch (error) {
           console.error("Error fetching academia:", error);
-        }
+        }finally {
+        setLoading(false);
+      }
       };
 
       const fetchSalidaTeamSocial = async () => {
@@ -200,11 +203,11 @@ const DashboardPage: React.FC = () => {
             }
 
             const data = await res.json();
-            setEntrenamientos(data);
+            
           }
         } catch (error) {
           console.error("Error fetching entrenamientos:", error);
-          setEntrenamientos([]); // Asegúrate de limpiar en caso de error
+         
         }
       };
 
@@ -260,7 +263,18 @@ const DashboardPage: React.FC = () => {
     router.refresh;
   };
 
-  return (
+
+//  if (loading) return (
+//   <main className="bg-red-400 min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
+//     <TopContainer selectedLocalidad={selectedLocalidad}
+//   setSelectedLocalidad={setSelectedLocalidad}/>
+//     <SkeletonCard setSelectedLocalidad={null} selectedLocalidad={null} />
+//   </main>
+// );
+
+
+
+   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer selectedLocalidad={selectedLocalidad}
   setSelectedLocalidad={setSelectedLocalidad}/>
