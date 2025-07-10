@@ -8,7 +8,8 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
 
-const TopContainer = () => {
+
+const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const horaActual = new Date().getHours();
@@ -103,7 +104,18 @@ const TopContainer = () => {
       >
         <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
       </svg>
-      San Miguel de Tucumán
+      <select
+            name="localidad"
+            value={selectedLocalidad}
+  onChange={(e) => setSelectedLocalidad(e.target.value)}
+            className="w-full p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center"
+          >
+            <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
+            <option value="Yerba Buena">Yerba Buena</option>
+            <option value="Tafi Viejo">Tafi Viejo</option>
+            <option value="Otros">Otros</option>
+          </select>
+      {/* San Miguel de Tucumán
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -113,7 +125,7 @@ const TopContainer = () => {
         className="ml-1 w-4 h-4"
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
+      </svg> */}
     </div>
   </div>
 

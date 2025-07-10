@@ -36,6 +36,7 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  localidad: string;
     telefonoOrganizador: string;
   whatsappLink: string;
   creadorId: {
@@ -160,7 +161,7 @@ export default function TeamEventPage({ params }: PageProps) {
       <div className="text-sm text-gray-700 mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <img src="/assets/icons/Locationgray.svg" className="w-[14px] h-[14px]" alt="" />
-          <span>{event.ubicacion}</span>
+          <span>{event.localidad}</span>
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img src="/assets/icons/Calendargray.svg" className="w-[14px] h-[14px]" alt="" />
@@ -319,7 +320,7 @@ export default function TeamEventPage({ params }: PageProps) {
   <div className="bg-[#FEFBF9] shadow-md h-[100px] border px-2  flex justify-between items-center">
     <div className="ml-4">
       <p className="font-semibold text-2xl text-gray-500 ">
-        ${event.precio}
+        ${Number(event.precio).toLocaleString("es-AR")}
       </p>
     </div>
 

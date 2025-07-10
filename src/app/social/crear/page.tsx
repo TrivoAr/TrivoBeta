@@ -137,8 +137,6 @@ export default function CrearSalidaPage() {
       locationCoords: coordsToSave,
     };
 
-    console.log("que traemos", salidaData);
-
     const res = await fetch("/api/social", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

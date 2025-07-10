@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { data } from "autoprefixer";
+import TeamEventPage from "../team-social/[id]/page";
+import TeamSocial from "@/models/teamSocial";
 
 const categories = [
   { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
@@ -88,6 +90,7 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
   const [events, setEvents] = useState<EventType[]>([]);
   const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
+  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   const [academias, setAcademias] = useState<Academia[]>([]);
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
@@ -169,13 +172,21 @@ export default function Home() {
     fetchAcademias();
   }, []);
 
-  const filteredTeamSocial = teamSocialEvents.filter(
-    (event) => event.category === selectedCategory
-  );
 
-  const filteredEvents = events.filter(
-    (event) => event.category === selectedCategory
-  );
+
+ const filteredEvents = events.filter(
+  (event) =>
+    event.category === selectedCategory &&
+    event.localidad === selectedLocalidad
+);
+
+const filteredTeamSocial = teamSocialEvents.filter(
+  (event) =>
+    event.category === selectedCategory &&
+    event.localidad === selectedLocalidad
+);
+
+
   const social = filteredEvents;
 
   const today = new Date();
@@ -188,17 +199,22 @@ export default function Home() {
 
     const [year, month, day] = event.date.split("-").map(Number);
     const eventDate = new Date(year, month - 1, day);
+    return eventDate >= today;
+  });
 
-  
-
+    const futureTeamSocialEvents = filteredTeamSocial.filter((event) => {
+    if (!event.date) return false;
     
 
+    const [year, month, day] = event.date.split("-").map(Number);
+    const eventDate = new Date(year, month - 1, day);
     return eventDate >= today;
   });
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer />
+      <TopContainer selectedLocalidad={selectedLocalidad}
+  setSelectedLocalidad={setSelectedLocalidad} />
       {/* Categorías */}
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
@@ -331,8 +347,10 @@ export default function Home() {
           </button>)} */}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
+           {futureTeamSocialEvents.length > 0 ? (
           <div className="flex space-x-4">
-            {filteredTeamSocial.map((event) => (
+           
+            {futureTeamSocialEvents.map((event) => (
               <div
                 key={event._id}
                 className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
@@ -368,7 +386,7 @@ export default function Home() {
                       alt=""
                       className="w-[14px] h-[14px]"
                     />
-                    {event.price}
+                    ${Number(event.price).toLocaleString("es-AR")}
                   </p>
                   <div className="flex justify-end">
                     <button
@@ -385,7 +403,7 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
+          </div>) : (<p className="font-bold">No hay social teams cargados</p>)}
         </div>
       </section>
 
