@@ -5,7 +5,7 @@ import { storage } from "@/libs/firebaseConfig";
 
 export async function saveProfileImage(file: File, userId: string) {
   try {
-      const storage = getStorage();
+      // const storage = getStorage();
       
       // Usamos un nombre fijo para la foto de perfil del grupo
       const fileName = "profile-image.jpg";  // Puedes cambiar el nombre si lo prefieres

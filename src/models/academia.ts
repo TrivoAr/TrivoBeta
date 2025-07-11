@@ -28,7 +28,7 @@ const AcademiaSchema = new Schema(
     },
     tipo_disciplina: {
       type: String,
-      enum: ["running", "trekking", "ciclismo"],
+      enum: ["Running", "Trekking", "Ciclismo", "Otros"],
       required: true,
     },
     telefono: {

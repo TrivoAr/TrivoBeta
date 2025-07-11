@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message: "Academia creada y usuario agregado como miembro",
+        _id: savedAcademia._id,
         nombre_academia: savedAcademia.nombre_academia,
         pais: savedAcademia.pais,
         provincia: savedAcademia.provincia,

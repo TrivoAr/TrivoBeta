@@ -1,9 +1,9 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface LatLng {
   lat: number;
@@ -17,12 +17,8 @@ export default function MapComponent({
   onChange: (latlng: LatLng) => void;
   position: LatLng | null;
 }) {
-  const [localPosition, setLocalPosition] = useState<LatLng | null>(null);
-
-  // ⚙️ Configuración de íconos Leaflet
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
-
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
       iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -30,30 +26,27 @@ export default function MapComponent({
     });
   }, []);
 
-  // 🔄 Sincronizar posición externa -> interna
-  useEffect(() => {
-    if (position && typeof position.lat === "number" && typeof position.lng === "number") {
-      setLocalPosition(position);
-    }
-  }, [position]);
-
   function LocationMarker() {
     useMapEvents({
       click(e) {
-        const newCoords = e.latlng;
-        setLocalPosition(newCoords);
-        onChange(newCoords);
+        onChange(e.latlng);
       },
     });
-
-    return localPosition ? <Marker position={localPosition} /> : null;
+    return position ? <Marker position={position} /> : null;
   }
 
-  // 🌍 Valor inicial para el mapa
-  const initialCenter = localPosition || { lat: -26.8333, lng: -65.2167 };
+  function RecenterMap({ position }: { position: LatLng }) {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(position);
+    }, [position, map]);
+    return null;
+  }
+
+  const initialCenter = position || { lat: -26.8333, lng: -65.2167 };
 
   return (
-    <div className="h-[200px] w-full rounded-md overflow-hidden">
+    <div className="h-[200px] w-full rounded-md overflow-hidden" role="application">
       <MapContainer
         center={initialCenter}
         zoom={13}
@@ -61,8 +54,11 @@ export default function MapComponent({
         className="h-full w-full z-0"
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {position && <RecenterMap position={position} />}
         <LocationMarker />
       </MapContainer>
     </div>
   );
 }
+
+

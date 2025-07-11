@@ -174,6 +174,7 @@ useEffect(() => {
       alert("Error: " + msg);
     }
   };
+  console.log(event)
 
   return (
     <div className="fixed inset-0 z-[9999999] flex items-end justify-center ">
@@ -262,6 +263,7 @@ useEffect(() => {
         </div>
 
         <div className="flex flex-col items-center gap-3">
+
           <button
           onClick={handleAccion}
           className={`w-[150px] py-2 border rounded-[15px] font-semibold transition ${
@@ -270,7 +272,7 @@ useEffect(() => {
               : "border-orange-500 text-orange-500 bg-orange-500 text-white"
           }`}
         >
-          {yaUnido ? "Salir" : "Machear"}
+          {yaUnido ? "Salir" : "Matchear"}
         </button>
 
         <button

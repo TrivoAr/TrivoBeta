@@ -4,6 +4,7 @@ import TeamSocial from "@/models/teamSocial";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import User from "@/models/user";
 
 
@@ -17,13 +18,40 @@ export async function GET(
 
   try {
     const team = await TeamSocial.findById(params.id)
-      .populate("creadorId", "firstname lastname imagen"); // 👈 Trae solo estos dos campos
+      .populate("creadorId", "firstname lastname imagen");
+      
+         const salidaObj = team.toObject();
+      
+          let imagenUrl;
+          try {
+            imagenUrl = await getProfileImage("profile-image.jpg", team.creadorId._id .toString());
+          } catch (error) {
+            imagenUrl = "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
+          }
+      
+          // Reemplaza el creador_id con el objeto que quieres devolver
+          salidaObj.creadorId = {
+            _id: team.creadorId._id,
+            firstname: team.creadorId.firstname,
+            lastname: team.creadorId.lastname,
+            email: team.creadorId.email,
+            imagen: imagenUrl,
+          };
+      
+      
+      
+      
+      
+      
+      
+      
+      // 👈 Trae solo estos dos campos
 
     if (!team) {
       return NextResponse.json({ message: "No encontrado" }, { status: 404 });
     }
 
-    return NextResponse.json(team, { status: 200 });
+    return NextResponse.json(salidaObj, { status: 200 });
   } catch (error) {
     console.error("Error al buscar TeamSocial:", error);
     return NextResponse.json({ error: "Error en el servidor" }, { status: 500 });
