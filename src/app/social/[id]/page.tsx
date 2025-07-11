@@ -35,6 +35,7 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  localidad: string;
   telefonoOrganizador: string;
   whatsappLink: string;
   creador_id: {
@@ -160,7 +161,7 @@ export default function EventPage({ params }: PageProps) {
             alt=""
             className="w-[14px] h-[14px] object-cover"
           />
-          <span>{event.ubicacion}</span>
+          <span>{event.localidad}</span>
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img
@@ -274,6 +275,7 @@ export default function EventPage({ params }: PageProps) {
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Ubicación
         </h2>
+        <p className="mb-2"><span className="text-slate-500 font-bold">Direcccion:</span><br />{event.ubicacion}</p>
         {event.locationCoords ? (
           <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
             <MapContainer
@@ -303,8 +305,10 @@ export default function EventPage({ params }: PageProps) {
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Organizador       </h2>
           <div className="flex w-full justify-center">
-            <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
-              <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
+            <div className="bg-white w-[290px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
+              <div className="rounded-full h-[100px] w-[100px] shadow-md" style={{backgroundImage: `url(${event.creador_id.imagen})`, backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center', }}></div>
               <div>
                 <h2 className="text-lg font-bold text-slate-700 mb-1">
                   {event.creador_id.firstname} {event.creador_id.lastname}
@@ -376,7 +380,7 @@ export default function EventPage({ params }: PageProps) {
         {new Date(event.fecha).toLocaleDateString()}, {event.hora} hs
       </p>
       <p className="font-semibold text-sm text-gray-800">
-        {event.ubicacion}
+        {event.localidad}
       </p>
     </div>
 

@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
   if (!salidaId) return new Response("Falta salidaId", { status: 400 });
 
   const miembros = await MiembroSalida.find({ salida_id: salidaId }).populate("usuario_id", "firstname lastname email telnumber");
+  
 
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {

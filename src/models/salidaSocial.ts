@@ -27,6 +27,9 @@ const SalidaSocialSchema = new Schema(
     whatsappLink: {
       type: String,
     },
+     localidad: {
+      type: String,
+    },
     telefonoOrganizador: {
       type: String,
     },

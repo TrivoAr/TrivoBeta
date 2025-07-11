@@ -36,6 +36,9 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  localidad: string;
+    telefonoOrganizador: string;
+  whatsappLink: string;
   creadorId: {
     _id: string;
     firstname: string;
@@ -158,7 +161,7 @@ export default function TeamEventPage({ params }: PageProps) {
       <div className="text-sm text-gray-700 mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <img src="/assets/icons/Locationgray.svg" className="w-[14px] h-[14px]" alt="" />
-          <span>{event.ubicacion}</span>
+          <span>{event.localidad}</span>
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img src="/assets/icons/Calendargray.svg" className="w-[14px] h-[14px]" alt="" />
@@ -170,7 +173,7 @@ export default function TeamEventPage({ params }: PageProps) {
         </div>
         <div className="flex items-center gap-2 pl-[50px]">
           <img src="/assets/icons/Usergray.svg" className="w-[14px] h-[14px]" alt="" />
-          <span className="font-bold">${event.precio}</span>
+          <span className="font-bold">{event.deporte}</span>
         </div>
       </div>
 
@@ -254,27 +257,48 @@ export default function TeamEventPage({ params }: PageProps) {
 
       <div className="mt-6">
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Contacto
+          Grupo de whatsapp
         </h2>
         <p className="text-sm text-[#808488] leading-relaxed">
-          Contacta con {event.creadorId.firstname} para mas información:
+          Para mas información, unite al grupo:
         </p>
+            {event.whatsappLink && (
+          <div className="flex justify-center mt-3">
+            <a
+              href={event.whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-green-500 text-green-500 px-7 py-2 rounded-md font-medium hover:bg-green-50 transition"
+            >
+              Grupo <img src="/assets/Logo/Whatsapp.svg" alt="Grupo" className="w-5 h-5" />
+            </a>
+          </div>
+        )}
+        
       </div>
       <div className="mt-6">
         <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
           Organizador       </h2>
-        <div className="flex w-full justify-center">
-          <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
-            <img src="/assets/icons/person_24dp_E8EAED.svg" alt="" className="rounded-full h-[75px] w-[75px] shadow-md" />
-            <div>
-              <h2 className="text-lg font-bold text-slate-700 mb-1">
-          {event.creadorId.firstname} {event.creadorId.lastname}
-        </h2>
-        <button className="text-green-400 font-medium">Contacto</button>
+          <div className="flex w-full justify-center">
+            <div className="bg-white w-[270px] h-[150px] rounded-[15px] flex shadow-md self-center justify-around items-center">
+              <div className="rounded-full h-[100px] w-[100px] shadow-md" style={{backgroundImage: `url(${event.creadorId.imagen})`, backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center', }}></div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-700 mb-1">
+                  {event.creadorId.firstname} {event.creadorId.lastname}
+                </h2>
+                <a
+                  href={`https://wa.me/${event.telefonoOrganizador?.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-500 font-medium"
+                >
+                  Contacto
+                </a>
+              </div>
             </div>
-            
           </div>
-        </div>
       </div>
 
       {/* <div className="mt-8 mb-[150px]">
@@ -296,7 +320,7 @@ export default function TeamEventPage({ params }: PageProps) {
   <div className="bg-[#FEFBF9] shadow-md h-[100px] border px-2  flex justify-between items-center">
     <div className="ml-4">
       <p className="font-semibold text-2xl text-gray-500 ">
-        ${event.precio}
+        ${Number(event.precio).toLocaleString("es-AR")}
       </p>
     </div>
 
