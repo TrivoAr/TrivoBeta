@@ -88,9 +88,11 @@ const CrearGrupo = () => {
   }
 
   return (
-    <div>
+    <div className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9">
       <Toaster position="top-center" />
-      <h1 className="text-xl font-bold text-center mb-5">Crear Grupo</h1>
+       <h2 className="text-center font-bold text-xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+        Crear grupo <span className="text-black">de entrenamiento</span>
+      </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-7">
         <select
@@ -98,7 +100,7 @@ const CrearGrupo = () => {
           value={grupo.academia_id}
           onChange={handleInputChange}
           required
-          className="bg-[#f4f4f4] border-b text-gray-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Academia</option>
           {academias.map((academia) => (
@@ -115,7 +117,7 @@ const CrearGrupo = () => {
           onChange={handleInputChange}
           required
           placeholder="Nombre"
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         <select
@@ -123,7 +125,7 @@ const CrearGrupo = () => {
           value={grupo.nivel}
           onChange={handleInputChange}
           required
-          className="bg-[#F4F4F4] border-b text-gray-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Selecciona dificultad</option>
           <option value="baja">Baja</option>
@@ -137,7 +139,7 @@ const CrearGrupo = () => {
           value={grupo.ubicacion}
           onChange={handleInputChange}
           placeholder="Ubicación"
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         <input
@@ -145,8 +147,9 @@ const CrearGrupo = () => {
           name="horario"
           value={grupo.horario}
           onChange={handleInputChange}
+          placeholder="Horario"
           required
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
           {/* tiempo */}
         <input
@@ -155,7 +158,7 @@ const CrearGrupo = () => {
           value={grupo.tiempo_promedio}
           onChange={handleInputChange}
           placeholder="Tiempo promedio"
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
         <input
           type="text"
@@ -163,7 +166,7 @@ const CrearGrupo = () => {
           value={grupo.cuota_mensual}
           onChange={handleInputChange}
           placeholder="Cuota mensual"
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         <textarea
@@ -171,14 +174,14 @@ const CrearGrupo = () => {
           value={grupo.descripcion}
           onChange={handleInputChange}
           placeholder="Descripción"
-          className="bg-[#F4F4F4] border-b"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         <select
           name="tipo_grupo"
           value={grupo.tipo_grupo}
           onChange={handleInputChange}
-          className="bg-[#F4F4F4] border-b text-gray-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Selecciona un tipo</option>
           <option value="nivel">Nivel</option>
@@ -186,14 +189,15 @@ const CrearGrupo = () => {
           <option value="otros">Otros</option>
         </select>
 
-        <button type="submit" className="text-sm font-bold w-[300px] bg-[#FF9A3D] rounded-md h-[40px]">
+        <button type="submit" className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">
           Crear Grupo
         </button>
 
-        <button type="button" onClick={() => router.back()} className="text-sm font-bold w-[300px] bg-[#f4f4f4] border-2 border-[#FF9A3D] text-[#FF9A3D] rounded-md h-[40px]">
+        <button type="button" onClick={() => router.back()} className="text-md text-orange-400">
           Atrás
         </button>
       </form>
+      <div className="pb-[20px]"></div>
     </div>
   );
 };

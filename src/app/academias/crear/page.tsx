@@ -223,10 +223,10 @@ const [previewUrl, setPreviewUrl] = useState<string | null>(null);
         <div >
           <select name="tipo_disciplina" placeholder=" " required className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400">
             <option value="">Selecciona un deporte</option>
-            <option value="running">Running</option>
-            <option value="trekking">Trekking</option>
-            <option value="ciclismo">Ciclismo</option>
-            <option value="otros">Otros</option>
+            <option value="Running">Running</option>
+            <option value="Trekking">Trekking</option>
+            <option value="Ciclismo">Ciclismo</option>
+            <option value="Otros">Otros</option>
           </select>
         </div>
          <label className="block">
@@ -268,20 +268,24 @@ const [previewUrl, setPreviewUrl] = useState<string | null>(null);
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
-
-        <button className="bg-[#FF9A3D] text-[#333] font-bold px-4 py-2 block w-full mt-4 rounded-[10px]">
+      <div className="flex flex-col  items-center gap-3">
+        <button className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">
           Crear Academia
         </button>
 
         <button 
           type="button"
-          className="bg-[#f4f4f4] border-2 border-[#FF9A3D] text-[#FF9A3D] font-bold px-4 py-2 block w-full mt-4 rounded-[10px]"
+          className="text-center text-[#FF9A3D] font-bold "
           onClick={() => router.back()} // Atrás
         >
           Atrás
         </button>
+
+      </div>
+
+        
       </form>
-      <div className="pb-[200px]"></div>
+      <div className="pb-[50px]"></div>
     </div>
   );
 }
