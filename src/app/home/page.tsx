@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { data } from "autoprefixer";
 import TeamEventPage from "../team-social/[id]/page";
 import TeamSocial from "@/models/teamSocial";
+import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 
 const categories = [
   { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
@@ -25,7 +26,7 @@ type EventType = {
   price: string;
   image: string;
   location: string;
-  localidad: string,
+  localidad: string;
   category: string;
   locationCoords: {
     lat: number;
@@ -40,7 +41,7 @@ type ModalEvent = {
   date: string;
   time: string;
   location: string;
-  localidad: string,
+  localidad: string;
   teacher: string;
   participants: string[];
   locationCoords: {
@@ -56,6 +57,7 @@ type Academia = {
   tipo_disciplina: string;
   telefono: string;
   imagen: string;
+  imagenUrl: string;
 };
 
 // const discounts = [
@@ -90,8 +92,11 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
   const [events, setEvents] = useState<EventType[]>([]);
   const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
-  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
+  const [selectedLocalidad, setSelectedLocalidad] = useState(
+    "San Miguel de Tucuman"
+  );
   const [academias, setAcademias] = useState<Academia[]>([]);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
@@ -163,7 +168,30 @@ export default function Home() {
         const res = await fetch("/api/academias");
         const data = await res.json();
         console.log("academias", data);
-        setAcademias(data);
+
+        // 🔥 Nuevo paso: obtener las URLs desde Firebase
+        const academiasConImagenes = await Promise.all(
+          data.map(async (academia) => {
+            try {
+              // Intentamos traer la URL de Firebase
+              const url = await getAcademyImage(
+                "profile-image.jpg",
+                academia._id
+              );
+              return { ...academia, imagenUrl: url };
+            } catch (error) {
+              console.error("Error al obtener imagen de Firebase:", error);
+              // En caso de error, ponemos una imagen por defecto
+              return {
+                ...academia,
+                imagenUrl:
+                  "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg",
+              };
+            }
+          })
+        );
+
+        setAcademias(academiasConImagenes);
       } catch (error) {
         console.error("Error al obtener academias:", error);
       }
@@ -172,20 +200,17 @@ export default function Home() {
     fetchAcademias();
   }, []);
 
+  const filteredEvents = events.filter(
+    (event) =>
+      event.category === selectedCategory &&
+      event.localidad === selectedLocalidad
+  );
 
-
- const filteredEvents = events.filter(
-  (event) =>
-    event.category === selectedCategory &&
-    event.localidad === selectedLocalidad
-);
-
-const filteredTeamSocial = teamSocialEvents.filter(
-  (event) =>
-    event.category === selectedCategory &&
-    event.localidad === selectedLocalidad
-);
-
+  const filteredTeamSocial = teamSocialEvents.filter(
+    (event) =>
+      event.category === selectedCategory &&
+      event.localidad === selectedLocalidad
+  );
 
   const social = filteredEvents;
 
@@ -195,26 +220,26 @@ const filteredTeamSocial = teamSocialEvents.filter(
 
   const futureEvents = social.filter((event) => {
     if (!event.date) return false;
-    
 
     const [year, month, day] = event.date.split("-").map(Number);
     const eventDate = new Date(year, month - 1, day);
     return eventDate >= today;
   });
 
-    const futureTeamSocialEvents = filteredTeamSocial.filter((event) => {
+  const futureTeamSocialEvents = filteredTeamSocial.filter((event) => {
     if (!event.date) return false;
-    
 
     const [year, month, day] = event.date.split("-").map(Number);
     const eventDate = new Date(year, month - 1, day);
     return eventDate >= today;
   });
 
-    return (
+  return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer selectedLocalidad={selectedLocalidad}
-  setSelectedLocalidad={setSelectedLocalidad} />
+      <TopContainer
+        selectedLocalidad={selectedLocalidad}
+        setSelectedLocalidad={setSelectedLocalidad}
+      />
       {/* Categorías */}
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
@@ -347,69 +372,72 @@ const filteredTeamSocial = teamSocialEvents.filter(
           </button>)} */}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
-           {futureTeamSocialEvents.length > 0 ? (
-          <div className="flex space-x-4">
-           
-            {futureTeamSocialEvents.map((event) => (
-              <div
-                key={event._id}
-                className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
-                style={{
-                  backgroundImage: `url(${event.image})`,
-                }}
-              >
-                <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
-                <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
-                  {event.category}
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
-                  <p className="text-sm font-semibold mb-1">{event.title}</p>
-                  <p className="text-xs flex items-center gap-1 mb-[2px]">
-                    <img
-                      src="/assets/icons/Calendar.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    {event.date}
-                  </p>
-                  <p className="text-xs flex items-center gap-1 mb-[2px]">
-                    <img
-                      src="/assets/icons/Clock.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    {event.time}
-                  </p>
-                  <p className="text-xs flex items-center gap-1">
-                    <img
-                      src="/assets/icons/Us Dollar Circled.svg"
-                      alt=""
-                      className="w-[14px] h-[14px]"
-                    />
-                    ${Number(event.price).toLocaleString("es-AR")}
-                  </p>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => router.push(`/team-social/${event._id}`)}
-                      className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                      }}
-                    >
-                      Info
-                    </button>
+          {futureTeamSocialEvents.length > 0 ? (
+            <div className="flex space-x-4">
+              {futureTeamSocialEvents.map((event) => (
+                <div
+                  key={event._id}
+                  className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${event.image})`,
+                  }}
+                >
+                  <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
+                  <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
+                    {event.category}
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
+                    <p className="text-sm font-semibold mb-1">{event.title}</p>
+                    <p className="text-xs flex items-center gap-1 mb-[2px]">
+                      <img
+                        src="/assets/icons/Calendar.svg"
+                        alt=""
+                        className="w-[14px] h-[14px]"
+                      />
+                      {event.date}
+                    </p>
+                    <p className="text-xs flex items-center gap-1 mb-[2px]">
+                      <img
+                        src="/assets/icons/Clock.svg"
+                        alt=""
+                        className="w-[14px] h-[14px]"
+                      />
+                      {event.time}
+                    </p>
+                    <p className="text-xs flex items-center gap-1">
+                      <img
+                        src="/assets/icons/Us Dollar Circled.svg"
+                        alt=""
+                        className="w-[14px] h-[14px]"
+                      />
+                      ${Number(event.price).toLocaleString("es-AR")}
+                    </p>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => router.push(`/team-social/${event._id}`)}
+                        className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                        }}
+                      >
+                        Info
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>) : (<p className="font-bold">No hay social teams cargados</p>)}
+              ))}
+            </div>
+          ) : (
+            <p className="font-bold">No hay social teams cargados</p>
+          )}
         </div>
       </section>
 
       {/* Academias destacadas */}
+
       <section>
-        <div className="flex justify-between items-center mb-3 mt-6">
+        <div className="">
           <h2 className="text-2xl font-bold mb-3">
             <span className="text-[#C76C01]">Grupos de entrenamiento</span>
           </h2>
@@ -425,45 +453,32 @@ const filteredTeamSocial = teamSocialEvents.filter(
             />
           </button>)} */}
         </div>
-        <div className="overflow-x-auto scrollbar-hide">
+        <div
+          className={`overflow-x-auto scrollbar-hide ${
+            academias.length > 0 ? "h-[245px]" : "h-auto"
+          }`}
+        >
           <div className="flex space-x-4">
-            {academias.slice(0, 5).map((academia) => (
-              <div
-                key={academia._id}
-                className="flex-shrink-0 w-[250px] h-[190px] rounded-[10px] border flex flex-col justify-between shadow-md overflow-hidden bg-white"
-              >
-                <Link href={`/academias/${academia._id}`}>
-                  <div
-                    className=" bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url('/assets/Logo/Trivo T.png')`,
-                      width: 125,
-                      height: 110, // Si no tenés imagen de academia
-                    }}
-                  />
-                  <div className="p-3">
-                    <h3 className="font-bold text-base mb-1">
-                      {academia.nombre_academia}
-                    </h3>
-                    <p className="text-xs flex items-center gap-1 mb-[2px]">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="15px"
-                        viewBox="0 -960 960 960"
-                        width="15px"
-                        fill="#333"
-                      >
-                        <path d="M798-120q-125 0-247-54.5T329-329Q229-429 174.5-551T120-798q0-18 12-30t30-12h162q14 0 25 9.5t13 22.5l26 140q2 16-1 27t-11 19l-97 98q20 37 47.5 71.5T387-386q31 31 65 57.5t72 48.5l94-94q9-9 23.5-13.5T670-390l138 28q14 4 23 14.5t9 23.5v162q0 18-12 30t-30 12ZM241-600l66-66-17-94h-89q5 41 14 81t26 79Zm358 358q39 17 79.5 27t81.5 13v-88l-94-19-67 67ZM241-600Zm358 358Z" />
-                      </svg>
-                      {academia.telefono}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      🏷️ {academia.tipo_disciplina}
-                    </p>
-                  </div>
-                </Link>
-              </div>
-            ))}
+            {academias.length > 0 ? (
+              academias.map((academia) => (
+                <div
+                  key={academia._id}
+                  className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border"
+                  style={{
+                    backgroundImage: `linear-gradient(
+      0deg,
+      rgba(0,0,0,0.2),
+      rgba(0,0,0,0.2)),url(${academia.imagenUrl})`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                  }}
+                  onClick={() => router.push(`/academias/${academia._id}`)}
+                ></div>
+              ))
+            ) : (
+              <p>No hay grupos de entrenamientos</p>
+            )}
           </div>
         </div>
       </section>
