@@ -76,7 +76,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const handleNotificationClick = () => {
     if (session?.user?.role === "dueño de academia") {
-      router.push("/social/crear");
+      router.push("/academias/solicitudes");
     } else {
       // Puedes manejar otros casos aquí si es necesario
       router.push("/social/crear");
