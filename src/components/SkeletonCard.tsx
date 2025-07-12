@@ -8,7 +8,7 @@ function SkeletonCard() {
 
 
     return (
-     <div className="w-full h-[180px] rounded-xl bg-gray-200 animate-pulse" />
+     <div className="w-full h-[180px] rounded-xl bg-gray-500 animate-pulse" />
   );
 }
 
