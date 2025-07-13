@@ -12,6 +12,7 @@ import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+// import "MatchLoadingSkeleton" from "components/MatchLoadingSkeleton";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
