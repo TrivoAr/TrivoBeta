@@ -12,7 +12,13 @@ import Link from "next/link";
 import EventModal from "@/components/EventModal";
 import { SafelistConfig } from "tailwindcss/types/config";
 import TeamSocial from "@/models/teamSocial";
-import SkeletonCard from "@/components/TopContainer";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+
+const categories = [
+  { label: "Mi panel",  },
+  { label: "Mis match",  },
+];
 
 interface Academia {
   _id: string;
@@ -73,6 +79,7 @@ const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("Mi panel");
   const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [miMatch, setMiMatch] = useState<any[]>([]);
@@ -89,27 +96,27 @@ const DashboardPage: React.FC = () => {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-useEffect(() => {
-  const obtenerTeams = async () => {
-    try {
-      const res = await fetch("/api/team-social/mis", { method: "GET" });
+  useEffect(() => {
+    const obtenerTeams = async () => {
+      try {
+        const res = await fetch("/api/team-social/mis", { method: "GET" });
 
-      if (!res.ok) throw new Error("Error al obtener los teams");
+        if (!res.ok) throw new Error("Error al obtener los teams");
 
-      const data = await res.json();
+        const data = await res.json();
 
-      console.log("teams donde estoy:", data);
+        console.log("teams donde estoy:", data);
 
-      setMiMatchTeamSocial(data); // o como sea que se llame tu estado
-    } catch (err) {
-      console.error(err);
-      setError("No se pudieron cargar los teams");
-    } finally {
-      setLoading(false);
-    }
-  };
-  obtenerTeams();
-}, []);
+        setMiMatchTeamSocial(data); // o como sea que se llame tu estado
+      } catch (err) {
+        console.error(err);
+        setError("No se pudieron cargar los teams");
+      } finally {
+        setLoading(false);
+      }
+    };
+    obtenerTeams();
+  }, []);
 
   useEffect(() => {
     const fetchMiMatch = async () => {
@@ -313,14 +320,12 @@ useEffect(() => {
   };
 
   //  if (loading) return (
-  //   <main className="bg-red-400 min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
-  //     <TopContainer selectedLocalidad={selectedLocalidad}
-  //   setSelectedLocalidad={setSelectedLocalidad}/>
-  //     <SkeletonCard setSelectedLocalidad={null} selectedLocalidad={null} />
+  //   <main>
+   
   //   </main>
   // );
 
-  console.log("mi match", miMatch);
+  console.log("mi academia", academia);
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -328,7 +333,24 @@ useEffect(() => {
         selectedLocalidad={selectedLocalidad}
         setSelectedLocalidad={setSelectedLocalidad}
       />
-
+      <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
+        {categories.map((cat) => (
+          <button
+            key={cat.label}
+            onClick={() => setSelectedCategory(cat.label)}
+            className={`flex-shrink-0 w-[100px] h-[35px] rounded-[15px]  border shadow-md ${
+              selectedCategory === cat.label
+                ? "border-2 border-orange-200 text-orange-300"
+                : "bg-white text-[#808488]"
+            } flex flex-col items-center justify-center`}
+          >
+            <span className="text-[11px] font-semibold leading-none text-center">
+              {cat.label}
+            </span>
+          </button>
+        ))}
+      </div>
+{ selectedCategory === "Mi panel" ? (
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-2xl font-bold mb-3">
@@ -481,10 +503,12 @@ useEffect(() => {
             )}
           </div>
         </div>
-      </section>
+      </section> ) : (null)}
 
       {/* Social Team */}
-      {formData.rol === "dueño de academia" && (
+
+{ selectedCategory === "Mi panel" ? (      
+      formData.rol === "dueño de academia" && (
         <section>
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-2xl font-bold mb-3">
@@ -636,10 +660,11 @@ useEffect(() => {
             </div>
           </div>
         </section>
-      )}
+      ) ) : (null)}
 
       {/* mis match*/}
 
+{ selectedCategory === "Mis match" ? (
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-2xl font-bold mb-3">
@@ -690,12 +715,15 @@ useEffect(() => {
                     </div>
 
                     <div className="text-slate-400 text-md">
-                      <p className="font-semibold text-lg">   {new Date(event.fecha).toLocaleDateString("es-AR", {
+                      <p className="font-semibold text-lg">
+                        {" "}
+                        {new Date(event.fecha).toLocaleDateString("es-AR", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "2-digit",
-                        })}{" "}</p>
-                    
+                        })}{" "}
+                      </p>
+
                       <p>{event.hora} hs</p>
                     </div>
                   </div>
@@ -719,106 +747,157 @@ useEffect(() => {
           </div>
         </div>
       </section>
+      )  : (null)}
 
-  {/*mis match  Social Team */}
-      
+      {/*mis match  Social Team */}
+{ selectedCategory === "Mis match" ? (
+      <section>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-2xl font-bold mb-3">
+            <span className="text-[#C76C01]">Match</span> social Team
+          </h2>
+        </div>
+        <div
+          className={`overflow-x-auto scrollbar-hide ${
+            miMatchTeamSocial.length > 0 ? "h-[245px]" : "h-auto"
+          }`}
+        >
+          <div className="flex space-x-4">
+            {miMatchTeamSocial.length > 0 ? (
+              miMatchTeamSocial.map((event) => (
+                <div
+                  key={event._id}
+                  className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                >
+                  <div
+                    className="h-[115px] bg-slate-200"
+                    onClick={() => router.push(`/team-social/${event._id}`)}
+                  >
+                    <img
+                      src={event.imagen}
+                      alt={event.nombre}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                    <p className="font-bold">{event.deporte}</p>
+                  </div>
+                  <div className="p-3 flex flex-col">
+                    <div className="">
+                      <h1 className="font-semibold text-lg">{event.nombre}</h1>
+                      <div className="flex items-center text-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#f97316"
+                          viewBox="0 0 24 24"
+                          width="13"
+                          height="13"
+                          className="mr-1"
+                        >
+                          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                        </svg>{" "}
+                        <p className="text-slate-400">{event.localidad}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-slate-400 text-md">
+                      <p className="font-semibold text-lg">
+                        ${Number(event.precio).toLocaleString("es-AR")}
+                      </p>
+                      <p>
+                        {new Date(event.fecha).toLocaleDateString("es-AR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                        })}
+                        , {event.hora} hs
+                      </p>
+                    </div>
+                  </div>
+                  <div className="absolute top-[39%] right-[10px] flex gap-5">
+                    <div
+                      className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                      onClick={() =>
+                        router.push(`/team-social/miembros/${event._id}`)
+                      }
+                    >
+                      <img src="/assets/icons/groups_24dp_E8EAED.svg" alt="" />
+                    </div>
+                  </div>
+                  <div className="absolute top-1 right-[10px]"></div>
+                </div>
+              ))
+            ) : (
+              <div>
+                <p>No hiciste match aún</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+      )  : (null)}
+
+
+{ selectedCategory === "Mi panel" ? (
+      formData.rol === "dueño de academia" && (
         <section>
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-2xl font-bold mb-3">
-              <span className="text-[#C76C01]">Match</span> social Team
+              <span className="text-[#C76C01]">Grupo</span> principal
             </h2>
+            {/* {formData.rol === "dueño de academia" && (
+            <button onClick={() => router.push("/academias/crear")}>
+              <img
+                className="h-[26px] w-[26px]"
+                src="/assets/Logo/add-circle-svgrepo-com.svg"
+                alt="crear"
+              />
+            </button>
+          )} */}
           </div>
-          <div
-            className={`overflow-x-auto scrollbar-hide ${
-              miMatchTeamSocial.length > 0 ? "h-[245px]" : "h-auto"
-            }`}
-          >
-            <div className="flex space-x-4">
-              {miMatchTeamSocial.length > 0 ? (
-                miMatchTeamSocial.map((event) => (
-                  <div
-                    key={event._id}
-                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
-                  >
-                    <div
-                      className="h-[115px] bg-slate-200"
-                      onClick={() => router.push(`/team-social/${event._id}`)}
-                    >
-                      <img
-                        src={event.imagen}
-                        alt={event.nombre}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
-                      <p className="font-bold">{event.deporte}</p>
-                    </div>
-                    <div className="p-3 flex flex-col">
-                      <div className="">
-                        <h1 className="font-semibold text-lg">{event.nombre}</h1>
-                        <div className="flex items-center text-sm">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="#f97316"
-                            viewBox="0 0 24 24"
-                            width="13"
-                            height="13"
-                            className="mr-1"
-                          >
-                            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
-                          </svg>{" "}
-                          <p className="text-slate-400">{event.localidad}</p>
-                        </div>
-                      </div>
 
-                      <div className="text-slate-400 text-md">
-                        <p className="font-semibold text-lg">
-                          ${Number(event.precio).toLocaleString("es-AR")}
-                        </p>
-                        <p>
-                          {new Date(event.fecha).toLocaleDateString("es-AR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "2-digit",
-                          })}
-                          , {event.hora} hs
-                        </p>
-                      </div>
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex space-x-4">
+              {academia ? (
+                <div className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative">
+                  <img
+                    src="/assets/Logo/Trivo T.png"
+                    alt="Academia"
+                    className="w-[200px] h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
+                    <div className="text-white space-y-1">
+                      <p className="text-lg font-semibold">
+                        {academia.nombre_academia}
+                      </p>
+                      <p className="text-xs">
+                        📍 {academia.localidad}, {academia.provincia}
+                      </p>
                     </div>
-                    <div className="absolute top-[39%] right-[10px] flex gap-5">
-                      <div
-                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
-                        onClick={() =>
-                          router.push(`/team-social/miembros/${event._id}`)
-                        }
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleEntrar}
+                        style={{
+                          background:
+                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
+                        }}
+                        className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
                       >
-                        <img
-                          src="/assets/icons/groups_24dp_E8EAED.svg"
-                          alt=""
-                        />
-                      </div>
-                    </div>
-                    <div className="absolute top-1 right-[10px]">
+                        Entrar
+                      </button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div>
-                  <p>No hiciste match aún</p>
                 </div>
+              ) : (
+                <div className="text-gray-600">No tienes academias aún.</div>
               )}
             </div>
           </div>
         </section>
-      
+      ) ) : (null)}
 
 
-
-
-
-
-
-      <div className="pb-[100px]"></div>
+      <div className="pb-[100px]"></div> 
     </main>
   );
 };
