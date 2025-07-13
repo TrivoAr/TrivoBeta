@@ -90,6 +90,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("Running");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
+  const [yaUnido, setYaUnido] = useState(false);
   const [events, setEvents] = useState<EventType[]>([]);
   const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
   const [selectedLocalidad, setSelectedLocalidad] = useState(
@@ -102,6 +103,8 @@ export default function Home() {
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
+
+
 
   useEffect(() => {
     const fetchSalidas = async () => {

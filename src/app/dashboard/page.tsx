@@ -46,7 +46,7 @@ type EventType = {
   image: string;
   location: string;
   category: string;
-  localidad: string,
+  localidad: string;
   locationCoords: {
     lat: number;
     lng: number;
@@ -61,7 +61,7 @@ type ModalEvent = {
   time: string;
   location: string;
   teacher: string;
-   localidad: string,
+  localidad: string;
   participants: string[];
   locationCoords: {
     lat: number;
@@ -75,7 +75,12 @@ const DashboardPage: React.FC = () => {
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
   const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
+  const [miMatch, setMiMatch] = useState<any[]>([]);
+  const [miMatchTeamSocial, setMiMatchTeamSocial] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedLocalidad, setSelectedLocalidad] = useState(
+    "San Miguel de Tucuman"
+  );
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
@@ -83,6 +88,55 @@ const DashboardPage: React.FC = () => {
   });
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+useEffect(() => {
+  const obtenerTeams = async () => {
+    try {
+      const res = await fetch("/api/team-social/mis", { method: "GET" });
+
+      if (!res.ok) throw new Error("Error al obtener los teams");
+
+      const data = await res.json();
+
+      console.log("teams donde estoy:", data);
+
+      setMiMatchTeamSocial(data); // o como sea que se llame tu estado
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron cargar los teams");
+    } finally {
+      setLoading(false);
+    }
+  };
+  obtenerTeams();
+}, []);
+
+  useEffect(() => {
+    const fetchMiMatch = async () => {
+      try {
+        const res = await fetch("/api/social/unirse/estado", {
+          method: "GET",
+        });
+
+        if (!res.ok) {
+          throw new Error("Error al obtener las salidas");
+        }
+        const data = await res.json();
+        const salidas = data.salidas ?? [];
+
+        console.log("que pingo es esto", data.salidas);
+
+        setMiMatch(salidas);
+      } catch (err) {
+        console.error(err);
+        setError("No se pudieron cargar las salidas");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMiMatch();
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -131,7 +185,7 @@ const DashboardPage: React.FC = () => {
             category: item.deporte,
             location: item.ubicacion,
             locationCoords: item.locationCoords,
-             localidad: item.localidad,
+            localidad: item.localidad,
             highlighted: false,
             teacher: item.creador_id?.firstname || "Sin profe",
           }));
@@ -139,9 +193,9 @@ const DashboardPage: React.FC = () => {
           setSalidaSocial(mappedData);
         } catch (error) {
           console.error("Error fetching academia:", error);
-        }finally {
-        setLoading(false);
-      }
+        } finally {
+          setLoading(false);
+        }
       };
 
       const fetchSalidaTeamSocial = async () => {
@@ -175,8 +229,6 @@ const DashboardPage: React.FC = () => {
             teacher: item.creador_id?.firstname || "Sin profe",
           }));
 
-   
-
           setSalidaTeamSocial(mappedData);
         } catch (error) {
           console.error("Error fetching academia:", error);
@@ -203,11 +255,9 @@ const DashboardPage: React.FC = () => {
             }
 
             const data = await res.json();
-            
           }
         } catch (error) {
           console.error("Error fetching entrenamientos:", error);
-         
         }
       };
 
@@ -251,9 +301,8 @@ const DashboardPage: React.FC = () => {
     router.push("/home");
   };
 
-   const handleDeleteTeamSocial = async (event) => {
+  const handleDeleteTeamSocial = async (event) => {
     const confirm = window.confirm(
-      
       "¿Estás seguro que querés eliminar esta salida?"
     );
     if (!confirm) return;
@@ -263,21 +312,22 @@ const DashboardPage: React.FC = () => {
     router.refresh;
   };
 
+  //  if (loading) return (
+  //   <main className="bg-red-400 min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
+  //     <TopContainer selectedLocalidad={selectedLocalidad}
+  //   setSelectedLocalidad={setSelectedLocalidad}/>
+  //     <SkeletonCard setSelectedLocalidad={null} selectedLocalidad={null} />
+  //   </main>
+  // );
 
-//  if (loading) return (
-//   <main className="bg-red-400 min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
-//     <TopContainer selectedLocalidad={selectedLocalidad}
-//   setSelectedLocalidad={setSelectedLocalidad}/>
-//     <SkeletonCard setSelectedLocalidad={null} selectedLocalidad={null} />
-//   </main>
-// );
+  console.log("mi match", miMatch);
 
-
-
-   return (
+  return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer selectedLocalidad={selectedLocalidad}
-  setSelectedLocalidad={setSelectedLocalidad}/>
+      <TopContainer
+        selectedLocalidad={selectedLocalidad}
+        setSelectedLocalidad={setSelectedLocalidad}
+      />
 
       <section>
         <div className="flex justify-between items-center mb-3">
@@ -294,17 +344,22 @@ const DashboardPage: React.FC = () => {
             </button>
           )} */}
         </div>
-        <div className={`overflow-x-auto scrollbar-hide ${salidaSocial.length > 0 ? 'h-[245px]' : 'h-auto'}`}>
+        <div
+          className={`overflow-x-auto scrollbar-hide ${
+            salidaSocial.length > 0 ? "h-[245px]" : "h-auto"
+          }`}
+        >
           <div className="flex space-x-4">
             {salidaSocial.length > 0 ? (
               salidaSocial.map((event) => (
                 <div
                   key={event._id}
-                  
                   className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
                 >
-                  
-                  <div className="h-[115px] bg-slate-200" onClick={() => router.push(`/social/${event._id}`)}>
+                  <div
+                    className="h-[115px] bg-slate-200"
+                    onClick={() => router.push(`/social/${event._id}`)}
+                  >
                     <img
                       src={event.image}
                       alt={event.title}
@@ -333,12 +388,24 @@ const DashboardPage: React.FC = () => {
                     </div>
 
                     <div className="text-slate-400 text-md">
-                      <p>{event.date}</p>
+                      <p>
+                        {" "}
+                        {new Date(event.date).toLocaleDateString("es-AR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                        })}
+                      </p>
                       <p className="font-bold">{event.time} hs</p>
                     </div>
                   </div>
                   <div className="absolute top-[39%] right-[10px] flex gap-5">
-                    <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center" onClick={() => router.push(`/social/miembros/${event._id}`)}>
+                    <div
+                      className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                      onClick={() =>
+                        router.push(`/social/miembros/${event._id}`)
+                      }
+                    >
                       <img src="/assets/icons/groups_24dp_E8EAED.svg" alt="" />
                     </div>
                     <button
@@ -424,16 +491,22 @@ const DashboardPage: React.FC = () => {
               <span className="text-[#C76C01]">Mis</span> social Team
             </h2>
           </div>
-          <div className={`overflow-x-auto scrollbar-hide ${salidaTeamSocial.length > 0 ? 'h-[245px]' : 'h-auto'}`}>
+          <div
+            className={`overflow-x-auto scrollbar-hide ${
+              salidaTeamSocial.length > 0 ? "h-[245px]" : "h-auto"
+            }`}
+          >
             <div className="flex space-x-4">
               {salidaTeamSocial.length > 0 ? (
                 salidaTeamSocial.map((event) => (
                   <div
                     key={event._id}
-                    
                     className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
                   >
-                    <div className="h-[115px] bg-slate-200" onClick={() => router.push(`/team-social/${event._id}`)}>
+                    <div
+                      className="h-[115px] bg-slate-200"
+                      onClick={() => router.push(`/team-social/${event._id}`)}
+                    >
                       <img
                         src={event.image}
                         alt={event.title}
@@ -462,14 +535,26 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       <div className="text-slate-400 text-md">
-                        <p className="font-semibold text-lg">${Number(event.price).toLocaleString("es-AR")}</p>
+                        <p className="font-semibold text-lg">
+                          ${Number(event.price).toLocaleString("es-AR")}
+                        </p>
                         <p>
-                          {event.date}, {event.time} hs
+                          {new Date(event.date).toLocaleDateString("es-AR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })}
+                          , {event.time} hs
                         </p>
                       </div>
                     </div>
                     <div className="absolute top-[39%] right-[10px] flex gap-5">
-                      <div className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center" onClick={() => router.push(`/team-social/miembros/${event._id}`)}>
+                      <div
+                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                        onClick={() =>
+                          router.push(`/team-social/miembros/${event._id}`)
+                        }
+                      >
                         <img
                           src="/assets/icons/groups_24dp_E8EAED.svg"
                           alt=""
@@ -553,96 +638,186 @@ const DashboardPage: React.FC = () => {
         </section>
       )}
 
-      {formData.rol === "dueño de academia" && (
-        <section>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-2xl font-bold mb-3">
-              <span className="text-[#C76C01]">Grupo</span> principal
-            </h2>
-            {/* {formData.rol === "dueño de academia" && (
-            <button onClick={() => router.push("/academias/crear")}>
-              <img
-                className="h-[26px] w-[26px]"
-                src="/assets/Logo/add-circle-svgrepo-com.svg"
-                alt="crear"
-              />
-            </button>
-          )} */}
-          </div>
+      {/* mis match*/}
 
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-4">
-              {academia ? (
-                <div className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative">
-                  <img
-                    src="/assets/Logo/Trivo T.png"
-                    alt="Academia"
-                    className="w-[200px] h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
-                    <div className="text-white space-y-1">
-                      <p className="text-lg font-semibold">
-                        {academia.nombre_academia}
-                      </p>
-                      <p className="text-xs">
-                        📍 {academia.localidad}, {academia.provincia}
-                      </p>
+      <section>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-2xl font-bold mb-3">
+            <span className="text-[#C76C01]">Match</span> salidas
+          </h2>
+        </div>
+        <div
+          className={`overflow-x-auto scrollbar-hide ${
+            miMatch.length > 0 ? "h-[245px]" : "h-auto"
+          }`}
+        >
+          <div className="flex space-x-4">
+            {miMatch.length > 0 ? (
+              miMatch.map((event) => (
+                <div
+                  key={event._id}
+                  className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                >
+                  <div
+                    className="h-[115px] bg-slate-200"
+                    onClick={() => router.push(`/social/${event._id}`)}
+                  >
+                    <img
+                      src={event.imagen}
+                      alt={event.nombre}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                    <p className="font-bold">{event.deporte}</p>
+                  </div>
+                  <div className="p-3 flex flex-col">
+                    <div className="">
+                      <h1 className="font-semibold text-lg">{event.nombre}</h1>
+                      <div className="flex items-center text-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#f97316"
+                          viewBox="0 0 24 24"
+                          width="13"
+                          height="13"
+                          className="mr-1"
+                        >
+                          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                        </svg>{" "}
+                        <p className="text-slate-400">{event.localidad}</p>
+                      </div>
                     </div>
-                    <div className="flex justify-end">
-                      <button
-                        onClick={handleEntrar}
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                        }}
-                        className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]"
-                      >
-                        Entrar
-                      </button>
+
+                    <div className="text-slate-400 text-md">
+                      <p className="font-semibold text-lg">   {new Date(event.fecha).toLocaleDateString("es-AR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "2-digit",
+                        })}{" "}</p>
+                    
+                      <p>{event.hora} hs</p>
+                    </div>
+                  </div>
+                  <div className="absolute top-[39%] right-[10px] flex gap-5">
+                    <div
+                      className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                      onClick={() =>
+                        router.push(`/social/miembros/${event._id}`)
+                      }
+                    >
+                      <img src="/assets/icons/groups_24dp_E8EAED.svg" alt="" />
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div>
+                <p>Sin salidas creadas</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+  {/*mis match  Social Team */}
+      
+        <section>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-2xl font-bold mb-3">
+              <span className="text-[#C76C01]">Match</span> social Team
+            </h2>
+          </div>
+          <div
+            className={`overflow-x-auto scrollbar-hide ${
+              miMatchTeamSocial.length > 0 ? "h-[245px]" : "h-auto"
+            }`}
+          >
+            <div className="flex space-x-4">
+              {miMatchTeamSocial.length > 0 ? (
+                miMatchTeamSocial.map((event) => (
+                  <div
+                    key={event._id}
+                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                  >
+                    <div
+                      className="h-[115px] bg-slate-200"
+                      onClick={() => router.push(`/team-social/${event._id}`)}
+                    >
+                      <img
+                        src={event.imagen}
+                        alt={event.nombre}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                      <p className="font-bold">{event.deporte}</p>
+                    </div>
+                    <div className="p-3 flex flex-col">
+                      <div className="">
+                        <h1 className="font-semibold text-lg">{event.nombre}</h1>
+                        <div className="flex items-center text-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="#f97316"
+                            viewBox="0 0 24 24"
+                            width="13"
+                            height="13"
+                            className="mr-1"
+                          >
+                            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                          </svg>{" "}
+                          <p className="text-slate-400">{event.localidad}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-slate-400 text-md">
+                        <p className="font-semibold text-lg">
+                          ${Number(event.precio).toLocaleString("es-AR")}
+                        </p>
+                        <p>
+                          {new Date(event.fecha).toLocaleDateString("es-AR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })}
+                          , {event.hora} hs
+                        </p>
+                      </div>
+                    </div>
+                    <div className="absolute top-[39%] right-[10px] flex gap-5">
+                      <div
+                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                        onClick={() =>
+                          router.push(`/team-social/miembros/${event._id}`)
+                        }
+                      >
+                        <img
+                          src="/assets/icons/groups_24dp_E8EAED.svg"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+                    <div className="absolute top-1 right-[10px]">
+                    </div>
+                  </div>
+                ))
               ) : (
-                <div className="text-gray-600">No tienes academias aún.</div>
+                <div>
+                  <p>No hiciste match aún</p>
+                </div>
               )}
             </div>
           </div>
         </section>
-      )}
+      
 
-      {/* Entrenamientos */}
-      {/* <section>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold">
-            <span className="text-[#C76C01]">Mis</span> entrenamientos
-          </h2>
-        </div>
 
-        <div className="space-y-3">
-          {entrenamientos.length > 0 ? (
-            entrenamientos.map((entrenamiento) => (
-              <div
-                key={entrenamiento.id}
-                className="bg-white p-4 rounded-[15px] shadow-md space-y-1"
-              >
-                <p className="text-base font-semibold">
-                  {entrenamiento.descripcion}
-                </p>
-                <p className="text-sm text-gray-600">
-                  🗓️ {entrenamiento.dia} · 🕒 {entrenamiento.hora}
-                </p>
-                <p className="text-sm text-gray-600">
-                  📍 {entrenamiento.ubicacion}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500">
-              No tienes entrenamientos programados.
-            </p>
-          )}
-        </div>
-      </section> */}
+
+
+
+
+
       <div className="pb-[100px]"></div>
     </main>
   );

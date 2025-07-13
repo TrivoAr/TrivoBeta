@@ -440,7 +440,7 @@ export default function EventPage({ params }: PageProps) {
       </div>)} */}
 
       <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#FEFBF9] shadow-md border h-[120px] border px-2  flex justify-between items-center">
+        <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-between items-center">
           <div className="w-[50%]">
             <p className="font-semibold text-sm text-gray-800">
               {event.localidad}
