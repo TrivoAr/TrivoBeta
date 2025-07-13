@@ -10,7 +10,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
-import SkeletonCard from "@/components/SkeletonCard";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -419,6 +418,7 @@ export default function TeamEventPage({ params }: PageProps) {
               })}
               ,{event.hora}hs
             </p>
+            <p className="text-sm text-gray-500">Duracion: {event.duracion}</p>
           </div>
 
           <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
