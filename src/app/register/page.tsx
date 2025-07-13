@@ -23,7 +23,14 @@ function Signup() {
       const password = formData.get("password")?.toString();
       const confirmPassword = formData.get("confirmPassword")?.toString();
 
-      if (!firstname || !lastname || !rol || !email || !password || !confirmPassword) {
+      if (
+        !firstname ||
+        !lastname ||
+        !rol ||
+        !email ||
+        !password ||
+        !confirmPassword
+      ) {
         setError("All fields must be filled");
         return;
       }
@@ -78,7 +85,9 @@ function Signup() {
             className="mx-auto w-[160px]"
           />
           {/*<h1 className="text-5xl font-medium text-400">Klubo</h1>*/}
-          <h1 className="text-2xl font-bold text-600 text-[#F7941F]">Forma parte de la tribu</h1>
+          <h1 className="text-2xl font-bold text-600 text-[#F7941F]">
+            Encuentra a tú tribu
+          </h1>
         </div>
 
         {error && (
@@ -145,13 +154,32 @@ function Signup() {
           </div>
 
           <input type="hidden" name="rol" value={selectedOption} />
+          {["dueño de academia", "alumno"].includes(selectedOption) && (
+            <>
+              {selectedOption === "dueño de academia" && (
+                <p className="text-red-500 text-sm font-bold">
+                  *Si tenés un grupo de entrenamiento/academia/social team
+                </p>
+              )}
+              {selectedOption === "alumno" && (
+                <p className="text-red-500 text-sm font-bold">
+                  *Si estás buscando conectar con grupos de entrenamiento,
+                  salidas casuales. Sos deportista principiante o avanzado sin
+                  grupo de entrenamiento
+                </p>
+              )}
+            </>
+          )}
         </div>
 
         <div className="flex items-center mt-4 ml-2">
           <input type="checkbox" id="terms" className="mr-2" required />
           <label htmlFor="terms" className="text-sm text-gray-600">
             Acepto los{" "}
-            <a href="/terminos-condiciones" className="text-orange-500 underline">
+            <a
+              href="/terminos-condiciones"
+              className="text-orange-500 underline"
+            >
               términos y condiciones
             </a>
           </label>
@@ -159,7 +187,7 @@ function Signup() {
 
         <button
           type="submit"
-          className="w-full mt-6 bg-[#F7941F] text-white py-2 rounded-xl hover:bg-orange-600"
+          className="w-full mt-6 bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white py-2 rounded-xl font-bold"
         >
           Crear cuenta
         </button>

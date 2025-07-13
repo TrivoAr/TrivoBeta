@@ -387,7 +387,7 @@ export default function EventPage({ params }: PageProps) {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-green-500 font-medium"
+                className="text-white font-bold border  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] px-[15px] py-[5px] rounded-[15px]"
               >
                 Contacto
               </a>
@@ -442,7 +442,7 @@ export default function EventPage({ params }: PageProps) {
 
       <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
         <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-between items-center">
-          <div className="w-[50%]">
+          <div className="w-[50%] flex flex-col">
             <p className="font-semibold text-sm text-gray-800">
               {event.localidad}
             </p>
@@ -454,6 +454,7 @@ export default function EventPage({ params }: PageProps) {
                 year: "2-digit",
               })}, {event.hora} hs
             </p>
+            <p className="text-xs text-gray-400">Duracion: {event.duracion} </p>
             
           </div>
 
