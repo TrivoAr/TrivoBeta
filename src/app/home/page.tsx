@@ -26,6 +26,7 @@ type EventType = {
   price: string;
   image: string;
   location: string;
+  creadorId: string;
   localidad: string;
   category: string;
   locationCoords: {
@@ -43,6 +44,7 @@ type ModalEvent = {
   location: string;
   localidad: string;
   teacher: string;
+  creadorId: string;
   participants: string[];
   locationCoords: {
     lat: number;
@@ -90,6 +92,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("Running");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
+  const [yaUnido, setYaUnido] = useState(false);
   const [events, setEvents] = useState<EventType[]>([]);
   const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
   const [selectedLocalidad, setSelectedLocalidad] = useState(
@@ -103,11 +106,14 @@ export default function Home() {
     rol: session?.user.role || "",
   });
 
+
+
   useEffect(() => {
     const fetchSalidas = async () => {
       try {
         const res = await fetch("/api/social");
         const rawData = await res.json();
+        console.log(rawData);
 
         const mappedData = rawData.map((item: any) => ({
           _id: item._id,
@@ -117,6 +123,7 @@ export default function Home() {
           price: item.precio, // o podés poner un valor fijo como "Gratis"
           image: item.imagen,
           category: item.deporte,
+          creadorId: item.creador_id._id,
           localidad: item.localidad,
           location: item.ubicacion,
           locationCoords: item.locationCoords,
@@ -328,7 +335,8 @@ export default function Home() {
                             time: event.time,
                             location: event.location,
                             locationCoords: event.locationCoords,
-                            localidad: event.localidad, // reemplazá si tenés el link real
+                            localidad: event.localidad,
+                            creadorId: event.creadorId, // reemplazá si tenés el link real
                             teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
                             participants: ["👤", "👤", "👤"], // podés mapear esto después
                           });
