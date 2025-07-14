@@ -29,6 +29,7 @@ export default function AcademiasPage() {
   const [academias, setAcademias] = useState<Academia[]>([]);
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("running");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
 
   useEffect(() => {
     fetch("/api/academias")
@@ -50,7 +51,11 @@ export default function AcademiasPage() {
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer />
+      <TopContainer
+  selectedLocalidad={selectedLocalidad}
+  setSelectedLocalidad={setSelectedLocalidad}
+/>
+
 
       {/* Filtros de disciplinas */}
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
