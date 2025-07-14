@@ -174,17 +174,17 @@ return (
           <span className="text-gray-400 text-[28px]">›</span>
         </div>
 
-        <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
+        {/* <div className="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm">
+          {/* <div className="flex items-center gap-3">
             <img
                   src='/assets/icons/Goal.svg'
                   alt=""
                   className="w-full h-full object-cover"
                 />
             <span className="text-[#989898] font-medium">Objetivos</span>
-          </div>
+          </div> 
           <span className="text-gray-400 text-[28px]">›</span>
-        </div>
+        </div> */}
 
       </div>
 
