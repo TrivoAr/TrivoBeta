@@ -15,6 +15,9 @@ const TeamSocialSchema = new Schema(
     telefonoOrganizador: {
       type: String,
     },
+      localidad: {
+      type: String,
+    },
     descripcion: { type: String },
     imagen: { type: String },
     locationCoords: {

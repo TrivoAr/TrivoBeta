@@ -140,7 +140,7 @@ export default function Signin() {
           {/* Botón Login */}
           <button
             type="submit"
-            className="w-full bg-[#F7941F] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+            className="w-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
           >
             Iniciar sesion
           </button>

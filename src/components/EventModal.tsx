@@ -20,6 +20,7 @@ interface EventModalProps {
     time: string;
     location: string;
     teacher: string;
+    creadorId: String;
     participants: string[];
     locationCoords: { lat: number; lng: number } | string | string[] | null;
   } | null;
@@ -174,6 +175,7 @@ useEffect(() => {
       alert("Error: " + msg);
     }
   };
+  console.log(event)
 
   return (
     <div className="fixed inset-0 z-[9999999] flex items-end justify-center ">
@@ -262,7 +264,7 @@ useEffect(() => {
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <button
+          {session?.user?.id === event.creadorId ? (<button onClick={()=> router.push(`/social/editar/${event.id}`)} className="w-[150px] py-2 border rounded-[15px] font-semibold transition border-orange-500 bg-orange-500 text-white"> Editar</button> ) : (   <button
           onClick={handleAccion}
           className={`w-[150px] py-2 border rounded-[15px] font-semibold transition ${
             yaUnido
@@ -270,8 +272,10 @@ useEffect(() => {
               : "border-orange-500 text-orange-500 bg-orange-500 text-white"
           }`}
         >
-          {yaUnido ? "Salir" : "Machear"}
-        </button>
+          {yaUnido ? "Salir" : "Matchear"}
+        </button>)}
+
+       
 
         <button
           onClick={() => router.push(`/social/${event.id}`)}
