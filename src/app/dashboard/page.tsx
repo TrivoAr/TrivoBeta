@@ -142,7 +142,12 @@ const DashboardPage: React.FC = () => {
       }
     };
 
-    fetchMiMatch();
+    if(session && status === "authenticated"){
+      fetchMiMatch();
+
+    }
+
+    
   }, []);
 
   useEffect(() => {
