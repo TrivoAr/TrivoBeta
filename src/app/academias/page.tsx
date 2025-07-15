@@ -50,7 +50,10 @@ export default function AcademiasPage() {
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer />
+        <TopContainer
+        selectedLocalidad={null}
+        setSelectedLocalidad={null}
+      />
 
       {/* Filtros de disciplinas */}
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
