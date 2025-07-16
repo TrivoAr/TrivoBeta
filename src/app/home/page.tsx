@@ -214,9 +214,7 @@ export default function Home() {
   );
 
   const filteredTeamSocial = teamSocialEvents.filter(
-    (event) =>
-      event.category === selectedCategory &&
-      event.localidad === selectedLocalidad
+    (event) => event.category === selectedCategory
   );
 
   const social = filteredEvents;
