@@ -180,6 +180,16 @@ export default function TeamEventPage({ params }: PageProps) {
       </main>
     );
 
+  const parseLocalDate = (isoDateString: string): string => {
+    const [year, month, day] = isoDateString.split("-");
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
       <button
@@ -410,13 +420,7 @@ export default function TeamEventPage({ params }: PageProps) {
               ${Number(event.precio).toLocaleString("es-AR")}
             </p>
             <p className="text-sm text-gray-500">
-              {" "}
-              {new Date(event.fecha).toLocaleDateString("es-AR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "2-digit",
-              })}
-              ,{event.hora}hs
+              {parseLocalDate(event.fecha)},{event.hora}hs
             </p>
             <p className="text-sm text-gray-500">Duracion: {event.duracion}</p>
           </div>
