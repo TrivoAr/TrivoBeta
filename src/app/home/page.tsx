@@ -239,6 +239,16 @@ export default function Home() {
     return eventDate >= today;
   });
 
+  const parseLocalDate = (isoDateString: string): string => {
+  const [year, month, day] = isoDateString.split("-");
+  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  return localDate.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer
@@ -307,7 +317,7 @@ export default function Home() {
                             alt=""
                             className="w-[14px] h-[14px] object-cover"
                           />{" "}
-                          {event.date}
+                          {parseLocalDate(event.date)}
                         </p>
                         <p className="text-xs flex items-center gap-1">
                           <img
@@ -400,7 +410,7 @@ export default function Home() {
                         alt=""
                         className="w-[14px] h-[14px]"
                       />
-                      {event.date}
+                      {parseLocalDate(event.date)}
                     </p>
                     <p className="text-xs flex items-center gap-1 mb-[2px]">
                       <img
