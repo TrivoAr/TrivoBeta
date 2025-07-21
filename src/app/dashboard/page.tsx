@@ -142,7 +142,12 @@ const DashboardPage: React.FC = () => {
       }
     };
 
-    fetchMiMatch();
+    if(session && status === "authenticated"){
+      fetchMiMatch();
+
+    }
+
+    
   }, []);
 
   useEffect(() => {
@@ -319,6 +324,16 @@ const DashboardPage: React.FC = () => {
     router.refresh;
   };
 
+  const parseLocalDate = (isoDateString: string): string => {
+  const [year, month, day] = isoDateString.split("-");
+  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  return localDate.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
+
   //  if (loading) return (
   //   <main>
   
@@ -374,6 +389,7 @@ const DashboardPage: React.FC = () => {
           <div className="flex space-x-4">
             {salidaSocial.length > 0 ? (
               salidaSocial.map((event) => (
+                
                 <div
                   key={event._id}
                   className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
@@ -411,12 +427,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="text-slate-400 text-md">
                       <p>
-                        {" "}
-                        {new Date(event.date).toLocaleDateString("es-AR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                        })}
+                        {parseLocalDate(event.date)}
                       </p>
                       <p className="font-bold">{event.time} hs</p>
                     </div>
@@ -716,12 +727,7 @@ const DashboardPage: React.FC = () => {
 
                     <div className="text-slate-400 text-md">
                       <p className="font-semibold text-lg">
-                        {" "}
-                        {new Date(event.fecha).toLocaleDateString("es-AR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                        })}{" "}
+                      {parseLocalDate(event.date)}
                       </p>
 
                       <p>{event.hora} hs</p>
@@ -805,11 +811,7 @@ const DashboardPage: React.FC = () => {
                         ${Number(event.precio).toLocaleString("es-AR")}
                       </p>
                       <p>
-                        {new Date(event.fecha).toLocaleDateString("es-AR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "2-digit",
-                        })}
+                      {parseLocalDate(event.date)}
                         , {event.hora} hs
                       </p>
                     </div>
