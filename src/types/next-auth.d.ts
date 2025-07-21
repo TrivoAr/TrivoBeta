@@ -7,7 +7,10 @@ declare module "next-auth" {
       email: string;
       fullname: string;
       telnumber: string;
-      role: string; // Aquí incluimos el rol
+      role: string;
+      instagram?: string;
+  facebook?: string;
+  twitter?: string; // Aquí incluimos el rol
     };
   }
 
@@ -17,5 +20,8 @@ declare module "next-auth" {
     fullname: string;
     telnumber: string;
     role: string;
+    instagram?: string;
+  facebook?: string;
+  twitter?: string;
   }
 }
