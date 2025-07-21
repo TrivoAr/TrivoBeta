@@ -61,6 +61,8 @@ export default function CrearSalidaPage() {
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
 
+
+
   {
     /*}
   function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
@@ -99,9 +101,13 @@ export default function CrearSalidaPage() {
   };
 
 
-  const handleCoordsChange = (coords: LatLng) => {
+  const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
+
+    const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
+  setQuery(direccion);
+  setFormData((prev) => ({ ...prev, ubicacion: direccion }));
   };
 
   const handleSelectSuggestion = (item: any) => {
@@ -159,6 +165,18 @@ export default function CrearSalidaPage() {
         setSuggestions([]);
       });
   };
+
+  const fetchAddressFromCoords = async (lat: number, lon: number) => {
+  try {
+    const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+    const data = await res.json();
+    return data.display_name as string;
+  } catch (error) {
+    console.error("Error al obtener dirección inversa:", error);
+    return "";
+  }
+};
+
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
   useEffect(() => {
