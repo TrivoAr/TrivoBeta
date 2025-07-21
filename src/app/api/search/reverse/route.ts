@@ -4,15 +4,18 @@ export async function GET(req: Request) {
   const lon = searchParams.get('lon');
 
   if (!lat || !lon) {
-    return new Response(JSON.stringify({ error: 'Missing lat/lon parameters' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Missing lat/lon parameters' }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
     const apiKey = process.env.HERE_API_KEY;
-    
+
     // Endpoint de HERE para reverse geocoding
     const url = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lon}&lang=es&apiKey=${apiKey}`;
-    
+
     console.log('Reverse URL solicitada:', url);
 
     const response = await fetch(url);
@@ -22,12 +25,21 @@ export async function GET(req: Request) {
 
     if (data.items && data.items.length > 0) {
       const item = data.items[0];
-      return Response.json({ display_name: item.address.label });
+      return new Response(JSON.stringify({ display_name: item.address.label }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     } else {
-      return new Response(JSON.stringify({ error: 'No address found' }), { status: 404 });
+      return new Response(JSON.stringify({ error: 'No address found' }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
   } catch (error) {
     console.error('Error in /api/reverse:', error);
-    return new Response(JSON.stringify({ error: 'Failed to reverse geocode' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to reverse geocode' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
