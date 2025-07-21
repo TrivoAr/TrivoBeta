@@ -22,8 +22,7 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-
-      console.log("todos putos",session.user)
+      console.log("todos putos", session.user);
 
       setFormData({
         fullname: `${session.user.fullname}`,
@@ -37,7 +36,10 @@ function EditProfilePage() {
 
       const loadImage = async () => {
         try {
-          const url = await getProfileImage("profile-image.jpg", session.user.id);
+          const url = await getProfileImage(
+            "profile-image.jpg",
+            session.user.id
+          );
           setProfileImage(url);
         } catch {
           setProfileImage("/assets/icons/default-user.png");
@@ -58,8 +60,9 @@ function EditProfilePage() {
     try {
       const { fullname, email, telnumber } = formData;
 
-      const fullTelNumber = telnumber.startsWith('+549') ? telnumber : `+549${telnumber}`;
-
+      const fullTelNumber = telnumber.startsWith("+549")
+        ? telnumber
+        : `+549${telnumber}`;
 
       const response = await fetch("/api/profile", {
         method: "PUT",
@@ -111,7 +114,11 @@ function EditProfilePage() {
         alt="Avatar"
         className="w-24 h-24 rounded-2xl object-cover mb-4"
       />
-      <input type="file" onChange={handleImageUpload} className="mb-4 text-sm" />
+      <input
+        type="file"
+        onChange={handleImageUpload}
+        className="mb-4 text-sm"
+      />
 
       <input
         type="text"
@@ -121,7 +128,7 @@ function EditProfilePage() {
         className="w-full p-3 rounded-lg border border-gray-300 mb-3"
         placeholder="Nombre completo"
       />
-        <input
+      <input
         type="string"
         name="telnumber"
         value={formData.telnumber}
@@ -134,35 +141,34 @@ function EditProfilePage() {
         name="email"
         value={formData.email}
         onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
         placeholder="Correo electrónico"
       />
 
       <input
-  type="text"
-  name="instagram"
-  value={formData.instagram}
-  onChange={handleChange}
-  placeholder="Enlace a Instagram"
-  className="w-full p-2 rounded border border-gray-300"
-/>
-<input
-  type="text"
-  name="facebook"
-  value={formData.facebook}
-  onChange={handleChange}
-  placeholder="Enlace a Facebook"
-  className="w-full p-2 rounded border border-gray-300"
-/>
-<input
-  type="text"
-  name="twitter"
-  value={formData.twitter}
-  onChange={handleChange}
-  placeholder="Enlace a Twitter/X"
-  className="w-full p-2 rounded border border-gray-300"
-/>
-
+        type="text"
+        name="instagram"
+        value={formData.instagram}
+        onChange={handleChange}
+        placeholder="Enlace a Instagram"
+        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+      />
+      <input
+        type="text"
+        name="facebook"
+        value={formData.facebook}
+        onChange={handleChange}
+        placeholder="Enlace a Facebook"
+        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+      />
+      <input
+        type="text"
+        name="twitter"
+        value={formData.twitter}
+        onChange={handleChange}
+        placeholder="Enlace a Twitter/X"
+        className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+      />
 
       <div className="flex gap-3">
         <button
