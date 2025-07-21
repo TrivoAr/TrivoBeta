@@ -12,6 +12,9 @@ function EditProfilePage() {
     email: "",
     telnumber: "",
     rol: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -27,6 +30,9 @@ function EditProfilePage() {
         email: session.user.email,
         telnumber: session.user.telnumber,
         rol: session.user.role,
+        instagram: session.user.instagram,
+        facebook: session.user.facebook,
+        twitter: session.user.twitter,
       });
 
       const loadImage = async () => {
@@ -63,6 +69,9 @@ function EditProfilePage() {
           lastname: fullname.split(" ")[1] || "",
           telnumber: fullTelNumber,
           email,
+          instagram: formData.instagram,
+          facebook: formData.facebook,
+          twitter: formData.twitter,
         }),
       });
 
@@ -128,6 +137,32 @@ function EditProfilePage() {
         className="w-full p-3 rounded-lg border border-gray-300 mb-6"
         placeholder="Correo electrónico"
       />
+
+      <input
+  type="text"
+  name="instagram"
+  value={formData.instagram}
+  onChange={handleChange}
+  placeholder="Enlace a Instagram"
+  className="w-full p-2 rounded border border-gray-300"
+/>
+<input
+  type="text"
+  name="facebook"
+  value={formData.facebook}
+  onChange={handleChange}
+  placeholder="Enlace a Facebook"
+  className="w-full p-2 rounded border border-gray-300"
+/>
+<input
+  type="text"
+  name="twitter"
+  value={formData.twitter}
+  onChange={handleChange}
+  placeholder="Enlace a Twitter/X"
+  className="w-full p-2 rounded border border-gray-300"
+/>
+
 
       <div className="flex gap-3">
         <button

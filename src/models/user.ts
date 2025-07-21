@@ -34,13 +34,15 @@ const UserSchema = new Schema(
       required: [true, "Role is required"],
     },
 
-     telnumber: {
+    telnumber: {
       type: String,
-      required: [false, ""],
-      minLength: [7, "Last name must be at least 7 characters"],
-      maxLength: [19, "Last name must be at most 20 characters"],
+      required: false,
+      minLength: [7, "Phone number must be at least 7 characters"],
+      maxLength: [19, "Phone number must be at most 19 characters"],
     },
-
+    instagram: { type: String, required: false, default: "" },
+    facebook: { type: String, required: false, default: "" },
+    twitter: { type: String, required: false, default: "" },
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
