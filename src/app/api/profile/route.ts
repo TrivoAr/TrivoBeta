@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user"; // Asegúrate de que la ruta sea correcta
 import { getServerSession } from "next-auth"; // Para obtener la sesión del usuario
 import { authOptions } from "../../../libs/authOptions"; // Configuración de NextAuth
@@ -6,6 +7,7 @@ import { authOptions } from "../../../libs/authOptions"; // Configuración de Ne
 // Obtener el perfil del usuario (GET)
 export async function GET(req: Request) {
   try {
+    await connectDB();
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -26,13 +28,14 @@ export async function GET(req: Request) {
 // Actualizar el perfil del usuario (PUT)
 export async function PUT(req: Request) {
     try {
+      await connectDB();
       const session = await getServerSession(authOptions);
       if (!session || !session.user) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
       }
   
       const body = await req.json();
-      const { firstname, lastname, telnumber, email } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
+      const { firstname, lastname, telnumber, email, instagram, facebook, twitter  } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
   
       if (!firstname || !lastname || !telnumber || !email) {
         return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
@@ -48,6 +51,10 @@ export async function PUT(req: Request) {
       user.lastname = lastname;
       user.telnumber = telnumber;
       user.email = email;
+
+      user.instagram = instagram;
+      user.facebook = facebook;
+      user.twitter = twitter;
   
       // Guarda los cambios en la base de datos
       await user.save();

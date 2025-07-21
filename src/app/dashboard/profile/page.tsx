@@ -18,6 +18,9 @@ function ProfilePage() {
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
+    instagram: session?.user.instagram || "",
+    facebook: session?.user.facebook || "",
+    twitter: session?.user.twitter || "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -30,10 +33,13 @@ function ProfilePage() {
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
     if (session?.user) {
-      setFormData({
-        fullname: session.user.fullname || "",
+     setFormData({
+        fullname: `${session.user.fullname || ""}`,
         email: session.user.email || "",
         rol: session.user.role || "",
+        instagram: session.user.instagram || "",
+        facebook: session.user.facebook || "",
+        twitter: session.user.twitter || "",
       });
     }
      const loadProfileImage = async () => {
@@ -105,6 +111,9 @@ function ProfilePage() {
         fullname: `${updatedUser.firstname} ${updatedUser.lastname}`,
         email: updatedUser.email,
         rol: updatedUser.rol,
+        instagram: updatedUser.instagram,
+        facebook: updatedUser.facebook,
+        twitter: updatedUser.twitter,
       });
 
       // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
@@ -133,6 +142,9 @@ function ProfilePage() {
       setUploadingImage(false);
     }
   };
+
+  console.log(formData);
+
 
 return (
   <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
@@ -192,14 +204,20 @@ return (
       <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes</h2>
       <div className="flex gap-4">
         <div className="flex flex-col items-center gap-1">
+           <a href={formData.instagram} target="_blank" rel="noopener noreferrer">
           <div className="w-14 h-14 bg-white rounded-xl  flex items-center justify-center shadow-md">
             <FaInstagram className="text-xl text-gray-600 w-7 h-7" />
           </div>
+          </a>
         </div>
         <div className="flex flex-col items-center gap-1">
-          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-md">
-            <FaFacebookF className="text-xl text-gray-600 w-7 h-7" />
-          </div>
+          {/* Instagram tiene <a>, pero estos no */}
+<div className="flex flex-col items-center gap-1">
+  <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-md">
+    <FaFacebookF className="text-xl text-gray-600 w-7 h-7" />
+  </div>
+</div>
+
         </div>
         <div className="flex flex-col items-center gap-1">
           <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-md">
@@ -234,158 +252,7 @@ return (
       {/* Espacio para bottom nav */}
       <div className="mt-auto"></div>
    
-  {/* <main className="bg-[#FEFBF9] min-h-screen px-4 py-6 w-[390px] mx-auto text-black space-y-6">
-    <TopContainer />
 
-    
-    <section className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-md">
-      <div className="w-16 h-16 bg-gray-300 rounded-full overflow-hidden">
-        <img
-          src={profileImage || "/assets/icons/default-user.png"}
-          alt="Avatar"
-          className="object-cover w-full h-full"
-        />
-      </div>
-      <div className="flex-1">
-        <h2 className="text-lg font-bold">{formData.fullname}</h2>
-        <p className="text-sm text-gray-500">{formData.email}</p>
-        <p className="text-xs text-gray-400 capitalize">{session?.user.role}</p>
-      </div>
-    </section>
-
-    
-    <section className="bg-white rounded-2xl shadow-md p-4 space-y-4">
-      <button
-        onClick={handleShowPersonalData}
-        className="flex justify-between items-center w-full text-left font-bold"
-      >
-        Datos Personales
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="#999"
-          className={`transition-transform duration-300 ${showPersonalData ? "rotate-90" : ""}`}
-        >
-          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-        </svg>
-      </button>
-      {showPersonalData && (
-        <div className="space-y-2 text-sm text-gray-600">
-          {!isEditing ? (
-            <>
-              <p><span className="font-semibold">Nombre: </span>{formData.fullname}</p>
-              <p><span className="font-semibold">Email: </span>{formData.email}</p>
-              <p><span className="font-semibold">Rol: </span>{session?.user.role}</p>
-              <button onClick={handleEditToggle} className="text-[#C76C01] underline text-sm">Editar</button>
-            </>
-          ) : (
-            <>
-              <input
-                type="text"
-                name="fullname"
-                value={formData.fullname}
-                onChange={handleInputChange}
-                placeholder="Nombre completo"
-                className="w-full p-2 rounded border border-gray-300"
-              />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Correo"
-                className="w-full p-2 rounded border border-gray-300"
-              />
-              <input
-                type="file"
-                onChange={handleImageUpload}
-                disabled={uploadingImage}
-                className="text-xs"
-              />
-              {uploadingImage && <p className="text-xs text-gray-400">Subiendo imagen...</p>}
-              <div className="flex gap-2">
-                <button onClick={handleSave} className="bg-green-500 text-white px-4 py-2 rounded shadow">
-                  Guardar
-                </button>
-                <button onClick={handleEditToggle} className="bg-gray-400 text-white px-4 py-2 rounded shadow">
-                  Cancelar
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </section>
-
-    
-    <section className="bg-white rounded-2xl shadow-md p-4">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex justify-between items-center w-full text-left font-bold"
-      >
-        Métodos de pago
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="#999"
-          className={`transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
-        >
-          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-        </svg>
-      </button>
-      {isOpen && (
-        <div className="mt-4 space-y-2 text-sm">
-          {formData.rol === "dueño de academia" && (
-            <button onClick={() => router.push("/mercadopago")} className="w-full text-left text-[#C76C01]">
-              Token
-            </button>
-          )}
-          <Link href="/historial">
-            <button className="w-full text-left text-[#C76C01]">Historial de Cobros</button>
-          </Link>
-        </div>
-      )}
-    </section>
-
-   
-    <section className="bg-white rounded-2xl shadow-md p-4">
-      <button
-        onClick={handleShowObjectives}
-        className="flex justify-between items-center w-full text-left font-bold"
-      >
-        Objetivos
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="#999"
-          className={`transition-transform duration-300 ${showObjectives ? "rotate-90" : ""}`}
-        >
-          <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z" />
-        </svg>
-      </button>
-      {showObjectives && (
-        <div className="mt-4 text-sm text-gray-600">
-          <p>Correr 10km</p>
-        </div>
-      )}
-    </section>
-
-    
-    <div className="text-center pt-4">
-      <button
-        onClick={() => signOut()}
-        className="w-[140px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
-      >
-        Cerrar sesión
-      </button>
-    </div>
-  </main> */}
   
    </div>
 );
