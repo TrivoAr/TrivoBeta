@@ -3,7 +3,10 @@ export async function GET(req: Request) {
   const rawQuery = searchParams.get('q');
 
   if (!rawQuery) {
-    return new Response(JSON.stringify({ error: 'Missing query parameter' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Missing query parameter' }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -15,16 +18,10 @@ export async function GET(req: Request) {
     let query = rawQuery.trim();
 
     if (query.toLowerCase().includes(' y ')) {
-      // Normalizar " y " a " & "
       query = query.replace(/ y /gi, ' & ');
-
-      // Agregar contexto de ciudad/provincia
       query += ', Yerba Buena, Tucumán, Argentina';
-
-      // Buscar intersección con geocode
       url = `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(query)}&apiKey=${apiKey}&at=${lat},${lng}&limit=6`;
     } else {
-      // Buscar direcciones, plazas, etc. con autosuggest
       url = `https://autosuggest.search.hereapi.com/v1/autosuggest?q=${encodeURIComponent(query)}&apiKey=${apiKey}&at=${lat},${lng}&in=countryCode:ARG&limit=6`;
     }
 
@@ -37,7 +34,10 @@ export async function GET(req: Request) {
 
     if (!data.items || !Array.isArray(data.items)) {
       console.error('Unexpected API response format:', data);
-      return new Response(JSON.stringify([]));
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const suggestions = data.items
@@ -48,10 +48,15 @@ export async function GET(req: Request) {
         lon: item.position.lng,
       }));
 
-    return Response.json(suggestions);
+    return new Response(JSON.stringify(suggestions), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error('Error in /api/search:', error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch suggestions' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Failed to fetch suggestions' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
-
