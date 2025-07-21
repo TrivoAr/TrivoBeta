@@ -1,4 +1,3 @@
-// /app/api/search/route.ts
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const rawQuery = searchParams.get('q');
