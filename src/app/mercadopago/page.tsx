@@ -9,7 +9,7 @@ const Mp = () => {
   const [accessToken, setAccessToken] = useState("");
   const [tokenActual, setTokenActual] = useState("");
   const [hasCredentials, setHasCredentials] = useState(false); // Estado para saber si ya tiene credenciales
-
+  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   useEffect(() => {
     if (session?.user?.id) {
       fetchToken(session.user.id);
@@ -57,7 +57,11 @@ const Mp = () => {
 
   return (
     <>
-      <TopContainer />
+        <TopContainer
+  selectedLocalidad={selectedLocalidad}
+  setSelectedLocalidad={setSelectedLocalidad}
+/>
+
       <div>
         <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
 
