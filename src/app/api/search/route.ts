@@ -55,3 +55,4 @@ export async function GET(req: Request) {
     return new Response(JSON.stringify({ error: 'Failed to fetch suggestions' }), { status: 500 });
   }
 }
+
