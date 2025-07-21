@@ -175,6 +175,16 @@ export default function EventPage({ params }: PageProps) {
       </main>
     );
 
+    const parseLocalDate = (isoDateString: string): string => {
+  const [year, month, day] = isoDateString.split("-");
+  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  return localDate.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto h-[1000px]">
       <button
@@ -447,12 +457,7 @@ export default function EventPage({ params }: PageProps) {
               {event.localidad}
             </p>
             <p className="text-xs text-gray-400">
-               {" "}
-              {new Date(event.fecha).toLocaleDateString("es-AR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "2-digit",
-              })}, {event.hora} hs
+             {parseLocalDate(event.fecha)}, {event.hora} hs
             </p>
             <p className="text-xs text-gray-400">Duracion: {event.duracion} </p>
             

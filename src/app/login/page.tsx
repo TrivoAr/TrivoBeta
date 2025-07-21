@@ -130,7 +130,7 @@ export default function Signin() {
           {/* Olvidaste contraseña */}
           <div className="text-left mb-[26px]">
             <a
-              href="#"
+              href="/reset-password"
               className="text-[15px] text-orange-500 hover:underline "
             >
               ¿Olvidaste tu contraseña?
