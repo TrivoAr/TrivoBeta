@@ -191,28 +191,115 @@ export default function TeamEventPage({ params }: PageProps) {
   };
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
-      <button
-        onClick={() => router.back()}
-        className="text-[#C76C01] text-lg mb-6 shadow-md bg-white h-[40px] w-[40px] rounded-full flex justify-center items-center"
-      >
-        <img src="/assets/icons/Collapse Arrow.svg" alt="callback" />
-      </button>
+    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
+      <div className="relative w-full h-[176px] ">
+        <Image
+          src={event.imagen}
+          alt="Evento"
+          width={375}
+          height={176}
+          className="w-full h-full object-cover"
+        />
 
-      <h1 className="text-xl font-semibold mb-4">
+        {/* Botón volver */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-3 left-3 bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+
+        {/* Botón like (SVG intacto) 
+        <button className="absolute top-3 right-[50px] bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </g>
+          </svg>
+        </button>*/}
+
+        {/* Botón compartir */}
+        <button
+          onClick={() => {
+            navigator.clipboard
+              .writeText(window.location.href)
+              .then(() => {
+                alert("¡Link copiado al portapapeles!");
+              })
+              .catch((err) => {
+                console.error("Error al copiar el link:", err);
+              });
+          }}
+          className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </g>
+          </svg>
+        </button>
+      </div>
+      <div className="px-4 py-6" >
+      <h1 className="text-xl font-semibold mb-4 text-center">
         <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold"></span>{" "}
         {event.nombre}
       </h1>
 
-      <div className="w-full h-[180px] rounded-xl overflow-hidden">
-        <Image
-          src={event.imagen}
-          alt="Evento"
-          width={500}
-          height={180}
-          className="w-full h-full object-cover"
-        />
-      </div>
+     
 
       <div className="text-sm text-gray-700 mt-3 flex flex-col gap-1 justify-between">
         <div className="flex items-center gap-1">
@@ -460,6 +547,7 @@ export default function TeamEventPage({ params }: PageProps) {
       </div>
 
       <div className="pb-[200px]" />
+      </div>
     </main>
   );
 }
