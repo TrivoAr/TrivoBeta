@@ -119,33 +119,44 @@ function EditProfilePage() {
         onChange={handleImageUpload}
         className="mb-4 text-sm"
       />
+      <label className="block">
+        Nombre y apellido
+        <input
+          type="text"
+          name="fullname"
+          value={formData.fullname}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Nombre completo"
+        />
+      </label>
 
-      <input
-        type="text"
-        name="fullname"
-        value={formData.fullname}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="Nombre completo"
-      />
-      <input
-        type="string"
-        name="telnumber"
-        value={formData.telnumber}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="3814859697"
-      />
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="Correo electrónico"
-      />
+      <label className="block">
+        Numero de Telefono
+        <input
+          type="string"
+          name="telnumber"
+          value={formData.telnumber}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="3814859697"
+        />
+      </label>
 
-      <input
+      <label className="block">
+        Correo electronico
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Correo electrónico"
+        />
+      </label>
+      <label className="block">
+        Instagram usuario
+           <input
         type="text"
         name="instagram"
         value={formData.instagram}
@@ -153,7 +164,11 @@ function EditProfilePage() {
         placeholder="Enlace a Instagram"
         className="w-full p-3 rounded-lg border border-gray-300 mb-3"
       />
-      <input
+      </label>
+
+      <label className="block">
+        Facebook usuario
+           <input
         type="text"
         name="facebook"
         value={formData.facebook}
@@ -161,7 +176,11 @@ function EditProfilePage() {
         placeholder="Enlace a Facebook"
         className="w-full p-3 rounded-lg border border-gray-300 mb-3"
       />
-      <input
+
+      </label>
+      <label className="block">
+        Twitter/X usuario
+         <input
         type="text"
         name="twitter"
         value={formData.twitter}
@@ -170,10 +189,16 @@ function EditProfilePage() {
         className="w-full p-3 rounded-lg border border-gray-300 mb-6"
       />
 
+      </label>
+
+   
+   
+     
+
       <div className="flex gap-3">
         <button
           onClick={handleSave}
-          className="w-[140px] mt-[40px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+          className="w-[140px] mt-[40px] py-2 rounded-full bg-[#C95100] text-white font-bold shadow-md"
         >
           Guardar
         </button>
@@ -184,6 +209,7 @@ function EditProfilePage() {
           Cancelar
         </button>
       </div>
+      <div className="pb-[30px]"></div>
     </div>
   );
 }
