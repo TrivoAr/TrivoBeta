@@ -497,7 +497,7 @@ export default function AcademiaDetailPage({
         )}
       </div> */}
 
-      <div className="w-[80%] border-b-[0.5px] h-[120px] border-b-[#ccc] flex justify-center items-center gap-2">
+      <div className="w-[80%] border-b-[0.5px] h-[150px] border-b-[#ccc] flex justify-center items-center gap-2">
         <div
           className="rounded-full border w-[80px] h-[80px]"
           style={{
@@ -509,7 +509,7 @@ export default function AcademiaDetailPage({
         ></div>
         <div className="flex flex-col justify-around h-[80px]">
           <div className="text-[#666]">
-            {academia.dueño_id.firstname} {academia.dueño_id.lastname}
+            <p className="poppins-extralight">{academia.dueño_id.firstname} {academia.dueño_id.lastname}</p>
           </div>
           <div className="flex gap-2 justify-center items-center">
             <div className="text-[#666] flex justify-center items-center gap-1">
@@ -537,16 +537,16 @@ export default function AcademiaDetailPage({
                 </g>
               </svg>
             </div>
-            <div className="w-[99px] h-[24px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666]">
+            <div className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold">
               Contacto
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 mt-5 justify-center items-center">
-        <div className="flex items-center justify-between p-4">
-          <h2 className="font-medium text-xl">Entrenamientos</h2>
+      <div className="flex flex-col gap-5 mt-4 w-full">
+        <div className="flex items-center ml-8">
+          <h2 className="font-medium text-2xl">Entrenamientos</h2>
         </div>
         {grupos.length === 0 ? (
           <div>
@@ -583,7 +583,7 @@ export default function AcademiaDetailPage({
           </ul>
         )}
 
-        {!esMiembro && (
+        {/* {!esMiembro && (
           <button
             onClick={handleJoinAcademia}
             disabled={hasActiveRequest}
@@ -595,23 +595,25 @@ export default function AcademiaDetailPage({
           >
             {hasActiveRequest ? "Solicitud enviada" : "Unirse"}
           </button>
-        )}
+        )} */}
         {/* <button onClick={handleEdit} className="btn-icon">
           ⚙️ {/* Ícono de tuerca }
         </button>*/}
       </div>
-      <div className="w-[80%] border-b border-b-[#ccc] mt-4"></div>
-      <div className="w-[80%] p-3">
-        <p className="text-xl mb-3">Miembros</p>
+      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+
+      <div className="mt-3 flex flex-col w-full px-4">
+        <p className="text-2xl mb-3 font-medium ml-6">Miembros</p>
         <div>
-          <div className="h-[136px] w-[151px] p-2 bg-white border shadow-md rounded-[20px]">
-            <svg
+          <div className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly">
+            <div>
+              <svg
               width="40px"
               height="40px"
               viewBox="0 0 64 64"
               xmlns="http://www.w3.org/2000/svg"
               stroke-width="3"
-              stroke="#000000"
+              stroke="#ccc"
               fill="none"
             >
               <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -629,11 +631,88 @@ export default function AcademiaDetailPage({
                 <path d="M17.13,43.74H4.27A11.27,11.27,0,0,1,15.54,32.47h0a11.24,11.24,0,0,1,5.29,1.32"></path>
               </g>
             </svg>
-            <p>Miembros de la tribu</p>
+            <p className="font-light text-[#ccc] text-sm">
+              Miembros de la tribu
+            </p>
+
+            </div>
+            
+            <div className="flex items-center justify-end">
+              <p className="text-[#ccc]">
+                Ver
+              </p>
+              <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height={25}
+                  width={25}
+                >
+                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g
+                    id="SVGRepo_tracerCarrier"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></g>
+                  <g id="SVGRepo_iconCarrier">
+                    {" "}
+                    <rect width="10" height="10" fill="white"></rect>{" "}
+                    <path
+                      d="M9.5 7L14.5 12L9.5 17"
+                      stroke="#ccc"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>{" "}
+                  </g>
+                </svg>
+            </div>
           </div>
         </div>
       </div>
-      <div className="pb-[200px]"></div>
+
+      <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
+        <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-around items-center">
+          <div className="w-[50%] flex flex-col justify-center items-start gap-1 p-4">
+            <p className="font-semibold underline text-xl">$19000</p>
+            <p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center">1° clase gratis</p>
+            
+          </div>
+
+          <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
+          
+            {session?.user?.id === academia.dueño_id._id ? (
+              // Si es el creador, mostrar botón editar
+              <button
+                
+                className="bg-white h-[50px] w-[140px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-semibold"
+              >
+                Editar
+              </button>
+            ) : (
+              // Si NO es el creador, mostrar botón unirse/salir
+                 <button
+                
+                className="bg-[#C95100] h-[50px] w-[140px] shadow-md rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
+              >
+                Participar
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+
+          
+          
+    
+
+
+
+
+
+
+
+      <div className="pb-[230px]"></div>
     </div>
   );
 }
