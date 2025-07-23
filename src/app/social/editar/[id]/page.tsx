@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import toast, { Toaster } from "react-hot-toast";
 
 interface LatLng {
   lat: number;
@@ -149,7 +150,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         locationCoords: markerPos,
       }),
     });
-    alert("Salida guardada");
+    toast.success("Salida Actualizada");
     router.push("/home");
   };
 

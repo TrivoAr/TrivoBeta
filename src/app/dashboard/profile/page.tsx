@@ -204,7 +204,9 @@ return (
       <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes</h2>
       <div className="flex gap-4">
         <div className="flex flex-col items-center gap-1">
-           <a href={formData.instagram} target="_blank" rel="noopener noreferrer">
+           <a href={`https://www.instagram.com/${formData.instagram}`}
+                target="_blank"
+                rel="noopener noreferrer">
           <div className="w-14 h-14 bg-white rounded-xl  flex items-center justify-center shadow-md">
             <FaInstagram className="text-xl text-gray-600 w-7 h-7" />
           </div>
@@ -228,7 +230,7 @@ return (
       <div className="text-center pt-4">
       <button
         onClick={() => signOut()}
-        className="w-[140px] mt-[40px] py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+        className="w-[140px] mt-[40px] py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
       >
         Cerrar sesión
       </button>

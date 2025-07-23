@@ -70,17 +70,22 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       _id: academia.dueño_id._id,
       firstname: academia.dueño_id.firstname,
       lastname: academia.dueño_id.lastname,
+      telnumber: academia.dueño_id.telnumber,
+      instagram: academia.dueño_id.instagram,
       imagen: imagenUrl,
     };
 
     // Crear copia de academia sin el campo mongoose completo
     const responseAcademia = {
-      _id: academia._id,
-      nombre_academia: academia.nombre_academia,
-      descripcion: academia.descripcion,
-      tipo_disciplina: academia.tipo_disciplina,
-      telefono: academia.telefono,
-      localidad: academia.localidad,
+      // _id: academia._id,
+      // nombre_academia: academia.nombre_academia,
+      // descripcion: academia.descripcion,
+      // tipo_disciplina: academia.tipo_disciplina,
+      // telefono: academia.telefono,
+      // precio: academia.precio,
+      // clase_gratis: academia.clase_gratis,
+      // localidad: academia.localidad,
+      ...academia.toObject(),
       dueño_id: dueñoInfo,
     };
 

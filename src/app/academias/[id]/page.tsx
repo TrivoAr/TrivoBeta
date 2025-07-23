@@ -29,10 +29,15 @@ type Academia = {
     firstname: string;
     lastname: string;
     imagen: string;
+    telnumber: string;
+    instagram: string;
+
   };
   nombre_academia: string;
   descripcion: string;
   tipo_disciplina: string;
+  clase_gratis: boolean;
+  precio: string;
   telefono: string;
   localidad: string;
 };
@@ -89,7 +94,10 @@ export default function AcademiaDetailPage({
         loadGroupImages();
 
         localStorage.setItem("academia_id", params.id);
-        localStorage.setItem("dueño_id", response.data.academia.dueño_id);
+        localStorage.setItem("dueño_id", response.data.academia.dueño_id._id);
+        console.log("lo estas guardando?", localStorage);
+
+
         // Intentar obtener la imagen del perfil
         const loadProfileImage = async () => {
           try {
@@ -214,6 +222,8 @@ export default function AcademiaDetailPage({
   if (!academia) {
     return <div>Cargando...</div>;
   }
+
+  
 
   return (
     <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
@@ -512,7 +522,7 @@ export default function AcademiaDetailPage({
             <p className="poppins-extralight">{academia.dueño_id.firstname} {academia.dueño_id.lastname}</p>
           </div>
           <div className="flex gap-2 justify-center items-center">
-            <div className="text-[#666] flex justify-center items-center gap-1">
+            <a className="text-[#666] flex justify-center items-center gap-1" href={`https://www.instagram.com/${academia.dueño_id.instagram}`} target="_blank">
               Seguir{" "}
               <svg
                 viewBox="0 0 24 24"
@@ -536,10 +546,15 @@ export default function AcademiaDetailPage({
                   ></path>{" "}
                 </g>
               </svg>
-            </div>
-            <div className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold">
+            </a>
+            <a className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold" href={`https://wa.me/${academia.dueño_id.telnumber?.replace(
+                  /\D/g,
+                  ""
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer">
               Contacto
-            </div>
+            </a>
           </div>
         </div>
       </div>
@@ -550,7 +565,7 @@ export default function AcademiaDetailPage({
         </div>
         {grupos.length === 0 ? (
           <div>
-            <p>No hay grupos de entranamientos</p>
+            <p className="text-center poppins-extralight">No hay grupos de entranamientos</p>
           </div>
         ) : (
           <ul className="flex gap-2 flex-wrap justify-start px-4">
@@ -605,7 +620,7 @@ export default function AcademiaDetailPage({
       <div className="mt-3 flex flex-col w-full px-4">
         <p className="text-2xl mb-3 font-medium ml-6">Miembros</p>
         <div>
-          <div className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly">
+          <div className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly" onClick={() => router.push(`/academias/${academia._id}/miembros`)}>
             <div>
               <svg
               width="40px"
@@ -673,26 +688,34 @@ export default function AcademiaDetailPage({
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
         <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-around items-center">
           <div className="w-[50%] flex flex-col justify-center items-start gap-1 p-4">
-            <p className="font-semibold underline text-xl">$19000</p>
-            <p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center">1° clase gratis</p>
+            <p className="font-medium underline text-xl">${Number(academia.precio).toLocaleString("es-AR")}</p>
+            <p >{academia.clase_gratis ? (<p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center"> 1° clase gratis</p>):(null)}</p>
             
           </div>
 
-          <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
+          <div className="flex h-[60px] w-[60%] gap-3 justify-center items-center">
           
             {session?.user?.id === academia.dueño_id._id ? (
-              // Si es el creador, mostrar botón editar
+              <div className="flex gap-2 text-[#bbb] justify-center items-center">
               <button
                 
-                className="bg-white h-[50px] w-[140px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-semibold"
+                className="bg-white h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
+              >
+                Crear grupo
+              </button>
+               <button
+                
+                className="bg-white h-[30px] w-[90px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"onClick={() => router.push(`/academias/${academia._id}/editar`)}
               >
                 Editar
               </button>
+              </div>
+              
             ) : (
               // Si NO es el creador, mostrar botón unirse/salir
                  <button
                 
-                className="bg-[#C95100] h-[50px] w-[140px] shadow-md rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
+                className="bg-[#C95100] h-[50px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
               >
                 Participar
               </button>

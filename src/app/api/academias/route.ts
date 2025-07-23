@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       descripcion,
       tipo_disciplina,
       telefono,
+      precio,
+      clase_gratis,
       imagen,
     } = await request.json();
 
@@ -45,6 +47,8 @@ export async function POST(request: Request) {
       descripcion,
       tipo_disciplina,
       telefono,
+      precio,
+      clase_gratis,
       imagen,
     });
 
