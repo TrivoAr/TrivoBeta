@@ -22,7 +22,6 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-      console.log("todos putos", session.user);
 
       setFormData({
         fullname: `${session.user.fullname}`,

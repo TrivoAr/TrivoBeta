@@ -21,6 +21,7 @@ type Grupo = {
   descripcion?: string;
   tipo_grupo?: string;
   imagen?: string;
+  dias?:  string []; 
 };
 
 type Academia = {
@@ -62,6 +63,7 @@ export default function AcademiaDetailPage({
     rol: session?.user.role || "",
   });
   const [groupImages, setGroupImages] = useState<{ [key: string]: string }>({});
+ 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -223,6 +225,12 @@ export default function AcademiaDetailPage({
   if (!academia) {
     return <AcademiaLoadingSkeleton />;
   }
+
+  const formatDias = (dias: string[]) => {
+  if (dias.length === 1) return dias[0];
+  if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
+  return `${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}`;
+};
 
   
 
@@ -535,15 +543,20 @@ export default function AcademiaDetailPage({
                   }}
                   onClick={() => router.push(`/grupos/${grupo._id}`)}
                 >
-                  <p className="w-[90px] h-[20px] bg-[#00000070] rounded-[20px] text-white font-medium flex justify-center items-center">
+                  <p className=" w-[75px] bg-[#00000070] rounded-[20px] text-white font-semibold flex justify-center items-center">
                     {grupo.tipo_grupo}
                   </p>{" "}
                 </li>
                 <div className="">
                   <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-                  <div className="text-[#ccc]">
-                    <p className="font-extralight text-xs">{grupo.ubicacion}</p>
-                    <p className="font-extralight text-xs">{grupo.horario}</p>
+                  <div className="text-[#B8B8B8]">
+                    <div className="flex gap-1">
+                      <p className="font-extralight text-[12px]">{formatDias(grupo.dias)}, {grupo.horario}hs</p>
+                      
+                    </div>
+                    <p className="font-extralight text-[10px]">{grupo.ubicacion.split(",")[0]}</p>
+
+                    
                   </div>
                 </div>
               </div>
@@ -668,7 +681,7 @@ export default function AcademiaDetailPage({
               // Si NO es el creador, mostrar botón unirse/salir
                  <button
                 
-                className="bg-[#C95100] h-[50px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
+                className="bg-[#C95100] h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
               >
                 Participar
               </button>
