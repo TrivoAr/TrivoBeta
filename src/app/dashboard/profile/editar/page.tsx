@@ -42,7 +42,7 @@ function EditProfilePage() {
           );
           setProfileImage(url);
         } catch {
-          setProfileImage("/assets/icons/default-user.png");
+          setProfileImage(session.user.imagen);
         }
       };
       loadImage();
@@ -204,7 +204,7 @@ function EditProfilePage() {
         </button>
         <button
           onClick={() => router.back()}
-          className="w-[140px] mt-[40px] py-2 rounded-full bg-gray-400 text-white px-6 py-2 rounded-full font-bold shadow"
+          className="w-[140px] mt-[40px] py-2 bg-gray-400 text-white px-6 rounded-full font-bold shadow"
         >
           Cancelar
         </button>

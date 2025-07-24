@@ -20,19 +20,20 @@ const GrupoSchema = new Schema(
       ubicacion: {
         type: String,
       },
-      direccion: {
-        type: String,
-      },
       horario: {
         type: String,
       },
-      clas: {
+      aviso: {
         type: String,
       },
+
+      dias:{
+        type: [String], 
+        Enum: ["Lun","Mar", "Mie", "jue", "Vie", "Sab", "Dom" ],
+        required: true,
+      },
+
       descripcion: {
-        type: String,
-      },
-      objetivos: {
         type: String,
       },
       cuota_mensual: {
@@ -41,13 +42,20 @@ const GrupoSchema = new Schema(
       imagen: {
         type: String,
       },
+
+      
       tipo_grupo: {
-        type: String,
-        enum: ["nivel", "distancia", "otros"],
+        type: String
       },
+
+
       tiempo_promedio: {
         type: String,
-      }
+      },
+      locationCoords: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
     },
     {
       timestamps: true,

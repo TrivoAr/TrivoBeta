@@ -9,8 +9,9 @@ declare module "next-auth" {
       telnumber: string;
       role: string;
       instagram?: string;
+      imagen?:string;
   facebook?: string;
-  twitter?: string; // Aquí incluimos el rol
+  twitter?: string; 
     };
   }
 
@@ -21,6 +22,7 @@ declare module "next-auth" {
     telnumber: string;
     role: string;
     instagram?: string;
+    imagen?: string;
   facebook?: string;
   twitter?: string;
   }

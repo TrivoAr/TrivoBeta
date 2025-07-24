@@ -49,7 +49,7 @@ function ProfilePage() {
             } catch (error) {
               console.error("Error al obtener la imagen del perfil:", error);
               // Puedes agregar una imagen predeterminada en caso de error
-              setProfileImage("https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg");
+              setProfileImage(session.user.imagen);
             }
           };
     
@@ -157,9 +157,9 @@ return (
       {/* Avatar */}
  <div onClick={() => setShowPreview(true)}>
   <img
-    src={profileImage || "/assets/icons/default-user.png"}
+    src={profileImage || session.user.imagen}
     alt="Avatar"
-    className="w-24 h-24 rounded-2xl object-cover mb-4 shadow-md"
+    className="w-28 h-28 rounded-full object-cover mb-4 shadow-md"
   />
 </div>
 

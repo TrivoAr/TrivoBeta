@@ -31,6 +31,8 @@ export async function POST(request: Request) {
 
     // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 12);
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(firstname)}&length=1&background=random&color=fff&size=128`;
+
 
     // Crear el nuevo usuario
     const user = new User({
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
       password: hashedPassword,
       firstname,
       lastname,
+      imagen: avatarUrl,
       rol,
     });
 

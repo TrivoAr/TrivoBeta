@@ -44,6 +44,10 @@ const UserSchema = new Schema(
     facebook: { type: String, required: false, default: "" },
     twitter: { type: String, required: false, default: "" },
 
+    imagen: {
+      type: String,
+    },
+
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
   },

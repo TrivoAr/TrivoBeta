@@ -460,33 +460,6 @@ export default function AcademiaDetailPage({
         </div>
       </div>
 
-      {/* <div className="flex w-[338px] justify-center gap-2 mt-4">
-        <button
-          onClick={() => router.push(`/academias/${params.id}/miembros`)}
-          className="w-[95px] h-[30px] border rounded-[10px] flex justify-center items-center text-sm bg-white shadow-md text-slate-500"
-        >
-          Miembros
-        </button>
-        {academia.dueño_id === session?.user?.id && (
-          <button
-            onClick={() => router.push(`/grupos`)}
-            className="w-[95px] h-[30px] border rounded-[10px] flex justify-center items-center text-sm bg-white shadow-md text-slate-500"
-          >
-            {" "}
-            Crear Grupo
-          </button>
-        )}
-        {academia.dueño_id === session?.user?.id && (
-          <button
-            onClick={() => router.push(`/academias/${params.id}/editar`)}
-            className="p-3 h-[30px] border rounded-[10px] flex justify-center items-center text-sm bg-white shadow-md text-slate-500"
-          >
-            {" "}
-            Editar Academia
-          </button>
-        )}
-      </div> */}
-
       <div className="w-[80%] border-b-[0.5px] h-[150px] border-b-[#ccc] flex justify-center items-center gap-2">
         <div
           className="rounded-full border w-[80px] h-[80px]"
@@ -677,7 +650,7 @@ export default function AcademiaDetailPage({
           
             {session?.user?.id === academia.dueño_id._id ? (
               <div className="flex gap-2 text-[#bbb] justify-center items-center">
-              <button
+              <button onClick={() => router.push("/grupos/")}
                 
                 className="bg-white h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
               >
