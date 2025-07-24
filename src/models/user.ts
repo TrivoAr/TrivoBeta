@@ -47,6 +47,9 @@ const UserSchema = new Schema(
     imagen: {
       type: String,
     },
+    bio:{
+      type: String,
+    },
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },

@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     if (!solicitud) {
       return NextResponse.json(
         { hasActiveRequest: false },
-        { status: 404 } // Cambiar a 200 si quieres que un "no encontrado" sea un resultado válido
+        { status: 200 } // Cambiar a 200 si quieres que un "no encontrado" sea un resultado válido
       );
     }
 

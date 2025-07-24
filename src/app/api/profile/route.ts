@@ -3,6 +3,7 @@ import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user"; // Asegúrate de que la ruta sea correcta
 import { getServerSession } from "next-auth"; // Para obtener la sesión del usuario
 import { authOptions } from "../../../libs/authOptions"; // Configuración de NextAuth
+import { Biohazard } from "lucide-react";
 
 // Obtener el perfil del usuario (GET)
 export async function GET(req: Request) {
@@ -35,7 +36,7 @@ export async function PUT(req: Request) {
       }
   
       const body = await req.json();
-      const { firstname, lastname, telnumber, email, instagram, facebook, twitter  } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
+      const { firstname, lastname, telnumber, email, instagram, facebook, twitter, bio  } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
   
       if (!firstname || !lastname || !telnumber || !email) {
         return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
@@ -55,6 +56,7 @@ export async function PUT(req: Request) {
       user.instagram = instagram;
       user.facebook = facebook;
       user.twitter = twitter;
+      user.bio = bio;
   
       // Guarda los cambios en la base de datos
       await user.save();

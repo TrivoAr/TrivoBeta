@@ -15,6 +15,7 @@ function EditProfilePage() {
     instagram: "",
     facebook: "",
     twitter: "",
+    bio: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -22,7 +23,6 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-
       setFormData({
         fullname: `${session.user.fullname}`,
         email: session.user.email,
@@ -31,6 +31,7 @@ function EditProfilePage() {
         instagram: session.user.instagram,
         facebook: session.user.facebook,
         twitter: session.user.twitter,
+        bio: session.user.bio,
       });
 
       const loadImage = async () => {
@@ -74,6 +75,7 @@ function EditProfilePage() {
           instagram: formData.instagram,
           facebook: formData.facebook,
           twitter: formData.twitter,
+          bio: formData.bio
         }),
       });
 
@@ -104,7 +106,7 @@ function EditProfilePage() {
 
   return (
     <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
+      <h1 className="text-2xl font-medium  w-full text-left mb-4">
         Editar Perfil
       </h1>
 
@@ -155,44 +157,52 @@ function EditProfilePage() {
       </label>
       <label className="block">
         Instagram usuario
-           <input
-        type="text"
-        name="instagram"
-        value={formData.instagram}
-        onChange={handleChange}
-        placeholder="Enlace a Instagram"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-      />
+        <input
+          type="text"
+          name="instagram"
+          value={formData.instagram}
+          onChange={handleChange}
+          placeholder="Enlace a Instagram"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+        />
       </label>
 
       <label className="block">
         Facebook usuario
-           <input
-        type="text"
-        name="facebook"
-        value={formData.facebook}
-        onChange={handleChange}
-        placeholder="Enlace a Facebook"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-      />
-
+        <input
+          type="text"
+          name="facebook"
+          value={formData.facebook}
+          onChange={handleChange}
+          placeholder="Enlace a Facebook"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+        />
       </label>
       <label className="block">
         Twitter/X usuario
-         <input
-        type="text"
-        name="twitter"
-        value={formData.twitter}
-        onChange={handleChange}
-        placeholder="Enlace a Twitter/X"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-6"
-      />
-
+        <input
+          type="text"
+          name="twitter"
+          value={formData.twitter}
+          onChange={handleChange}
+          placeholder="Enlace a Twitter/X"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+        />
       </label>
 
-   
-   
-     
+      {session.user.role === "dueño de academia" ? (
+        <label className="block">
+          Biografia profesor
+          <input
+            type="text"
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Dejanos una descripcion de tu trayectoria..."
+            className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+          />
+        </label>
+      ) : null}
 
       <div className="flex gap-3">
         <button
