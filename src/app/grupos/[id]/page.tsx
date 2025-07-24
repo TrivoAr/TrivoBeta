@@ -8,6 +8,20 @@ import axios from "axios";
 import { getGroupImage } from "@/app/api/grupos/getGroupImage";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import toast, { Toaster } from "react-hot-toast";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import type { LatLngExpression } from "leaflet";
+import L from "leaflet";
+import { url } from "inspector";
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 // Tipos
 type Grupo = {
@@ -21,6 +35,20 @@ type Grupo = {
   tipo_grupo?: string;
   cuota_mensual?: string;
   tiempo_promedio?: string;
+  dias?: string[];
+  aviso?: string;
+  locationCoords?: {
+    lat: number;
+    lng: number;
+  };
+  profesor_id?: {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    imagen: string;
+    telnumber: string;
+    instagram: string;
+  };
 };
 
 type Alumno = {
@@ -45,7 +73,9 @@ export default function GrupoDetailPage({
   params: { id: string };
 }) {
   const [grupo, setGrupo] = useState<Grupo | null>(null);
-  const [alumnos, setAlumnos] = useState<(Alumno & { profileImage?: string })[]>([]);
+  const [alumnos, setAlumnos] = useState<
+    (Alumno & { profileImage?: string })[]
+  >([]);
   const [entrenamientoData, setEntrenamientoData] = useState<Entrenamiento>({
     alumno_id: "",
     grupo_id: params.id,
@@ -60,6 +90,7 @@ export default function GrupoDetailPage({
   const [groupImage, setGroupImage] = useState<string>(
     "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
   );
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Para controlar el acceso del usuario
 
@@ -71,39 +102,41 @@ export default function GrupoDetailPage({
   const [formData, setFormData] = useState({
     fullname: session?.user.fullname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || ""
+    rol: session?.user.role || "",
   });
-
 
   useEffect(() => {
     if (!userId || !params.id) return; // Verificar que el userId y el params.id estén disponibles
-  
+
     const checkUserAccess = async () => {
       try {
         // Obtener los detalles del grupo primero para obtener el ID de la academia
         const academiaId = localStorage.getItem("academia_id");
-  
+
         // Ahora hacer la solicitud para verificar el acceso con el ID de la academia
-        const response = await axios.get(`/api/academias/${academiaId}/miembros`, {
-          headers: {
-            "user_id": userId,
-          },
-        });
-  
-        console.log('Respuesta de verificación de acceso:', response);
-  
+        const response = await axios.get(
+          `/api/academias/${academiaId}/miembros`,
+          {
+            headers: {
+              user_id: userId,
+            },
+          }
+        );
+
+        console.log("Respuesta de verificación de acceso:", response);
+
         // Verificar si el usuario está en la lista de miembros de la academia y tiene un grupo asignado
         const hasAccess = response.data.miembros.some(
-          (miembro: any) => miembro.user_id._id === userId 
+          (miembro: any) => miembro.user_id._id === userId
         );
-  
+
         if (hasAccess) {
           setIsAuthorized(true); // Usuario tiene acceso
         } else {
           setIsAuthorized(false); // Usuario no tiene acceso
         }
       } catch (error) {
-        console.error('Error al verificar el acceso del usuario:', error);
+        console.error("Error al verificar el acceso del usuario:", error);
         setError("Hubo un problema al verificar el acceso del usuario.");
       }
     };
@@ -115,7 +148,6 @@ export default function GrupoDetailPage({
       });
     }
     checkUserAccess(); // Ejecutar la función para verificar el acceso
-  
   }, [params.id, userId]);
 
   useEffect(() => {
@@ -128,22 +160,35 @@ export default function GrupoDetailPage({
       try {
         // Si el usuario tiene acceso, cargamos los detalles del grupo
         const response = await axios.get(`/api/grupos/${params.id}`);
-        const alumnosData = response.data.alumnos.map((item: any) => item.user_id);
+        const alumnosData = response.data.alumnos.map(
+          (item: any) => item.user_id
+        );
 
         try {
-          const imageUrl = await getGroupImage("foto_perfil_grupo.jpg", params.id);
+          const imageUrl = await getGroupImage(
+            "foto_perfil_grupo.jpg",
+            params.id
+          );
           setGroupImage(imageUrl);
         } catch {
-          console.log("No se encontró una imagen para este grupo, usando predeterminada.");
+          console.log(
+            "No se encontró una imagen para este grupo, usando predeterminada."
+          );
         }
 
         const alumnosWithImages = await Promise.all(
           alumnosData.map(async (alumno: Alumno) => {
             try {
-              const imageUrl = await getProfileImage("profile-image.jpg", alumno._id);
+              const imageUrl = await getProfileImage(
+                "profile-image.jpg",
+                alumno._id
+              );
               return { ...alumno, profileImage: imageUrl };
             } catch (error) {
-              console.error(`Error al obtener imagen del alumno ${alumno._id}:`, error);
+              console.error(
+                `Error al obtener imagen del alumno ${alumno._id}:`,
+                error
+              );
               return {
                 ...alumno,
                 profileImage:
@@ -152,6 +197,7 @@ export default function GrupoDetailPage({
             }
           })
         );
+        
 
         setGrupo(response.data.grupo);
         setAlumnos(alumnosWithImages);
@@ -219,32 +265,53 @@ export default function GrupoDetailPage({
 
   const handleIrAPago = () => {
     if (!grupo) return;
-  
+
     const { _id, nombre_grupo, cuota_mensual } = grupo;
     const fecha = new Date().toLocaleString();
-    
+
     // Obtener el ID de la academia desde el localStorage
     const academiaId = localStorage.getItem("academia_id");
-    
+
     // Almacenar los datos en localStorage
     localStorage.setItem("grupoId", _id);
     localStorage.setItem("nombreGrupo", nombre_grupo);
-    localStorage.setItem("monto", cuota_mensual || '0');
+    localStorage.setItem("monto", cuota_mensual || "0");
     localStorage.setItem("fecha", fecha);
     localStorage.setItem("academiaId", academiaId); // Añadir el academiaId
-    
+
     // Redirigir a la página de pago
     router.push("/pagos");
   };
-  
+
+  function extraerLocalidad(ubicacion: string): string {
+    const partes = ubicacion.split(",");
+    if (partes.length < 2) return ""; // No hay suficiente info
+
+    // Tomamos la segunda parte (lo que suele venir después de la dirección)
+    let segundaParte = partes[1];
+
+    // Quitamos el código postal tipo "T4000", "X5000", etc.
+    // Regex: cualquier letra seguida de 4 dígitos
+    segundaParte = segundaParte.replace(/[A-Z]\d{4}/g, "").trim();
+
+    return segundaParte;
+  }
+
+  const formatDias = (dias: string[]) => {
+    if (dias.length === 1) return dias[0];
+    if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
+    return `${dias.slice(0, -1).join(", ")} y ${dias[dias.length - 1]}`;
+  };
 
   if (error) return <div>{error}</div>;
 
   if (!grupo) return <div>Cargando...</div>;
 
+  console.log("datos grupo", grupo.profesor_id);
+
   return (
-    <div className="flex flex-col items-center w-[390px] bg-[#F4F4F4]">
-      <button
+    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
+      {/* <button
         type="button"
         onClick={() => router.back()}
         className=" absolute top-2 left-2 bg-black text-white p-2 rounded-full shadow-md hover:bg-blue-600 transition duration-300"
@@ -290,254 +357,459 @@ export default function GrupoDetailPage({
         <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] leading-[22px] mx-auto mt-[30px]">
           {grupo.nombre_grupo}
         </h1>
-      </div>
+      </div> */}
 
+      <Toaster position="top-center" />
+      <div
+        className="relative w-full h-[190px] flex"
+        style={{
+          backgroundImage: `url(${groupImage})`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="btnFondo absolute top-2 left-2 text-white p-2 rounded-full shadow-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="black"
+            viewBox="0 0 16 16"
+            width="24"
+            height="24"
+          >
+            <path
+              fillRule="evenodd"
+              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+            />
+          </svg>
+        </button>
+
+        <button className="btnFondo absolute top-2 right-14 text-white p-2 rounded-full shadow-md">
+          <svg
+            viewBox="0 0 32 32"
+            version="1.1"
+            fill="#000000"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              {" "}
+              <g id="icomoon-ignore"> </g>{" "}
+              <path
+                d="M21.886 5.115c3.521 0 6.376 2.855 6.376 6.376 0 1.809-0.754 3.439-1.964 4.6l-10.297 10.349-10.484-10.536c-1.1-1.146-1.778-2.699-1.778-4.413 0-3.522 2.855-6.376 6.376-6.376 2.652 0 4.925 1.62 5.886 3.924 0.961-2.304 3.234-3.924 5.886-3.924zM21.886 4.049c-2.345 0-4.499 1.089-5.886 2.884-1.386-1.795-3.54-2.884-5.886-2.884-4.104 0-7.442 3.339-7.442 7.442 0 1.928 0.737 3.758 2.075 5.152l11.253 11.309 11.053-11.108c1.46-1.402 2.275-3.308 2.275-5.352 0-4.104-3.339-7.442-7.442-7.442v0z"
+                fill="#000000"
+              >
+                {" "}
+              </path>{" "}
+            </g>
+          </svg>
+        </button>
+
+        <button className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              {" "}
+              <path
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>{" "}
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>{" "}
+            </g>
+          </svg>
+        </button>
+      </div>
+      <div className="flex flex-col items-center gap-3 w-full px-3 justify-center">
+        <div>
+          <h1 className="text-4xl font-bold text-center">
+            {grupo.nombre_grupo}
+          </h1>
+
+          <p className="text-sm text-center flex items-center justify-center gap-1">
+            {" "}
+            <svg
+              height="13px"
+              width="13px"
+              version="1.1"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              fill="#FF3D00"
+              stroke="#FF3D00"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <path
+                  style={{ fill: "#FF3D00" }}
+                  d="M255.999,0C166.683,0,94.278,72.405,94.278,161.722c0,81.26,62.972,235.206,161.722,350.278 c98.75-115.071,161.722-269.018,161.722-350.278C417.722,72.405,345.316,0,255.999,0z"
+                ></path>{" "}
+                <g style={{ opacity: "0.1" }}>
+                  {" "}
+                  <path d="M168.207,125.87c15.735-64.065,67.63-109.741,128.634-120.664C283.794,1.811,270.109,0,255.999,0 C166.683,0,94.277,72.405,94.277,161.722c0,73.715,51.824,207.247,135.167,317.311C170.39,349.158,150.032,199.872,168.207,125.87z "></path>{" "}
+                </g>{" "}
+                <path
+                  style={{ fill: "#FFFF" }}
+                  d="M255.999,235.715c-40.81,0-74.014-33.203-74.019-74.014c0.005-40.795,33.209-73.998,74.019-73.998 s74.014,33.203,74.019,74.014C330.015,202.513,296.809,235.715,255.999,235.715z"
+                ></path>{" "}
+              </g>
+            </svg>
+            {extraerLocalidad(grupo.ubicacion)}
+          </p>
+        </div>
+        <div className="w-[90%] border-b border-b-[#ccc]"></div>
+      </div>
 
       {/* info del grupo */}
-      <div className="mt-[90px]">
-    
-
-        <div className="flex flex-wrap w-[390px]  h-[100px] justify-center">
-          {/* Columna izquierda */}
-
-
-          <div className="flex items-center  justify-left gap-2 w-[40%]">
-            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
+      <div className="w-full flex flex-col gap-4">
+        <p className="ml-6 mt-2 font-light text-xl">Info del entrenamiento</p>
+        <div className="w-[90%] ml-4 flex">
+          <div>
+            <div className="flex items-center justify-start gap-1">
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 16 16"
-                fill="none"
+                viewBox="0 0 64 64"
                 xmlns="http://www.w3.org/2000/svg"
-                href="http://www.w3.org/1999/xlink"
+                fill="none"
+                stroke="#000000"
+                width={20}
+                height={20}
               >
-                <rect width="16" height="16" fill="url(#pattern0_441_132)" />
-                <defs>
-                  <pattern
-                    id="pattern0_441_132"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
-                  >
-                    <use href="#image0_441_132" transform="scale(0.01)" />
-                  </pattern>
-                  <image
-                    id="image0_441_132"
-                    width="100"
-                    height="100"
-                    href="data:image/png;base64,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"
-                  />
-                </defs>
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <circle cx="32" cy="32" r="24"></circle>
+                  <polyline points="40 44 32 32 32 16"></polyline>
+                </g>
               </svg>
+              <p>Tiempo de Entreamiento</p>
             </div>
-            <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Ubicación
-              <br />
-              <span className="font-semibold text-black">
-                {grupo.ubicacion || "No especificado"}
-              </span>
-            </p>
+            <p className="text-[#666666] ml-6">{grupo.tiempo_promedio}</p>
           </div>
+        </div>
 
-
-
-          <div className="flex items-center  justify-center gap-2 w-[40%]">
-            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
+        <div className="w-[90%] ml-4 flex">
+          <div>
+            <div className="flex items-center justify-start gap-1">
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 16 16"
-                fill="none"
+                viewBox="-2.5 0 20 20"
+                version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
-                href="http://www.w3.org/1999/xlink"
+                fill="#000000"
+                height={18}
+                width={18}
               >
-                <rect width="16" height="16" fill="url(#pattern0_441_156)" />
-                <defs>
-                  <pattern
-                    id="pattern0_441_156"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <title>signal [#1517]</title>{" "}
+                  <desc>Created with Sketch.</desc> <defs> </defs>{" "}
+                  <g
+                    id="Page-1"
+                    stroke="none"
+                    stroke-width="1"
+                    fill="none"
+                    fill-rule="evenodd"
                   >
-                    <use href="#image0_441_156" transform="scale(0.01)" />
-                  </pattern>
-                  <image
-                    id="image0_441_156"
-                    width="100"
-                    height="100"
-                    href="data:image/png;base64,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"
-                  />
-                </defs>
+                    {" "}
+                    <g
+                      id="Dribbble-Light-Preview"
+                      transform="translate(-182.000000, -240.000000)"
+                      fill="#000000"
+                    >
+                      {" "}
+                      <g
+                        id="icons"
+                        transform="translate(56.000000, 160.000000)"
+                      >
+                        {" "}
+                        <path
+                          d="M126,100 L128.142857,100 L128.142857,96 L126,96 L126,100 Z M130.285714,100 L132.428571,100 L132.428571,92 L130.285714,92 L130.285714,100 Z M138.857143,100 L141,100 L141,80 L138.857143,80 L138.857143,100 Z M134.571429,100 L136.714286,100 L136.714286,86 L134.571429,86 L134.571429,100 Z"
+                          id="signal-[#1517]"
+                        >
+                          {" "}
+                        </path>{" "}
+                      </g>{" "}
+                    </g>{" "}
+                  </g>{" "}
+                </g>
               </svg>
+              <p>Dificultad</p>
             </div>
-            <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Horario
-              <br />
-              <span className="font-semibold text-black">
-                {grupo.horario || "No especificado"}
-              </span>
-            </p>
+            <p className="text-[#666666] ml-6">{grupo.nivel}</p>
           </div>
+        </div>
 
-          {/* Columna derecha */}
-          <div className="flex items-center  justify-left gap-2 w-[40%]">
-            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
+        <div className="w-[90%] ml-4 flex">
+          <div>
+            <div className="flex items-center justify-start gap-1">
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 16 16"
+                viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                href="http://www.w3.org/1999/xlink"
+                height={20}
+                width={20}
               >
-                <rect width="16" height="16" fill="url(#pattern0_441_138)" />
-                <defs>
-                  <pattern
-                    id="pattern0_441_138"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
-                  >
-                    <use href="#image0_441_138" transform="scale(0.01)" />
-                  </pattern>
-                  <image
-                    id="image0_441_138"
-                    width="100"
-                    height="100"
-                    href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAABW0lEQVR4nO3csW3DUBQEQXWibq/ol9gt2IAhrKxZgClB3vCnfDwkSdJLuj2//vJ6zVP/4w5IKyCxgMQCEgtILCCxgMQCEgtILCCxgMQCEgtILCCxgMQCEgtILCCxgMQCEgtIbDAgvwxIrHNCWh2QVgek1QFpdUBaHZBWB6TVAWl1QFodkFYHpNUBaXVAWh2QVgek1QFpdUBaHZBWB6TVAfmswe6//Vrj3Qc7IM/UYEDWGgzIWoMBWWswIGsNBmStwYCsNRiQtQYDstZgQNYaDMhagwFZazAgaw0GZK3BgKw1GJC1BgOy1mBA1hoMyFqDAdmHg7z7C92b3x/IgLz1F3xOyDM1GJC1BgOy1mBA1hoMyFqDAVlrMCBrDQZkrcGArDUYkLUGA7LWYEDWGgzIWoMBWWswIGsNBmStwYCsNRiQtQYDstZgQNYaDMhagwFZazAg+3AQSZIeP+sbcDpD8Sy6QgcAAAAASUVORK5CYII="
-                  />
-                </defs>
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path
+                    d="M17 10C17 11.7279 15.0424 14.9907 13.577 17.3543C12.8967 18.4514 12.5566 19 12 19C11.4434 19 11.1033 18.4514 10.423 17.3543C8.95763 14.9907 7 11.7279 7 10C7 7.23858 9.23858 5 12 5C14.7614 5 17 7.23858 17 10Z"
+                    stroke="#464455"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                  <path
+                    d="M14.5 10C14.5 11.3807 13.3807 12.5 12 12.5C10.6193 12.5 9.5 11.3807 9.5 10C9.5 8.61929 10.6193 7.5 12 7.5C13.3807 7.5 14.5 8.61929 14.5 10Z"
+                    stroke="#464455"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </g>
               </svg>
+              <p>Dirección</p>
             </div>
-            <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Dificultad
-              <br />
-              <span className="font-semibold text-black">
-                {grupo.nivel || "No especificado"}
-              </span>
-            </p>
-          </div>
-
-          <div className="flex items-center  justify-center gap-2 w-[40%]">
-            <div className="flex items-center justify-center h-[40px] w-[40px] bg-[#FFE1C5] rounded-full">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                href="http://www.w3.org/1999/xlink"
-              >
-                <rect width="16" height="16" fill="url(#pattern0_441_126)" />
-                <defs>
-                  <pattern
-                    id="pattern0_441_126"
-                    patternContentUnits="objectBoundingBox"
-                    width="1"
-                    height="1"
-                  >
-                    <use href="#image0_441_126" transform="scale(0.01)" />
-                  </pattern>
-                  <image
-                    id="image0_441_126"
-                    width="100"
-                    height="100"
-                    href="data:image/png;base64,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"
-                  />
-                </defs>
-              </svg>
-            </div>
-            <p className="text-left text-[10px] font-normal text-[#A0AEC0]">
-              Tiempo
-              <br />
-              
-              {<span className="font-semibold text-black">
-                {grupo.tiempo_promedio || "No especificado"}
-              </span>} 
+            <p className="text-[#666666] ml-6">
+              {grupo.ubicacion.split(",")[0]}
             </p>
           </div>
         </div>
+        <div className="w-[90%] ml-4 flex">
+          <div>
+            <div className="flex items-center justify-start gap-1">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                height={20}
+                width={20}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <path
+                    d="M16 15.2V16.8875L16.9 17.9M9 11H4M9 3V7M15 3V7M9 5H12M15 5H18C19.1046 5 20 5.89543 20 7V9M6 5C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H9M20.5 17C20.5 19.4853 18.4853 21.5 16 21.5C13.5147 21.5 11.5 19.4853 11.5 17C11.5 14.5147 13.5147 12.5 16 12.5C18.4853 12.5 20.5 14.5147 20.5 17Z"
+                    stroke="#000000"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                </g>
+              </svg>
+              <p>Dias y horario</p>
+            </div>
+            <p className="text-[#666666] ml-6">
+              {formatDias(grupo.dias)}, {grupo.horario}hs
+            </p>
+          </div>
+        </div>
+        <div className="w-[90%] border-b border-b-[#ccc] self-center"></div>
       </div>
-      <hr className="border-t border-gray-300 w-[390px] mb-2" />
+
       <div className="flex flex-col w-[390px]">
-        <div className="">
-          <h2 className="text-xl font-bold p-2 text-[#333]">
-            Descripción
-          </h2>
-          <p className="text-sm text-gray-500 p-2">
-            {grupo.descripcion || "Sin descripción"}
+        <div className="flex flex-col">
+          <h2 className="ml-6 mt-2 font-light text-xl">Descripción</h2>
+          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+            {grupo.descripcion || "El Profe no agrego una descripción"}
           </p>
-          <hr className="border-t border-gray-300 mb-2 w-[390px]" />
+          <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
         </div>
-        <div className="">
-          <h2 className="text-xl font-bold text-left text-[#333] p-2">Profesor</h2>
-          <p className="text-sm text-gray-500 p-2">
-            info del profesor
-            {/* {grupo.profesor || "Sin Profesor"} */}
-          </p>
-          <hr className="border-t border-gray-300 w-[390px] mb-2" />
-        </div>
-        <div className="rounded-lg p-1 w-full max-w-md mx-auto">
-          <h2 className="text-xl font-bold text-left text-[#333] mb-2">Cuota Mensual</h2>
-          <p className="text-sm text-gray-500 mb-4">
-          {grupo.cuota_mensual || "Sin especificar cuota"}
-          </p>
-          <button onClick={handleIrAPago} className="bg-[#FF9A3D] text-#333 text-sm font-semibold w-full py-2 rounded-md hover:bg-[#FFA55C] transition-colors">
-          Pagar Cuota
-          </button>
-        </div>
-      </div>
 
+        <div className="flex flex-col">
+          <h2 className="ml-6 mt-2 font-light text-xl">Avisos Importantes</h2>
+          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+            {grupo.aviso || "El profe aún no incluyo avisos"}
+          </p>
+          <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
+        </div>
 
-      <div className="w-[95%] mt-2 mb-2 p-2 shadow-lg rounded-lg pl-4">
-        <h2 className="font-bold text-mb mb-2">Alumnos del grupo</h2>
-        {alumnos.length > 0 ? (
-          <ul className="flex flex-col gap-2">
-            {alumnos.map((alumno) => (
-              <li
-                key={alumno._id}
-                className={`flex items-center gap-3 p-1 rounded-lg ${
-                  userRole === "alumno"
-                    ? "cursor-default"
-                    : "cursor-pointer hover:bg-gray-100"
-                }`}
-                onClick={() => handleAlumnoClick(alumno)}
+        <div className="flex flex-col">
+          <h2 className="ml-6 mt-2 font-light text-xl">Punto de Encuentro</h2>
+          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+            {grupo.ubicacion.split(",")[0]}
+          </p>
+
+          {grupo.locationCoords ? (
+            <div className="w-[90%] h-[310px] rounded-xl overflow-hidden border z-0 self-center">
+              <MapContainer
+                center={[grupo.locationCoords.lat, grupo.locationCoords.lng]}
+                zoom={15}
+                scrollWheelZoom={false}
+                style={{ height: "100%", width: "100%" }}
+                className="z-2"
               >
-                <img
-                  src={alumno.profileImage || "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"}
-                  alt={`${alumno.firstname} ${alumno.lastname}`}
-                  className="w-10 h-10 rounded-full object-cover"
+                <TileLayer
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <span className="text-[13px] pl-2">
-                  {alumno.firstname} {alumno.lastname}
-                </span>
-                {userRole !== "alumno" &&
-                  selectedAlumno?._id === alumno._id && (
-                     <div> 
-                    <button
-                    onClick={() => {
-                      setIsAssigning(true);
-                    }}
-                    className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-                  >
-                    Entrenamiento
-                  </button>
-                  <button
-            onClick={() => router.push(`/entrenamiento/${selectedAlumno?._id}`)}
-             className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+                <Marker
+                  position={[
+                    grupo.locationCoords.lat,
+                    grupo.locationCoords.lng,
+                  ]}
+                >
+                  <Popup>{grupo.nombre_grupo}</Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          ) : (
+            <p className="text-sm  font-light text-[#666666] ml-6 mb-2">
+              No hay coordenadas disponibles.
+            </p>
+          )}
+
+          <hr className="border-t border-[#ccc] mb-3 mt-3 w-[90%] self-center" />
+        </div>
+
+        {/* <div className="rounded-lg p-1 w-full max-w-md mx-auto">
+          <h2 className="text-xl font-bold text-left text-[#333] mb-2">
+            Cuota Mensual
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            {grupo.cuota_mensual || "Sin especificar cuota"}
+          </p>
+          <button
+            onClick={handleIrAPago}
+            className="bg-[#FF9A3D] text-#333 text-sm font-semibold w-full py-2 rounded-md hover:bg-[#FFA55C] transition-colors"
           >
-            Ver Historial
+            Pagar Cuota
           </button>
-                  </div>
-                   
-                    
-                  )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No hay alumnos en este grupo.</p>
-        )}
+        </div> */}
+        <div>
+          <div className="flex flex-col">
+            <h2 className="ml-6 mt-2 font-light text-xl">
+              Miembros de la tribu
+            </h2>
+            {alumnos.length > 0 ? (
+              <ul className="flex gap-2 ml-6 mt-2 flex-wrap">
+                {alumnos.map((alumno) => (
+                  <li
+                    key={alumno._id}
+                    onClick={() => handleAlumnoClick(alumno)}
+                  >
+                    <div
+                      style={{
+                        backgroundImage: `url(${alumno.profileImage})`,
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                      }}
+                      className="w-[75px] h-[75px] rounded-full object-cover"
+                    />
+                    {/* {userRole !== "alumno" &&
+                  selectedAlumno?._id === alumno._id && (
+                    <div>
+                      <button
+                        onClick={() => {
+                          setIsAssigning(true);
+                        }}
+                        className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+                      >
+                        Entrenamiento
+                      </button>
+                      <button
+                        onClick={() =>
+                          router.push(`/entrenamiento/${selectedAlumno?._id}`)
+                        }
+                        className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
+                      >
+                        Ver Historial
+                      </button>
+                    </div>
+                  )} */}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm  font-light text-[#666666] ml-6 mb-2">
+                No hay miembros en esta tribu.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <hr className="border-t border-gray-300 w-[90%] mb-2 self-center" />
+
+        <div className="">
+          <h2 className="ml-6 mt-2 font-light text-xl">Profesor</h2>
+          <div className="flex flex-col items-center gap-2">
+            <div className="self-center mt-2">
+              <div className="w-[300px] h-[176px] bg-white border rounded-[20px] flex flex-col items-center gap-1">
+                <div
+                  className="rounded-full h-[80px] w-[80px] border shadow-sm mt-4"
+                  style={{
+                    backgroundImage: `url(${grupo.profesor_id.imagen})`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                  }}
+                ></div>
+                <p>
+                  {grupo.profesor_id.firstname} {grupo.profesor_id.lastname}
+                </p>
+                <p className="text-xs text-[#666666]">Profesor</p>
+              </div>
+            </div>
+            <p className="text-xs text-[#666666] text-justify self-center mt-2 w-[300px]">
+              Coach de running con más de 10 años de experiencia ayudando a
+              corredores de todos los niveles a alcanzar sus metas. Apasionado
+              por el entrenamiento personalizado, la técnica de carrera y la
+              motivación constante para disfrutar cada kilómetro.”
+            </p>
+          </div>
+        </div>
       </div>
 
       {isAssigning && selectedAlumno && (
@@ -553,7 +825,7 @@ export default function GrupoDetailPage({
               onChange={handleChange}
               className="mb-4 border p-2 w-[90%] rounded"
             />
-                 <textarea
+            <textarea
               name="objetivo"
               value={entrenamientoData.objetivo}
               onChange={handleChange}
@@ -582,6 +854,8 @@ export default function GrupoDetailPage({
           </div>
         </ModalEntrenamiento>
       )}
+
+      <div className="pb-[200px]"></div>
     </div>
   );
 }

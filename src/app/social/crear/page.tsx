@@ -61,29 +61,6 @@ export default function CrearSalidaPage() {
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
 
-
-
-  {
-    /*}
-  function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
-    function LocationMarker() {
-      useMapEvents({
-        click(e) {
-          onChange(e.latlng);
-        }
-      });
-      return position ? <Marker position={position} /> : null;
-    }
-
-    return (
-      <MapContainer center={[-26.8333, -65.2167] as [number, number]} zoom={13} className="h-[200px] w-full rounded-md">
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <LocationMarker />
-      </MapContainer>
-    );
-  }
-*/
-  }
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -100,14 +77,13 @@ export default function CrearSalidaPage() {
     }
   };
 
-
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
 
     const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
-  setQuery(direccion);
-  setFormData((prev) => ({ ...prev, ubicacion: direccion }));
+    setQuery(direccion);
+    setFormData((prev) => ({ ...prev, ubicacion: direccion }));
   };
 
   const handleSelectSuggestion = (item: any) => {
@@ -129,11 +105,6 @@ export default function CrearSalidaPage() {
       imageUrl = await getDownloadURL(imageRef);
     }
 
-    // const salidaData = {
-    //   ...formData,
-    //   imagen: imageUrl,
-    //   locationCoords: formData.coords
-    // };
 
     const coordsToSave = formData.coords || defaultCoords;
 
@@ -153,9 +124,6 @@ export default function CrearSalidaPage() {
     else console.error("Error al crear salida social");
   };
 
-
-
-
   const fetchSuggestions = (q: string) => {
     fetch(`/api/search?q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
@@ -167,15 +135,15 @@ export default function CrearSalidaPage() {
   };
 
   const fetchAddressFromCoords = async (lat: number, lon: number) => {
-  try {
-    const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
-    const data = await res.json();
-    return data.display_name as string;
-  } catch (error) {
-    console.error("Error al obtener dirección inversa:", error);
-    return "";
-  }
-};
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name as string;
+    } catch (error) {
+      console.error("Error al obtener dirección inversa:", error);
+      return "";
+    }
+  };
 
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
@@ -226,7 +194,7 @@ export default function CrearSalidaPage() {
         <option value="Otros">Otros</option>
       </select>
 
-       <select
+      <select
         name="deporte"
         value={formData.deporte}
         onChange={handleChange}
@@ -327,7 +295,6 @@ export default function CrearSalidaPage() {
           )}
         </div>
       </label>
- 
 
       <label className="block relative">
         Ubicación

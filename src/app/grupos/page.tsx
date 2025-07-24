@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import Academia from "@/models/academia";
+import { useSession } from "next-auth/react";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
@@ -36,8 +37,9 @@ const CrearGrupo = () => {
     tiempo_promedio: "",
     dias: [] as string[],
     imagen: "",
-    locationCoords: "",
-    avisos: "",
+    locationCoords: null as LatLng | null,
+    aviso: "",
+    profesor_id: "",
   });
   const [loading, setLoading] = useState(true);
   const [imagen, setImagen] = useState<File | null>(null);
@@ -46,6 +48,7 @@ const CrearGrupo = () => {
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
+  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchAcademias = async () => {
@@ -100,13 +103,18 @@ const CrearGrupo = () => {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!session?.user?.id) {
+      toast.error("No has iniciado sesión.");
+      return;
+    }
 
     try {
-      // 1. Crear grupo sin imagen
+      const grupoConProfesor = { ...grupo, profesor_id: session.user.id };
+
       const res = await fetch("/api/grupos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(grupo),
+        body: JSON.stringify(grupoConProfesor),
       });
 
       if (!res.ok) {
@@ -147,7 +155,7 @@ const CrearGrupo = () => {
 
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
-    setGrupo((prev) => ({ ...prev, coords }));
+    setGrupo((prev) => ({ ...prev, locationCoords: coords }));
 
     const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
     setQuery(direccion);
@@ -398,8 +406,8 @@ const CrearGrupo = () => {
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
         <textarea
-          name="avisos"
-          value={grupo.avisos}
+          name="aviso"
+          value={grupo.aviso}
           onChange={handleInputChange}
           placeholder="Avisos, indicaciones para hacer en el grupo"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"

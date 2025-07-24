@@ -5,25 +5,44 @@ import Academia from "@/models/academia";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import UsuarioGrupo from "@/models/users_grupo";
 
-// Obtener un grupo por ID
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
-    // Conecta a la base de datos
     await connectDB();
 
-    // Buscar el grupo por ID
-    const grupo = await Grupo.findById(params.id);
+    const grupo = await Grupo.findById(params.id).populate('profesor_id');
 
     if (!grupo) {
       return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
     }
 
+    // Obtener URL de la imagen del profesor
+    let profesorImagenUrl = "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"; // imagen por defecto
+
+    if (grupo.profesor_id?._id) {
+      try {
+        profesorImagenUrl = await getProfileImage("profile-image.jpg", grupo.profesor_id._id.toString());
+      } catch (error) {
+        // Se queda la imagen por defecto si hay error
+      }
+    }
+
+    // Convertir el documento a objeto plano
+    const grupoObj = grupo.toObject();
+
+    // Reemplazar el campo profesor_id para agregar la URL correcta de la imagen
+    grupoObj.profesor_id = {
+      ...grupoObj.profesor_id,
+      imagen: profesorImagenUrl,
+    };
+
     // Obtener los usuarios que pertenecen a este grupo
     const alumnos = await UsuarioGrupo.find({ grupo_id: params.id }).populate("user_id");
 
-    return NextResponse.json({ grupo, alumnos }, { status: 200 });
+    return NextResponse.json({ grupo: grupoObj, alumnos }, { status: 200 });
+
   } catch (error) {
     console.error("Error al obtener el grupo y sus alumnos:", error);
     return NextResponse.json(
@@ -32,37 +51,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     );
   }
 }
-// Actualizar un grupo por ID
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
 
-    const body = await req.json();
-    const grupo = await Grupo.findById(params.id);
-
-    if (!grupo) {
-      return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
-    }
-
-    // Validar permisos: dueño de la academia o profesor asignado
-    const academia = await Academia.findById(grupo.academia_id);
-    if (
-      academia.dueño_id.toString() !== session.user.id &&
-      grupo.profesor_id?.toString() !== session.user.id
-    ) {
-      return NextResponse.json({ error: "No tienes permisos para editar este grupo" }, { status: 403 });
-    }
-
-    const grupoActualizado = await Grupo.findByIdAndUpdate(params.id, body, { new: true });
-    return NextResponse.json(grupoActualizado, { status: 200 });
-  } catch (error) {
-    console.error("Error al actualizar el grupo:", error);
-    return NextResponse.json({ error: "Error al actualizar el grupo" }, { status: 500 });
-  }
-}
 
 // Eliminar un grupo por ID
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
