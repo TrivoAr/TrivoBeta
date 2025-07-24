@@ -521,34 +521,34 @@ export default function AcademiaDetailPage({
             <p className="text-center poppins-extralight">No hay grupos de entranamientos</p>
           </div>
         ) : (
-          <ul className="flex gap-2 flex-wrap justify-start px-4">
-            {grupos.map((grupo) => (
-              <div className="flex flex-col w-[170px] gap-1">
-                <li
-                  key={grupo._id}
-                  className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
-                  style={{
-                    backgroundImage: `url(${groupImages[grupo._id]})`,
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                  }}
-                  onClick={() => router.push(`/grupos/${grupo._id}`)}
-                >
-                  <p className="w-[90px] h-[20px] bg-[#00000070] rounded-[20px] text-white font-medium flex justify-center items-center">
-                    {grupo.tipo_grupo}
-                  </p>{" "}
-                </li>
-                <div className="">
-                  <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-                  <div className="text-[#ccc]">
-                    <p className="font-extralight text-xs">{grupo.ubicacion}</p>
-                    <p className="font-extralight text-xs">{grupo.horario}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </ul>
+<ul className="flex gap-2 flex-wrap justify-start px-4">
+  {grupos.map((grupo) => (
+    <div key={grupo._id} className="flex flex-col w-[170px] gap-1">
+      <li
+        className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
+        style={{
+          backgroundImage: `url(${groupImages[grupo._id]})`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+        }}
+        onClick={() => router.push(`/grupos/${grupo._id}`)}
+      >
+        <p className="w-[90px] h-[20px] bg-[#00000070] rounded-[20px] text-white font-medium flex justify-center items-center">
+          {grupo.tipo_grupo}
+        </p>
+      </li>
+      <div>
+        <p className="font-light text-sm">{grupo.nombre_grupo}</p>
+        <div className="text-[#ccc]">
+          <p className="font-extralight text-xs">{grupo.ubicacion}</p>
+          <p className="font-extralight text-xs">{grupo.horario}</p>
+        </div>
+      </div>
+    </div>
+  ))}
+</ul>
+
         )}
 
         {/* {!esMiembro && (
