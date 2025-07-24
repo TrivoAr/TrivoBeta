@@ -31,6 +31,14 @@ export const authOptions: AuthOptions = {
           userFound.password
         );
 
+        if (!userFound.imagen) {
+          const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            userFound.firstname
+          )}&length=1&background=random&color=fff&size=128`;
+          userFound.imagen = avatarUrl;
+          await userFound.save();
+        }
+
         if (!passwordMatch) throw new Error("Credenciales inválidas");
 
         return {
@@ -39,6 +47,7 @@ export const authOptions: AuthOptions = {
           fullname: `${userFound.firstname} ${userFound.lastname}`,
           telnumber: userFound.telnumber,
           role: userFound.rol,
+          imagen: userFound.imagen,
           instagram: userFound.instagram,
           facebook: userFound.facebook,
           twitter: userFound.twitter,

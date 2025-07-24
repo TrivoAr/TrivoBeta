@@ -19,6 +19,8 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const [profileImage, setProfileImage] = useState(null);
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
 
+  console.log("datos", session?.user?.imagen);
+
   // Obtener solicitudes
   useEffect(() => {
     if (session?.user) {
@@ -51,8 +53,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
         } catch (error) {
           console.error("Error al obtener la imagen del perfil:", error);
           // Puedes agregar una imagen predeterminada en caso de error
-          setProfileImage(
-            "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+          setProfileImage(session.user.imagen
           );
         }
       };
@@ -90,8 +91,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
         <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
           src={
-            profileImage ||
-            "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
+            profileImage || session.user.imagen
           }
           alt="User Profile"
         />

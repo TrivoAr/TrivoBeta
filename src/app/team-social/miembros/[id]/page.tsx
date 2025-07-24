@@ -144,7 +144,7 @@ export default function EventPage({ params }: PageProps) {
             >
               <td className="flex justify-center items-center h-[70px]">
                 <img
-                  src={miembro.imagen}
+                  src={miembro.imagen ? (miembro.imagen) : (session.user.imagen)}
                   alt={miembro.nombre}
                   className="w-[50px] h-[50px] rounded-full"
                 />

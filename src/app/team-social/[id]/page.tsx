@@ -89,6 +89,7 @@ export default function TeamEventPage({ params }: PageProps) {
           `/api/team-social/miembros?teamSocialId=${params.id}`
         );
         const data = await res.json();
+        console.log("pingo", data);
         console.log("miembros", data);
         setMiembros(data);
       } catch (err) {

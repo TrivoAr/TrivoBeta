@@ -26,7 +26,9 @@ export async function GET(req: NextRequest) {
       try {
         imagenUrl = await getProfileImage("profile-image.jpg", usuario._id.toString());
       } catch {
-        imagenUrl = "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
+        imagenUrl =`https://ui-avatars.com/api/?name=${encodeURIComponent(
+            usuario.firstname
+          )}&length=1&background=random&color=fff&size=128`;
       }
 
       return {
