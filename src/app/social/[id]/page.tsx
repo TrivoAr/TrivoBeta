@@ -175,56 +175,136 @@ export default function EventPage({ params }: PageProps) {
       </main>
     );
 
-    const parseLocalDate = (isoDateString: string): string => {
-  const [year, month, day] = isoDateString.split("-");
-  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-  return localDate.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-  });
-};
+  const parseLocalDate = (isoDateString: string): string => {
+    const [year, month, day] = isoDateString.split("-");
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto h-[1000px]">
-      <button
-        onClick={() => router.back()}
-        className="text-[#C76C01] mb-3 bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center"
-      >
-        <img
-          src="/assets/icons/Collapse Arrow.svg"
-          alt="callback"
-          className="h-[20px] w-[20px]"
-        />
-      </button>
-
-      <h1 className="text-xl font-semibold mb-4">
-        {/* <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold">
-          {event.deporte}
-        </span>{" "} */}{" "}
-        {event.nombre}
-      </h1>
-
-      <div className="w-full h-[180px] rounded-xl overflow-hidden">
+    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto h-[1000px]">
+      <div className="relative w-full h-[176px] ">
         <Image
           src={event.imagen}
           alt="Evento"
-          width={500}
-          height={180}
+          width={375}
+          height={176}
           className="w-full h-full object-cover"
         />
-      </div>
 
-      <div className="text-sm text-gray-700 mt-3 flex flex-col gap-1 justify-between">
-        <div className="flex items-center gap-2">
+        {/* Botón volver */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-3 left-3 bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center"
+        >
           <img
-            src="/assets/icons/Locationgray.svg"
-            alt=""
-            className="w-[14px] h-[14px] object-cover"
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
           />
-          <span>{event.localidad}</span>
-        </div>
-        {/* <div className="flex items-center gap-2 pl-[50px]">
+        </button>
+
+        {/* Botón like (SVG intacto) 
+        <button className="absolute top-3 right-[50px] bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </g>
+          </svg>
+        </button>*/}
+
+        {/* Botón compartir */}
+        <button
+          onClick={() => {
+            navigator.clipboard
+              .writeText(window.location.href)
+              .then(() => {
+                alert("¡Link copiado al portapapeles!");
+              })
+              .catch((err) => {
+                console.error("Error al copiar el link:", err);
+              });
+          }}
+          className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </g>
+          </svg>
+        </button>
+      </div>
+      <div className="px-4 py-6">
+        <h1 className="text-xl  font-semibold mb-4 text-center">
+          {/* <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold">
+          {event.deporte}
+        </span>{" "} */}{" "}
+          {event.nombre}
+        </h1>
+        <div className="text-sm text-gray-700 mt-3 flex flex-col gap-1 justify-between">
+          <div className="flex items-center gap-2">
+            <img
+              src="/assets/icons/Locationgray.svg"
+              alt=""
+              className="w-[14px] h-[14px] object-cover"
+            />
+            <span>{event.localidad}</span>
+          </div>
+          {/* <div className="flex items-center gap-2 pl-[50px]">
           <img
             src="/assets/icons/Calendargray.svg"
             alt=""
@@ -232,7 +312,7 @@ export default function EventPage({ params }: PageProps) {
           />
           <span>{new Date(event.fecha).toLocaleDateString()}</span>
         </div> */}
-        {/* <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
           <img
             src="/assets/icons/Clockgray.svg"
             alt=""
@@ -240,173 +320,177 @@ export default function EventPage({ params }: PageProps) {
           />
           <span>{event.hora}</span>
         </div> */}
-        <div className="flex items-center gap-2">
-          <img
-            src="/assets/icons/Usergray.svg"
-            alt=""
-            className="w-[14px] h-[14px] object-cover"
-          />
-          <span>{event.deporte}</span>
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center mt-4">
-        <div className="h-full">
-          <p className="text-sm font-medium text-[#808488]">Participantes</p>
-          <div className="flex -space-x-2 mt-1">
-            {miembros.length > 0 ? (
-              <>
-                {miembros.slice(0, 2).map((m) => (
-                  <img
-                    key={m._id}
-                    src={m.imagen}
-                    alt={m.nombre}
-                    className="h-8 w-8 rounded-full object-cover border shadow-md"
-                    title={m.nombre}
-                    onError={(e) =>
-                      ((e.target as HTMLImageElement).src =
-                        "/assets/icons/person_24dp_E8EAED.svg")
-                    }
-                  />
-                ))}
-                {miembros.length > 2 && (
-                  <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
-                    +{miembros.length - 2}
-                  </div>
-                )}
-              </>
-            ) : (
-              <span className="text-xs text-gray-500">
-                Nadie se ha unido aún
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="h-full">
-          <p className="text-sm font-medium text-[#808488]">
-            Organiza
-          </p>
-          <div className="flex items-center justify-start mt-1 gap-2">
+          <div className="flex items-center gap-2">
             <img
-              src={
-                event.creador_id.imagen ||
-                "/assets/icons/person_24dp_E8EAED.svg"
-              }
-              alt="Organizador"
-              className="h-8 w-8 rounded-full object-cover border"
+              src="/assets/icons/Usergray.svg"
+              alt=""
+              className="w-[14px] h-[14px] object-cover"
             />
-            <span className="text-sm  pr-[20px]">
-              {event.creador_id.firstname}
-            </span>
+            <span>{event.deporte}</span>
           </div>
         </div>
-      </div>
 
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Descripcion
-        </h2>
-        <p className="text-sm text-[#808488] leading-relaxed">
-          {event.descripcion}
-        </p>
-      </div>
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Grupo de Whatsapp
-        </h2>
-        <p className="text-sm text-gray-600 mb-2">
-          Unite al grupo de la salida para más información:
-        </p>
-        {event.whatsappLink && (
-          <div className="flex justify-center mt-2">
-            <a
-              href={event.whatsappLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-green-500 text-green-500 px-4 py-2 rounded-md font-medium hover:bg-green-50 transition"
-            >
-              Grupo{" "}
+        <div className="flex justify-between items-center mt-4">
+          <div className="h-full">
+            <p className="text-sm font-medium text-[#808488]">Participantes</p>
+            <div className="flex -space-x-2 mt-1">
+              {miembros.length > 0 ? (
+                <>
+                  {miembros.slice(0, 2).map((m) => (
+                    <img
+                      key={m._id}
+                      src={m.imagen}
+                      alt={m.nombre}
+                      className="h-8 w-8 rounded-full object-cover border shadow-md"
+                      title={m.nombre}
+                      onError={(e) =>
+                        ((e.target as HTMLImageElement).src =
+                          "/assets/icons/person_24dp_E8EAED.svg")
+                      }
+                    />
+                  ))}
+                  {miembros.length > 2 && (
+                    <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
+                      +{miembros.length - 2}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <span className="text-xs text-gray-500">
+                  Nadie se ha unido aún
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="h-full">
+            <p className="text-sm font-medium text-[#808488]">Organiza</p>
+            <div className="flex items-center justify-start mt-1 gap-2">
               <img
-                src="/assets/Logo/Whatsapp.svg"
-                alt="Grupo"
-                className="w-5 h-5"
+                src={
+                  event.creador_id.imagen ||
+                  "/assets/icons/person_24dp_E8EAED.svg"
+                }
+                alt="Organizador"
+                className="h-8 w-8 rounded-full object-cover border"
               />
-            </a>
-          </div>
-        )}
-      </div>
-      <div className="mt-6 ">
-        <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Ubicación
-        </h2>
-        <p className="mb-2">
-          <span className="text-slate-500 font-bold">Direcccion:</span>
-          <br />
-          <span className="text-sm text-gray-600 mb-2"> {event.ubicacion}</span>
-        </p>
-        {event.locationCoords ? (
-          <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
-            <MapContainer
-              center={[event.locationCoords.lat, event.locationCoords.lng]}
-              zoom={15}
-              scrollWheelZoom={false}
-              style={{ height: "100%", width: "100%" }}
-              className="z-2"
-            >
-              <TileLayer
-                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker
-                position={[event.locationCoords.lat, event.locationCoords.lng]}
-              >
-                <Popup>{event.nombre}</Popup>
-              </Marker>
-            </MapContainer>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-600">
-            No hay coordenadas disponibles.
-          </p>
-        )}
-      </div>
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-          Organizador{" "}
-        </h2>
-        <div className="flex justify-center gap-3">
-          <div className="bg-white p-3 w-auto h-[160px] rounded-[15px] flex shadow-md self-center justify-around items-center gap-3">
-            <div
-              className="rounded-full h-[100px] w-[100px] shadow-md"
-              style={{
-                backgroundImage: `url(${event.creador_id.imagen})`,
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-              }}
-            ></div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-700 mb-1">
-                {event.creador_id.firstname} {event.creador_id.lastname}
-              </h2>
-              <a
-                href={`https://wa.me/${event.telefonoOrganizador?.replace(
-                  /\D/g,
-                  ""
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white font-bold border  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] px-[15px] py-[5px] rounded-[15px]"
-              >
-                Contacto
-              </a>
+              <span className="text-sm  pr-[20px]">
+                {event.creador_id.firstname}
+              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* <div className="mt-8 mb-[200px]">
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+            Descripcion
+          </h2>
+          <p className="text-sm text-[#808488] leading-relaxed">
+            {event.descripcion}
+          </p>
+        </div>
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+            Grupo de Whatsapp
+          </h2>
+          <p className="text-sm text-gray-600 mb-2">
+            Unite al grupo de la salida para más información:
+          </p>
+          {event.whatsappLink && (
+            <div className="flex justify-center mt-2">
+              <a
+                href={event.whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-green-500 text-green-500 px-4 py-2 rounded-md font-medium hover:bg-green-50 transition"
+              >
+                Grupo{" "}
+                <img
+                  src="/assets/Logo/Whatsapp.svg"
+                  alt="Grupo"
+                  className="w-5 h-5"
+                />
+              </a>
+            </div>
+          )}
+        </div>
+        <div className="mt-6 ">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+            Ubicación
+          </h2>
+          <p className="mb-2">
+            <span className="text-slate-500 font-bold">Direcccion:</span>
+            <br />
+            <span className="text-sm text-gray-600 mb-2">
+              {" "}
+              {event.ubicacion}
+            </span>
+          </p>
+          {event.locationCoords ? (
+            <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
+              <MapContainer
+                center={[event.locationCoords.lat, event.locationCoords.lng]}
+                zoom={15}
+                scrollWheelZoom={false}
+                style={{ height: "100%", width: "100%" }}
+                className="z-2"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker
+                  position={[
+                    event.locationCoords.lat,
+                    event.locationCoords.lng,
+                  ]}
+                >
+                  <Popup>{event.nombre}</Popup>
+                </Marker>
+              </MapContainer>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">
+              No hay coordenadas disponibles.
+            </p>
+          )}
+        </div>
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+            Organizador{" "}
+          </h2>
+          <div className="flex justify-center gap-3">
+            <div className="bg-white p-3 w-auto h-[160px] rounded-[15px] flex shadow-md self-center justify-around items-center gap-3">
+              <div
+                className="rounded-full h-[100px] w-[100px] shadow-md"
+                style={{
+                  backgroundImage: `url(${event.creador_id.imagen})`,
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-700 mb-1">
+                  {event.creador_id.firstname} {event.creador_id.lastname}
+                </h2>
+                <a
+                  href={`https://wa.me/${event.telefonoOrganizador?.replace(
+                    /\D/g,
+                    ""
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white font-bold border  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] px-[15px] py-[5px] rounded-[15px]"
+                >
+                  Contacto
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* <div className="mt-8 mb-[200px]">
         <button
           onClick={handleAccion}
           className={`w-full py-3 rounded-[15px] font-semibold transition ${
@@ -419,9 +503,9 @@ export default function EventPage({ params }: PageProps) {
         </button>
       </div> */}
 
-      {/* Barra fija sobre el mapa */}
+        {/* Barra fija sobre el mapa */}
 
-      {/* {session?.user?.id === event.creador_id._id && (
+        {/* {session?.user?.id === event.creador_id._id && (
       <div className="fixed bottom-[100px] w-[100%] left-1/2 -translate-x-1/2  px-2">
         <div className="bg-white shadow-md rounded-xl px-4 py-3 flex justify-between items-center">
           <div>
@@ -450,54 +534,56 @@ export default function EventPage({ params }: PageProps) {
         </div>
       </div>)} */}
 
-      <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-between items-center">
-          <div className="w-[50%] flex flex-col">
-            <p className="font-semibold text-sm text-gray-800">
-              {event.localidad}
-            </p>
-            <p className="text-xs text-gray-400">
-             {parseLocalDate(event.fecha)}, {event.hora} hs
-            </p>
-            <p className="text-xs text-gray-400">Duracion: {event.duracion} </p>
-            
-          </div>
+        <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-between items-center">
+            <div className="w-[50%] flex flex-col">
+              <p className="font-semibold text-sm text-gray-800">
+                {event.localidad}
+              </p>
+              <p className="text-xs text-gray-400">
+                {parseLocalDate(event.fecha)}, {event.hora} hs
+              </p>
+              <p className="text-xs text-gray-400">
+                Duracion: {event.duracion}{" "}
+              </p>
+            </div>
 
-          <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
-            <button
-              className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
-              onClick={() => router.push(`/social/miembros/${event._id}`)}
-            >
-              {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
-              <span>Participantes</span>
-            </button>
+            <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
+              <button
+                className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
+                onClick={() => router.push(`/social/miembros/${event._id}`)}
+              >
+                {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
+                <span>Participantes</span>
+              </button>
 
-            {session?.user?.id === event.creador_id._id ? (
-              // Si es el creador, mostrar botón editar
-              <button
-                onClick={() => router.push(`/social/editar/${event._id}`)}
-                className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-3 font-semibold"
-              >
-                Editar
-              </button>
-            ) : (
-              // Si NO es el creador, mostrar botón unirse/salir
-              <button
-                onClick={handleAccion}
-                className={`rounded-[10px]  p-2 h-[30px] flex justify-center items-center transition shadow-md ${
-                  yaUnido
-                    ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
-                    : "bg-orange-500 text-white hover:text-white"
-                }`}
-              >
-                {yaUnido ? "Salir" : "Matchear"}
-              </button>
-            )}
+              {session?.user?.id === event.creador_id._id ? (
+                // Si es el creador, mostrar botón editar
+                <button
+                  onClick={() => router.push(`/social/editar/${event._id}`)}
+                  className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-3 font-semibold"
+                >
+                  Editar
+                </button>
+              ) : (
+                // Si NO es el creador, mostrar botón unirse/salir
+                <button
+                  onClick={handleAccion}
+                  className={`rounded-[10px]  p-2 h-[30px] flex justify-center items-center transition shadow-md ${
+                    yaUnido
+                      ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
+                      : "bg-orange-500 text-white hover:text-white"
+                  }`}
+                >
+                  {yaUnido ? "Salir" : "Matchear"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="pb-[200px]" />
+        <div className="pb-[200px]" />
+      </div>
     </main>
   );
 }
