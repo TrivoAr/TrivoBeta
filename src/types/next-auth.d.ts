@@ -8,6 +8,7 @@ declare module "next-auth" {
       fullname: string;
       telnumber: string;
       role: string;
+      bio: string;
       instagram?: string;
       imagen?:string;
   facebook?: string;
@@ -21,6 +22,7 @@ declare module "next-auth" {
     fullname: string;
     telnumber: string;
     role: string;
+    bio?: string;
     instagram?: string;
     imagen?: string;
   facebook?: string;

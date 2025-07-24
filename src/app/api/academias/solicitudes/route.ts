@@ -73,3 +73,44 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    await connectDB();
+    const { user_id, academia_id } = await req.json();
+
+    // Verificar si ya existe una solicitud pendiente
+    const solicitudExistente = await UsuarioAcademia.findOne({
+      user_id,
+      academia_id,
+      estado: "pendiente",
+    });
+
+    if (solicitudExistente) {
+      return NextResponse.json(
+        { message: "Ya existe una solicitud pendiente" },
+        { status: 409 } // ❗️Conflicto
+      );
+    }
+
+    const nuevaSolicitud = new UsuarioAcademia({
+      user_id,
+      academia_id,
+      estado: "pendiente",
+    });
+
+    await nuevaSolicitud.save();
+
+    return NextResponse.json(
+      { message: "Solicitud creada exitosamente" },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error al crear solicitud:", error);
+    return NextResponse.json(
+      { message: "Hubo un error al crear la solicitud" },
+      { status: 500 }
+    );
+  }
+}
+

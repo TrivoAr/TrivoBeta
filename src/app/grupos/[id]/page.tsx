@@ -48,6 +48,7 @@ type Grupo = {
     imagen: string;
     telnumber: string;
     instagram: string;
+    bio: string;
   };
 };
 
@@ -197,7 +198,6 @@ export default function GrupoDetailPage({
             }
           })
         );
-        
 
         setGrupo(response.data.grupo);
         setAlumnos(alumnosWithImages);
@@ -297,6 +297,24 @@ export default function GrupoDetailPage({
     return segundaParte;
   }
 
+    const handleDelete = async (id) => {
+    const confirmDelete = confirm("¿Estás seguro de que deseas eliminar este grupo?");
+    if (!confirmDelete) return;
+
+    try {
+      const response = await axios.delete(`/api/grupos/${id}`);
+      if (response.status === 200) {
+        toast.success("¡Grupo eliminado con éxito!");
+        router.push("/dashboard");
+      } else {
+        throw new Error("Error al eliminar el grupo");
+      }
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      toast.error("Error al eliminar el grupo.");
+    }
+  };
+
   const formatDias = (dias: string[]) => {
     if (dias.length === 1) return dias[0];
     if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
@@ -388,40 +406,13 @@ export default function GrupoDetailPage({
           </svg>
         </button>
 
-        <button className="btnFondo absolute top-2 right-14 text-white p-2 rounded-full shadow-md">
-          <svg
-            viewBox="0 0 32 32"
-            version="1.1"
-            fill="#000000"
-            width="24"
-            height="24"
-          >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <g id="icomoon-ignore"> </g>{" "}
-              <path
-                d="M21.886 5.115c3.521 0 6.376 2.855 6.376 6.376 0 1.809-0.754 3.439-1.964 4.6l-10.297 10.349-10.484-10.536c-1.1-1.146-1.778-2.699-1.778-4.413 0-3.522 2.855-6.376 6.376-6.376 2.652 0 4.925 1.62 5.886 3.924 0.961-2.304 3.234-3.924 5.886-3.924zM21.886 4.049c-2.345 0-4.499 1.089-5.886 2.884-1.386-1.795-3.54-2.884-5.886-2.884-4.104 0-7.442 3.339-7.442 7.442 0 1.928 0.737 3.758 2.075 5.152l11.253 11.309 11.053-11.108c1.46-1.402 2.275-3.308 2.275-5.352 0-4.104-3.339-7.442-7.442-7.442v0z"
-                fill="#000000"
-              >
-                {" "}
-              </path>{" "}
-            </g>
-          </svg>
-        </button>
-
-        <button className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md">
+        {session.user.id === grupo.profesor_id._id ? ( <button className="btnFondo absolute top-2 right-4 text-white p-2 rounded-full shadow-md" onClick={() => handleDelete(grupo._id)}>
           <svg
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            height={24}
+            width={24}
           >
             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
             <g
@@ -432,23 +423,19 @@ export default function GrupoDetailPage({
             <g id="SVGRepo_iconCarrier">
               {" "}
               <path
-                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                d="M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
                 stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>{" "}
-              <path
-                d="M16 8L12 4M12 4L8 8M12 4L12 16"
-                stroke="#000000"
-                stroke-width="1.5"
+                stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               ></path>{" "}
             </g>
           </svg>
-        </button>
+        </button>) : (null)}
+
+       
       </div>
+      
       <div className="flex flex-col items-center gap-3 w-full px-3 justify-center">
         <div>
           <h1 className="text-4xl font-bold text-center">
@@ -497,7 +484,7 @@ export default function GrupoDetailPage({
 
       {/* info del grupo */}
       <div className="w-full flex flex-col gap-4">
-        <p className="ml-6 mt-2 font-light text-xl">Info del entrenamiento</p>
+        <p className="ml-6 mt-2 font-light text-xl poppins-light">Info del entrenamiento</p>
         <div className="w-[90%] ml-4 flex">
           <div>
             <div className="flex items-center justify-start gap-1">
@@ -520,9 +507,9 @@ export default function GrupoDetailPage({
                   <polyline points="40 44 32 32 32 16"></polyline>
                 </g>
               </svg>
-              <p>Tiempo de Entreamiento</p>
+              <p className="poppins-thin">Tiempo de Entreamiento</p>
             </div>
-            <p className="text-[#666666] ml-6">{grupo.tiempo_promedio}</p>
+            <p className="text-[#666666] ml-6 poppins-thin">{grupo.tiempo_promedio}</p>
           </div>
         </div>
 
@@ -577,9 +564,9 @@ export default function GrupoDetailPage({
                   </g>{" "}
                 </g>
               </svg>
-              <p>Dificultad</p>
+              <p className="poppins-thin">Dificultad</p>
             </div>
-            <p className="text-[#666666] ml-6">{grupo.nivel}</p>
+            <p className="text-[#666666] ml-6 poppins-thin">{grupo.nivel}</p>
           </div>
         </div>
 
@@ -614,9 +601,9 @@ export default function GrupoDetailPage({
                   ></path>
                 </g>
               </svg>
-              <p>Dirección</p>
+              <p className="poppins-thin">Dirección</p>
             </div>
-            <p className="text-[#666666] ml-6">
+            <p className="text-[#666666] ml-6 poppins-thin">
               {grupo.ubicacion.split(",")[0]}
             </p>
           </div>
@@ -648,9 +635,9 @@ export default function GrupoDetailPage({
                   ></path>{" "}
                 </g>
               </svg>
-              <p>Dias y horario</p>
+              <p className="poppins-thin">Dias y horario</p>
             </div>
-            <p className="text-[#666666] ml-6">
+            <p className="text-[#666666] ml-6 poppins-thin">
               {formatDias(grupo.dias)}, {grupo.horario}hs
             </p>
           </div>
@@ -803,10 +790,7 @@ export default function GrupoDetailPage({
               </div>
             </div>
             <p className="text-xs text-[#666666] text-justify self-center mt-2 w-[300px]">
-              Coach de running con más de 10 años de experiencia ayudando a
-              corredores de todos los niveles a alcanzar sus metas. Apasionado
-              por el entrenamiento personalizado, la técnica de carrera y la
-              motivación constante para disfrutar cada kilómetro.”
+              {grupo.profesor_id.bio}
             </p>
           </div>
         </div>

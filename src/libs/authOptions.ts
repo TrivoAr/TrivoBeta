@@ -51,6 +51,7 @@ export const authOptions: AuthOptions = {
           instagram: userFound.instagram,
           facebook: userFound.facebook,
           twitter: userFound.twitter,
+          bio: userFound.bio,
         };
       },
     }),

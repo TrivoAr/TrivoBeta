@@ -21,7 +21,7 @@ type Grupo = {
   descripcion?: string;
   tipo_grupo?: string;
   imagen?: string;
-  dias?:  string []; 
+  dias?: string[];
 };
 
 type Academia = {
@@ -33,7 +33,6 @@ type Academia = {
     imagen: string;
     telnumber: string;
     instagram: string;
-
   };
   nombre_academia: string;
   descripcion: string;
@@ -63,7 +62,6 @@ export default function AcademiaDetailPage({
     rol: session?.user.role || "",
   });
   const [groupImages, setGroupImages] = useState<{ [key: string]: string }>({});
- 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +97,6 @@ export default function AcademiaDetailPage({
         localStorage.setItem("academia_id", params.id);
         localStorage.setItem("dueño_id", response.data.academia.dueño_id._id);
         console.log("lo estas guardando?", localStorage);
-
 
         // Intentar obtener la imagen del perfil
         const loadProfileImage = async () => {
@@ -146,26 +143,6 @@ export default function AcademiaDetailPage({
         console.error("Error al verificar membresía:", error);
       }
     };
-
-    const checkActiveRequest = async () => {
-      if (!session || !session.user) return;
-      try {
-        const response = await axios.get(`/api/academias/solicitudes`, {
-          params: {
-            academia_id: params.id,
-            user_id: session.user.id,
-          },
-        });
-        setHasActiveRequest(response.data.hasActiveRequest);
-      } catch (error) {
-        if (error === 404) {
-          console.log("No hay solicitud activa");
-          setHasActiveRequest(false);
-        } else {
-          console.error("Error al verificar solicitud activa:", error);
-        }
-      }
-    };
     if (session?.user) {
       setFormData({
         fullname: session.user.fullname || "",
@@ -174,10 +151,29 @@ export default function AcademiaDetailPage({
       });
     }
 
+    const verificarSolicitud = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        const res = await axios.get("/api/academias/solicitudes/" + params.id, {
+          params: {
+            user_id: session.user.id,
+            academia_id: params.id,
+          },
+        });
+
+        if (res.data?.hasActiveRequest) {
+          setHasActiveRequest(true);
+        }
+      } catch (error) {
+        console.error("Error al verificar solicitud:", error);
+      }
+    };
+
+    verificarSolicitud();
     fetchData();
-    checkActiveRequest(); // Verificar solicitud activa
     checkMembership();
-  }, [params.id, session]);
+  }, [params.id, session?.user?.id]);
 
   const handleJoinAcademia = async () => {
     if (!session || !session.user || !session.user.id) {
@@ -227,12 +223,10 @@ export default function AcademiaDetailPage({
   }
 
   const formatDias = (dias: string[]) => {
-  if (dias.length === 1) return dias[0];
-  if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
-  return `${dias.slice(0, -1).join(', ')} y ${dias[dias.length - 1]}`;
-};
-
-  
+    if (dias.length === 1) return dias[0];
+    if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
+    return `${dias.slice(0, -1).join(", ")} y ${dias[dias.length - 1]}`;
+  };
 
   return (
     <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
@@ -480,10 +474,16 @@ export default function AcademiaDetailPage({
         ></div>
         <div className="flex flex-col justify-around h-[80px]">
           <div className="text-[#666]">
-            <p className="poppins-extralight">{academia.dueño_id.firstname} {academia.dueño_id.lastname}</p>
+            <p className="poppins-extralight">
+              {academia.dueño_id.firstname} {academia.dueño_id.lastname}
+            </p>
           </div>
           <div className="flex gap-2 justify-center items-center">
-            <a className="text-[#666] flex justify-center items-center gap-1" href={`https://www.instagram.com/${academia.dueño_id.instagram}`} target="_blank">
+            <a
+              className="text-[#666] flex justify-center items-center gap-1"
+              href={`https://www.instagram.com/${academia.dueño_id.instagram}`}
+              target="_blank"
+            >
               Seguir{" "}
               <svg
                 viewBox="0 0 24 24"
@@ -508,12 +508,15 @@ export default function AcademiaDetailPage({
                 </g>
               </svg>
             </a>
-            <a className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold" href={`https://wa.me/${academia.dueño_id.telnumber?.replace(
-                  /\D/g,
-                  ""
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer">
+            <a
+              className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold"
+              href={`https://wa.me/${academia.dueño_id.telnumber?.replace(
+                /\D/g,
+                ""
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Contacto
             </a>
           </div>
@@ -526,88 +529,49 @@ export default function AcademiaDetailPage({
         </div>
         {grupos.length === 0 ? (
           <div>
-            <p className="text-center poppins-extralight">No hay grupos de entranamientos</p>
+            <p className="text-center poppins-extralight">
+              No hay grupos de entranamientos
+            </p>
           </div>
         ) : (
-<<<<<<< HEAD
-          <ul className="flex gap-2 flex-wrap justify-start px-4">
-            {grupos.map((grupo) => (
-              <div className="flex flex-col w-[170px] gap-1">
-                <li
-                  key={grupo._id}
-                  className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
-                  style={{
-                    backgroundImage: `url(${groupImages[grupo._id]})`,
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                  }}
-                  onClick={() => router.push(`/grupos/${grupo._id}`)}
-                >
-                  <p className=" w-[75px] bg-[#00000070] rounded-[20px] text-white font-semibold flex justify-center items-center">
-                    {grupo.tipo_grupo}
-                  </p>{" "}
-                </li>
-                <div className="">
-                  <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-                  <div className="text-[#B8B8B8]">
-                    <div className="flex gap-1">
-                      <p className="font-extralight text-[12px]">{formatDias(grupo.dias)}, {grupo.horario}hs</p>
-                      
+          <div>
+            <ul className="flex gap-2 flex-wrap justify-start px-4">
+              {grupos.map((grupo) => (
+                <div className="flex flex-col w-[170px] gap-1">
+                  <li
+                    key={grupo._id}
+                    className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
+                    style={{
+                      backgroundImage: `url(${groupImages[grupo._id]})`,
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
+                    onClick={() => router.push(`/grupos/${grupo._id}`)}
+                  >
+                    <p className=" w-[75px] bg-[#00000070] rounded-[20px] text-white font-semibold flex justify-center items-center">
+                      {grupo.tipo_grupo}
+                    </p>{" "}
+                  </li>
+                  <div className="">
+                    <p className="font-light text-sm">{grupo.nombre_grupo}</p>
+                    <div className="text-[#B8B8B8]">
+                      <div className="flex gap-1">
+                        <p className="font-extralight text-[12px]">
+                          {formatDias(grupo.dias)}, {grupo.horario}hs
+                        </p>
+                      </div>
+                      <p className="font-extralight text-[10px]">
+                        {grupo.ubicacion.split(",")[0]}
+                      </p>
                     </div>
-                    <p className="font-extralight text-[10px]">{grupo.ubicacion.split(",")[0]}</p>
-
-                    
                   </div>
                 </div>
-              </div>
-            ))}
-          </ul>
-=======
-<ul className="flex gap-2 flex-wrap justify-start px-4">
-  {grupos.map((grupo) => (
-    <div key={grupo._id} className="flex flex-col w-[170px] gap-1">
-      <li
-        className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
-        style={{
-          backgroundImage: `url(${groupImages[grupo._id]})`,
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-        }}
-        onClick={() => router.push(`/grupos/${grupo._id}`)}
-      >
-        <p className="w-[90px] h-[20px] bg-[#00000070] rounded-[20px] text-white font-medium flex justify-center items-center">
-          {grupo.tipo_grupo}
-        </p>
-      </li>
-      <div>
-        <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-        <div className="text-[#ccc]">
-          <p className="font-extralight text-xs">{grupo.ubicacion}</p>
-          <p className="font-extralight text-xs">{grupo.horario}</p>
-        </div>
-      </div>
-    </div>
-  ))}
-</ul>
-
->>>>>>> e256f22eef072cb36913d141484538d14a8161f8
+              ))}
+            </ul>
+          </div>
         )}
 
-        {/* {!esMiembro && (
-          <button
-            onClick={handleJoinAcademia}
-            disabled={hasActiveRequest}
-            className={`border w-[125px] h-[32px] rounded-[10px] self-center ${
-              hasActiveRequest
-                ? "border-gray-400 text-gray-400"
-                : "border-[#FF9A3D] text-[#FF9A3D]"
-            }`}
-          >
-            {hasActiveRequest ? "Solicitud enviada" : "Unirse"}
-          </button>
-        )} */}
         {/* <button onClick={handleEdit} className="btn-icon">
           ⚙️ {/* Ícono de tuerca }
         </button>*/}
@@ -617,66 +581,66 @@ export default function AcademiaDetailPage({
       <div className="mt-3 flex flex-col w-full px-4">
         <p className="text-2xl mb-3 font-medium ml-6">Miembros</p>
         <div>
-          <div className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly" onClick={() => router.push(`/academias/${academia._id}/miembros`)}>
+          <div
+            className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly"
+            onClick={() => router.push(`/academias/${academia._id}/miembros`)}
+          >
             <div>
               <svg
-              width="40px"
-              height="40px"
-              viewBox="0 0 64 64"
-              xmlns="http://www.w3.org/2000/svg"
-              stroke-width="3"
-              stroke="#ccc"
-              fill="none"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <circle cx="31.89" cy="22.71" r="5.57"></circle>
-                <path d="M43.16,43.74A11.28,11.28,0,0,0,31.89,32.47h0A11.27,11.27,0,0,0,20.62,43.74Z"></path>
-                <circle cx="48.46" cy="22.71" r="5.57"></circle>
-                <path d="M46.87,43.74H59.73A11.27,11.27,0,0,0,48.46,32.47h0a11.24,11.24,0,0,0-5.29,1.32"></path>
-                <circle cx="15.54" cy="22.71" r="5.57"></circle>
-                <path d="M17.13,43.74H4.27A11.27,11.27,0,0,1,15.54,32.47h0a11.24,11.24,0,0,1,5.29,1.32"></path>
-              </g>
-            </svg>
-            <p className="font-light text-[#ccc] text-sm">
-              Miembros de la tribu
-            </p>
-
-            </div>
-            
-            <div className="flex items-center justify-end">
-              <p className="text-[#ccc]">
-                Ver
+                width="40px"
+                height="40px"
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
+                stroke-width="3"
+                stroke="#ccc"
+                fill="none"
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <circle cx="31.89" cy="22.71" r="5.57"></circle>
+                  <path d="M43.16,43.74A11.28,11.28,0,0,0,31.89,32.47h0A11.27,11.27,0,0,0,20.62,43.74Z"></path>
+                  <circle cx="48.46" cy="22.71" r="5.57"></circle>
+                  <path d="M46.87,43.74H59.73A11.27,11.27,0,0,0,48.46,32.47h0a11.24,11.24,0,0,0-5.29,1.32"></path>
+                  <circle cx="15.54" cy="22.71" r="5.57"></circle>
+                  <path d="M17.13,43.74H4.27A11.27,11.27,0,0,1,15.54,32.47h0a11.24,11.24,0,0,1,5.29,1.32"></path>
+                </g>
+              </svg>
+              <p className="font-light text-[#ccc] text-sm">
+                Miembros de la tribu
               </p>
+            </div>
+
+            <div className="flex items-center justify-end">
+              <p className="text-[#ccc]">Ver</p>
               <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  height={25}
-                  width={25}
-                >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g
-                    id="SVGRepo_tracerCarrier"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                height={25}
+                width={25}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <rect width="10" height="10" fill="white"></rect>{" "}
+                  <path
+                    d="M9.5 7L14.5 12L9.5 17"
+                    stroke="#ccc"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                  ></g>
-                  <g id="SVGRepo_iconCarrier">
-                    {" "}
-                    <rect width="10" height="10" fill="white"></rect>{" "}
-                    <path
-                      d="M9.5 7L14.5 12L9.5 17"
-                      stroke="#ccc"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>{" "}
-                  </g>
-                </svg>
+                  ></path>{" "}
+                </g>
+              </svg>
             </div>
           </div>
         </div>
@@ -685,52 +649,94 @@ export default function AcademiaDetailPage({
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
         <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-around items-center">
           <div className="w-[50%] flex flex-col justify-center items-start gap-1 p-4">
-            <p className="font-medium underline text-xl">${Number(academia.precio).toLocaleString("es-AR")}</p>
-            <p >{academia.clase_gratis ? (<p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center"> 1° clase gratis</p>):(null)}</p>
-            
+            <p className="font-medium underline text-xl">
+              ${Number(academia.precio).toLocaleString("es-AR")}
+            </p>
+            <p>
+              {academia.clase_gratis ? (
+                <p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center">
+                  {" "}
+                  1° clase gratis
+                </p>
+              ) : null}
+            </p>
           </div>
 
           <div className="flex h-[60px] w-[60%] gap-3 justify-center items-center">
-          
             {session?.user?.id === academia.dueño_id._id ? (
               <div className="flex gap-2 text-[#bbb] justify-center items-center">
-              <button onClick={() => router.push("/grupos/")}
-                
-                className="bg-white h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
-              >
-                Crear grupo
-              </button>
-               <button
-                
-                className="bg-white h-[30px] w-[90px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"onClick={() => router.push(`/academias/${academia._id}/editar`)}
-              >
-                Editar
-              </button>
+                <button
+                  onClick={() => router.push("/grupos/")}
+                  className="bg-white h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
+                >
+                  Crear grupo
+                </button>
+                <button
+                  className="bg-white h-[30px] w-[90px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
+                  onClick={() =>
+                    router.push(`/academias/${academia._id}/editar`)
+                  }
+                >
+                  Editar
+                </button>
               </div>
-              
             ) : (
-              // Si NO es el creador, mostrar botón unirse/salir
-                 <button
-                
-                className="bg-[#C95100] h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-white text-lg"
-              >
-                Participar
-              </button>
+              // <div>
+              //   {!esMiembro && (
+              //     <button
+              //       onClick={handleJoinAcademia}
+              //       disabled={hasActiveRequest}
+              //       className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
+              //         hasActiveRequest ? "bg-white text-[#666] border shadow-md" : "bg-[#C95100] text-white"
+              //       }`}
+              //     >
+              //       {hasActiveRequest ? "Pendiente" : "Participar"}
+              //     </button>
+              //   )}
+              // </div>
+              // <div>
+              //   {!esMiembro && (
+              //     <button
+              //       onClick={handleJoinAcademia}
+              //       disabled={hasActiveRequest}
+              //       className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
+              //         hasActiveRequest
+              //           ? "bg-white text-[#666] border shadow-md"
+              //           : "bg-[#C95100] text-white"
+              //       }`}
+              //     >
+              //       {hasActiveRequest ? "Pendiente" : "Participar"}
+              //     </button>
+              //   )}
+              // </div>
+              <div>
+                {!esMiembro && (
+                  <button
+                    onClick={handleJoinAcademia}
+                    disabled={hasActiveRequest}
+                    className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
+                      hasActiveRequest
+                        ? "bg-white text-[#666] border shadow-md"
+                        : "bg-[#C95100] text-white"
+                    }`}
+                  >
+                    {hasActiveRequest ? "Pendiente" : "Participar"}
+                  </button>
+                )}
+
+                {esMiembro && (
+                  <button
+                    disabled
+                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#001a46] text-[#FDFCFA]"
+                  >
+                    Miembro
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
       </div>
-
-
-          
-          
-    
-
-
-
-
-
-
 
       <div className="pb-[230px]"></div>
     </div>
