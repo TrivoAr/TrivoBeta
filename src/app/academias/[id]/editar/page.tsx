@@ -7,6 +7,7 @@ import { saveAcademyImage } from "@/app/api/academias/saveAcademyImage";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import { useSession } from "next-auth/react";
 import Skeleton from "react-loading-skeleton";
+import AcademiaEditarSkeleton from '@/components/AcademiaEditarSkeleton';
 
 export default function EditarAcademia({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -143,6 +144,10 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
     }
   };
 
+  if (loading) {
+    return <AcademiaEditarSkeleton />;
+  }
+
   return (
     <div className="w-[390px] flex flex-col items-center gap-5">
       <Toaster position="top-center" /> {/* Para mostrar los toasts */}
@@ -169,29 +174,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
       <p className="text-xl font-medium mt-3 justify-self-center">
         Editar Academia
       </p>
-      {loading ? (
-        <div className="w-[390px] h-[844px] mx-auto p-4 space-y-5 rounded-xl mb-[80px] bg-[#FEFBF9]">
-          {/* Input nombre_academia */}
-          <Skeleton className="w-full px-4 py-6 rounded-[40px] my-5" />
-
-          {/* Input precio */}
-          <Skeleton className="w-full px-4 py-6 rounded-[40px] my-5" />
-
-          {/* Select país */}
-          <Skeleton className="w-full px-4 py-6 rounded-[40px] my-5" />
-
-          {/* Select provincia */}
-          <Skeleton className="w-full px-4 py-6 rounded-[40px] my-5" />
-
-          {/* Select localidad */}
-          <Skeleton className="w-full px-4 py-5 rounded-[40px] my-5" />
-
-          {/* Textarea descripción */}
-          <Skeleton className="w-full px-4 py-9 rounded-[40px] my-5" />
-          <Skeleton className="w-full px-4 py-4 rounded-[40px] my-5" />
-          <Skeleton className="w-full px-4 py-4 rounded-[40px] my-5" />
-        </div>
-      ) : (
+    
         <form
           onSubmit={handleSubmit}
           className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
@@ -375,7 +358,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
             Eliminar Academia
           </button>
         </form>
-      )}
+  
     </div>
   );
 }
