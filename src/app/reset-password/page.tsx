@@ -198,14 +198,14 @@ export default function ResetPassword() {
               placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+              className="w-full px-4 py-4 border shadow-md rounded-[20px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+            className="w-full bg-[#C95100] h-[55px] mb-[26px]  rounded-[20px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
             disabled={loading}
           >
             {loading ? "Enviando..." : "Enviar Código"}
@@ -244,7 +244,7 @@ export default function ResetPassword() {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+            className="w-full bg-[#C95100] h-[55px] mb-[26px]  rounded-[15px] text-white py-2 text-[20px] font-medium transition"
             disabled={loading}
           >
             {loading ? "Restableciendo..." : "Restablecer Contraseña"}

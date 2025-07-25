@@ -282,8 +282,8 @@ export default function Home() {
       {/* Salidas destacadas */}
       <section>
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Salidas</span> destacadas
+          <h2 className="text-2xl font-medium mb-3">
+            Salidas destacadas
           </h2>
         </div>
 
@@ -333,7 +333,7 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end ">
                       <button
                         onClick={() => {
                           setSelectedEvent({
@@ -350,11 +350,8 @@ export default function Home() {
                           });
                           setIsModalOpen(true);
                         }}
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                        }}
-                        className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20"
+                      
+                        className="text-white text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20 bg-[#C95100]"
                       >
                         Unirse
                       </button>
@@ -364,7 +361,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="font-bold">No hay salidas cargadas</p>
+            <p className="text-[#666]">No hay salidas cargadas</p>
           )}
         </div>
       </section>
@@ -372,8 +369,8 @@ export default function Home() {
       {/* Social Team */}
       <section>
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold">
-            <span className="text-[#C76C01]">Social</span> Team
+          <h2 className="text-2xl">
+            Social Team
           </h2>
           {/* {formData.rol=== "dueño de academia" && (
           <button
@@ -399,7 +396,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
-                  <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
+                  <div className="absolute top-2 right-2 bg-[#000000B2] text-white text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
                     {event.category}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
@@ -431,11 +428,8 @@ export default function Home() {
                     <div className="flex justify-end">
                       <button
                         onClick={() => router.push(`/team-social/${event._id}`)}
-                        className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                        }}
+                        className="self-end mt-2 text-white text-xs font-semibold rounded-full px-4 py-1 bg-[#C95100]"
+                    
                       >
                         Info
                       </button>
@@ -445,7 +439,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="font-bold">No hay social teams cargados</p>
+            <p className="text-[#666]">No hay social teams cargados</p>
           )}
         </div>
       </section>
@@ -454,8 +448,8 @@ export default function Home() {
 
       <section>
         <div className="">
-          <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Grupos de entrenamiento</span>
+          <h2 className="text-2xl font-medium mb-3">
+            Grupos de entrenamiento
           </h2>
           {/* {formData.rol=== "dueño de academia" && (
           <button

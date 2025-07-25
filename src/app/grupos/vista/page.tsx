@@ -1,8 +1,16 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaUser, FaBullseye } from "react-icons/fa";
+import GrupoVistaSkeleton from '@/components/GrupoVistaSkeleton';
 
 const DetalleGrupo = () => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const grupo = {
     nombre: "Entrenamiento General 5km",
     ubicacion: "Plaza Roca, Tucumán",
@@ -27,6 +35,10 @@ const DetalleGrupo = () => {
       "Javier Acosta",
     ],
   };
+
+  if (loading) {
+    return <GrupoVistaSkeleton />;
+  }
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 flex flex-col items-center">

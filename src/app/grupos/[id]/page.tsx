@@ -14,6 +14,7 @@ import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import { url } from "inspector";
+import GrupoDetailSkeleton from "@/components/GrupoDetailSkeleton";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -297,8 +298,10 @@ export default function GrupoDetailPage({
     return segundaParte;
   }
 
-    const handleDelete = async (id) => {
-    const confirmDelete = confirm("¿Estás seguro de que deseas eliminar este grupo?");
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm(
+      "¿Estás seguro de que deseas eliminar este grupo?"
+    );
     if (!confirmDelete) return;
 
     try {
@@ -323,7 +326,7 @@ export default function GrupoDetailPage({
 
   if (error) return <div>{error}</div>;
 
-  if (!grupo) return <div>Cargando...</div>;
+  if (!grupo) return <GrupoDetailSkeleton />;
 
   console.log("datos grupo", grupo.profesor_id);
 
@@ -406,39 +409,42 @@ export default function GrupoDetailPage({
           </svg>
         </button>
 
-        {session.user.id === grupo.profesor_id._id ? ( <button className="btnFondo absolute top-2 right-4 text-white p-2 rounded-full shadow-md" onClick={() => handleDelete(grupo._id)}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            height={24}
-            width={24}
+        {session.user.id === grupo.profesor_id._id ? (
+          <button
+            className="btnFondo absolute top-2 right-4 text-white p-2 rounded-full shadow-md"
+            onClick={() => handleDelete(grupo._id)}
           >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <path
-                d="M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
-                stroke="#000000"
-                stroke-width="2"
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              height={24}
+              width={24}
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              ></path>{" "}
-            </g>
-          </svg>
-        </button>) : (null)}
-
-       
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <path
+                  d="M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
+                  stroke="#000000"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>{" "}
+              </g>
+            </svg>
+          </button>
+        ) : null}
       </div>
-      
+
       <div className="flex flex-col items-center gap-3 w-full px-3 justify-center">
         <div>
-          <h1 className="text-4xl font-bold text-center">
+          <h1 className="text-[35px] font-bold text-center">
             {grupo.nombre_grupo}
           </h1>
 
@@ -476,15 +482,18 @@ export default function GrupoDetailPage({
                 ></path>{" "}
               </g>
             </svg>
-            {extraerLocalidad(grupo.ubicacion)}
+            <p className="font-regular">{extraerLocalidad(grupo.ubicacion)}</p>
+            
           </p>
         </div>
         <div className="w-[90%] border-b border-b-[#ccc]"></div>
       </div>
 
       {/* info del grupo */}
-      <div className="w-full flex flex-col gap-4">
-        <p className="ml-6 mt-2 font-light text-xl poppins-light">Info del entrenamiento</p>
+      <div className="w-full flex flex-col gap-2">
+        <p className="ml-6 mt-3 font-regular text-[22px]">
+          Info del entrenamiento
+        </p>
         <div className="w-[90%] ml-4 flex">
           <div>
             <div className="flex items-center justify-start gap-1">
@@ -507,9 +516,11 @@ export default function GrupoDetailPage({
                   <polyline points="40 44 32 32 32 16"></polyline>
                 </g>
               </svg>
-              <p className="poppins-thin">Tiempo de Entreamiento</p>
+              <p className="font-light">Tiempo de Entreamiento</p>
             </div>
-            <p className="text-[#666666] ml-6 poppins-thin">{grupo.tiempo_promedio}</p>
+            <p className="text-[#666666] ml-6 font-extralight">
+              {grupo.tiempo_promedio}
+            </p>
           </div>
         </div>
 
@@ -564,9 +575,9 @@ export default function GrupoDetailPage({
                   </g>{" "}
                 </g>
               </svg>
-              <p className="poppins-thin">Dificultad</p>
+              <p className="font-light">Dificultad</p>
             </div>
-            <p className="text-[#666666] ml-6 poppins-thin">{grupo.nivel}</p>
+            <p className="text-[#666666] ml-6 font-extralight">{grupo.nivel}</p>
           </div>
         </div>
 
@@ -601,9 +612,9 @@ export default function GrupoDetailPage({
                   ></path>
                 </g>
               </svg>
-              <p className="poppins-thin">Dirección</p>
+              <p className="font-light">Dirección</p>
             </div>
-            <p className="text-[#666666] ml-6 poppins-thin">
+            <p className="text-[#666666] ml-6 font-extralight">
               {grupo.ubicacion.split(",")[0]}
             </p>
           </div>
@@ -635,9 +646,9 @@ export default function GrupoDetailPage({
                   ></path>{" "}
                 </g>
               </svg>
-              <p className="poppins-thin">Dias y horario</p>
+              <p className="font-light">Dias y horario</p>
             </div>
-            <p className="text-[#666666] ml-6 poppins-thin">
+            <p className="text-[#666666] ml-6 font-extralight">
               {formatDias(grupo.dias)}, {grupo.horario}hs
             </p>
           </div>
@@ -645,18 +656,18 @@ export default function GrupoDetailPage({
         <div className="w-[90%] border-b border-b-[#ccc] self-center"></div>
       </div>
 
-      <div className="flex flex-col w-[390px]">
+      <div className="flex flex-col w-[390px] mt-3">
         <div className="flex flex-col">
-          <h2 className="ml-6 mt-2 font-light text-xl">Descripción</h2>
-          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+          <h2 className="ml-6 font-regular text-[22px]">Descripción</h2>
+          <p className="text-sm  font-extralight text-[#666666] p-2 ml-5 mb-3">
             {grupo.descripcion || "El Profe no agrego una descripción"}
           </p>
           <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
         </div>
 
         <div className="flex flex-col">
-          <h2 className="ml-6 mt-2 font-light text-xl">Avisos Importantes</h2>
-          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+          <h2 className="ml-6 mt-2 font-regular text-[22px]">Avisos Importantes</h2>
+          <p className="text-sm  font-extralight text-[#666666] p-2 ml-5 mb-3">
             {grupo.aviso || "El profe aún no incluyo avisos"}
           </p>
           <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
@@ -664,7 +675,39 @@ export default function GrupoDetailPage({
 
         <div className="flex flex-col">
           <h2 className="ml-6 mt-2 font-light text-xl">Punto de Encuentro</h2>
-          <p className="text-sm  font-light text-[#666666] p-2 ml-6">
+          <p className="text-sm  font-light text-[#666666] p-2 ml-6 flex gap-1 items-center">
+            <svg
+              height="13px"
+              width="13px"
+              version="1.1"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              fill="#FF3D00"
+              stroke="#FF3D00"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <path
+                  style={{ fill: "#FF3D00" }}
+                  d="M255.999,0C166.683,0,94.278,72.405,94.278,161.722c0,81.26,62.972,235.206,161.722,350.278 c98.75-115.071,161.722-269.018,161.722-350.278C417.722,72.405,345.316,0,255.999,0z"
+                ></path>{" "}
+                <g style={{ opacity: "0.1" }}>
+                  {" "}
+                  <path d="M168.207,125.87c15.735-64.065,67.63-109.741,128.634-120.664C283.794,1.811,270.109,0,255.999,0 C166.683,0,94.277,72.405,94.277,161.722c0,73.715,51.824,207.247,135.167,317.311C170.39,349.158,150.032,199.872,168.207,125.87z "></path>{" "}
+                </g>{" "}
+                <path
+                  style={{ fill: "#FFFF" }}
+                  d="M255.999,235.715c-40.81,0-74.014-33.203-74.019-74.014c0.005-40.795,33.209-73.998,74.019-73.998 s74.014,33.203,74.019,74.014C330.015,202.513,296.809,235.715,255.999,235.715z"
+                ></path>{" "}
+              </g>
+            </svg>
             {grupo.ubicacion.split(",")[0]}
           </p>
 
@@ -692,12 +735,12 @@ export default function GrupoDetailPage({
               </MapContainer>
             </div>
           ) : (
-            <p className="text-sm  font-light text-[#666666] ml-6 mb-2">
-              No hay coordenadas disponibles.
+            <p className="text-sm  font-light text-[#666666] ml-11 mb-2">
+              No hay ubicación cargada
             </p>
           )}
 
-          <hr className="border-t border-[#ccc] mb-3 mt-3 w-[90%] self-center" />
+          <hr className="border-t border-[#ccc] mb-3 mt-5 w-[90%] self-center" />
         </div>
 
         {/* <div className="rounded-lg p-1 w-full max-w-md mx-auto">
@@ -767,7 +810,7 @@ export default function GrupoDetailPage({
           </div>
         </div>
 
-        <hr className="border-t border-gray-300 w-[90%] mb-2 self-center" />
+        <hr className="border-t border-gray-300 w-[90%] mb-2 mt-4 self-center" />
 
         <div className="">
           <h2 className="ml-6 mt-2 font-light text-xl">Profesor</h2>
