@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { PATCH } from "@/app/api/grupos/route";
 import dynamic from "next/dynamic";
+import toast, { Toaster } from "react-hot-toast";
 
 interface LatLng {
   lat: number;
@@ -24,6 +25,7 @@ export default function EditarTeamSalida({
     const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
       ssr: false,
     });
@@ -145,6 +147,7 @@ export default function EditarTeamSalida({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     await fetch(`/api/team-social/${params.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -155,7 +158,8 @@ export default function EditarTeamSalida({
         locationCoords: markerPos,
       }),
     });
-    alert("Social team actualizado");
+
+    toast.success("Social team actualizado");
     router.push("/home");
   };
 
@@ -173,6 +177,7 @@ export default function EditarTeamSalida({
 
   return (
     <div className="flex flex-col justify-center items-center bg-[#FEFBF9]">
+      <Toaster position="top-center" /> 
       <button
         onClick={() => router.back()}
         className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
@@ -332,11 +337,40 @@ export default function EditarTeamSalida({
             />
           </div>
 
-          <button
+          {/* <button
             type="submit"
             className="w-full  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white py-3 rounded-xl font-semibold hover:bg-orange-600"
           >
             Guardar cambios
+          </button> */}
+            <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Actualizando social" : "Actualizar social"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
           </button>
 
           <button

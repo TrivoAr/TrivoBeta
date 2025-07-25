@@ -368,8 +368,7 @@ export default function EventPage({ params }: PageProps) {
             <div className="flex items-center justify-start mt-1 gap-2">
               <img
                 src={
-                  event.creador_id.imagen ||
-                  "/assets/icons/person_24dp_E8EAED.svg"
+                  event.creador_id.imagen
                 }
                 alt="Organizador"
                 className="h-8 w-8 rounded-full object-cover border"

@@ -10,6 +10,7 @@ function CrearAcademia() {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [text, setText] = useState("");
   const maxChars = 60;
@@ -60,6 +61,7 @@ function CrearAcademia() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const formData = new FormData(event.currentTarget);
@@ -97,8 +99,10 @@ function CrearAcademia() {
         const errorMessage =
           error.response?.data?.message || "Error en la solicitud";
         toast.error(errorMessage);
+        setIsSubmitting(false);
       } else {
         toast.error("Ocurrió un error desconocido");
+        setIsSubmitting(false);
       }
     }
   };
@@ -289,9 +293,39 @@ function CrearAcademia() {
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
         </label> */}
+        
         <div className="flex flex-col  items-center gap-3">
-          <button className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">
+          {/* <button className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">
             Crear Academia
+          </button> */}
+
+            <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creando academia" : "Crear academia"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
           </button>
 
           <button

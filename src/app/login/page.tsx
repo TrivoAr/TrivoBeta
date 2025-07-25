@@ -54,7 +54,7 @@ export default function Signin() {
             width={180}
             height={160}
           />
-          <h1 className="text-xl font-bold text-[#F7941F]">Iniciar Sesion</h1>
+          <h1 className="text-xl font-bold text-[#C95100]">Iniciar Sesion</h1>
         </div>
 
         <form className="px-6 pb-8 " onSubmit={handleSubmit}>
@@ -131,7 +131,7 @@ export default function Signin() {
           <div className="text-left mb-[26px]">
             <a
               href="/reset-password"
-              className="text-[15px] text-orange-500 hover:underline "
+              className="text-[15px] text-[#C95100]"
             >
               ¿Olvidaste tu contraseña?
             </a>
@@ -140,7 +140,7 @@ export default function Signin() {
           {/* Botón Login */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
+            className="w-full bg-[#C95100] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
           >
             Iniciar sesion
           </button>
@@ -208,9 +208,9 @@ export default function Signin() {
           </div>
 
           {/* Registro */}
-          <p className="text-center text-sm text-gray-600 mt-4">
+          <p className="text-center text-md text-gray-600 mt-4">
             ¿Todavía no sos parte?{" "}
-            <a href="/register" className="text-orange-500 hover:underline">
+            <a href="/register" className="text-[#C95100] hover:underline">
               Unite ahora
             </a>
           </p>

@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import { useSession, signOut } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
@@ -27,6 +28,7 @@ export default function CrearTeamPage() {
     const [suggestions, setSuggestions] = useState<
       Array<{ display_name: string; lat: string; lon: string }>
     >([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -84,6 +86,7 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let imageUrl = "";
+    setIsSubmitting(true);
 
     try {
       if (imagen) {
@@ -106,13 +109,18 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
       console.log("SALIDA A ENVIAR", salidaData);
 
       if (res.ok) {
+        toast.success("Social team creado con exito");
         router.push("/home");
       } else {
+        setIsSubmitting(false);
+        toast.error("Error al crear salida, datos incompletos")
         const error = await res.json();
         console.error("Error al crear team social:", error);
+        
       }
     } catch (err) {
       console.error("Error inesperado:", err);
+      setIsSubmitting(false);
     }
   };
 
@@ -144,6 +152,7 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
     return data.display_name as string;
   } catch (error) {
     console.error("Error al obtener dirección inversa:", error);
+    
     return "";
   }
 };
@@ -174,8 +183,9 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
       onSubmit={handleSubmit}
       className="max-w-sm mx-auto p-4 space-y-3 rounded-xl mb-[80px]"
     >
-      <h2 className="text-center font-bold text-xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
-        Crear <span className="text-black">social team </span>
+      <Toaster position="top-center" /> 
+      <h2 className="text-center font-normal text-xl">
+        Crear social team
       </h2>
 
       <label className="block">
@@ -342,16 +352,45 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
         />
       </label>
 
-      <button
+      {/* <button
         type="submit"
         className="w-full py-2 rounded-md text-white bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
       >
         Crear Team
-      </button>
+      </button> */}
+        <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
+             type="submit"
+          >
+            {isSubmitting ? "Creando social team" : "Crear social team"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
       <button
         type="button"
         onClick={() => router.back()}
-        className="w-full py-2 rounded-md border border-orange-500 text-orange-500 font-semibold"
+        className="w-full py-2 rounded-md text-[#C95100] font-semibold"
       >
         Atrás
       </button>

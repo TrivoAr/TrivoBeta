@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
+import toast, { Toaster } from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Session } from "inspector";
@@ -42,6 +43,7 @@ export default function CrearSalidaPage() {
   const [suggestions, setSuggestions] = useState<
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -95,9 +97,9 @@ export default function CrearSalidaPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    alert("Salida creada con exito");
     e.preventDefault();
     let imageUrl = "";
+    setIsSubmitting(true);
 
     if (imagen) {
       const imageRef = ref(storage, `salidas/${uuidv4()}`);
@@ -120,8 +122,13 @@ export default function CrearSalidaPage() {
       body: JSON.stringify(salidaData),
     });
 
-    if (res.ok) router.push("/home");
-    else console.error("Error al crear salida social");
+    if (res.ok){ 
+      toast.success("Salida creada con exito");
+       router.push("/home");}
+    else { 
+      setIsSubmitting(false);
+      toast.error("Error al crear la salida");
+       console.error("Error al crear salida social");}
   };
 
   const fetchSuggestions = (q: string) => {
@@ -167,8 +174,9 @@ export default function CrearSalidaPage() {
       onSubmit={handleSubmit}
       className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
     >
-      <h2 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
-        Crear <span className="text-black">salida</span>
+      <Toaster position="top-center" /> 
+      <h2 className="text-center font-normal text-2xl">
+        Crear salida
       </h2>
       <label className="block">
         Nombre
@@ -326,12 +334,41 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <button
+      {/* <button
         type="submit"
         className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
       >
         Crear salida
-      </button>
+      </button> */}
+        <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Creando academia" : "Crear academia"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
 
       <div className="w-full flex justify-center">
         <button
