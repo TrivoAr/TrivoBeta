@@ -77,6 +77,39 @@ type ModalEvent = {
   };
 };
 
+// Skeleton para las cards del dashboard
+const DashboardCardSkeleton = () => (
+  <div className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border bg-white">
+    <div className="h-[115px] bg-slate-200">
+      <Skeleton height={115} width={310} />
+    </div>
+    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+      <Skeleton width={60} height={15} />
+    </div>
+    <div className="p-3 flex flex-col gap-1">
+      <div className="mt-1">
+        <h1 className="font-normal text-lg">
+          <Skeleton width={120} />
+        </h1>
+        <div className="flex items-center text-sm">
+          <Skeleton width={80} />
+        </div>
+      </div>
+      <div className="text-[#666] text-md">
+        <Skeleton width={100} />
+        <Skeleton width={60} />
+      </div>
+    </div>
+    <div className="absolute top-[39%] right-[10px] flex gap-5">
+      <Skeleton circle width={40} height={40} />
+      <Skeleton circle width={40} height={40} />
+    </div>
+    <div className="absolute top-1 right-[10px]">
+      <Skeleton circle width={40} height={40} />
+    </div>
+  </div>
+);
+
 const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
@@ -429,7 +462,12 @@ const handleDeleteTeamSocial = async (eventId: string) => {
             }`}
           >
             <div className="flex space-x-4">
-              {salidaSocial.length > 0 ? (
+              {loading ? (
+                // Mostrar 3 skeletons mientras carga
+                Array.from({ length: 3 }).map((_, i) => (
+                  <DashboardCardSkeleton key={i} />
+                ))
+              ) : salidaSocial.length > 0 ? (
                 salidaSocial.map((event) => (
                   <div
                     key={event._id}
@@ -630,7 +668,11 @@ const handleDeleteTeamSocial = async (eventId: string) => {
                 }`}
               >
                 <div className="flex space-x-4">
-                  {salidaTeamSocial.length > 0 ? (
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <DashboardCardSkeleton key={i} />
+                    ))
+                  ) : salidaTeamSocial.length > 0 ? (
                     salidaTeamSocial.map((event) => (
                       <div
                         key={event._id}
@@ -845,7 +887,11 @@ const handleDeleteTeamSocial = async (eventId: string) => {
             }`}
           >
             <div className="flex space-x-4">
-              {miMatch.length > 0 ? (
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <DashboardCardSkeleton key={i} />
+                ))
+              ) : miMatch.length > 0 ? (
                 miMatch.map((event) => (
                   <div
                     key={event._id}
@@ -968,7 +1014,11 @@ const handleDeleteTeamSocial = async (eventId: string) => {
             }`}
           >
             <div className="flex space-x-4">
-              {miMatchTeamSocial.length > 0 ? (
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <DashboardCardSkeleton key={i} />
+                ))
+              ) : miMatchTeamSocial.length > 0 ? (
                 miMatchTeamSocial.map((event) => (
                   <div
                     key={event._id}
@@ -1097,7 +1147,11 @@ const handleDeleteTeamSocial = async (eventId: string) => {
                   className="flex space-x-4 h-[245px]"
                   
                 >
-                  {academia ? (
+                  {loading ? (
+                    Array.from({ length: 1 }).map((_, i) => (
+                      <DashboardCardSkeleton key={i} />
+                    ))
+                  ) : academia ? (
                     <div className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md border relative">
                       <div
                         className="w-full h-[50%] relative"
