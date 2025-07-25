@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import toast, { Toaster } from "react-hot-toast";
+import debounce from "lodash.debounce";
 
 interface LatLng {
   lat: number;
@@ -25,9 +26,11 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   );
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const router = useRouter();
+   const [query, setQuery] = useState("");
   const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -99,15 +102,29 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleCoordsChange = (coords: LatLng) => {
-    setMarkerPos(coords);
-    setFormData((prev) => ({
-      ...prev,
-      lat: coords.lat,
-      lng: coords.lng,
-      locationCoords: coords,
-    }));
-  };
+  // const handleCoordsChange = (coords: LatLng) => {
+  //   setMarkerPos(coords);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     lat: coords.lat,
+  //     lng: coords.lng,
+  //     locationCoords: coords,
+  //   }));
+  // };
+
+  const handleCoordsChange = async (coords: LatLng) => {
+  setMarkerPos(coords);
+
+  const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
+
+  setFormData((prev) => ({
+    ...prev,
+    ubicacion: direccion || prev.ubicacion,
+    lat: coords.lat,
+    lng: coords.lng,
+    locationCoords: coords,
+  }));
+};
 
   const handleSuggestionClick = (suggestion: any) => {
     const coords = {
@@ -140,6 +157,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     await fetch(`/api/social/${params.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -151,7 +169,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       }),
     });
     toast.success("Salida Actualizada");
-    router.push("/home");
+    router.push("/dashboard");
   };
 
   const handleDelete = async () => {
@@ -161,10 +179,38 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     if (!confirm) return;
 
     await fetch(`/api/social/${params.id}`, { method: "DELETE" });
-    router.push("/home");
+    router.push("/dashboard");
   };
 
-  console.log("data", formData);
+  
+     const fetchAddressFromCoords = async (lat: number, lon: number) => {
+        try {
+          const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+          const data = await res.json();
+          return data.display_name as string;
+        } catch (error) {
+          console.error("Error al obtener dirección inversa:", error);
+          return "";
+        }
+      };
+    
+      const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
+    
+      useEffect(() => {
+        if (query.length < 3) {
+          setSuggestions([]);
+          return;
+        }
+        debouncedFetch(query);
+      }, [query, debouncedFetch]);
+    
+      // Cleanup para evitar memory leaks
+      useEffect(() => {
+        return () => {
+          debouncedFetch.cancel();
+        };
+      }, [debouncedFetch]);
+
 
   return (
     <div className="flex flex-col justify-center items-center bg-[#FEFBF9] mb-[150px]">
@@ -183,7 +229,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         className="w-full max-w-md rounded-2xl h-[900px] p-8 mb-4"
       >
         <div className="mb-4 flex justify-center items-center relative">
-          <h1 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+          <h1 className="text-center font-normal text-2xl">
             Editar salida
           </h1>
         </div>
@@ -349,10 +395,33 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           </div>
 
           <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
             type="submit"
-            className="w-full  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white py-3 rounded-xl font-semibold hover:bg-orange-600"
           >
-            Guardar cambios
+            {isSubmitting ? "Guardando cambios" : "Guardar cambios"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
           </button>
 
           <button

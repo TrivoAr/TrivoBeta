@@ -174,7 +174,6 @@ export default function Home() {
       try {
         const res = await fetch("/api/academias");
         const data = await res.json();
-        console.log("academias", data);
 
         // 🔥 Nuevo paso: obtener las URLs desde Firebase
         const academiasConImagenes = await Promise.all(
@@ -487,7 +486,7 @@ export default function Home() {
                 ></div>
               ))
             ) : (
-              <p>No hay grupos de entrenamientos</p>
+              <p className="text-[#666]">No hay grupos de entrenamientos</p>
             )}
           </div>
         </div>

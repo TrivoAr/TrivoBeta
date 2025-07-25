@@ -24,6 +24,7 @@ const CrearGrupo = () => {
   const router = useRouter();
   const [academias, setAcademias] = useState<any[]>([]);
   const [markerPos, setMarkerPos] = useState<LatLng | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [grupo, setGrupo] = useState({
     academia_id: "",
@@ -71,8 +72,7 @@ const CrearGrupo = () => {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    // const { name, value } = e.target;
-    // setGrupo({ ...grupo, [name]: value });
+ 
     const { name, type, value, multiple, options } =
       e.target as HTMLSelectElement;
 
@@ -103,6 +103,7 @@ const CrearGrupo = () => {
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
     if (!session?.user?.id) {
       toast.error("No has iniciado sesión.");
       return;
@@ -141,6 +142,7 @@ const CrearGrupo = () => {
       router.push("/dashboard");
     } catch (error) {
       console.error("Error al crear el grupo:", error);
+      setIsSubmitting(false);
       toast.error("Hubo un error al crear el grupo");
     }
   };
@@ -223,8 +225,6 @@ const CrearGrupo = () => {
     );
   }
 
-  console.log(academias);
-
   return (
     <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9">
       <Toaster position="top-center" />
@@ -248,8 +248,9 @@ const CrearGrupo = () => {
           </svg>
         </button>
       </div>
-      <h2 className="text-center font-bold text-xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
-        Crear grupo <span className="text-black">de entrenamiento</span>
+      
+      <h2 className="text-center font-medium text-xl">
+        Crear grupo de entrenamiento
       </h2>
 
       <form
@@ -447,6 +448,8 @@ const CrearGrupo = () => {
             </div>
           ) : null}
         </select>
+
+
         <label className="block text-slate-400">
           Banner del grupo
           <div className="mt-2 w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
@@ -467,6 +470,8 @@ const CrearGrupo = () => {
             )}
           </div>
         </label>
+
+        
         <label className="block relative">
           Ubicación
           <input
@@ -497,20 +502,35 @@ const CrearGrupo = () => {
           />
         </label>
 
-        <button
-          type="submit"
-          className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
-        >
-          Crear Grupo
-        </button>
-
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="text-md text-orange-400"
-        >
-          Atrás
-        </button>
+       <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Creando grupo" : "Crear grupo"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
       </form>
       <div className="pb-[20px]"></div>
     </div>

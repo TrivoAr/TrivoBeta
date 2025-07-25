@@ -304,6 +304,8 @@ export default function CrearSalidaPage() {
         </div>
       </label>
 
+
+
       <label className="block relative">
         Ubicación
         <input
@@ -326,6 +328,8 @@ export default function CrearSalidaPage() {
           </ul>
         )}
       </label>
+
+      
 
       <label className="block">
         <MapWithNoSSR
