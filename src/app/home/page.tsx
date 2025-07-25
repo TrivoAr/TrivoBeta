@@ -248,6 +248,71 @@ export default function Home() {
   });
 };
 
+
+const SocialTeamSkeleton = () => (
+  <div className="flex space-x-4">
+    {[1, 2].map((i) => (
+      <div
+        key={i}
+        className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 flex flex-col justify-between relative bg-gray-200 animate-pulse"
+      >
+        <div className="absolute inset-0 bg-gray-300 rounded-2xl" />
+        <div className="absolute top-2 right-2 w-14 h-5 bg-gray-300 rounded-full z-10" />
+        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+          <div className="w-32 h-4 bg-gray-300 rounded mb-2" />
+          <div className="w-20 h-3 bg-gray-300 rounded mb-1" />
+          <div className="w-16 h-3 bg-gray-300 rounded mb-1" />
+          <div className="w-14 h-3 bg-gray-300 rounded mb-1" />
+          <div className="flex justify-end">
+            <div className="w-16 h-6 bg-gray-300 rounded-full mt-2" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const SalidasSkeleton = () => (
+  <div className="flex space-x-4">
+    {[1, 2].map((i) => (
+      <div
+        key={i}
+        className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative bg-gray-200 animate-pulse"
+      >
+        <div className="absolute inset-0 bg-gray-300" />
+        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <div className="w-24 h-3 bg-gray-300 rounded" />
+              <div className="w-20 h-3 bg-gray-300 rounded" />
+              <div className="w-16 h-3 bg-gray-300 rounded" />
+            </div>
+            <div className="w-10 h-5 bg-gray-300 rounded-full" />
+          </div>
+          <div className="flex justify-end">
+            <div className="w-[79px] h-[22px] bg-gray-300 rounded-[20px]" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+
+);
+
+const AcademiasSkeleton = () => (
+  <div className="flex space-x-4">
+    {[1, 2, 3].map((i) => (
+      <div
+        key={i}
+        className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border bg-gray-200 animate-pulse"
+      >
+        <div className="absolute inset-0 bg-gray-300" />
+      </div>
+    ))}
+  </div>
+);
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer
@@ -287,7 +352,8 @@ export default function Home() {
         </div>
 
         <div className="overflow-x-auto scrollbar-hide">
-          {futureEvents.length > 0 ? (
+          {futureEvents.length === 0 && events.length === 0 ? (
+            <SalidasSkeleton />) :  futureEvents.length > 0 ? (
             <div className="flex space-x-4">
               {futureEvents.map((event) => (
                 <div
@@ -371,20 +437,10 @@ export default function Home() {
           <h2 className="text-2xl">
             Social Team
           </h2>
-          {/* {formData.rol=== "dueño de academia" && (
-          <button
-            className="text-sm text-gray-400"
-            onClick={() => router.push(`/team-social/crear`)}
-          >
-            <img
-              className="h-[26px] w-[26px] color-black"
-              src="/assets/Logo/add-circle-svgrepo-com.svg"
-              alt=""
-            />
-          </button>)} */}
         </div>
         <div className="overflow-x-auto scrollbar-hide">
-          {futureTeamSocialEvents.length > 0 ? (
+          {futureTeamSocialEvents.length === 0 && teamSocialEvents.length === 0 ? (<SocialTeamSkeleton />) : (
+          futureTeamSocialEvents.length > 0 ? (
             <div className="flex space-x-4">
               {futureTeamSocialEvents.map((event) => (
                 <div
@@ -439,7 +495,8 @@ export default function Home() {
             </div>
           ) : (
             <p className="text-[#666]">No hay social teams cargados</p>
-          )}
+          ))}
+  
         </div>
       </section>
 
@@ -450,23 +507,14 @@ export default function Home() {
           <h2 className="text-2xl font-medium mb-3">
             Grupos de entrenamiento
           </h2>
-          {/* {formData.rol=== "dueño de academia" && (
-          <button
-            className="text-sm text-gray-400"
-            onClick={() => router.push("/academias/crear")}
-          >
-            <img
-              className="h-[26px] w-[26px]"
-              src="/assets/Logo/add-circle-svgrepo-com.svg"
-              alt=""
-            />
-          </button>)} */}
         </div>
         <div
           className={`overflow-x-auto scrollbar-hide ${
             academias.length > 0 ? "h-[245px]" : "h-auto"
           }`}
-        >
+        >  {academias.length === 0 ? (
+      <AcademiasSkeleton />
+    ):(
           <div className="flex space-x-4">
             {academias.length > 0 ? (
               academias.map((academia) => (
@@ -488,7 +536,7 @@ export default function Home() {
             ) : (
               <p className="text-[#666]">No hay grupos de entrenamientos</p>
             )}
-          </div>
+          </div>)}
         </div>
       </section>
 
