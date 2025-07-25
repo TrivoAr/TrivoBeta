@@ -10,9 +10,11 @@ import user from "../../../public/assets/icons/User.svg"
 export default function Signin() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(event.currentTarget);
 
     toast.promise(
@@ -23,11 +25,13 @@ export default function Signin() {
           redirect: false,
         });
         if (res?.error) {
+          setIsSubmitting(false);
           reject(res.error);
         } else if (res?.ok) {
           resolve("¡Inicio de sesión exitoso!");
         } else {
           reject("Ocurrió un error desconocido.");
+          setIsSubmitting(false);
         }
       }),
       {
@@ -138,12 +142,45 @@ export default function Signin() {
           </div>
 
           {/* Botón Login */}
+
+{/*           
           <button
             type="submit"
             className="w-full bg-[#C95100] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
           >
             Iniciar sesion
+          </button> */}
+                  <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Iniciando sesión" : "Iniciar sesión"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
           </button>
+
+
 
           {/* Divider */}
           <div className="flex items-center text-gray-400 text-sm my-2 ">

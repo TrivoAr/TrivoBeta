@@ -26,6 +26,7 @@ function ProfilePage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -145,7 +146,12 @@ function ProfilePage() {
     }
   };
 
-  console.log(formData);
+    const handleSignOut = async () => {
+    setIsSubmitting(true);
+    await signOut({ redirect: false });
+    window.location.href = "/login";
+  };
+
 
   return (
     <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
@@ -236,12 +242,42 @@ function ProfilePage() {
         </div>
       </div>
       <div className="text-center pt-4">
-        <button
-          onClick={() => signOut()}
+        {/* <button
+         
           className="w-[140px] mt-[40px] py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
         >
           Cerrar sesión
-        </button>
+        </button> */}
+                <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            type="submit"
+             onClick={handleSignOut}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Cerrando sesión" : "Cerrar sesión"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
       </div>
 
       {showPreview && (

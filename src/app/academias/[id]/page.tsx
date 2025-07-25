@@ -210,9 +210,7 @@ export default function AcademiaDetailPage({
       });
   };
 
-  const handleEdit = () => {
-    router.push(`/academias/${params.id}/editar`);
-  };
+
 
   if (error) {
     return <div>{error}</div>;
@@ -540,7 +538,7 @@ export default function AcademiaDetailPage({
                 <div className="flex flex-col w-[170px] gap-1">
                   <li
                     key={grupo._id}
-                    className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border"
+                    className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border relative"
                     style={{
                       backgroundImage: `url(${groupImages[grupo._id]})`,
                       backgroundSize: "cover",

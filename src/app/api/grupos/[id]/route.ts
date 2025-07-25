@@ -83,3 +83,40 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     return NextResponse.json({ error: "Error al eliminar el grupo" }, { status: 500 });
   }
 }
+
+
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  try {
+    await connectDB();
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const data = await req.json();
+
+    const grupo = await Grupo.findById(params.id);
+    if (!grupo) {
+      return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
+    }
+
+    // Validar permisos: dueño o profesor
+    const academia = await Academia.findById(grupo.academia_id);
+    if (
+      academia.dueño_id.toString() !== session.user.id &&
+      grupo.profesor_id?.toString() !== session.user.id
+    ) {
+      return NextResponse.json({ error: "No tienes permisos para editar este grupo" }, { status: 403 });
+    }
+
+    // Actualizar campos
+    Object.assign(grupo, data);
+    await grupo.save();
+
+    return NextResponse.json({ message: "Grupo actualizado con éxito" }, { status: 200 });
+  } catch (error) {
+    console.error("Error al actualizar grupo:", error);
+    return NextResponse.json({ error: "Error al actualizar grupo" }, { status: 500 });
+  }
+}

@@ -232,7 +232,7 @@ const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
         <option value="Running">Running</option>
         <option value="Ciclismo">Ciclismo</option>
         <option value="Trekking">Trekking</option>
-        <option value="Otro">Otro</option>
+        <option value="Otros">Otros</option>
       </select>
 
       <label className="block">
