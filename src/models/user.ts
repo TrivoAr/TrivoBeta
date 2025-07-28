@@ -1,5 +1,14 @@
 import { Schema, model, models } from "mongoose";
 
+
+
+const FavoritosSchema = new Schema({
+  salidas: [{ type: Schema.Types.ObjectId, ref: "SalidaSocial" }],
+  academias: [{ type: Schema.Types.ObjectId, ref: "Academia" }],
+  teamSocial: [{ type: Schema.Types.ObjectId, ref: "TeamSocial" }],
+});
+
+
 const UserSchema = new Schema(
   {
     email: {
@@ -47,9 +56,11 @@ const UserSchema = new Schema(
     imagen: {
       type: String,
     },
-    bio:{
+    bio: {
       type: String,
     },
+
+    favoritos: FavoritosSchema,
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },

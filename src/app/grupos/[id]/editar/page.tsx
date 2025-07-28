@@ -47,6 +47,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
 
   // Obtener los datos del grupo
   const fetchGrupo = async () => {
+    const toastId = toast.loading("Cargando datos del grupo...");
     try {
       const response = await axios.get(`/api/grupos/${params.id}`);
       setFormData((prev) => ({
@@ -57,18 +58,16 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           : response.data.grupo.dias?.split(",") ?? [],
       }));
 
-      console.log("que pija hermano", response.data.grupo.locationCoords);
-
       if (response.data.grupo.locationCoords) {
         setMarkerPos(response.data.grupo.locationCoords);
       } else {
         setMarkerPos(defaultCoords);
       }
 
-      toast.success("Datos cargados con éxito");
+       toast.success("Datos cargados con éxito", { id: toastId });
     } catch (error) {
       console.error("Error al cargar los datos:", error);
-      toast.error("Error al cargar los datos del grupo.");
+      toast.error("Error al cargar los datos del grupo.", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -199,25 +198,67 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleDelete = async () => {
-    const confirmDelete = confirm(
-      "¿Estás seguro de que deseas eliminar este grupo?"
-    );
-    if (!confirmDelete) return;
+  // const handleDelete = async () => {
+  //   const confirmDelete = confirm(
+  //     "¿Estás seguro de que deseas eliminar este grupo?"
+  //   );
+  //   if (!confirmDelete) return;
 
-    try {
-      const response = await axios.delete(`/api/grupos/${params.id}/eliminar`);
-      if (response.status === 200) {
-        toast.success("¡Grupo eliminado con éxito!");
-        router.push("/dashboard");
-      } else {
-        throw new Error("Error al eliminar el grupo");
-      }
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      toast.error("Error al eliminar el grupo.");
-    }
-  };
+  //   try {
+  //     const response = await axios.delete(`/api/grupos/${params.id}/eliminar`);
+  //     if (response.status === 200) {
+  //       toast.success("¡Grupo eliminado con éxito!");
+  //       router.push("/dashboard");
+  //     } else {
+  //       throw new Error("Error al eliminar el grupo");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al eliminar:", error);
+  //     toast.error("Error al eliminar el grupo.");
+  //   }
+  // };
+
+  const handleDelete = () => {
+  toast.custom((t) => (
+  <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col w-[300px] gap-3">
+    <p className="text-sm text-gray-800">
+      ¿Estás seguro de que deseas eliminar este grupo?
+    </p>
+    <div className="flex justify-end gap-2">
+      <button
+        onClick={async () => {
+          toast.dismiss(t.id);
+          const toastId = toast.loading("Eliminando grupo...");
+
+          try {
+            const response = await axios.delete(`/api/grupos/${params.id}/eliminar`);
+            if (response.status === 200) {
+              toast.success("¡Grupo eliminado con éxito!", { id: toastId });
+              router.push("/dashboard");
+            } else {
+              throw new Error("Error al eliminar el grupo");
+            }
+          } catch (error) {
+            toast.error("Error al eliminar el grupo.", { id: toastId });
+          }
+        }}
+        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+      >
+        Sí, eliminar
+      </button>
+      <button
+        onClick={() => toast.dismiss(t.id)}
+        className="text-gray-600 hover:text-black px-3 py-1 text-sm"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+), {
+  duration: Infinity // 🔒 se mantiene visible hasta que el usuario actúe
+});
+};
+
 
     const fetchSuggestions = (q: string) => {
     fetch(`/api/search?q=${encodeURIComponent(q)}`)

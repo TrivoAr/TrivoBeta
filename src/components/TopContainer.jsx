@@ -84,6 +84,47 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
     }
   };
 
+
+// useEffect(() => {
+//   if ("geolocation" in navigator) {
+//     navigator.geolocation.getCurrentPosition(
+//       async (position) => {
+//         const { latitude, longitude } = position.coords;
+//         console.log("Lat:", latitude, "Lng:", longitude);
+
+//         // Ejemplo simple: si quieres simplemente detectar ciudad según coordenadas
+//         try {
+//           const response = await fetch(
+//             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+//           );
+//           const data = await response.json();
+//           const city = data.address?.city || data.address?.town || data.address?.village || "Otros";
+
+//           // Puedes hacer un mapeo simple para asignar a una de tus opciones
+//           const mapeoLocalidades = {
+//             "San Miguel de Tucumán": "San Miguel de Tucuman",
+//             "Yerba Buena": "Yerba Buena",
+//             "Tafí Viejo": "Tafi Viejo",
+//           };
+
+//           const localidadDetectada = mapeoLocalidades[city] || "Otros";
+//           setSelectedLocalidad(localidadDetectada);
+//         } catch (error) {
+//           console.error("Error al obtener la localidad desde coordenadas:", error);
+//         }
+//       },
+//       (error) => {
+//         console.warn("No se pudo obtener la ubicación:", error);
+//       }
+//     );
+//   } else {
+//     console.warn("La geolocalización no está disponible en este navegador.");
+//   }
+// }, []);
+
+
+
+
   return (
     <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
       {/* Avatar */}
@@ -151,7 +192,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
           />
         </div>
         {SolicitudesPendientes && (
-          <span className="absolute top-0 right-0 h-[10px] w-[10px] bg-red-600 rounded-full border-2 border-white" />
+          <span className="absolute top-0 right-0 h-[15px] w-[15px] bg-red-600 rounded-full border-2 border-white" />
         )}
       </div>
     </div>

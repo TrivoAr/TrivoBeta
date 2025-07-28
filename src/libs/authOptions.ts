@@ -52,6 +52,7 @@ export const authOptions: AuthOptions = {
           facebook: userFound.facebook,
           twitter: userFound.twitter,
           bio: userFound.bio,
+          favoritos: userFound.favoritos,
         };
       },
     }),
