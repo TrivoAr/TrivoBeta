@@ -17,7 +17,11 @@ import "react-loading-skeleton/dist/skeleton.css";
 import toast, { Toaster } from "react-hot-toast";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 
-const categories = [{ label: "Mi panel" }, { label: "Mis match" }];
+const categories = [
+  { label: "Mi panel" },
+  { label: "Mis match" },
+  { label: "Mis favoritos" },
+];
 
 interface Academia {
   _id: string;
@@ -25,7 +29,7 @@ interface Academia {
   pais: string;
   provincia: string;
   localidad: string;
-  imagen: string;
+  imagenUrl: string;
   precio: string;
   tipo_disciplina: string;
 }
@@ -119,6 +123,10 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [miMatch, setMiMatch] = useState<any[]>([]);
   const [miMatchTeamSocial, setMiMatchTeamSocial] = useState<any[]>([]);
+  const [salidasFavoritas, setSalidasFavoritas] = useState<EventType[]>([]);
+  const [teamSocialFavoritos, setTeamSocialFavoritos] = useState<EventType[]>(
+    []
+  );
   const [error, setError] = useState<string | null>(null);
   const [selectedLocalidad, setSelectedLocalidad] = useState(
     "San Miguel de Tucuman"
@@ -128,8 +136,10 @@ const DashboardPage: React.FC = () => {
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
+  const [academiasFavoritas, setAcademiasFavoritas] = useState<Academia[]>([]);
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [favoritosIds, setFavoritosIds] = useState<string[]>([]);
 
   useEffect(() => {
     const obtenerTeams = async () => {
@@ -193,7 +203,6 @@ const DashboardPage: React.FC = () => {
           }
           const res = await fetch(url);
           const data = await res.json();
-          console.log("que pija hermano", data);
 
           if (data.length > 0) {
             try {
@@ -267,7 +276,6 @@ const DashboardPage: React.FC = () => {
           let url = `/api/team-social`;
           const res = await fetch(url);
           const data = await res.json();
-          console.log("social team puto", data);
 
           // data es un array → filtramos los que el creador sea el user logueado
 
@@ -275,8 +283,6 @@ const DashboardPage: React.FC = () => {
           const filteredData = data.filter(
             (item: any) => item.creadorId === userId
           );
-
-          console.log("puto 2:", filteredData);
 
           const mappedData = filteredData.map((item: any) => ({
             _id: item._id,
@@ -339,6 +345,158 @@ const DashboardPage: React.FC = () => {
     }
   }, [session]);
 
+  useEffect(() => {
+    // const fetchFavoritos = async () => {
+    //   if (!session?.user?.id) return;
+
+    //   try {
+    //     const res = await fetch("/api/profile"); // o "/api/favoritos"
+    //     const data = await res.json();
+
+    //     const favoritas = data.favoritos?.academias || [];
+
+    //     // Mapear con imágenes
+    //     const favoritasConImagen = await Promise.all(
+    //       favoritas.map(async (academia: any) => {
+    //         try {
+    //           const imagenUrl = await getAcademyImage(
+    //             "profile-image.jpg",
+    //             academia._id
+    //           );
+    //           return { ...academia, imagenUrl };
+    //         } catch {
+    //           return {
+    //             ...academia,
+    //             imagenUrl:
+    //               "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg",
+    //           };
+    //         }
+    //       })
+    //     );
+
+    //     setAcademiasFavoritas(favoritasConImagen);
+    //     setFavoritosIds(favoritas.map((a: any) => a._id));
+    //   } catch (err) {
+    //     console.error("Error cargando favoritos:", err);
+    //   }
+    // };
+
+    const fetchFavoritos = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+
+        const favoritasAcademias = data.favoritos?.academias || [];
+        const favoritasSalidas = data.favoritos?.salidas || [];
+        const favoritasTeamSocial = data.favoritos?.teamSocial || [];
+
+        // Mapear academias con imagen
+        const favoritasConImagen = await Promise.all(
+          favoritasAcademias.map(async (academia: any) => {
+            try {
+              const imagenUrl = await getAcademyImage(
+                "profile-image.jpg",
+                academia._id
+              );
+              return { ...academia, imagenUrl };
+            } catch {
+              return {
+                ...academia,
+                imagenUrl:
+                  "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg",
+              };
+            }
+          })
+        );
+
+        setAcademiasFavoritas(favoritasConImagen);
+        setFavoritosIds(favoritasAcademias.map((a: any) => a._id));
+
+        // Mapear salidas favoritas
+        const mappedSalidas = favoritasSalidas.map((item: any) => ({
+          _id: item._id,
+          title: item.nombre,
+          date: item.fecha,
+          time: item.hora,
+          price: item.precio,
+          image: item.imagen,
+          category: item.deporte,
+          location: item.ubicacion,
+          locationCoords: item.locationCoords,
+          localidad: item.localidad,
+          highlighted: false,
+          teacher: item.creador_id?.firstname || "Sin profe",
+        }));
+
+        const mappedTeams = favoritasTeamSocial.map((item: any) => ({
+          _id: item._id,
+          title: item.nombre,
+          date: item.fecha,
+          time: item.hora,
+          price: item.precio,
+          image: item.imagen,
+          category: item.deporte,
+          location: item.ubicacion,
+          locationCoords: item.locationCoords,
+          localidad: item.localidad,
+          highlighted: false,
+          teacher: item.creador_id?.firstname || "Sin profe",
+        }));
+
+        setTeamSocialFavoritos(mappedTeams);
+
+        setSalidasFavoritas(mappedSalidas);
+      } catch (err) {
+        console.error("Error cargando favoritos:", err);
+      }
+    };
+
+    fetchFavoritos();
+  }, [session]);
+
+  const toggleFavoritoTeamSocial = async (teamSocialId) => {
+    try {
+      const res = await fetch(`/api/favoritos/team-social/${teamSocialId}`, {
+        method: "POST", // o DELETE si preferís quitar directo
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar favorito");
+
+      // Quitar de favoritos en el estado local
+      setTeamSocialFavoritos((prev) =>
+        prev.filter((item) => item._id !== teamSocialId)
+      );
+    } catch (error) {
+      console.error("No se pudo actualizar favorito:", error);
+    }
+  };
+
+  const toggleFavorito = async (academiaId: string) => {
+    try {
+      const res = await fetch(`/api/favoritos/academias/${academiaId}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar favorito");
+
+      const data = await res.json();
+
+      // Toggle en el estado local
+      if (data.favorito) {
+        setFavoritosIds((prev) => [...prev, academiaId]);
+      } else {
+        setFavoritosIds((prev) => prev.filter((id) => id !== academiaId));
+        setAcademiasFavoritas((prev) =>
+          prev.filter((a) => a._id !== academiaId)
+        );
+      }
+    } catch (err) {
+      console.error("Error al hacer toggle de favorito:", err);
+    }
+  };
+
   if (status === "loading") return <p>Cargando...</p>;
 
   if (!session) return <p>No estás autenticado. Por favor, inicia sesión.</p>;
@@ -356,66 +514,66 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleDelete = async (eventId) => {
-  const confirm = window.confirm(
-    "¿Estás seguro que querés eliminar esta salida?"
-  );
-  if (!confirm) return;
+    const confirm = window.confirm(
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
+    if (!confirm) return;
 
-  const toastId = toast.loading("Eliminando salida...", {
-    id: "delete-social-toast",
-  });
-
-  try {
-    const response = await fetch(`/api/social/${eventId}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al eliminar la salida.");
-    }
-
-    toast.success("¡Salida eliminada con éxito!", { id: "delete-social-toast" });
-
-  
-    // setTimeout(() => {
-    //   router.push("/home");
-    // }, 500);
-    setSalidaSocial((prev) => prev.filter((item) => item._id !== eventId));
-
-
-  } catch (error) {
-    console.error("Error al eliminar salida:", error);
-    toast.error("Ocurrió un error al eliminar la salida.", {
+    const toastId = toast.loading("Eliminando salida...", {
       id: "delete-social-toast",
     });
-  }
-};
 
+    try {
+      const response = await fetch(`/api/social/${eventId}`, {
+        method: "DELETE",
+      });
 
-const handleDeleteTeamSocial = async (eventId: string) => {
-  const confirm = window.confirm("¿Estás seguro que querés eliminar esta salida?");
-  if (!confirm) return;
+      if (!response.ok) {
+        throw new Error("Error al eliminar la salida.");
+      }
 
-  const toastId = toast.loading("Eliminando salida...");
+      toast.success("¡Salida eliminada con éxito!", {
+        id: "delete-social-toast",
+      });
 
-  try {
-    const response = await fetch(`/api/team-social/${eventId}`, {
-      method: "DELETE",
-    });
+      // setTimeout(() => {
+      //   router.push("/home");
+      // }, 500);
+      setSalidaSocial((prev) => prev.filter((item) => item._id !== eventId));
+    } catch (error) {
+      console.error("Error al eliminar salida:", error);
+      toast.error("Ocurrió un error al eliminar la salida.", {
+        id: "delete-social-toast",
+      });
+    }
+  };
 
-    if (!response.ok) throw new Error("Error al eliminar");
+  const handleDeleteTeamSocial = async (eventId: string) => {
+    const confirm = window.confirm(
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
+    if (!confirm) return;
 
-    // 🔁 Actualizar estado local
-    setSalidaTeamSocial((prev) => prev.filter((item) => item._id !== eventId));
+    const toastId = toast.loading("Eliminando salida...");
 
-    toast.success("¡Salida eliminada con éxito!", { id: toastId });
-  } catch (error) {
-    console.error("Error al eliminar salida:", error);
-    toast.error("Ocurrió un error al eliminar la salida.", { id: toastId });
-  }
-};
+    try {
+      const response = await fetch(`/api/team-social/${eventId}`, {
+        method: "DELETE",
+      });
 
+      if (!response.ok) throw new Error("Error al eliminar");
 
+      // 🔁 Actualizar estado local
+      setSalidaTeamSocial((prev) =>
+        prev.filter((item) => item._id !== eventId)
+      );
+
+      toast.success("¡Salida eliminada con éxito!", { id: toastId });
+    } catch (error) {
+      console.error("Error al eliminar salida:", error);
+      toast.error("Ocurrió un error al eliminar la salida.", { id: toastId });
+    }
+  };
 
   const parseLocalDate = (isoDateString: string): string => {
     const [year, month, day] = isoDateString.split("-");
@@ -426,7 +584,6 @@ const handleDeleteTeamSocial = async (eventId: string) => {
       year: "2-digit",
     });
   };
-
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -644,7 +801,7 @@ const handleDeleteTeamSocial = async (eventId: string) => {
                       href="/social/crear"
                       className="font-medium text-[#000] border-b border-b-black"
                     >
-                       Crear aquí
+                      Crear aquí
                     </a>
                   </p>
                 </div>
@@ -858,7 +1015,7 @@ const handleDeleteTeamSocial = async (eventId: string) => {
                   ) : (
                     <div>
                       <p className="font-light text-[#666]">
-                        No creaste tu social team aún. {" "}
+                        No creaste tu social team aún.{" "}
                         <a
                           href="/team-social/crear"
                           className="font-medium text-[#000] decoration-slice border-b border-b-black "
@@ -1143,10 +1300,7 @@ const handleDeleteTeamSocial = async (eventId: string) => {
               </div>
 
               <div className="overflow-x-auto scrollbar-hide">
-                <div
-                  className="flex space-x-4 h-[245px]"
-                  
-                >
+                <div className="flex space-x-4 h-[245px]">
                   {loading ? (
                     Array.from({ length: 1 }).map((_, i) => (
                       <DashboardCardSkeleton key={i} />
@@ -1156,7 +1310,7 @@ const handleDeleteTeamSocial = async (eventId: string) => {
                       <div
                         className="w-full h-[50%] relative"
                         style={{
-                          backgroundImage: `url(${academia.imagen})`,
+                          backgroundImage: `url(${academia.imagenUrl})`,
                           backgroundSize: "cover",
                           backgroundRepeat: "no-repeat",
                           backgroundPosition: "center",
@@ -1244,6 +1398,338 @@ const handleDeleteTeamSocial = async (eventId: string) => {
             </section>
           )
         : null}
+
+      {/* Mis favoritos */}
+
+      {selectedCategory === "Mis favoritos" && (
+        <section>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-2xl font-normal mb-3">Salidas favoritas</h2>
+          </div>
+          <div
+            className={`overflow-x-auto scrollbar-hide ${
+              salidasFavoritas.length > 0 ? "h-[245px]" : "h-auto"
+            }`}
+          >
+            <div className="flex space-x-4">
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <DashboardCardSkeleton key={i} />
+                ))
+              ) : salidasFavoritas.length > 0 ? (
+                salidasFavoritas.map((event) => (
+                  //
+                  <div
+                    key={event._id}
+                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                  >
+                    {/* Imagen y etiqueta */}
+                    <div
+                      className="h-[115px] bg-slate-200 cursor-pointer"
+                      onClick={() => router.push(`/social/${event._id}`)}
+                    >
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                      <p className="font-bold">{event.category}</p>
+                    </div>
+
+                    {/* ❤️ Botón para quitar de favoritos */}
+                    <div className="absolute top-[10px] right-[10px] z-10">
+                      <button
+                        onClick={async () => {
+                          try {
+                            await fetch(`/api/favoritos/salidas/${event._id}`, {
+                              method: "POST",
+                            });
+                            // Actualizá el estado local de favoritos
+                            setSalidasFavoritas((prev) =>
+                              prev.filter((s) => s._id !== event._id)
+                            );
+                          } catch (err) {
+                            console.error("Error al quitar favorito:", err);
+                          }
+                        }}
+                        className="btnFondo p-2 rounded-full shadow-md hover:scale-105 transition"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#e11d48"
+                          viewBox="0 0 24 24"
+                          width="20"
+                          height="20"
+                        >
+                          <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 
+        4.42 3 7.5 3c1.74 0 3.41 0.81 
+        4.5 2.09C13.09 3.81 14.76 3 16.5 
+        3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 
+        6.86-8.55 11.54L12 21.35z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-3 flex flex-col">
+                      <h1 className="font-normal text-lg">{event.title}</h1>
+                      <div className="flex items-center text-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#f97316"
+                          viewBox="0 0 24 24"
+                          width="13"
+                          height="13"
+                          className="mr-1"
+                        >
+                          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                        </svg>
+                        <p className="text-[#666] font-light">
+                          {event.localidad}
+                        </p>
+                      </div>
+
+                      <div className="text-[#666] text-md">
+                        <p className="font-light text-lg">
+                          {parseLocalDate(event.date)}
+                        </p>
+                        <p>{event.time} hs</p>
+                      </div>
+                    </div>
+
+                    {/* Miembros */}
+                    <div className="absolute top-[39%] right-[10px] flex gap-5">
+                      <div
+                        className="bg-[#fff] border w-[40px] h-[40px] rounded-full flex justify-center items-center cursor-pointer"
+                        onClick={() =>
+                          router.push(`/social/miembros/${event._id}`)
+                        }
+                      >
+                        {/* Miembros Icon */}
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          height={24}
+                          width={24}
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          {/* ... icon paths ... */}
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <p className="font-light text-[#666]">
+                    Aún no tenés salidas marcadas como favoritas.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {selectedCategory === "Mis favoritos" &&
+        teamSocialFavoritos.length > 0 && (
+          <section>
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-2xl font-medium mb-3">
+                Mis Team Social favoritos
+              </h2>
+            </div>
+            <div
+              className={`overflow-x-auto scrollbar-hide ${
+                teamSocialFavoritos.length > 0 ? "h-[245px]" : "h-auto"
+              }`}
+            >
+              <div className="flex space-x-4">
+                {teamSocialFavoritos.map((event) => (
+                  <div
+                    key={event._id}
+                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border"
+                  >
+                    <div
+                      className="h-[115px] bg-slate-200 cursor-pointer"
+                      onClick={() => router.push(`/team-social/${event._id}`)}
+                    >
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px]">
+                      <p className="font-semibold">{event.category}</p>
+                    </div>
+                    <div className="p-3 flex flex-col">
+                      <div className="mt-1">
+                        <h1 className="font-normal text-lg">{event.title}</h1>
+                        <div className="flex items-center text-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="#f97316"
+                            viewBox="0 0 24 24"
+                            width="13"
+                            height="13"
+                            className="mr-1"
+                          >
+                            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                          </svg>
+                          <p className="text-[#666] font-light">
+                            {event.localidad}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-[#666] text-md">
+                        <p className="font-normal text-lg">
+                          ${Number(event.price).toLocaleString("es-AR")}
+                        </p>
+                        <p className="font-light">
+                          {new Date(event.date).toLocaleDateString("es-AR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit",
+                          })}
+                          , {event.time} hs
+                        </p>
+                      </div>
+                    </div>
+                    {/* Botón para quitar de favoritos */}
+                    <div className="absolute top-1 right-[10px]">
+                      <button
+                        onClick={() => toggleFavoritoTeamSocial(event._id)}
+                        className="btnFondo border w-[40px] h-[40px] rounded-full flex justify-center items-center"
+                        title="Quitar de favoritos"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="#ef4444"
+                          xmlns="http://www.w3.org/2000/svg"
+                          height={20}
+                          width={20}
+                        >
+                          <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.41 4.42 3 
+                    7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 
+                    14.76 3 16.5 3 19.58 3 22 5.41 
+                    22 8.5c0 3.78-3.4 6.86-8.55 
+                    11.54L12 21.35z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+      {selectedCategory === "Mis favoritos" && (
+        <section>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-2xl font-medium mb-3">Grupos favoritos</h2>
+          </div>
+
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex space-x-4 h-[245px]">
+              {academiasFavoritas.length === 0 ? (
+                <div className="text-gray-600">
+                  No tenés academias favoritas aún.
+                </div>
+              ) : (
+                academiasFavoritas.map((academia) => (
+                  <div
+                    key={academia._id}
+                    className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md border relative"
+                  >
+                    {/* Imagen */}
+                    <div
+                      className="w-full h-[50%] relative cursor-pointer"
+                      style={{
+                        backgroundImage: `url(${academia.imagenUrl})`,
+                        backgroundSize: "cover",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                      }}
+                      onClick={() => router.push(`/academias/${academia._id}`)}
+                    >
+                      <div className="absolute bg-[#00000080] text-white rounded-full w-[95px] h-[25px] flex justify-center items-center top-[10px] left-[10px] font-semibold">
+                        {academia.tipo_disciplina}
+                      </div>
+
+                      {/* ❤️ botón de favoritos */}
+                      <button
+                        className="absolute top-2 right-2 text-white btnFondo rounded-full p-3 flex justify-center items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorito(academia._id);
+                        }}
+                      >
+                        {favoritosIds.includes(academia._id) ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="red"
+                            viewBox="0 0 24 24"
+                            width="25"
+                            height="25"
+                          >
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 18.5 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            stroke="white"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            height="24"
+                          >
+                            <path
+                              d="M12.1 21.35l-1.1-1.05C5.14 15.24 2 12.32 2 8.5 2 6 3.98 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20.02 4 22 6 22 8.5c0 3.82-3.14 6.74-8.9 11.8l-1 1.05z"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Info */}
+                    <div className="w-full h-[50%] p-3">
+                      <p className="font-normal text-lg">
+                        {academia.nombre_academia}
+                      </p>
+                      <div className="flex items-center text-sm mt-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="#f97316"
+                          viewBox="0 0 24 24"
+                          width="13"
+                          height="13"
+                          className="mr-1"
+                        >
+                          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
+                        </svg>
+                        <p className="text-[#666]">{academia.localidad}</p>
+                      </div>
+                      <div className="font-normal text-lg text-[#666] mt-1">
+                        ${Number(academia.precio).toLocaleString("es-AR")}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="pb-[100px]"></div>
     </main>

@@ -10,9 +10,14 @@ declare module "next-auth" {
       role: string;
       bio: string;
       instagram?: string;
-      imagen?:string;
-  facebook?: string;
-  twitter?: string; 
+      imagen?: string;
+      facebook?: string;
+      twitter?: string;
+      favoritos?: {
+      salidas: string[];
+      academias: string[];
+      teamSocial: string[];
+    };
     };
   }
 
@@ -25,7 +30,12 @@ declare module "next-auth" {
     bio?: string;
     instagram?: string;
     imagen?: string;
-  facebook?: string;
-  twitter?: string;
+    facebook?: string;
+    twitter?: string;
+    favoritos?: {
+      salidas: string[];
+      academias: string[];
+      teamSocial: string[];
+    };
   }
 }

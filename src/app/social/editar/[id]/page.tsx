@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import toast, { Toaster } from "react-hot-toast";
 import debounce from "lodash.debounce";
+import { confirmActionToast } from "@/app/utils/confirmActionToast";
 
 interface LatLng {
   lat: number;
@@ -26,7 +27,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   );
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const router = useRouter();
-   const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("");
   const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
     ssr: false,
   });
@@ -49,24 +50,51 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   const [markerPos, setMarkerPos] = useState<LatLng>({ lat: 0, lng: 0 });
   const defaultCoords = { lat: -26.8333, lng: -65.2167 };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`/api/social/${params.id}`);
-        const data = await res.json();
-        setFormData(data);
-        if (data.locationCoords) {
-          setMarkerPos(data.locationCoords);
-        } else {
-          setMarkerPos(defaultCoords);
-        }
-      } catch (err) {
-        console.error("Error cargando datos:", err);
-      }
-    };
+  // useEffect(() => {
+  //    let isMounted = true;
+  //    const toastId = toast.loading("Cargando datos de la salida...");
 
-    fetchData();
-  }, [params.id]);
+  //   const fetchData = async () => {
+  //     try {
+  //       const res = await fetch(`/api/social/${params.id}`);
+  //       const data = await res.json();
+  //       if (!isMounted) return;
+  //       setFormData(data);
+  //       if (data.locationCoords) {
+  //         setMarkerPos(data.locationCoords);
+  //       } else {
+  //         setMarkerPos(defaultCoords);
+  //       }
+
+  //     toast.dismiss(toastId);
+  //     toast.success("Datos cargados con éxito");
+  //     } catch (err) {
+  //       console.error("Error cargando datos:", err);
+  //       toast.dismiss(toastId);
+  //     toast.error("Error cargando los datos");
+  //     }
+  //   };
+
+  //   fetchData();
+  //   return () => {
+  //   isMounted = false;
+  // };
+  // }, [params.id]);
+
+  useEffect(() => {
+  toast.promise(
+    fetch(`/api/social/${params.id}`).then((res) => res.json()).then((data) => {
+      setFormData(data);
+      setMarkerPos(data.locationCoords || defaultCoords);
+    }),
+    {
+      loading: "Cargando datos de la salida...",
+      success: "Datos cargados con éxito",
+      error: "Error al cargar los datos",
+    }
+  );
+}, [params.id]);
+
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -102,29 +130,19 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     }
   };
 
-  // const handleCoordsChange = (coords: LatLng) => {
-  //   setMarkerPos(coords);
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     lat: coords.lat,
-  //     lng: coords.lng,
-  //     locationCoords: coords,
-  //   }));
-  // };
-
   const handleCoordsChange = async (coords: LatLng) => {
-  setMarkerPos(coords);
+    setMarkerPos(coords);
 
-  const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
+    const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
 
-  setFormData((prev) => ({
-    ...prev,
-    ubicacion: direccion || prev.ubicacion,
-    lat: coords.lat,
-    lng: coords.lng,
-    locationCoords: coords,
-  }));
-};
+    setFormData((prev) => ({
+      ...prev,
+      ubicacion: direccion || prev.ubicacion,
+      lat: coords.lat,
+      lng: coords.lng,
+      locationCoords: coords,
+    }));
+  };
 
   const handleSuggestionClick = (suggestion: any) => {
     const coords = {
@@ -173,44 +191,58 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   };
 
   const handleDelete = async () => {
-    const confirm = window.confirm(
-      "¿Estás seguro que querés eliminar esta salida?"
-    );
-    if (!confirm) return;
+    // const confirm = window.confirm(
+    //   "¿Estás seguro que querés eliminar esta salida?"
+    // );
+    // if (!confirm) return;
 
-    await fetch(`/api/social/${params.id}`, { method: "DELETE" });
-    router.push("/dashboard");
+    // await fetch(`/api/social/${params.id}`, { method: "DELETE" });
+    // router.push("/dashboard");
+
+    confirmActionToast({
+      message: "¿Eliminar grupo?",
+      description: "Esta acción no se puede deshacer.",
+      confirmText: "Sí, eliminar",
+      cancelText: "Cancelar",
+      loadingMessage: "Eliminando grupo...",
+      successMessage: "Salida eliminada con éxito",
+      errorMessage: "No se pudo eliminar el grupo",
+      onConfirm: async () => {
+        await fetch(`/api/social/${params.id}`, { method: "DELETE" });
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 200);
+      },
+    });
   };
 
-  
-     const fetchAddressFromCoords = async (lat: number, lon: number) => {
-        try {
-          const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
-          const data = await res.json();
-          return data.display_name as string;
-        } catch (error) {
-          console.error("Error al obtener dirección inversa:", error);
-          return "";
-        }
-      };
-    
-      const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
-    
-      useEffect(() => {
-        if (query.length < 3) {
-          setSuggestions([]);
-          return;
-        }
-        debouncedFetch(query);
-      }, [query, debouncedFetch]);
-    
-      // Cleanup para evitar memory leaks
-      useEffect(() => {
-        return () => {
-          debouncedFetch.cancel();
-        };
-      }, [debouncedFetch]);
+  const fetchAddressFromCoords = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name as string;
+    } catch (error) {
+      console.error("Error al obtener dirección inversa:", error);
+      return "";
+    }
+  };
 
+  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
+
+  useEffect(() => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    debouncedFetch(query);
+  }, [query, debouncedFetch]);
+
+  // Cleanup para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [debouncedFetch]);
 
   return (
     <div className="flex flex-col justify-center items-center bg-[#FEFBF9] mb-[150px]">
@@ -229,9 +261,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         className="w-full max-w-md rounded-2xl h-[900px] p-8 mb-4"
       >
         <div className="mb-4 flex justify-center items-center relative">
-          <h1 className="text-center font-normal text-2xl">
-            Editar salida
-          </h1>
+          <h1 className="text-center font-normal text-2xl">Editar salida</h1>
         </div>
 
         <div className="space-y-4">

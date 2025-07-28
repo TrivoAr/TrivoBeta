@@ -199,7 +199,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
           />
 
           <select
-            name="localidad"
+            name="pais"
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
             value={formData.pais}
             onChange={handleChange}
@@ -212,7 +212,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
           </select>
 
           <select
-            name="localidad"
+            name="provincia"
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
             value={formData.provincia}
             onChange={handleChange}

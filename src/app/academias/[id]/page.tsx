@@ -7,9 +7,15 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import { getGroupImage } from "@/app/api/grupos/getGroupImage";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
 import { User } from "mercadopago";
+import RatingStars from "@/components/RatingStars";
+import ReviewForm from "@/components/ReviewButtonWithModal";
+import Review from "@/models/Review";
 import AcademiaLoadingSkeleton from "@/components/MatchLoadingSkeleton";
+import ReviewButtonWithModal from "@/components/ReviewButtonWithModal";
+import ReviewCard from "@/components/ReviewCard";
 
 type Grupo = {
   _id: string;
@@ -22,6 +28,19 @@ type Grupo = {
   tipo_grupo?: string;
   imagen?: string;
   dias?: string[];
+};
+
+type Review = {
+  _id: string;
+  author: {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    imagen?: string;
+  };
+  rating: number;
+  comment: string;
+  createdAt: string;
 };
 
 type Academia = {
@@ -53,6 +72,12 @@ export default function AcademiaDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [hasActiveRequest, setHasActiveRequest] = useState(false); // Estado para solicitudes activas
   const [esMiembro, setEsMiembro] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [miReview, setMiReview] = useState<Review | null>(null);
+  const [esFavorito, setEsFavorito] = useState(false);
+
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -61,7 +86,65 @@ export default function AcademiaDetailPage({
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
+
   const [groupImages, setGroupImages] = useState<{ [key: string]: string }>({});
+
+  const fetchReviews = async () => {
+    setLoadingReviews(true);
+    try {
+      const res = await axios.get(`/api/reviews/academia/${params.id}`);
+      const todas = res.data.reviews as Review[];
+
+      // Agregar imagen a cada autor
+      const reviewsConImagen = await Promise.all(
+        todas.map(async (review) => {
+          try {
+            const profileImage = await getProfileImage(
+              "profile-image.jpg",
+              review.author._id
+            );
+
+            return {
+              ...review,
+              author: {
+                ...review.author,
+                imagen: profileImage,
+              },
+            };
+          } catch (error) {
+            console.error(
+              `Error al obtener imagen del usuario ${review.author._id}:`,
+              error
+            );
+            return {
+              ...review,
+              author: {
+                ...review.author,
+                imagen:
+                  "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+              },
+            };
+          }
+        })
+      );
+      setReviews(reviewsConImagen);
+      setAverageRating(res.data.average);
+
+      // Buscar si ya dejó una reseña este usuario
+      if (session?.user?.id) {
+        const yaExiste = reviewsConImagen.find(
+          (r) => r.author._id === session.user.id
+        );
+
+        console.log("Ya existe reseña:", yaExiste);
+        setMiReview(yaExiste || null);
+      }
+    } catch (error) {
+      console.error("Error cargando reseñas:", error);
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -170,10 +253,110 @@ export default function AcademiaDetailPage({
       }
     };
 
+    const fetchReviews = async () => {
+      setLoadingReviews(true);
+      try {
+        const res = await axios.get(`/api/reviews/academia/${params.id}`);
+        const reviewsData = res.data.reviews;
+        const average = res.data.average;
+
+        // Agregar imagen de perfil a cada autor de reseña
+        const reviewsConImagen = await Promise.all(
+          reviewsData.map(async (review: any) => {
+            try {
+              const profileImage = await getProfileImage(
+                "profile-image.jpg",
+                review.author._id
+              );
+
+              return {
+                ...review,
+                author: {
+                  ...review.author,
+                  imagen: profileImage,
+                },
+              };
+            } catch (error) {
+              console.error(
+                `Error al obtener la imagen del usuario ${review.author._id}:`,
+                error
+              );
+              return {
+                ...review,
+                author: {
+                  ...review.author,
+                  imagen:
+                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+                },
+              };
+            }
+          })
+        );
+
+        setReviews(reviewsConImagen);
+        setAverageRating(average);
+
+        if (session?.user?.id) {
+          const yaExiste = reviewsConImagen.find(
+            (r) => r.author._id === session.user.id
+          );
+
+         
+          setMiReview(yaExiste || null);
+        }
+      } catch (error) {
+        console.error("Error cargando reseñas:", error);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    const verificarFavorito = async () => {
+      if (!session?.user?.id) return;
+
+      console.log("Verificando si es favorito para el usuario:", session.user.id);
+
+      try {
+        console.log("Verificando favoritos para el usuario:", session.user.id);
+        const res = await axios.get(`/api/profile`);
+        const academiasFavoritas =
+        res.data.favoritos?.academias?.map((a: any) => a._id) || [];
+        setEsFavorito(academiasFavoritas.includes(params.id));
+      } catch (error) {
+        console.error("Error al verificar favoritos:", error);
+      }
+    };
+
     verificarSolicitud();
     fetchData();
     checkMembership();
+    fetchReviews();
+    verificarFavorito();
   }, [params.id, session?.user?.id]);
+
+ const toggleFavorito = async () => {
+  if (!session?.user?.id) {
+    toast.error("Debes iniciar sesión para agregar a favoritos.");
+    return;
+  }
+
+  try {
+    const res = await axios.post(`/api/favoritos/academias/${params.id}`);
+    const data = res.data;
+
+    setEsFavorito(data.favorito); // true o false según si fue agregado o removido
+    toast.success(
+      data.favorito
+        ? "Academia agregada a favoritos"
+        : "Academia eliminada de favoritos"
+    );
+  } catch (error) {
+    console.error("Error al actualizar favoritos:", error);
+    toast.error("Hubo un error al actualizar favoritos.");
+  }
+};
+
+
 
   const handleJoinAcademia = async () => {
     if (!session || !session.user || !session.user.id) {
@@ -209,8 +392,6 @@ export default function AcademiaDetailPage({
         console.error("Error al unirse a la academia:", err);
       });
   };
-
-
 
   if (error) {
     return <div>{error}</div>;
@@ -257,34 +438,80 @@ export default function AcademiaDetailPage({
           </svg>
         </button>
 
-        <button className="btnFondo absolute top-2 right-14 text-white p-2 rounded-full shadow-md">
+        <button className="btnFondo absolute top-2 right-14 text-white p-2 rounded-full shadow-md" onClick={toggleFavorito}>
+        {esFavorito ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="red"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 18.5 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="black"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path
+                d="M12.1 21.35l-1.1-1.05C5.14 15.24 2 12.32 2 8.5 2 6 3.98 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20.02 4 22 6 22 8.5c0 3.82-3.14 6.74-8.9 11.8l-1 1.05z"
+                strokeWidth="2"
+              />
+            </svg>
+          )}
+        </button>
+               <button
+          onClick={() => {
+            navigator.clipboard
+              .writeText(window.location.href)
+              .then(() => {
+                // alert("¡Link copiado al portapapeles!");
+                toast.success("¡Link copiado al portapapeles!");
+              })
+              .catch((err) => {
+                console.error("Error al copiar el link:", err);
+              });
+          }}
+          className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
+        >
           <svg
-            viewBox="0 0 32 32"
-            version="1.1"
-            fill="#000000"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
           >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
             <g
               id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             ></g>
             <g id="SVGRepo_iconCarrier">
-              {" "}
-              <g id="icomoon-ignore"> </g>{" "}
               <path
-                d="M21.886 5.115c3.521 0 6.376 2.855 6.376 6.376 0 1.809-0.754 3.439-1.964 4.6l-10.297 10.349-10.484-10.536c-1.1-1.146-1.778-2.699-1.778-4.413 0-3.522 2.855-6.376 6.376-6.376 2.652 0 4.925 1.62 5.886 3.924 0.961-2.304 3.234-3.924 5.886-3.924zM21.886 4.049c-2.345 0-4.499 1.089-5.886 2.884-1.386-1.795-3.54-2.884-5.886-2.884-4.104 0-7.442 3.339-7.442 7.442 0 1.928 0.737 3.758 2.075 5.152l11.253 11.309 11.053-11.108c1.46-1.402 2.275-3.308 2.275-5.352 0-4.104-3.339-7.442-7.442-7.442v0z"
-                fill="#000000"
-              >
-                {" "}
-              </path>{" "}
+                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+              <path
+                d="M16 8L12 4M12 4L8 8M12 4L12 16"
+                stroke="#000000"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
             </g>
           </svg>
         </button>
 
-        <button className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md">
+        {/* <button className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -316,7 +543,7 @@ export default function AcademiaDetailPage({
               ></path>{" "}
             </g>
           </svg>
-        </button>
+        </button> */}
       </div>
 
       <div className="flex w-full mt-2 px-3 justify-center">
@@ -365,98 +592,15 @@ export default function AcademiaDetailPage({
       </div>
       <div className="w-[80%] border-b-[0.5px] h-[80px] border-b-[#ccc] flex justify-center items-center">
         <div className=" flex flex-col justify-center items-center w-[49%]">
-          <p>4.87</p>
+          <p>{averageRating.toFixed(2)}</p>
           <div className="flex gap-1">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              height="13px"
-              width="13px"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z"
-                  fill="#000"
-                ></path>{" "}
-              </g>
-            </svg>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              height="13px"
-              width="13px"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z"
-                  fill="#000"
-                ></path>{" "}
-              </g>
-            </svg>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              height="13px"
-              width="13px"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z"
-                  fill="#000"
-                ></path>{" "}
-              </g>
-            </svg>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              height="13px"
-              width="13px"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  d="M9.15316 5.40838C10.4198 3.13613 11.0531 2 12 2C12.9469 2 13.5802 3.13612 14.8468 5.40837L15.1745 5.99623C15.5345 6.64193 15.7144 6.96479 15.9951 7.17781C16.2757 7.39083 16.6251 7.4699 17.3241 7.62805L17.9605 7.77203C20.4201 8.32856 21.65 8.60682 21.9426 9.54773C22.2352 10.4886 21.3968 11.4691 19.7199 13.4299L19.2861 13.9372C18.8096 14.4944 18.5713 14.773 18.4641 15.1177C18.357 15.4624 18.393 15.8341 18.465 16.5776L18.5306 17.2544C18.7841 19.8706 18.9109 21.1787 18.1449 21.7602C17.3788 22.3417 16.2273 21.8115 13.9243 20.7512L13.3285 20.4768C12.6741 20.1755 12.3469 20.0248 12 20.0248C11.6531 20.0248 11.3259 20.1755 10.6715 20.4768L10.0757 20.7512C7.77268 21.8115 6.62118 22.3417 5.85515 21.7602C5.08912 21.1787 5.21588 19.8706 5.4694 17.2544L5.53498 16.5776C5.60703 15.8341 5.64305 15.4624 5.53586 15.1177C5.42868 14.773 5.19043 14.4944 4.71392 13.9372L4.2801 13.4299C2.60325 11.4691 1.76482 10.4886 2.05742 9.54773C2.35002 8.60682 3.57986 8.32856 6.03954 7.77203L6.67589 7.62805C7.37485 7.4699 7.72433 7.39083 8.00494 7.17781C8.28555 6.96479 8.46553 6.64194 8.82547 5.99623L9.15316 5.40838Z"
-                  fill="#000"
-                ></path>{" "}
-              </g>
-            </svg>
+            <RatingStars rating={averageRating} />
           </div>
         </div>
         <div className="h-[45px] w-[0.5px] border-r border-r-[#ccc]"></div>
         <div className="flex flex-col justify-center items-center w-[49%]">
-          <p className="font-bold text-md">30</p>
-          <p className="font-bold">Reseñas</p>
+          <p className="font-medium text-md">{reviews.length}</p>
+          <p className="font-medium">Reseñas</p>
         </div>
       </div>
 
@@ -569,10 +713,6 @@ export default function AcademiaDetailPage({
             </ul>
           </div>
         )}
-
-        {/* <button onClick={handleEdit} className="btn-icon">
-          ⚙️ {/* Ícono de tuerca }
-        </button>*/}
       </div>
       <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
 
@@ -644,6 +784,65 @@ export default function AcademiaDetailPage({
         </div>
       </div>
 
+      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+      <div className="flex flex-col w-full px-4 mb-2">
+        <div className="flex items-center ml-4 mb-2 mt-2">
+          <h2 className="text-2xl mb-3 font-medium ml-4">Reseñas</h2>
+        </div>
+
+        {reviews.length === 0 ? (
+          <p className="text-center text-sm text-gray-500 poppins-extralight">
+            No hay reseñas para esta academia
+          </p>
+        ) : (
+          <div className="overflow-x-auto scrollbar-hide">
+            <div
+              className="flex gap-4 snap-x snap-mandatory mb-3"
+              style={{ scrollSnapType: "x mandatory" }}
+            >
+              {reviews.slice(0, 3).map((review) => (
+                <div
+                  key={review._id}
+                  className="flex-shrink-0 w-[220px] snap-start"
+                >
+                  <ReviewCard review={review} compact />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reviews.length > 0 ? (
+          <div className="flex justify-center mt-3 mb-3">
+            <button
+              className="text-center underline text-[#666]"
+              onClick={() => router.push(`/academias/${academia._id}/resenas`)}
+            >
+              Ver todas las reseñas ({reviews.length})
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      {session?.user?.role === "alumno" && esMiembro && (
+        <div className="flex flex-col w-full items-center">
+          {miReview ? (
+            <ReviewButtonWithModal
+              academiaId={academia._id}
+              existingReview={miReview} // ← clave
+              onReviewSubmitted={fetchReviews}
+            />
+          ) : (
+            <ReviewForm
+              academiaId={academia._id}
+              onReviewSubmitted={fetchReviews}
+            />
+          )}
+        </div>
+      )}
+
+      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
         <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-around items-center">
           <div className="w-[50%] flex flex-col justify-center items-start gap-1 p-4">
@@ -679,34 +878,6 @@ export default function AcademiaDetailPage({
                 </button>
               </div>
             ) : (
-              // <div>
-              //   {!esMiembro && (
-              //     <button
-              //       onClick={handleJoinAcademia}
-              //       disabled={hasActiveRequest}
-              //       className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
-              //         hasActiveRequest ? "bg-white text-[#666] border shadow-md" : "bg-[#C95100] text-white"
-              //       }`}
-              //     >
-              //       {hasActiveRequest ? "Pendiente" : "Participar"}
-              //     </button>
-              //   )}
-              // </div>
-              // <div>
-              //   {!esMiembro && (
-              //     <button
-              //       onClick={handleJoinAcademia}
-              //       disabled={hasActiveRequest}
-              //       className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
-              //         hasActiveRequest
-              //           ? "bg-white text-[#666] border shadow-md"
-              //           : "bg-[#C95100] text-white"
-              //       }`}
-              //     >
-              //       {hasActiveRequest ? "Pendiente" : "Participar"}
-              //     </button>
-              //   )}
-              // </div>
               <div>
                 {!esMiembro && (
                   <button

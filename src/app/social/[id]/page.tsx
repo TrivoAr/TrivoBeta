@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -67,6 +68,8 @@ export default function EventPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [yaUnido, setYaUnido] = useState(false);
+  const [favorito, setFavorito] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -104,6 +107,7 @@ export default function EventPage({ params }: PageProps) {
     fetchEvent();
     fetchMiembros();
     if (session) checkUnido();
+    checkFavorito();
   }, [params.id, session]);
 
   const handleAccion = async () => {
@@ -124,6 +128,36 @@ export default function EventPage({ params }: PageProps) {
     } else {
       const msg = await res.text();
       alert("Error: " + msg);
+    }
+  };
+
+  const checkFavorito = async () => {
+    try {
+      const res = await fetch(`/api/favoritos/sociales/${params.id}`);
+      const data = await res.json();
+      setFavorito(data.favorito);
+    } catch (err) {
+      console.error("Error al verificar favorito:", err);
+    }
+  };
+
+  const toggleFavorito = async () => {
+    try {
+      const res = await fetch(`/api/favoritos/sociales/${params.id}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("No se pudo cambiar favorito");
+
+      const data = await res.json();
+      setFavorito(data.favorito);
+      toast.success(
+        data.favorito
+          ? "Salida agregada a favoritos"
+          : "Salida eliminada de favoritos"
+      );
+    } catch (err) {
+      console.error("Error al hacer toggle de favorito:", err);
     }
   };
 
@@ -199,7 +233,7 @@ export default function EventPage({ params }: PageProps) {
         {/* Botón volver */}
         <button
           onClick={() => router.back()}
-          className="absolute top-3 left-3 bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center"
+          className="absolute top-2 left-3 btnFondo shadow-md rounded-full w-9 h-9 flex justify-center items-center"
         >
           <img
             src="/assets/icons/Collapse Arrow.svg"
@@ -208,39 +242,38 @@ export default function EventPage({ params }: PageProps) {
           />
         </button>
 
-        {/* Botón like (SVG intacto) 
-        <button className="absolute top-3 right-[50px] bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-          >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
+    
+
+        <button
+          onClick={toggleFavorito}
+          className="absolute top-2 right-[55px] btnFondo shadow-md rounded-full p-2 flex justify-center items-center"
+        >
+          {favorito ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="red"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 18.5 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="black"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
               <path
-                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-              <path
-                d="M16 8L12 4M12 4L8 8M12 4L12 16"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </g>
-          </svg>
-        </button>*/}
+                d="M12.1 21.35l-1.1-1.05C5.14 15.24 2 12.32 2 8.5 2 6 3.98 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20.02 4 22 6 22 8.5c0 3.82-3.14 6.74-8.9 11.8l-1 1.05z"
+                strokeWidth="2"
+              />
+            </svg>
+          )}
+        </button>
 
         {/* Botón compartir */}
         <button
@@ -248,7 +281,8 @@ export default function EventPage({ params }: PageProps) {
             navigator.clipboard
               .writeText(window.location.href)
               .then(() => {
-                alert("¡Link copiado al portapapeles!");
+                // alert("¡Link copiado al portapapeles!");
+                toast.success("¡Link copiado al portapapeles!");
               })
               .catch((err) => {
                 console.error("Error al copiar el link:", err);
@@ -367,9 +401,7 @@ export default function EventPage({ params }: PageProps) {
             <p className="text-sm font-medium text-[#808488]">Organiza</p>
             <div className="flex items-center justify-start mt-1 gap-2">
               <img
-                src={
-                  event.creador_id.imagen
-                }
+                src={event.creador_id.imagen}
                 alt="Organizador"
                 className="h-8 w-8 rounded-full object-cover border"
               />
