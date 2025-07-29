@@ -4,6 +4,8 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import User from "@/models/user";
+import SalidaSocial from "@/models/salidaSocial";
+import Notificacion from "@/models/notificacion";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 export async function GET(req: NextRequest) {
@@ -42,4 +44,44 @@ export async function GET(req: NextRequest) {
   );
 
   return new Response(JSON.stringify(miembrosConImagen), { status: 200 });
+}
+
+
+export async function POST(req) {
+  await connectDB();
+  const session = await getServerSession(authOptions);
+  if (!session) return new Response("No autorizado", { status: 401 });
+
+  const { salida_id } = await req.json();
+  const usuario_id = session.user.id;
+
+  // 1. Validar que no esté ya unido
+  const yaEsMiembro = await MiembroSalida.findOne({ salida_id, usuario_id });
+  if (yaEsMiembro)
+    return new Response("Ya estás unido a esta salida", { status: 400 });
+
+  // 2. Crear el miembro
+  const nuevoMiembro = await MiembroSalida.create({
+    salida_id,
+    usuario_id,
+    rol: "miembro",
+  });
+
+  // 3. Obtener salida para saber quién es el organizador
+  const salida = await SalidaSocial.findById(salida_id);
+  if (!salida) return new Response("Salida no encontrada", { status: 404 });
+
+  const creadorId = salida.creador_id || salida.usuario_id; // según cómo la tengas nombrada
+
+  // 4. Crear notificación
+  if (String(creadorId) !== String(usuario_id)) {
+    await Notificacion.create({
+      userId: creadorId,
+      fromUserId: usuario_id,
+      type: "joined_event",
+      message: `${session.user.fullname || "Alguien"} se unió a tu salida.`,
+    });
+  }
+
+  return new Response(JSON.stringify(nuevoMiembro), { status: 201 });
 }

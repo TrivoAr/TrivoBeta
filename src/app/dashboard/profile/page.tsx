@@ -164,7 +164,7 @@ function ProfilePage() {
       <div className="w-[90%] bg-white border p-5 shadow-md rounded-[20px] flex flex-col items-center mb-4">
         <div onClick={() => setShowPreview(true)}>
           <img
-            src={profileImage || session.user.imagen}
+            src={profileImage || session?.user?.imagen}
             alt="Avatar"
             className="w-28 h-28 rounded-full object-cover mb-4 shadow-md"
           />
