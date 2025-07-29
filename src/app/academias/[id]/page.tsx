@@ -14,6 +14,7 @@ import RatingStars from "@/components/RatingStars";
 import ReviewForm from "@/components/ReviewButtonWithModal";
 import Review from "@/models/Review";
 import AcademiaLoadingSkeleton from "@/components/MatchLoadingSkeleton";
+import LoginModal from "@/components/Modals/LoginModal";
 import ReviewButtonWithModal from "@/components/ReviewButtonWithModal";
 import ReviewCard from "@/components/ReviewCard";
 
@@ -76,6 +77,7 @@ export default function AcademiaDetailPage({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [miReview, setMiReview] = useState<Review | null>(null);
   const [esFavorito, setEsFavorito] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [loadingReviews, setLoadingReviews] = useState(false);
   const router = useRouter();
@@ -337,6 +339,7 @@ export default function AcademiaDetailPage({
  const toggleFavorito = async () => {
   if (!session?.user?.id) {
     toast.error("Debes iniciar sesión para agregar a favoritos.");
+    setShowLoginModal(true);
     return;
   }
 
@@ -361,6 +364,7 @@ export default function AcademiaDetailPage({
   const handleJoinAcademia = async () => {
     if (!session || !session.user || !session.user.id) {
       toast.error("Por favor, inicia sesión para unirte a esta academia.");
+      setShowLoginModal(true);
       return;
     }
 
@@ -906,6 +910,8 @@ export default function AcademiaDetailPage({
           </div>
         </div>
       </div>
+
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
       <div className="pb-[230px]"></div>
     </div>

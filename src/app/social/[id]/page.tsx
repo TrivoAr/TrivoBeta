@@ -12,6 +12,7 @@ import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
+import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
 import { url } from "inspector";
 // import "MatchLoadingSkeleton" from "components/MatchLoadingSkeleton";
@@ -70,6 +71,7 @@ export default function EventPage({ params }: PageProps) {
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [yaUnido, setYaUnido] = useState(false);
   const [favorito, setFavorito] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const router = useRouter();
 
@@ -112,6 +114,13 @@ export default function EventPage({ params }: PageProps) {
   }, [params.id, session]);
 
   const handleAccion = async () => {
+
+    if (!session) {
+      setShowLoginModal(true);
+      return;
+    }
+
+
     const metodo = yaUnido ? "DELETE" : "POST";
     const url = yaUnido
       ? `/api/social/unirse?salidaId=${params.id}`
@@ -143,6 +152,10 @@ export default function EventPage({ params }: PageProps) {
   };
 
   const toggleFavorito = async () => {
+    if (!session) {
+      setShowLoginModal(true); 
+      return}
+
     try {
       const res = await fetch(`/api/favoritos/sociales/${params.id}`, {
         method: "POST",
@@ -616,6 +629,7 @@ export default function EventPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
         <div className="pb-[200px]" />
       </div>

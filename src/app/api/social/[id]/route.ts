@@ -18,18 +18,18 @@ export async function GET(
     console.log("DB conectada");
 
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
-      console.log("No autorizado");
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    // if (!session || !session.user?.email) {
+    //   console.log("No autorizado");
+    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // }
 
-    console.log("Usuario de sesión:", session.user.email);
+    // console.log("Usuario de sesión:", session.user.email);
 
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      console.log("Usuario no encontrado");
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
+    // const user = await User.findOne({ email: session.user.email });
+    // if (!user) {
+    //   console.log("Usuario no encontrado");
+    //   return NextResponse.json({ message: "User not found" }, { status: 404 });
+    // }
 
     const { id } = params;
     console.log("ID recibido:", id);
