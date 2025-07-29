@@ -6,6 +6,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
+import LoginModal from "@/components/Modals/LoginModal";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -13,6 +14,7 @@ import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { se } from "date-fns/locale";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -70,6 +72,7 @@ export default function TeamEventPage({ params }: PageProps) {
   const [yaUnido, setYaUnido] = useState(false);
   const router = useRouter();
   const [favorito, setFavorito] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -115,6 +118,12 @@ export default function TeamEventPage({ params }: PageProps) {
   }, [params.id, session]);
 
   const handleAccion = async () => {
+    if(!session){
+      setShowLoginModal(true);
+      return;
+    }
+
+
     const metodo = yaUnido ? "DELETE" : "POST";
     const url = yaUnido
       ? `/api/team-social/unirse?teamSocialId=${params.id}` // 👈 aquí
@@ -135,6 +144,8 @@ export default function TeamEventPage({ params }: PageProps) {
     }
   };
 
+
+
     const checkFavorito = async () => {
     try {
       const res = await fetch(`/api/favoritos/teamsocial/${params.id}`);
@@ -146,6 +157,11 @@ export default function TeamEventPage({ params }: PageProps) {
   };
 
     const toggleFavorito = async () => {
+      if (!session) {
+        toast.error("Debes iniciar sesión para agregar a favoritos.");
+        setShowLoginModal(true);
+        return;
+      }
     try {
       const res = await fetch(`/api/favoritos/teamsocial/${params.id}`, {
         method: "POST",
@@ -546,6 +562,7 @@ export default function TeamEventPage({ params }: PageProps) {
           <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
             <button
               className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
+              disabled={!session}
               onClick={() => router.push(`/team-social/miembros/${event._id}`)}
             >
               {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
@@ -576,6 +593,7 @@ export default function TeamEventPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
       <div className="pb-[200px]" />
       </div>
