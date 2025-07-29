@@ -18,6 +18,7 @@
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "encoding": "^0.1.13",
     "eslint": "8.42.0",
     "eslint-config-next": "13.4.5",

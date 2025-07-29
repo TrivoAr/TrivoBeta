@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
+import { set } from "mongoose";
 
 const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
@@ -17,113 +18,60 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
     email: session?.user.email || "",
   });
   const [profileImage, setProfileImage] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
 
   console.log("datos", session?.user?.imagen);
 
-  // Obtener solicitudes
-  useEffect(() => {
-    if (session?.user) {
-      // Verificar las solicitudes del usuario cuando el componente se monta
-      const fetchSolicitudes = async () => {
-        try {
-          const response = await axios.get("/api/academias/solicitudes");
-          const solicitudesData = response.data;
-          // Establecer si hay solicitudes pendientes
-          setSolicitudesPendientes(
-            solicitudesData.some(
-              (solicitud) => solicitud.estado === "pendiente"
-            )
-          );
-        } catch (error) {
-          console.error("Error al cargar las solicitudes", error);
-        }
-      };
+useEffect(() => {
+  if (!session?.user) return;
 
-      fetchSolicitudes();
+  const fetchData = async () => {
+    try {
+      // Hacer ambas llamadas en paralelo
+      const [notificacionesRes, solicitudesRes] = await Promise.all([
+        axios.get("/api/notificaciones"),
+        axios.get("/api/academias/solicitudes"),
+      ]);
 
-      // Intentar obtener la imagen del perfil
-      const loadProfileImage = async () => {
-        try {
-          const imageUrl = await getProfileImage(
-            "profile-image.jpg",
-            session.user.id
-          );
-          setProfileImage(imageUrl);
-        } catch (error) {
-          console.error("Error al obtener la imagen del perfil:", error);
-          // Puedes agregar una imagen predeterminada en caso de error
-          setProfileImage(session.user.imagen
-          );
-        }
-      };
+      const notificaciones = notificacionesRes.data || [];
+      const solicitudes = solicitudesRes.data || [];
 
-      loadProfileImage();
+      const noLeidas = notificaciones.filter((n) => !n.read);
+      const pendientes = solicitudes.filter((s) => s.estado === "pendiente");
+
+      setSolicitudesPendientes(pendientes.length > 0);
+
+      // Sumar ambas cantidades de forma unificada
+      setUnreadCount(noLeidas.length + pendientes.length);
+    } catch (error) {
+      console.error("Error al cargar notificaciones o solicitudes", error);
     }
-  }, [session]);
+  };
 
-  let saludo;
-  if (horaActual >= 6 && horaActual < 12) {
-    saludo = "Buen día";
-  } else if (horaActual >= 12 && horaActual < 20) {
-    saludo = "Buenas tardes";
-  } else {
-    saludo = "Buenas noches";
-  }
+  fetchData();
+
+  const loadProfileImage = async () => {
+    try {
+      const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+      setProfileImage(imageUrl);
+    } catch (error) {
+      setProfileImage(session.user.imagen);
+    }
+  };
+
+  loadProfileImage();
+}, [session]);
+
 
   if (status === "loading") {
     return <p>Cargando...</p>;
   }
 
   const handleNotificationClick = () => {
-    if (session?.user?.role === "dueño de academia") {
-      router.push("/academias/solicitudes");
-    } else {
-      // Puedes manejar otros casos aquí si es necesario
-      router.push("/social/crear");
-    }
+    router.push("/notificaciones");
   };
-
-
-// useEffect(() => {
-//   if ("geolocation" in navigator) {
-//     navigator.geolocation.getCurrentPosition(
-//       async (position) => {
-//         const { latitude, longitude } = position.coords;
-//         console.log("Lat:", latitude, "Lng:", longitude);
-
-//         // Ejemplo simple: si quieres simplemente detectar ciudad según coordenadas
-//         try {
-//           const response = await fetch(
-//             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-//           );
-//           const data = await response.json();
-//           const city = data.address?.city || data.address?.town || data.address?.village || "Otros";
-
-//           // Puedes hacer un mapeo simple para asignar a una de tus opciones
-//           const mapeoLocalidades = {
-//             "San Miguel de Tucumán": "San Miguel de Tucuman",
-//             "Yerba Buena": "Yerba Buena",
-//             "Tafí Viejo": "Tafi Viejo",
-//           };
-
-//           const localidadDetectada = mapeoLocalidades[city] || "Otros";
-//           setSelectedLocalidad(localidadDetectada);
-//         } catch (error) {
-//           console.error("Error al obtener la localidad desde coordenadas:", error);
-//         }
-//       },
-//       (error) => {
-//         console.warn("No se pudo obtener la ubicación:", error);
-//       }
-//     );
-//   } else {
-//     console.warn("La geolocalización no está disponible en este navegador.");
-//   }
-// }, []);
-
-
-
 
   return (
     <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
@@ -131,9 +79,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
       <Link href="/dashboard/profile">
         <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-          src={
-            profileImage || session.user.imagen
-          }
+          src={profileImage || session.user.imagen}
           alt="User Profile"
         />
       </Link>
@@ -191,8 +137,10 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
             alt=""
           />
         </div>
-        {SolicitudesPendientes && (
-          <span className="absolute top-0 right-0 h-[15px] w-[15px] bg-red-600 rounded-full border-2 border-white" />
+        {(SolicitudesPendientes || unreadCount > 0) && (
+          <span className="absolute top-3 right-2 bg-red-600 text-white text-[10px] min-w-[19px] h-[19px] flex items-center justify-center rounded-full border-2 border-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
         )}
       </div>
     </div>

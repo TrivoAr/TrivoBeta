@@ -15,6 +15,7 @@ import TeamSocial from "@/models/teamSocial";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import toast, { Toaster } from "react-hot-toast";
+import dayjs from "dayjs";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 
 const categories = [
@@ -151,6 +152,7 @@ const DashboardPage: React.FC = () => {
         const data = await res.json();
 
         console.log("teams donde estoy:", data);
+        
 
         setMiMatchTeamSocial(data); // o como sea que se llame tu estado
       } catch (err) {
@@ -346,41 +348,6 @@ const DashboardPage: React.FC = () => {
   }, [session]);
 
   useEffect(() => {
-    // const fetchFavoritos = async () => {
-    //   if (!session?.user?.id) return;
-
-    //   try {
-    //     const res = await fetch("/api/profile"); // o "/api/favoritos"
-    //     const data = await res.json();
-
-    //     const favoritas = data.favoritos?.academias || [];
-
-    //     // Mapear con imágenes
-    //     const favoritasConImagen = await Promise.all(
-    //       favoritas.map(async (academia: any) => {
-    //         try {
-    //           const imagenUrl = await getAcademyImage(
-    //             "profile-image.jpg",
-    //             academia._id
-    //           );
-    //           return { ...academia, imagenUrl };
-    //         } catch {
-    //           return {
-    //             ...academia,
-    //             imagenUrl:
-    //               "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg",
-    //           };
-    //         }
-    //       })
-    //     );
-
-    //     setAcademiasFavoritas(favoritasConImagen);
-    //     setFavoritosIds(favoritas.map((a: any) => a._id));
-    //   } catch (err) {
-    //     console.error("Error cargando favoritos:", err);
-    //   }
-    // };
-
     const fetchFavoritos = async () => {
       if (!session?.user?.id) return;
 
@@ -575,15 +542,20 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const parseLocalDate = (isoDateString: string): string => {
-    const [year, month, day] = isoDateString.split("-");
-    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-    return localDate.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
-  };
+  const parseLocalDate = (isoDateString: string | undefined): string => {
+  if (!isoDateString) return "Fecha inválida";
+
+  const [year, month, day] = isoDateString.split("-");
+  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  return localDate.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+};
+
+
+
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -877,14 +849,7 @@ const DashboardPage: React.FC = () => {
                               ${Number(event.price).toLocaleString("es-AR")}
                             </p>
                             <p className="font-light">
-                              {new Date(event.date).toLocaleDateString(
-                                "es-AR",
-                                {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "2-digit",
-                                }
-                              )}
+                              {parseLocalDate(event.date)}
                               , {event.time} hs
                             </p>
                           </div>
@@ -1089,7 +1054,7 @@ const DashboardPage: React.FC = () => {
 
                       <div className="text-[#666] text-md">
                         <p className="font-ligh text-lg">
-                          {parseLocalDate(event.date)}
+                          {parseLocalDate(event.fecha)}
                         </p>
 
                         <p>{event.hora} hs</p>
@@ -1592,11 +1557,8 @@ const DashboardPage: React.FC = () => {
                           ${Number(event.price).toLocaleString("es-AR")}
                         </p>
                         <p className="font-light">
-                          {new Date(event.date).toLocaleDateString("es-AR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "2-digit",
-                          })}
+                      
+                          {parseLocalDate(event.date)}
                           , {event.time} hs
                         </p>
                       </div>

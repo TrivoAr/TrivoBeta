@@ -13,6 +13,7 @@ import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { url } from "inspector";
 // import "MatchLoadingSkeleton" from "components/MatchLoadingSkeleton";
 
 // Configuración del icono por defecto de Leaflet
@@ -222,12 +223,15 @@ export default function EventPage({ params }: PageProps) {
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto h-[1000px]">
       <div className="relative w-full h-[176px] ">
-        <Image
-          src={event.imagen}
-          alt="Evento"
-          width={375}
-          height={176}
-          className="w-full h-full object-cover"
+        <div
+          style={{
+          backgroundImage: `url(${event.imagen})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }}
+          // width={375}
+          // height={176}
+          className="w-full object-cover h-[176px]"
         />
 
         {/* Botón volver */}
