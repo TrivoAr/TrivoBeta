@@ -3,9 +3,11 @@ import React from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
+import { useRouter } from "next/navigation";
 
 const NotificationItem = ({ notification, onMarkAsRead }) => {
   const isSolicitud = notification.tipo === "solicitud";
+  const router = useRouter();
 
   const handleAceptar = async () => {
     try {
@@ -39,6 +41,8 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
     }
   };
 
+  console.log("NotificationItem", notification);
+
   return (
     <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-100 transition">
       <div
@@ -47,7 +51,14 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
-        className="rounded-full object-cover p-8 w-12 h-12"
+        className="rounded-full object-cover p-8 w-12 h-12  cursor-pointer"
+        onClick={() => {
+          console.log("notification:", notification);
+          const profileId = notification.fromUserId || notification.userId;
+          if (profileId) {
+            router.push(`/profile/${profileId}`);
+          }
+        }}
       />
       <div className="flex-1">
         <p className="text-sm">
@@ -79,6 +90,3 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 };
 
 export default NotificationItem;
-
-
-

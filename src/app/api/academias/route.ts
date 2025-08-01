@@ -90,9 +90,10 @@ export async function GET(request: Request) {
     await connectDB(); 
 
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
-    }
+    
+    // if (!session) {
+    //   return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    // }
 
     const url = new URL(request.url);
     const filterByOwner = url.searchParams.get("owner") === "true";

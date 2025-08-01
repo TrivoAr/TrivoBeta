@@ -32,16 +32,17 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    // const session = await getServerSession(authOptions);
+    // if (!session?.user?.email) {
+    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // }
 
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
+    // const user = await User.findOne({ email: session.user.email });
+    // if (!user) {
+    //   return NextResponse.json({ message: "User not found" }, { status: 404 });
+    // }
 
+    
     const teams = await TeamSocial.find();
 
     return NextResponse.json(teams, { status: 200 });

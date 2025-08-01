@@ -94,8 +94,6 @@ export default function TeamEventPage({ params }: PageProps) {
           `/api/team-social/miembros?teamSocialId=${params.id}`
         );
         const data = await res.json();
-        console.log("pingo", data);
-        console.log("miembros", data);
         setMiembros(data);
       } catch (err) {
         console.error("Error al cargar miembros", err);
@@ -506,14 +504,14 @@ export default function TeamEventPage({ params }: PageProps) {
         <div className="flex justify-center gap-3">
           <div className="bg-white p-3 w-auto h-[160px] rounded-[15px] flex shadow-md self-center justify-around items-center gap-3">
             <div
-              className="rounded-full h-[100px] w-[100px] shadow-md"
+              className="rounded-full h-[100px] w-[100px] shadow-md cursor-pointer"
               style={{
                 backgroundImage: `url(${event.creadorId.imagen})`,
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
               }}
-            ></div>
+             onClick={()=> router.push(`/profile/${event.creadorId._id}`)}></div>
             <div>
               <h2 className="text-lg font-bold text-slate-700 mb-1">
                 {event.creadorId.firstname} {event.creadorId.lastname}

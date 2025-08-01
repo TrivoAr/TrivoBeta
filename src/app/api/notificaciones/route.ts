@@ -42,6 +42,7 @@ export async function GET() {
           nombre: `${user.firstname} ${user.lastname}`,
           salidaNombre: salida?.nombre || null,
           imagen,
+          fromUserId: user._id.toString(),
         };
       })
     );

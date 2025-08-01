@@ -8,6 +8,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaTwitter,
+  FaUserCircle,
+} from "react-icons/fa";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -47,6 +53,7 @@ interface Miembro {
   email: string;
   telnumber: string;
   imagen: string;
+  instagram?: string;
 }
 
 export default function EventPage({ params }: PageProps) {
@@ -298,14 +305,22 @@ export default function EventPage({ params }: PageProps) {
             {/* Overlay SOLO en parte inferior */}
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
-                <p className="text-white text-xl font-semibold mb-1">
+                <p className="text-white text-xl font-semibold mb-1" onClick={() => router.push(`/profile/${selectedMiembro._id}`)}>
                   {selectedMiembro.nombre}
                 </p>
                 <p className="text-white text-sm opacity-80">
                   {selectedMiembro.email}
                 </p>
                 <p className="text-white text-xs mt-2">
-                  {selectedMiembro.telnumber}
+                    {selectedMiembro.instagram && (
+                                <a
+                                  href={`https://instagram.com/${selectedMiembro.instagram}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <FaInstagram />
+                                </a>
+                              )}
                 </p>
               </div>
             </div>
