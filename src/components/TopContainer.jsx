@@ -79,7 +79,7 @@ useEffect(() => {
       <Link href="/dashboard/profile">
         <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-          src={profileImage || session.user.imagen}
+          src={profileImage || session?.user?.imagen}
           alt="User Profile"
         />
       </Link>

@@ -25,6 +25,7 @@ useEffect(() => {
         .filter((s) => s.estado === "pendiente")
         .map((s) => ({
           _id: s._id,
+          userId: s.user_id, // Asegúrate de que esto sea correcto
           tipo: "solicitud",
           nombre: s.nombre,
           mensaje: "quiere unirse a tu academia",

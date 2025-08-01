@@ -174,7 +174,7 @@ function ProfilePage() {
             {formData.fullname}
           </span>
         </div>
-        <div className="text-sm text-[#666]">
+        <div className="text-sm text-[#666] capitalize">
           {formData.rol}
         </div>
       </div>

@@ -349,7 +349,7 @@ export default function CrearSalidaPage() {
             disabled={isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "Creando academia" : "Crear academia"}
+            {isSubmitting ? "Creando salida" : "Crear salida"}
             {isSubmitting && (
               <svg
                 className="animate-spin h-5 w-5 text-white"
