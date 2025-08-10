@@ -26,16 +26,12 @@ interface PublicUser {
 
 
 
-  // src/components/UserPublicProfile.tsx
-type Props = { userId: string };
 
 
 
 
 
-
-
-export default function UserPublicProfile({ userId }: Props) {
+export default function UserPublicProfile() {
   const { id } = useParams(); // solo funciona con App Router
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,5 +156,3 @@ export default function UserPublicProfile({ userId }: Props) {
     </div>
   );
 }
-
-export type { Props as UserPublicProfileProps };
