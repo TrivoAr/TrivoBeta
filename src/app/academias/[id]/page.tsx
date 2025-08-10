@@ -681,8 +681,10 @@ export default function AcademiaDetailPage({
           </div>
         ) : (
           <div>
-            <ul className="flex gap-2 flex-wrap justify-start px-4">
-              {grupos.map((grupo) => (
+            <div className="flex gap-2 flex-wrap justify-start px-4">
+
+
+      {/* //        {grupos.map((grupo) => (
                 <div className="flex flex-col w-[170px] gap-1">
                   <li
                     key={grupo._id}
@@ -713,8 +715,11 @@ export default function AcademiaDetailPage({
                     </div>
                   </div>
                 </div>
-              ))}
-            </ul>
+              ))} */}
+
+
+
+            </div>
           </div>
         )}
       </div>
