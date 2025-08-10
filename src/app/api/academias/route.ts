@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       descripcion,
       tipo_disciplina,
       telefono,
+      precio,
+      clase_gratis,
       imagen,
     } = await request.json();
 
@@ -45,6 +47,8 @@ export async function POST(request: Request) {
       descripcion,
       tipo_disciplina,
       telefono,
+      precio,
+      clase_gratis,
       imagen,
     });
 
@@ -86,9 +90,10 @@ export async function GET(request: Request) {
     await connectDB(); 
 
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ message: "No autenticado" }, { status: 401 });
-    }
+    
+    // if (!session) {
+    //   return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    // }
 
     const url = new URL(request.url);
     const filterByOwner = url.searchParams.get("owner") === "true";

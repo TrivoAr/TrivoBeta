@@ -5,12 +5,17 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user";
 
-export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el tipo AuthOptions
+export const authOptions: AuthOptions = {
+  // Asegura que authOptions tenga el tipo AuthOptions
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "tu-email@example.com" },
+        email: {
+          label: "Email",
+          type: "text",
+          placeholder: "tu-email@example.com",
+        },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -26,6 +31,14 @@ export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el t
           userFound.password
         );
 
+        if (!userFound.imagen) {
+          const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            userFound.firstname
+          )}&length=1&background=random&color=fff&size=128`;
+          userFound.imagen = avatarUrl;
+          await userFound.save();
+        }
+
         if (!passwordMatch) throw new Error("Credenciales inválidas");
 
         return {
@@ -34,6 +47,12 @@ export const authOptions: AuthOptions = {  // Asegura que authOptions tenga el t
           fullname: `${userFound.firstname} ${userFound.lastname}`,
           telnumber: userFound.telnumber,
           role: userFound.rol,
+          imagen: userFound.imagen,
+          instagram: userFound.instagram,
+          facebook: userFound.facebook,
+          twitter: userFound.twitter,
+          bio: userFound.bio,
+          favoritos: userFound.favoritos,
         };
       },
     }),

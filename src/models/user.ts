@@ -1,5 +1,14 @@
 import { Schema, model, models } from "mongoose";
 
+
+
+const FavoritosSchema = new Schema({
+  salidas: [{ type: Schema.Types.ObjectId, ref: "SalidaSocial" }],
+  academias: [{ type: Schema.Types.ObjectId, ref: "Academia" }],
+  teamSocial: [{ type: Schema.Types.ObjectId, ref: "TeamSocial" }],
+});
+
+
 const UserSchema = new Schema(
   {
     email: {
@@ -43,6 +52,15 @@ const UserSchema = new Schema(
     instagram: { type: String, required: false, default: "" },
     facebook: { type: String, required: false, default: "" },
     twitter: { type: String, required: false, default: "" },
+
+    imagen: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
+
+    favoritos: FavoritosSchema,
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },

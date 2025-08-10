@@ -37,6 +37,13 @@ const AcademiaSchema = new Schema(
     imagen: {
       type: String,
     },
+    clase_gratis:{
+      type: Boolean,
+      required: true,
+    },
+    precio:{
+      type: String,
+    },
   },
   {
     timestamps: true,
