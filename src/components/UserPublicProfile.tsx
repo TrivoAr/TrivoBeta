@@ -23,6 +23,7 @@ interface PublicUser {
   createdAt: string;
 }
 
+type Props = { userId: string };
 
 
 
@@ -30,8 +31,7 @@ interface PublicUser {
 
 
 
-
-export default function UserPublicProfile() {
+export default function UserPublicProfile({ userId }: Props) {
   const { id } = useParams(); // solo funciona con App Router
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
