@@ -14,8 +14,7 @@ interface UserProfileProps {
   };
 }
 
-
-export default function UserProfile({ user }: UserProfileProps) {
+export default async function UserProfile({ user }: UserProfileProps) {
   const router = useRouter();
     
   return (
@@ -38,3 +37,4 @@ export default function UserProfile({ user }: UserProfileProps) {
   </div>
   )
 }
+
