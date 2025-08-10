@@ -15,6 +15,7 @@ function EditProfilePage() {
     instagram: "",
     facebook: "",
     twitter: "",
+    bio: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -22,8 +23,6 @@ function EditProfilePage() {
 
   useEffect(() => {
     if (session?.user) {
-      console.log("todos putos", session.user);
-
       setFormData({
         fullname: `${session.user.fullname}`,
         email: session.user.email,
@@ -32,6 +31,7 @@ function EditProfilePage() {
         instagram: session.user.instagram,
         facebook: session.user.facebook,
         twitter: session.user.twitter,
+        bio: session.user.bio,
       });
 
       const loadImage = async () => {
@@ -42,7 +42,7 @@ function EditProfilePage() {
           );
           setProfileImage(url);
         } catch {
-          setProfileImage("/assets/icons/default-user.png");
+          setProfileImage(session.user.imagen);
         }
       };
       loadImage();
@@ -75,6 +75,7 @@ function EditProfilePage() {
           instagram: formData.instagram,
           facebook: formData.facebook,
           twitter: formData.twitter,
+          bio: formData.bio
         }),
       });
 
@@ -105,7 +106,7 @@ function EditProfilePage() {
 
   return (
     <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
-      <h1 className="text-2xl font-bold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent w-full text-left mb-4">
+      <h1 className="text-2xl font-medium  w-full text-left mb-4">
         Editar Perfil
       </h1>
 
@@ -119,71 +120,105 @@ function EditProfilePage() {
         onChange={handleImageUpload}
         className="mb-4 text-sm"
       />
+      <label className="block">
+        Nombre y apellido
+        <input
+          type="text"
+          name="fullname"
+          value={formData.fullname}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Nombre completo"
+        />
+      </label>
 
-      <input
-        type="text"
-        name="fullname"
-        value={formData.fullname}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="Nombre completo"
-      />
-      <input
-        type="string"
-        name="telnumber"
-        value={formData.telnumber}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="3814859697"
-      />
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        placeholder="Correo electrónico"
-      />
+      <label className="block">
+        Numero de Telefono
+        <input
+          type="string"
+          name="telnumber"
+          value={formData.telnumber}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="3814859697"
+        />
+      </label>
 
-      <input
-        type="text"
-        name="instagram"
-        value={formData.instagram}
-        onChange={handleChange}
-        placeholder="Enlace a Instagram"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-      />
-      <input
-        type="text"
-        name="facebook"
-        value={formData.facebook}
-        onChange={handleChange}
-        placeholder="Enlace a Facebook"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-      />
-      <input
-        type="text"
-        name="twitter"
-        value={formData.twitter}
-        onChange={handleChange}
-        placeholder="Enlace a Twitter/X"
-        className="w-full p-3 rounded-lg border border-gray-300 mb-6"
-      />
+      <label className="block">
+        Correo electronico
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Correo electrónico"
+        />
+      </label>
+      <label className="block">
+        Instagram usuario
+        <input
+          type="text"
+          name="instagram"
+          value={formData.instagram}
+          onChange={handleChange}
+          placeholder="Enlace a Instagram"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+        />
+      </label>
+
+      <label className="block">
+        Facebook usuario
+        <input
+          type="text"
+          name="facebook"
+          value={formData.facebook}
+          onChange={handleChange}
+          placeholder="Enlace a Facebook"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+        />
+      </label>
+      <label className="block">
+        Twitter/X usuario
+        <input
+          type="text"
+          name="twitter"
+          value={formData.twitter}
+          onChange={handleChange}
+          placeholder="Enlace a Twitter/X"
+          className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+        />
+      </label>
+
+      {session.user.role === "dueño de academia" ? (
+        <label className="block">
+          Biografia profesor
+          <input
+            type="text"
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="Dejanos una descripcion de tu trayectoria..."
+            className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+          />
+        </label>
+      ) : null}
 
       <div className="flex gap-3">
         <button
           onClick={handleSave}
-          className="w-[140px] mt-[40px] py-2 rounded-full bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+          className="w-[140px] mt-[40px] py-2 rounded-full bg-[#C95100] text-white font-bold shadow-md"
         >
           Guardar
         </button>
         <button
           onClick={() => router.back()}
-          className="w-[140px] mt-[40px] py-2 rounded-full bg-gray-400 text-white px-6 py-2 rounded-full font-bold shadow"
+          className="w-[140px] mt-[40px] py-2 bg-gray-400 text-white px-6 rounded-full font-bold shadow"
         >
           Cancelar
         </button>
       </div>
+      <div className="pb-[30px]"></div>
     </div>
   );
 }

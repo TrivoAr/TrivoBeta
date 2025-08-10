@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import toast, { Toaster } from "react-hot-toast";
+import LoginModal from "@/components/Modals/LoginModal";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -12,6 +14,7 @@ import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { se } from "date-fns/locale";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -68,6 +71,8 @@ export default function TeamEventPage({ params }: PageProps) {
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [yaUnido, setYaUnido] = useState(false);
   const router = useRouter();
+  const [favorito, setFavorito] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -89,7 +94,6 @@ export default function TeamEventPage({ params }: PageProps) {
           `/api/team-social/miembros?teamSocialId=${params.id}`
         );
         const data = await res.json();
-        console.log("miembros", data);
         setMiembros(data);
       } catch (err) {
         console.error("Error al cargar miembros", err);
@@ -108,10 +112,16 @@ export default function TeamEventPage({ params }: PageProps) {
 
     fetchEvent();
     fetchMiembros();
-    if (session) checkUnido();
+    if (session) checkUnido(); checkFavorito();
   }, [params.id, session]);
 
   const handleAccion = async () => {
+    if(!session){
+      setShowLoginModal(true);
+      return;
+    }
+
+
     const metodo = yaUnido ? "DELETE" : "POST";
     const url = yaUnido
       ? `/api/team-social/unirse?teamSocialId=${params.id}` // 👈 aquí
@@ -131,6 +141,44 @@ export default function TeamEventPage({ params }: PageProps) {
       alert("Error: " + msg);
     }
   };
+
+
+
+    const checkFavorito = async () => {
+    try {
+      const res = await fetch(`/api/favoritos/teamsocial/${params.id}`);
+      const data = await res.json();
+      setFavorito(data.favorito);
+    } catch (err) {
+      console.error("Error al verificar favorito:", err);
+    }
+  };
+
+    const toggleFavorito = async () => {
+      if (!session) {
+        toast.error("Debes iniciar sesión para agregar a favoritos.");
+        setShowLoginModal(true);
+        return;
+      }
+    try {
+      const res = await fetch(`/api/favoritos/teamsocial/${params.id}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("No se pudo cambiar favorito");
+
+      const data = await res.json();
+      setFavorito(data.favorito);
+      toast.success(
+      data.favorito
+        ? "Academia agregada a favoritos"
+        : "Academia eliminada de favoritos"
+    );
+    } catch (err) {
+      console.error("Error al hacer toggle de favorito:", err);
+    }
+  };
+
 
   if (loading)
     return (
@@ -204,7 +252,7 @@ export default function TeamEventPage({ params }: PageProps) {
         {/* Botón volver */}
         <button
           onClick={() => router.back()}
-          className="absolute top-3 left-3 bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center"
+          className="absolute top-3 left-3 btnFondo shadow-md rounded-full w-9 h-9 flex justify-center items-center"
         >
           <img
             src="/assets/icons/Collapse Arrow.svg"
@@ -213,39 +261,35 @@ export default function TeamEventPage({ params }: PageProps) {
           />
         </button>
 
-        {/* Botón like (SVG intacto) 
-        <button className="absolute top-3 right-[50px] bg-white shadow-md rounded-full w-9 h-9 flex justify-center items-center">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-          >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
+          <button
+          onClick={toggleFavorito}
+          className="absolute top-2 right-[55px] btnFondo shadow-md rounded-full p-2 flex justify-center items-center"
+        >
+          {favorito ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="red"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 18.5 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              stroke="black"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
               <path
-                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-              <path
-                d="M16 8L12 4M12 4L8 8M12 4L12 16"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
-            </g>
-          </svg>
-        </button>*/}
+                d="M12.1 21.35l-1.1-1.05C5.14 15.24 2 12.32 2 8.5 2 6 3.98 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20.02 4 22 6 22 8.5c0 3.82-3.14 6.74-8.9 11.8l-1 1.05z"
+                strokeWidth="2"
+              />
+            </svg>
+          )} </button>
 
         {/* Botón compartir */}
         <button
@@ -253,7 +297,8 @@ export default function TeamEventPage({ params }: PageProps) {
             navigator.clipboard
               .writeText(window.location.href)
               .then(() => {
-                alert("¡Link copiado al portapapeles!");
+                // alert("¡Link copiado al portapapeles!");
+                toast.success("¡Link copiado al portapapeles!");
               })
               .catch((err) => {
                 console.error("Error al copiar el link:", err);
@@ -459,14 +504,14 @@ export default function TeamEventPage({ params }: PageProps) {
         <div className="flex justify-center gap-3">
           <div className="bg-white p-3 w-auto h-[160px] rounded-[15px] flex shadow-md self-center justify-around items-center gap-3">
             <div
-              className="rounded-full h-[100px] w-[100px] shadow-md"
+              className="rounded-full h-[100px] w-[100px] shadow-md cursor-pointer"
               style={{
                 backgroundImage: `url(${event.creadorId.imagen})`,
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
               }}
-            ></div>
+             onClick={()=> router.push(`/profile/${event.creadorId._id}`)}></div>
             <div>
               <h2 className="text-lg font-bold text-slate-700 mb-1">
                 {event.creadorId.firstname} {event.creadorId.lastname}
@@ -515,6 +560,7 @@ export default function TeamEventPage({ params }: PageProps) {
           <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
             <button
               className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
+              disabled={!session}
               onClick={() => router.push(`/team-social/miembros/${event._id}`)}
             >
               {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
@@ -545,6 +591,7 @@ export default function TeamEventPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
       <div className="pb-[200px]" />
       </div>

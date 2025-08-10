@@ -6,6 +6,12 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaTwitter,
+  FaUserCircle,
+} from "react-icons/fa";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,6 +50,7 @@ interface Miembro {
   nombre: string;
   email: string;
   imagen: string;
+  instagram?: string;
 }
 
 export default function EventPage({ params }: PageProps) {
@@ -113,7 +120,7 @@ export default function EventPage({ params }: PageProps) {
         />
       </button>
 
-      <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">
+      <p className="font-medium text-2xl mb-3 mt-3">
         Participantes
       </p>
       <div className="px-1 mb-5">
@@ -122,7 +129,7 @@ export default function EventPage({ params }: PageProps) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar participante..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          className="w-full px-4 py-2 border border-gray-300 rounded-[20px] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
         />
       </div>
 
@@ -144,7 +151,7 @@ export default function EventPage({ params }: PageProps) {
             >
               <td className="flex justify-center items-center h-[70px]">
                 <img
-                  src={miembro.imagen}
+                  src={miembro.imagen ? (miembro.imagen) : (session.user.imagen)}
                   alt={miembro.nombre}
                   className="w-[50px] h-[50px] rounded-full"
                 />
@@ -223,13 +230,21 @@ export default function EventPage({ params }: PageProps) {
             {/* Overlay SOLO en parte inferior */}
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
-                <p className="text-white text-xl font-semibold mb-1">
+                <p className="text-white text-xl font-semibold mb-1" onClick={() => router.push(`/profile/${selectedMiembro._id}`)}>
                   {selectedMiembro.nombre}
                 </p>
                 <p className="text-white text-sm opacity-80">
                   {selectedMiembro.email}
                 </p>
-                <p className="text-white text-xs mt-2">+54381123456</p>
+                <p className="text-white text-xs mt-2">   {selectedMiembro.instagram && (
+                                                <a
+                                                  href={`https://instagram.com/${selectedMiembro.instagram}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                >
+                                                  <FaInstagram />
+                                                </a>
+                                              )}</p>
               </div>
             </div>
 

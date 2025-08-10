@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
+import toast, { Toaster } from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Session } from "inspector";
@@ -42,6 +43,7 @@ export default function CrearSalidaPage() {
   const [suggestions, setSuggestions] = useState<
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -61,29 +63,6 @@ export default function CrearSalidaPage() {
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
 
-
-
-  {
-    /*}
-  function LocationPicker({ onChange, position }: { onChange: (latlng: LatLng) => void, position: LatLng | null }) {
-    function LocationMarker() {
-      useMapEvents({
-        click(e) {
-          onChange(e.latlng);
-        }
-      });
-      return position ? <Marker position={position} /> : null;
-    }
-
-    return (
-      <MapContainer center={[-26.8333, -65.2167] as [number, number]} zoom={13} className="h-[200px] w-full rounded-md">
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <LocationMarker />
-      </MapContainer>
-    );
-  }
-*/
-  }
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -100,14 +79,13 @@ export default function CrearSalidaPage() {
     }
   };
 
-
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
 
     const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
-  setQuery(direccion);
-  setFormData((prev) => ({ ...prev, ubicacion: direccion }));
+    setQuery(direccion);
+    setFormData((prev) => ({ ...prev, ubicacion: direccion }));
   };
 
   const handleSelectSuggestion = (item: any) => {
@@ -119,9 +97,9 @@ export default function CrearSalidaPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    alert("Salida creada con exito");
     e.preventDefault();
     let imageUrl = "";
+    setIsSubmitting(true);
 
     if (imagen) {
       const imageRef = ref(storage, `salidas/${uuidv4()}`);
@@ -129,11 +107,6 @@ export default function CrearSalidaPage() {
       imageUrl = await getDownloadURL(imageRef);
     }
 
-    // const salidaData = {
-    //   ...formData,
-    //   imagen: imageUrl,
-    //   locationCoords: formData.coords
-    // };
 
     const coordsToSave = formData.coords || defaultCoords;
 
@@ -149,12 +122,14 @@ export default function CrearSalidaPage() {
       body: JSON.stringify(salidaData),
     });
 
-    if (res.ok) router.push("/home");
-    else console.error("Error al crear salida social");
+    if (res.ok){ 
+      toast.success("Salida creada con exito");
+       router.push("/home");}
+    else { 
+      setIsSubmitting(false);
+      toast.error("Error al crear la salida");
+       console.error("Error al crear salida social");}
   };
-
-
-
 
   const fetchSuggestions = (q: string) => {
     fetch(`/api/search?q=${encodeURIComponent(q)}`)
@@ -167,15 +142,15 @@ export default function CrearSalidaPage() {
   };
 
   const fetchAddressFromCoords = async (lat: number, lon: number) => {
-  try {
-    const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
-    const data = await res.json();
-    return data.display_name as string;
-  } catch (error) {
-    console.error("Error al obtener dirección inversa:", error);
-    return "";
-  }
-};
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name as string;
+    } catch (error) {
+      console.error("Error al obtener dirección inversa:", error);
+      return "";
+    }
+  };
 
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
@@ -199,8 +174,9 @@ export default function CrearSalidaPage() {
       onSubmit={handleSubmit}
       className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
     >
-      <h2 className="text-center font-bold text-2xl bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
-        Crear <span className="text-black">salida</span>
+      <Toaster position="top-center" /> 
+      <h2 className="text-center font-normal text-2xl">
+        Crear salida
       </h2>
       <label className="block">
         Nombre
@@ -226,7 +202,7 @@ export default function CrearSalidaPage() {
         <option value="Otros">Otros</option>
       </select>
 
-       <select
+      <select
         name="deporte"
         value={formData.deporte}
         onChange={handleChange}
@@ -327,7 +303,8 @@ export default function CrearSalidaPage() {
           )}
         </div>
       </label>
- 
+
+
 
       <label className="block relative">
         Ubicación
@@ -352,6 +329,8 @@ export default function CrearSalidaPage() {
         )}
       </label>
 
+      
+
       <label className="block">
         <MapWithNoSSR
           position={markerPos || defaultCoords}
@@ -359,12 +338,41 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <button
+      {/* <button
         type="submit"
         className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold"
       >
         Crear salida
-      </button>
+      </button> */}
+        <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Creando salida" : "Crear salida"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
 
       <div className="w-full flex justify-center">
         <button

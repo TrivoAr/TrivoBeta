@@ -8,9 +8,16 @@ declare module "next-auth" {
       fullname: string;
       telnumber: string;
       role: string;
+      bio: string;
       instagram?: string;
-  facebook?: string;
-  twitter?: string; // Aquí incluimos el rol
+      imagen?: string;
+      facebook?: string;
+      twitter?: string;
+      favoritos?: {
+      salidas: string[];
+      academias: string[];
+      teamSocial: string[];
+    };
     };
   }
 
@@ -20,8 +27,15 @@ declare module "next-auth" {
     fullname: string;
     telnumber: string;
     role: string;
+    bio?: string;
     instagram?: string;
-  facebook?: string;
-  twitter?: string;
+    imagen?: string;
+    facebook?: string;
+    twitter?: string;
+    favoritos?: {
+      salidas: string[];
+      academias: string[];
+      teamSocial: string[];
+    };
   }
 }

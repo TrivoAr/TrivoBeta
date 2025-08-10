@@ -52,7 +52,7 @@ function Navbar() {
               <Link
                 href="/social/crear"
                 onClick={() => setIsModalOpen(false)}
-                className=" py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+                className=" py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
               >
                 Salida
               </Link>
@@ -60,19 +60,19 @@ function Navbar() {
                <Link
                 href="/team-social/crear"
                 onClick={() => setIsModalOpen(false)}
-                className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+                className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
               >
                 Social Team
               </Link>
               <Link
                 href="/academias/crear"
                 onClick={() => setIsModalOpen(false)}
-                className="py-2 rounded-[15px] bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white font-bold shadow-md"
+                className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
               >
                 Grupo de entrenamiento
               </Link></>) : null}
            
-              <button onClick={() => setIsModalOpen(false)} className="mt-2 text-sm text-gray-500 hover:underline">
+              <button onClick={() => setIsModalOpen(false)} className="mt-2 text-sm text-gray-500">
                 Cancelar
               </button>
             </div>

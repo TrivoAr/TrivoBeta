@@ -106,8 +106,6 @@ export default function Home() {
     rol: session?.user.role || "",
   });
 
-
-
   useEffect(() => {
     const fetchSalidas = async () => {
       try {
@@ -174,7 +172,6 @@ export default function Home() {
       try {
         const res = await fetch("/api/academias");
         const data = await res.json();
-        console.log("academias", data);
 
         // 🔥 Nuevo paso: obtener las URLs desde Firebase
         const academiasConImagenes = await Promise.all(
@@ -240,14 +237,76 @@ export default function Home() {
   });
 
   const parseLocalDate = (isoDateString: string): string => {
-  const [year, month, day] = isoDateString.split("-");
-  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-  return localDate.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-  });
-};
+    const [year, month, day] = isoDateString.split("-");
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
+  const SocialTeamSkeleton = () => (
+    <div className="flex space-x-4">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 flex flex-col justify-between relative bg-gray-200 animate-pulse"
+        >
+          <div className="absolute inset-0 bg-gray-300 rounded-2xl" />
+          <div className="absolute top-2 right-2 w-14 h-5 bg-gray-300 rounded-full z-10" />
+          <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+            <div className="w-32 h-4 bg-gray-300 rounded mb-2" />
+            <div className="w-20 h-3 bg-gray-300 rounded mb-1" />
+            <div className="w-16 h-3 bg-gray-300 rounded mb-1" />
+            <div className="w-14 h-3 bg-gray-300 rounded mb-1" />
+            <div className="flex justify-end">
+              <div className="w-16 h-6 bg-gray-300 rounded-full mt-2" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const SalidasSkeleton = () => (
+    <div className="flex space-x-4">
+      {[1, 2].map((i) => (
+        <div
+          key={i}
+          className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative bg-gray-200 animate-pulse"
+        >
+          <div className="absolute inset-0 bg-gray-300" />
+          <div className="absolute inset-0 p-4 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <div className="w-24 h-3 bg-gray-300 rounded" />
+                <div className="w-20 h-3 bg-gray-300 rounded" />
+                <div className="w-16 h-3 bg-gray-300 rounded" />
+              </div>
+              <div className="w-10 h-5 bg-gray-300 rounded-full" />
+            </div>
+            <div className="flex justify-end">
+              <div className="w-[79px] h-[22px] bg-gray-300 rounded-[20px]" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const AcademiasSkeleton = () => (
+    <div className="flex space-x-4">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border bg-gray-200 animate-pulse"
+        >
+          <div className="absolute inset-0 bg-gray-300" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -282,13 +341,13 @@ export default function Home() {
       {/* Salidas destacadas */}
       <section>
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Salidas</span> destacadas
-          </h2>
+          <h2 className="text-2xl font-medium mb-3">Salidas destacadas</h2>
         </div>
 
         <div className="overflow-x-auto scrollbar-hide">
-          {futureEvents.length > 0 ? (
+          {futureEvents.length === 0 && events.length === 0 ? (
+            <SalidasSkeleton />
+          ) : futureEvents.length > 0 ? (
             <div className="flex space-x-4">
               {futureEvents.map((event) => (
                 <div
@@ -333,7 +392,7 @@ export default function Home() {
                       </span>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end ">
                       <button
                         onClick={() => {
                           setSelectedEvent({
@@ -350,11 +409,7 @@ export default function Home() {
                           });
                           setIsModalOpen(true);
                         }}
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                        }}
-                        className="text-black text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20"
+                        className="text-white text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20 bg-[#C95100]"
                       >
                         Unirse
                       </button>
@@ -364,7 +419,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="font-bold">No hay salidas cargadas</p>
+            <p className="text-[#666]">No hay salidas cargadas</p>
           )}
         </div>
       </section>
@@ -372,23 +427,13 @@ export default function Home() {
       {/* Social Team */}
       <section>
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold">
-            <span className="text-[#C76C01]">Social</span> Team
-          </h2>
-          {/* {formData.rol=== "dueño de academia" && (
-          <button
-            className="text-sm text-gray-400"
-            onClick={() => router.push(`/team-social/crear`)}
-          >
-            <img
-              className="h-[26px] w-[26px] color-black"
-              src="/assets/Logo/add-circle-svgrepo-com.svg"
-              alt=""
-            />
-          </button>)} */}
+          <h2 className="text-2xl">Social Team</h2>
         </div>
         <div className="overflow-x-auto scrollbar-hide">
-          {futureTeamSocialEvents.length > 0 ? (
+          {futureTeamSocialEvents.length === 0 &&
+          teamSocialEvents.length === 0 ? (
+            <SocialTeamSkeleton />
+          ) : futureTeamSocialEvents.length > 0 ? (
             <div className="flex space-x-4">
               {futureTeamSocialEvents.map((event) => (
                 <div
@@ -399,7 +444,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
-                  <div className="absolute top-2 right-2 bg-[#000000B2] text-[#C76C01] text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
+                  <div className="absolute top-2 right-2 bg-[#000000B2] text-white text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
                     {event.category}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
@@ -431,11 +476,7 @@ export default function Home() {
                     <div className="flex justify-end">
                       <button
                         onClick={() => router.push(`/team-social/${event._id}`)}
-                        className="self-end mt-2 text-black text-xs font-semibold rounded-full px-4 py-1"
-                        style={{
-                          background:
-                            "linear-gradient(90deg, #C76C01 0%, #FFBD6E 100%)",
-                        }}
+                        className="self-end mt-2 text-white text-xs font-semibold rounded-full px-4 py-1 bg-[#C95100]"
                       >
                         Info
                       </button>
@@ -445,7 +486,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="font-bold">No hay social teams cargados</p>
+            <p className="text-[#666]">No hay social teams cargados</p>
           )}
         </div>
       </section>
@@ -454,48 +495,40 @@ export default function Home() {
 
       <section>
         <div className="">
-          <h2 className="text-2xl font-bold mb-3">
-            <span className="text-[#C76C01]">Grupos de entrenamiento</span>
-          </h2>
-          {/* {formData.rol=== "dueño de academia" && (
-          <button
-            className="text-sm text-gray-400"
-            onClick={() => router.push("/academias/crear")}
-          >
-            <img
-              className="h-[26px] w-[26px]"
-              src="/assets/Logo/add-circle-svgrepo-com.svg"
-              alt=""
-            />
-          </button>)} */}
+          <h2 className="text-2xl font-medium mb-3">Grupos de entrenamiento</h2>
         </div>
         <div
           className={`overflow-x-auto scrollbar-hide ${
             academias.length > 0 ? "h-[245px]" : "h-auto"
           }`}
         >
-          <div className="flex space-x-4">
-            {academias.length > 0 ? (
-              academias.map((academia) => (
-                <div
-                  key={academia._id}
-                  className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border"
-                  style={{
-                    backgroundImage: `linear-gradient(
+          {" "}
+          {academias.length === 0 ? (
+            <AcademiasSkeleton />
+          ) : (
+            <div className="flex space-x-4">
+              {academias.length > 0 ? (
+                academias.map((academia) => (
+                  <div
+                    key={academia._id}
+                    className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border"
+                    style={{
+                      backgroundImage: `linear-gradient(
       0deg,
       rgba(0,0,0,0.2),
       rgba(0,0,0,0.2)),url(${academia.imagenUrl})`,
-                    backgroundSize: "cover",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                  }}
-                  onClick={() => router.push(`/academias/${academia._id}`)}
-                ></div>
-              ))
-            ) : (
-              <p>No hay grupos de entrenamientos</p>
-            )}
-          </div>
+                      backgroundSize: "cover",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
+                    onClick={() => router.push(`/academias/${academia._id}`)}
+                  ></div>
+                ))
+              ) : (
+                <p className="text-[#666]">No hay grupos de entrenamientos</p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

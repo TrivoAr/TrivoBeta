@@ -18,18 +18,18 @@ export async function GET(
     console.log("DB conectada");
 
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
-      console.log("No autorizado");
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    // if (!session || !session.user?.email) {
+    //   console.log("No autorizado");
+    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // }
 
-    console.log("Usuario de sesión:", session.user.email);
+    // console.log("Usuario de sesión:", session.user.email);
 
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      console.log("Usuario no encontrado");
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
+    // const user = await User.findOne({ email: session.user.email });
+    // if (!user) {
+    //   console.log("Usuario no encontrado");
+    //   return NextResponse.json({ message: "User not found" }, { status: 404 });
+    // }
 
     const { id } = params;
     console.log("ID recibido:", id);
@@ -48,7 +48,9 @@ export async function GET(
     try {
       imagenUrl = await getProfileImage("profile-image.jpg", salida.creador_id._id.toString());
     } catch (error) {
-      imagenUrl = "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
+      imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            salida.creador_id.firstname
+          )}&length=1&background=random&color=fff&size=128`;
     }
 
     // Reemplaza el creador_id con el objeto que quieres devolver
