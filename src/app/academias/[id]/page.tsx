@@ -687,7 +687,7 @@ export default function AcademiaDetailPage({
             {grupos.map((grupo) => (
                 <div className="flex flex-col w-[170px] gap-1">
                   <div
-                    key={grupo._id}
+                    key={grupo._id || null}
                     className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border relative"
                     style={{
                       backgroundImage: `url(${groupImages[grupo._id]})`,
