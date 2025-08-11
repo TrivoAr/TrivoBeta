@@ -684,9 +684,9 @@ export default function AcademiaDetailPage({
             <div className="flex gap-2 flex-wrap justify-start px-4">
 
 
-      {/* //        {grupos.map((grupo) => (
+            {grupos.map((grupo) => (
                 <div className="flex flex-col w-[170px] gap-1">
-                  <li
+                  <div
                     key={grupo._id}
                     className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border relative"
                     style={{
@@ -700,7 +700,7 @@ export default function AcademiaDetailPage({
                     <p className=" w-[75px] bg-[#00000070] rounded-[20px] text-white font-semibold flex justify-center items-center">
                       {grupo.tipo_grupo}
                     </p>{" "}
-                  </li>
+                  </div>
                   <div className="">
                     <p className="font-light text-sm">{grupo.nombre_grupo}</p>
                     <div className="text-[#B8B8B8]">
@@ -715,7 +715,7 @@ export default function AcademiaDetailPage({
                     </div>
                   </div>
                 </div>
-              ))} */}
+      ))} 
 
 
 
