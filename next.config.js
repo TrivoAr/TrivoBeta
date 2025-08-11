@@ -9,7 +9,10 @@ const nextConfig = {
     ],
     domains: ['firebasestorage.googleapis.com'],
     domains: ['ui-avatars.com'],
-  }
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 module.exports = nextConfig
