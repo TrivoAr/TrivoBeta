@@ -190,7 +190,7 @@ function EditProfilePage() {
         />
       </label>
 
-      {session.user.role === "dueño de academia" ? (
+      {session?.user?.role === "dueño de academia" ? (
         <label className="block">
           Biografia profesor
           <input
