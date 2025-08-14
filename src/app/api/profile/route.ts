@@ -4,7 +4,7 @@ import User from "@/models/user";
 import Academia from "@/models/academia"; // Asegúrate de que la ruta sea correcta
 import { getServerSession } from "next-auth"; // Para obtener la sesión del usuario
 import { authOptions } from "../../../libs/authOptions"; // Configuración de NextAuth
-import { Biohazard } from "lucide-react";
+
 
 // Obtener el perfil del usuario (GET)
 export async function GET(req: Request) {

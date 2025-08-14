@@ -8,16 +8,22 @@ declare module "next-auth" {
       fullname: string;
       telnumber: string;
       role: string;
-      bio: string;
+      bio?: string;
       instagram?: string;
       imagen?: string;
       facebook?: string;
       twitter?: string;
       favoritos?: {
-      salidas: string[];
-      academias: string[];
-      teamSocial: string[];
-    };
+        salidas: string[];
+        academias: string[];
+        teamSocial: string[];
+      };
+      strava?: {
+        access_token: string;
+        refresh_token: string;
+        expires_at: number;
+        athlete_id: number;
+      };
     };
   }
 
@@ -37,5 +43,13 @@ declare module "next-auth" {
       academias: string[];
       teamSocial: string[];
     };
+    strava?: {
+      access_token: string;
+      refresh_token: string;
+      expires_at: number;
+      athlete_id: number;
+    };
   }
 }
+
+

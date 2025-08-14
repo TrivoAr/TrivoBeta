@@ -1,7 +1,5 @@
 "use client";
-
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -10,29 +8,39 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-import { Session } from "inspector";
-import { data } from "autoprefixer";
+import mapboxgl from "mapbox-gl";
 
-{
-  /*// Configurar íconos para que se muestren correctamente
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});*/
+
+
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
+
+interface Coords {
+  lat: number;
+  lng: number;
 }
-
-const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
-  ssr: false,
-});
 
 interface LatLng {
   lat: number;
   lng: number;
 }
+
+
+function useDebounce(callback: (...args: any[]) => void, delay: number) {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedFn = useCallback(
+    (...args: any[]) => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        callback(...args);
+      }, delay);
+    },
+    [callback, delay]
+  );
+
+  return debouncedFn;
+}
+
 
 export default function CrearSalidaPage() {
   const router = useRouter();
@@ -40,10 +48,18 @@ export default function CrearSalidaPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { data: session } = useSession();
   const [query, setQuery] = useState("");
+  const mapContainer = useRef<HTMLDivElement>(null);
   const [suggestions, setSuggestions] = useState<
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ubicacion, setUbicacion] = useState("");
+  const [coords, setCoords] = useState<Coords>({
+      lat: -26.8333,
+      lng: -65.2167,
+    });
+   const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -168,6 +184,84 @@ export default function CrearSalidaPage() {
       debouncedFetch.cancel();
     };
   }, [debouncedFetch]);
+
+
+useEffect(() => {
+  if (map.current) return; // evitar inicializar dos veces
+
+  if (!mapContainer.current) return;
+
+  map.current = new mapboxgl.Map({
+    container: mapContainer.current,
+    style: "mapbox://styles/mapbox/streets-v11",
+    center: [coords.lng, coords.lat],
+    zoom: 13,
+  });
+
+  // Añadir controles
+  map.current.addControl(new mapboxgl.NavigationControl());
+
+  // Crear el marcador
+  marker.current = new mapboxgl.Marker({ draggable: true })
+    .setLngLat([coords.lng, coords.lat])
+    .addTo(map.current);
+
+  // Evento al arrastrar el marcador
+  marker.current.on("dragend", async () => {
+    const lngLat = marker.current!.getLngLat();
+    setCoords({ lat: lngLat.lat, lng: lngLat.lng });
+
+    const direccion = await fetchAddressFromCoords(lngLat.lat, lngLat.lng);
+    setUbicacion(direccion);
+    setFormData((prev) => ({ ...prev, ubicacion: direccion, coords: { lat: lngLat.lat, lng: lngLat.lng } }));
+  });
+
+  // Evento click en mapa para mover el marcador
+  map.current.on("click", async (e) => {
+    const { lng, lat } = e.lngLat;
+    marker.current!.setLngLat([lng, lat]);
+    setCoords({ lat, lng });
+
+    const direccion = await fetchAddressFromCoords(lat, lng);
+    setUbicacion(direccion);
+    setFormData((prev) => ({ ...prev, ubicacion: direccion, coords: { lat, lng } }));
+  });
+}, [coords.lat, coords.lng]);
+
+
+
+     const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    debouncedFetchSuggestions(value);
+    setUbicacion(value);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+    }
+  };
+
+
+      const handleSuggestionClick = (s: any) => {
+    setUbicacion(s.display_name);
+    setCoords({ lat: s.lat, lng: s.lon });
+    marker.current!.setLngLat([s.lon, s.lat]);
+    map.current!.flyTo({ center: [s.lon, s.lat], zoom: 14 });
+    setSuggestions([]);
+  };
+
+const debouncedFetchSuggestions = useDebounce(fetchSuggestions, 300);
+
+
+
 
   return (
     <form
@@ -306,7 +400,7 @@ export default function CrearSalidaPage() {
 
 
 
-      <label className="block relative">
+      {/* <label className="block relative">
         Ubicación
         <input
           value={query}
@@ -336,7 +430,38 @@ export default function CrearSalidaPage() {
           position={markerPos || defaultCoords}
           onChange={handleCoordsChange}
         />
-      </label>
+      </label> */}
+
+
+      
+      <div className="flex flex-col gap-2">
+      <div className="relative">
+        <input
+          type="text"
+          value={ubicacion}
+          onChange={handleInputChange}
+          placeholder="Buscar ubicación..."
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+        {suggestions.length > 0 && (
+          <ul className="absolute bg-white shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
+            {suggestions.map((s, idx) => (
+              <li
+                key={idx}
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => handleSuggestionClick(s)}
+              >
+                {s.display_name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div
+        ref={mapContainer}
+        className="w-full h-[400px] border border-gray-300 rounded"
+      />
+    </div>
 
       {/* <button
         type="submit"

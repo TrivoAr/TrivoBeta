@@ -210,13 +210,7 @@ export default function Signin() {
             </button>
             <button
               type="button"
-              onClick={() =>
-                toast.promise(signIn("apple"), {
-                  loading: "Conectando con Apple...",
-                  success: "¡Listo!",
-                  error: "No se pudo conectar con Apple.",
-                })
-              }
+             onClick={() => signIn("strava", { callbackUrl: "/" })}
             >
               <Image
                 src="/assets/logotipo-de-apple.png"

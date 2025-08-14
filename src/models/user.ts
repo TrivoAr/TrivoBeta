@@ -8,6 +8,13 @@ const FavoritosSchema = new Schema({
   teamSocial: [{ type: Schema.Types.ObjectId, ref: "TeamSocial" }],
 });
 
+const StravaSchema = new Schema({
+  access_token: { type: String },
+  refresh_token: { type: String },
+  expires_at: { type: Number },
+  athlete_id: { type: Number },
+});
+
 
 const UserSchema = new Schema(
   {
@@ -39,7 +46,7 @@ const UserSchema = new Schema(
     },
     rol: {
       type: String,
-      enum: ["alumno", "profe", "dueño de academia"],
+      enum: ["alumno", "profe", "dueño de academia", "admin"],
       required: [true, "Role is required"],
     },
 
@@ -60,7 +67,9 @@ const UserSchema = new Schema(
       type: String,
     },
 
-    favoritos: FavoritosSchema,
+  strava: StravaSchema,
+
+  favoritos: FavoritosSchema,
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
