@@ -3,22 +3,23 @@ import { FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 function Signup() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
+   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsSubmitting(true);
     setError(null); // Clear any previous error
     try {
       const formData = new FormData(event.currentTarget);
 
       const firstname = formData.get("firstname")?.toString();
       const lastname = formData.get("lastname")?.toString();
-      const rol = selectedOption;
+      const rol = "alumno";
       const email = formData.get("email")?.toString();
       const password = formData.get("password")?.toString();
       const confirmPassword = formData.get("confirmPassword")?.toString();
@@ -48,13 +49,15 @@ function Signup() {
         rol,
       });
 
-      console.log(signupResponse);
+
 
       const res = await signIn("credentials", {
         email: signupResponse.data.email,
         password,
         redirect: false,
       });
+
+      toast.success("¡Cuenta creada exitosamente!");
 
       if (res?.ok) return router.push("/home");
     } catch (error) {
@@ -68,13 +71,6 @@ function Signup() {
     }
   };
 
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
-
-  const handleOptionClick = (value: string) => {
-    setSelectedOption(value);
-    setIsOpen(false);
-  };
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#FEFBF9] p-[40px]">
       <form onSubmit={handleSubmit}>
@@ -85,7 +81,7 @@ function Signup() {
             className="mx-auto w-[160px]"
           />
           {/*<h1 className="text-5xl font-medium text-400">Klubo</h1>*/}
-          <h1 className="text-2xl font-bold text-600 text-[#F7941F]">
+          <h1 className="text-2xl font-bold text-600 text-[#C95100]">
             Encuentra a tú tribu
           </h1>
         </div>
@@ -127,49 +123,6 @@ function Signup() {
             placeholder="Confirmar contraseña"
             className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
-
-          <div className="relative w-full">
-            <div
-              onClick={toggleDropdown}
-              className="w-full px-4 py-4 border shadow-sm text-gray-400 rounded-[15px] bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              {selectedOption || "Selecciona un rol"}
-            </div>
-            {isOpen && (
-              <ul className="absolute z-10 w-full mt-1 bg-white border rounded shadow-md">
-                <li
-                  onClick={() => handleOptionClick("alumno")}
-                  className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
-                >
-                  alumno
-                </li>
-                <li
-                  onClick={() => handleOptionClick("dueño de academia")}
-                  className="px-4 py-2 hover:bg-orange-100 cursor-pointer"
-                >
-                  dueño de academia
-                </li>
-              </ul>
-            )}
-          </div>
-
-          <input type="hidden" name="rol" value={selectedOption} />
-          {["dueño de academia", "alumno"].includes(selectedOption) && (
-            <>
-              {selectedOption === "dueño de academia" && (
-                <p className="text-red-500 text-sm font-bold">
-                  *Si tenés un grupo de entrenamiento/academia/social team
-                </p>
-              )}
-              {selectedOption === "alumno" && (
-                <p className="text-red-500 text-sm font-bold">
-                  *Si estás buscando conectar con grupos de entrenamiento,
-                  salidas casuales. Sos deportista principiante o avanzado sin
-                  grupo de entrenamiento
-                </p>
-              )}
-            </>
-          )}
         </div>
 
         <div className="flex items-center mt-4 ml-2">
@@ -178,23 +131,52 @@ function Signup() {
             Acepto los{" "}
             <a
               href="/terminos-condiciones"
-              className="text-orange-500 underline"
+              className="text-[#C95100] underline"
             >
               términos y condiciones
             </a>
           </label>
         </div>
 
-        <button
-          type="submit"
-          className="w-full mt-6 bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] text-white py-2 rounded-xl font-bold"
-        >
-          Crear cuenta
-        </button>
+
+         <button
+            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+            {isSubmitting && (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
+
+
+
+
+
         <button
           type="button"
           onClick={() => router.back()}
-          className="w-full mt-2 text-[#F7941F] py-2 rounded-xl border border-[#F7941F] hover:bg-orange-50"
+          className="w-full mt-2 text-[#C95100] py-2 rounded-xl font-medium hover:bg-orange-50"
         >
           Atrás
         </button>

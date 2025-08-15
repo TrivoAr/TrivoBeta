@@ -201,34 +201,6 @@ export default function Signin() {
                 height={24}
               />
             </button>
-            <button
-              type="button"
-              onClick={() => signIn("strava", { callbackUrl: "/" })}
-            >
-              <Image
-                src="/assets/logotipo-de-apple.png"
-                alt="Apple"
-                width={24}
-                height={24}
-              />
-            </button>
-            {/* <button
-              type="button"
-              onClick={() =>
-                toast.promise(signIn("facebook"), {
-                  loading: "Conectando con Facebook...",
-                  success: "¡Listo!",
-                  error: "No se pudo conectar con Facebook.",
-                })
-              }
-            >
-              <Image
-                src="/assets/facebook-icon.png"
-                alt="Facebook"
-                width={24}
-                height={24}
-              />
-            </button> */}
           </div>
 
           {/* Registro */}
