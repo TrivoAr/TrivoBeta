@@ -1,7 +1,5 @@
 import { Schema, model, models } from "mongoose";
 
-
-
 const FavoritosSchema = new Schema({
   salidas: [{ type: Schema.Types.ObjectId, ref: "SalidaSocial" }],
   academias: [{ type: Schema.Types.ObjectId, ref: "Academia" }],
@@ -15,7 +13,6 @@ const StravaSchema = new Schema({
   athlete_id: { type: Number },
 });
 
-
 const UserSchema = new Schema(
   {
     email: {
@@ -27,9 +24,17 @@ const UserSchema = new Schema(
         "Email is invalid",
       ],
     },
+    fromOAuth: { type: Boolean, default: false },
+    // password: {
+    //   type: String,
+    //   required: [true, "Password is required"],
+    //   select: false,
+    // },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function () {
+        return !this.fromOAuth;
+      },
       select: false,
     },
     firstname: {
@@ -67,9 +72,9 @@ const UserSchema = new Schema(
       type: String,
     },
 
-  strava: StravaSchema,
+    strava: StravaSchema,
 
-  favoritos: FavoritosSchema,
+    favoritos: FavoritosSchema,
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },

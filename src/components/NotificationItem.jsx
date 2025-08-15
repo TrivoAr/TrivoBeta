@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const NotificationItem = ({ notification, onMarkAsRead }) => {
   const isSolicitud = notification.tipo === "solicitud";
@@ -20,6 +21,8 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         }),
       });
       onMarkAsRead(notification._id);
+      onRemove(notification._id);
+      toast.success("Solicitud aceptada");
     } catch (err) {
       console.error("Error al aceptar solicitud", err);
     }
@@ -36,6 +39,8 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         }),
       });
       onMarkAsRead(notification._id);
+      onRemove(notification._id);
+      toast.error("Solicitud rechazada");
     } catch (err) {
       console.error("Error al rechazar solicitud", err);
     }
@@ -52,9 +57,18 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
           backgroundSize: "cover",
         }}
         className="rounded-full object-cover p-8 w-12 h-12  cursor-pointer"
+        // onClick={() => {
+        //   console.log("notification:", notification);
+        //   const profileId = notification.fromUserId || notification.userId;
+        //   if (profileId) {
+        //     router.push(`/profile/${profileId}`);
+        //   }
+        // }}
         onClick={() => {
-          console.log("notification:", notification);
           const profileId = notification.fromUserId || notification.userId;
+          if (notification.tipo === "notificacion") {
+            onMarkAsRead(notification._id); // ✅ marca como leída
+          }
           if (profileId) {
             router.push(`/profile/${profileId}`);
           }

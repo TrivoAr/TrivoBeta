@@ -21,6 +21,7 @@ function ProfilePage() {
     instagram: session?.user.instagram || "",
     facebook: session?.user.facebook || "",
     twitter: session?.user.twitter || "",
+    imagen: session?.user.imagen || "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -41,6 +42,7 @@ function ProfilePage() {
         instagram: session.user.instagram || "",
         facebook: session.user.facebook || "",
         twitter: session.user.twitter || "",
+        imagen: session.user.imagen || "",
       });
     }
     const loadProfileImage = async () => {
@@ -62,22 +64,9 @@ function ProfilePage() {
 
   const horaActual = new Date().getHours();
 
-  let saludo;
-  if (horaActual >= 6 && horaActual < 12) {
-    saludo = "Buen día";
-  } else if (horaActual >= 12 && horaActual < 20) {
-    saludo = "Buenas tardes";
-  } else {
-    saludo = "Buenas noches";
-  }
 
-  const handleShowPersonalData = () => {
-    setShowPersonalData((prev) => !prev);
-  };
 
-  const handleShowObjectives = () => {
-    setShowObjectives((prev) => !prev);
-  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -118,6 +107,7 @@ function ProfilePage() {
         instagram: updatedUser.instagram,
         facebook: updatedUser.facebook,
         twitter: updatedUser.twitter,
+        imagen: updatedUser.imagen,
       });
 
       // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
@@ -166,6 +156,7 @@ function ProfilePage() {
     };
     checkStravaStatus();
   }, []);
+  console.log("usu", session?.user);
 
   return (
     <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
@@ -176,7 +167,7 @@ function ProfilePage() {
       <div className="w-[90%] bg-white border p-5 shadow-md rounded-[20px] flex flex-col items-center mb-4">
         <div onClick={() => setShowPreview(true)}>
           <img
-            src={profileImage || session?.user?.imagen}
+            src={profileImage || session?.user.imagen}
             alt="Avatar"
             className="w-28 h-28 rounded-full object-cover mb-4 shadow-md"
           />
