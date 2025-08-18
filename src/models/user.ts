@@ -1,13 +1,17 @@
 import { Schema, model, models } from "mongoose";
 
-
-
 const FavoritosSchema = new Schema({
   salidas: [{ type: Schema.Types.ObjectId, ref: "SalidaSocial" }],
   academias: [{ type: Schema.Types.ObjectId, ref: "Academia" }],
   teamSocial: [{ type: Schema.Types.ObjectId, ref: "TeamSocial" }],
 });
 
+const StravaSchema = new Schema({
+  access_token: { type: String },
+  refresh_token: { type: String },
+  expires_at: { type: Number },
+  athlete_id: { type: Number },
+});
 
 const UserSchema = new Schema(
   {
@@ -20,9 +24,12 @@ const UserSchema = new Schema(
         "Email is invalid",
       ],
     },
+    fromOAuth: { type: Boolean, default: false },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function () {
+        return !this.fromOAuth;
+      },
       select: false,
     },
     firstname: {
@@ -39,7 +46,7 @@ const UserSchema = new Schema(
     },
     rol: {
       type: String,
-      enum: ["alumno", "profe", "dueño de academia"],
+      enum: ["alumno", "profe", "dueño de academia", "admin"],
       required: [true, "Role is required"],
     },
 
@@ -59,6 +66,8 @@ const UserSchema = new Schema(
     bio: {
       type: String,
     },
+
+    strava: StravaSchema,
 
     favoritos: FavoritosSchema,
 

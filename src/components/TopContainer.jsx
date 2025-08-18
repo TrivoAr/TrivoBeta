@@ -73,6 +73,8 @@ useEffect(() => {
     router.push("/notificaciones");
   };
 
+  console.log("imageb", session?.user);
+
   return (
     <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
       {/* Avatar */}

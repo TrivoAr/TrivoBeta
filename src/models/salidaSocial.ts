@@ -27,7 +27,7 @@ const SalidaSocialSchema = new Schema(
     whatsappLink: {
       type: String,
     },
-     localidad: {
+    localidad: {
       type: String,
     },
     telefonoOrganizador: {
@@ -40,14 +40,37 @@ const SalidaSocialSchema = new Schema(
       lat: { type: Number },
       lng: { type: Number },
     },
+    dificultad: {
+      type: String,
+    },
+    precio: { type: String },
+    
     creador_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+
+    stravaActivity: {
+      type: Schema.Types.ObjectId,
+      ref: "StravaActivity",
+      required: false,
+    },
+
+
+     stravaMap: {
+      id: { type: String },
+      summary_polyline: { type: String },
+      polyline: { type: String },
+      resource_state: { type: Number },
+    },
+
+
+
   },
   { timestamps: true }
 );
 
-const SalidaSocial = models.SalidaSocial || model("SalidaSocial", SalidaSocialSchema);
+const SalidaSocial =
+  models.SalidaSocial || model("SalidaSocial", SalidaSocialSchema);
 export default SalidaSocial;
