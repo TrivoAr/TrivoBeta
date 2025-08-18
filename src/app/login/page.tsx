@@ -4,8 +4,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
-import lock from "../../../public/assets/icons/Group 2.svg"
-import user from "../../../public/assets/icons/User.svg"
+import lock from "../../../public/assets/icons/Group 2.svg";
+import user from "../../../public/assets/icons/User.svg";
 
 export default function Signin() {
   const router = useRouter();
@@ -66,8 +66,8 @@ export default function Signin() {
           <div className="relative mb-[26px]">
             {/* Icono a la izquierda */}
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image src={user} alt="lock icon" width={24} height={24} /> 
-              </div>
+              <Image src={user} alt="lock icon" width={24} height={24} />
+            </div>
 
             <input
               type="text"
@@ -78,12 +78,11 @@ export default function Signin() {
             />
           </div>
 
-         {/* Contraseña */}
-         <div className="relative mb-[19px]">
-            
+          {/* Contraseña */}
+          <div className="relative mb-[19px]">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Image src={lock} alt="lock icon" width={16} height={20} /> 
-              </div>
+              <Image src={lock} alt="lock icon" width={16} height={20} />
+            </div>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
@@ -130,27 +129,23 @@ export default function Signin() {
             </button>
           </div>
 
-
           {/* Olvidaste contraseña */}
           <div className="text-left mb-[26px]">
-            <a
-              href="/reset-password"
-              className="text-[15px] text-[#C95100]"
-            >
+            <a href="/reset-password" className="text-[15px] text-[#C95100]">
               ¿Olvidaste tu contraseña?
             </a>
           </div>
 
           {/* Botón Login */}
 
-{/*           
+          {/*           
           <button
             type="submit"
             className="w-full bg-[#C95100] h-[55px] mb-[26px]  rounded-[15px] hover:bg-[#F7941F] text-white py-2 text-[20px] font-medium transition"
           >
             Iniciar sesion
           </button> */}
-                  <button
+          <button
             className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
             type="submit"
             disabled={isSubmitting}
@@ -180,8 +175,6 @@ export default function Signin() {
             )}
           </button>
 
-
-
           {/* Divider */}
           <div className="flex items-center text-gray-400 text-sm my-2 ">
             <hr className="flex-grow border-t" />
@@ -190,11 +183,11 @@ export default function Signin() {
           </div>
 
           {/* Social Buttons */}
-          <div className="flex justify-center space-x-6 mt-2 mt-[20px]">
+          <div className="flex justify-center space-x-6 mt-[20px]">
             <button
               type="button"
               onClick={() =>
-                toast.promise(signIn("google"), {
+                toast.promise(signIn("google", { callbackUrl: "/home" }), {
                   loading: "Conectando con Google...",
                   success: "¡Listo!",
                   error: "No se pudo conectar con Google.",
@@ -208,40 +201,6 @@ export default function Signin() {
                 height={24}
               />
             </button>
-            <button
-              type="button"
-              onClick={() =>
-                toast.promise(signIn("apple"), {
-                  loading: "Conectando con Apple...",
-                  success: "¡Listo!",
-                  error: "No se pudo conectar con Apple.",
-                })
-              }
-            >
-              <Image
-                src="/assets/logotipo-de-apple.png"
-                alt="Apple"
-                width={24}
-                height={24}
-              />
-            </button>
-            {/* <button
-              type="button"
-              onClick={() =>
-                toast.promise(signIn("facebook"), {
-                  loading: "Conectando con Facebook...",
-                  success: "¡Listo!",
-                  error: "No se pudo conectar con Facebook.",
-                })
-              }
-            >
-              <Image
-                src="/assets/facebook-icon.png"
-                alt="Facebook"
-                width={24}
-                height={24}
-              />
-            </button> */}
           </div>
 
           {/* Registro */}

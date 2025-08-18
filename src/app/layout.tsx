@@ -3,6 +3,9 @@ import Navbar from "../components/Navbar";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+
 
 export const metadata = {
   title: "Trivo app",

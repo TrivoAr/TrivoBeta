@@ -6,6 +6,8 @@ import axios from "axios";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
+import polyline from "polyline";
+import StravaMap from "@/components/StravaMap";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -55,6 +57,13 @@ interface EventData {
     lat: number;
     lng: number;
   };
+  precio: string;
+  stravaMap?: {
+    id: string;
+    summary_polyline: string;
+    polyline: string;
+    resource_state: number;
+  };
 }
 
 interface Miembro {
@@ -72,8 +81,36 @@ export default function EventPage({ params }: PageProps) {
   const [yaUnido, setYaUnido] = useState(false);
   const [favorito, setFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const coords = event?.stravaMap?.summary_polyline
+    ? polyline.decode(event.stravaMap.summary_polyline)
+    : [];
 
   const router = useRouter();
+
+  //   const routeGeoJSON = {
+  //   type: "Feature",
+  //   geometry: {
+  //     type: "LineString",
+  //     coordinates: coords.map(([lat, lng]) => [lng, lat]),
+  //   },
+  // };
+
+  let routeGeoJSON = null;
+
+  if (event?.stravaMap?.summary_polyline) {
+    try {
+      const coords = polyline.decode(event.stravaMap.summary_polyline);
+      routeGeoJSON = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: coords.map(([lat, lng]) => [lng, lat]),
+        },
+      };
+    } catch (err) {
+      console.error("Error decodificando la polyline:", err);
+    }
+  }
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -114,12 +151,10 @@ export default function EventPage({ params }: PageProps) {
   }, [params.id, session]);
 
   const handleAccion = async () => {
-
     if (!session) {
       setShowLoginModal(true);
       return;
     }
-
 
     const metodo = yaUnido ? "DELETE" : "POST";
     const url = yaUnido
@@ -153,8 +188,9 @@ export default function EventPage({ params }: PageProps) {
 
   const toggleFavorito = async () => {
     if (!session) {
-      setShowLoginModal(true); 
-      return}
+      setShowLoginModal(true);
+      return;
+    }
 
     try {
       const res = await fetch(`/api/favoritos/sociales/${params.id}`, {
@@ -233,15 +269,17 @@ export default function EventPage({ params }: PageProps) {
     });
   };
 
+  console.log("saida", event);
+
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto h-[1000px]">
       <div className="relative w-full h-[176px] ">
         <div
           style={{
-          backgroundImage: `url(${event.imagen})`,
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }}
+            backgroundImage: `url(${event.imagen})`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
+          }}
           // width={375}
           // height={176}
           className="w-full object-cover h-[176px]"
@@ -258,8 +296,6 @@ export default function EventPage({ params }: PageProps) {
             className="h-[20px] w-[20px]"
           />
         </button>
-
-    
 
         <button
           onClick={toggleFavorito}
@@ -503,6 +539,20 @@ export default function EventPage({ params }: PageProps) {
             </p>
           )}
         </div>
+
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
+            Recorrido
+          </h2>
+          {event.stravaMap?.summary_polyline ? (
+            <StravaMap summary_polyline={event?.stravaMap?.summary_polyline} />
+          ) : (
+            <p className="text-sm text-gray-600">
+              No hay recorrido disponible.
+            </p>
+          )}
+        </div>
+
         <div className="mt-6">
           <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
             Organizador{" "}
@@ -629,7 +679,10 @@ export default function EventPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+        />
 
         <div className="pb-[200px]" />
       </div>

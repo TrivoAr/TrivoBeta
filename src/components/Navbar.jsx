@@ -18,8 +18,12 @@ function Navbar() {
 
     const content = (
       <>
-        <div className={`${isActive ? "text-orange-500" : "text-gray-500"}`}>{icon}</div>
-        <span className={`text-sm mt-1 ${isActive ? "text-orange-400 font-semibold" : "text-gray-500"}`}>
+        <div className={`${isActive ? "text-[#C95100]" : "text-gray-400"}`}>
+          {icon}
+        </div>
+        <span
+          className={`text-sm mt-1 ${isActive ? "text-[#C95100] font-medium" : "text-gray-400 font-light"}`}
+        >
           {label}
         </span>
       </>
@@ -30,11 +34,17 @@ function Navbar() {
     return (
       <li className="flex flex-col items-center justify-center">
         {href ? (
-          <Link href={href} className="flex flex-col items-center justify-center">
+          <Link
+            href={href}
+            className="flex flex-col items-center justify-center"
+          >
             {content}
           </Link>
         ) : (
-          <button onClick={onClick} className="flex flex-col items-center justify-center focus:outline-none">
+          <button
+            onClick={onClick}
+            className="flex flex-col items-center justify-center focus:outline-none"
+          >
             {content}
           </button>
         )}
@@ -47,7 +57,9 @@ function Navbar() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-4/5 max-w-sm shadow-lg text-center">
-            <h2 className="text-lg font-semibold mb-4 text-gray-700">¿Qué deseas crear?</h2>
+            <h2 className="text-lg font-semibold mb-4 text-gray-700">
+              ¿Qué deseas crear?
+            </h2>
             <div className="flex flex-col gap-3">
               <Link
                 href="/social/crear"
@@ -56,23 +68,29 @@ function Navbar() {
               >
                 Salida
               </Link>
-              {session.user.role === "dueño de academia" ? (<>
-               <Link
-                href="/team-social/crear"
+              {session.user.role === "dueño de academia" ? (
+                <>
+                  <Link
+                    href="/team-social/crear"
+                    onClick={() => setIsModalOpen(false)}
+                    className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
+                  >
+                    Social Team
+                  </Link>
+                  <Link
+                    href="/academias/crear"
+                    onClick={() => setIsModalOpen(false)}
+                    className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
+                  >
+                    Grupo de entrenamiento
+                  </Link>
+                </>
+              ) : null}
+
+              <button
                 onClick={() => setIsModalOpen(false)}
-                className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
+                className="mt-2 text-sm text-gray-500"
               >
-                Social Team
-              </Link>
-              <Link
-                href="/academias/crear"
-                onClick={() => setIsModalOpen(false)}
-                className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-              >
-                Grupo de entrenamiento
-              </Link></>) : null}
-           
-              <button onClick={() => setIsModalOpen(false)} className="mt-2 text-sm text-gray-500">
                 Cancelar
               </button>
             </div>
@@ -87,7 +105,12 @@ function Navbar() {
             href="/home"
             label="Inicio"
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
               </svg>
@@ -99,9 +122,15 @@ function Navbar() {
             href="/dashboard"
             label="Tu tribu"
             icon={
-              <svg fill="currentColor" height="30" width="30" viewBox="0 0 512 512">
+              <svg
+                fill="currentColor"
+                height="30"
+                width="30"
+                viewBox="0 0 512 512"
+              >
                 <polygon points="170.669,512.004 341.335,512.004 256.002,351.194" />
-                <path d="M490.669,469.338h-29.483L279.853,106.671l37.909-75.797c5.269-10.539,0.981-23.339-9.557-28.629
+                <path
+                  d="M490.669,469.338h-29.483L279.853,106.671l37.909-75.797c5.269-10.539,0.981-23.339-9.557-28.629
                   c-10.539-5.248-23.317-0.981-28.629,9.557L256.002,58.97l-23.573-47.168c-5.291-10.539-18.091-14.805-28.629-9.557
                   c-10.539,5.291-14.827,18.091-9.557,28.629l37.909,75.797L50.818,469.338H21.335c-11.797,0-21.333,9.557-21.333,21.333
                   s9.536,21.333,21.333,21.333h103.381L236.503,290.01c3.435-7.701,11.051-12.672,19.499-12.672
@@ -113,25 +142,88 @@ function Navbar() {
           />
 
           {/* Crear salida */}
-          <NavItem
-            label="Crear salida"
-            icon={
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M15 12H9M12 9v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            }
-            onClick={() => setIsModalOpen(true)}
-          />
+
+          {session.user.role === "admin" ? (
+            <NavItem
+              label="Crear salida"
+              icon={
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M15 12H9M12 9v6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              }
+              onClick={() => setIsModalOpen(true)}
+            />
+          ) : (
+            <NavItem
+              label="Descubrir"
+              href={"/descubrir"}
+              icon={
+                <svg
+                  fill="currentColor"
+                  height="30px"
+                  width="30px"
+                  version="1.1"
+                  id="XMLID_186_"
+                  viewBox="0 0 24 24"
+                >
+                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g
+                    id="SVGRepo_tracerCarrier"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></g>
+                  <g id="SVGRepo_iconCarrier">
+                    {" "}
+                    <g id="compass">
+                      {" "}
+                      <g>
+                        {" "}
+                        <path d="M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0s12,5.4,12,12S18.6,24,12,24z M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10 S17.5,2,12,2z"></path>{" "}
+                      </g>{" "}
+                      <g>
+                        {" "}
+                        <path d="M8.5,8.5L6,18l9.5-2.5L18,6L8.5,8.5z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2C14,13.1,13.1,14,12,14z"></path>{" "}
+                      </g>{" "}
+                    </g>{" "}
+                  </g>
+                </svg>
+              }
+             
+            />
+          )}
 
           {/* Buscar */}
           <NavItem
             href="/academias"
             label="Buscar"
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5
+                <path
+                  d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5
                   4.99L20.49 19l-4.99-5zM4 9.5C4 6.47 6.47 4 9.5 4S15 6.47 15 9.5 12.53 15 9.5 15 4 12.53 4 9.5z"
                 />
               </svg>
@@ -143,7 +235,12 @@ function Navbar() {
             href="/dashboard/profile"
             label="Perfil"
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
               </svg>
