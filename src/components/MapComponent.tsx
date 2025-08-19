@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // "use client";
 
 // import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
@@ -61,6 +62,8 @@
 //   );
 // }
 
+=======
+>>>>>>> mat-clean
 import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";

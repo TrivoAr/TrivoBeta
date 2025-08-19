@@ -80,6 +80,20 @@ export default function CrearSalidaPage() {
       polyline: "",
       resource_state: 0,
     },
+<<<<<<< HEAD
+=======
+    cupo: 0,
+    detalles: "",
+     profesorId:{
+       id: "",
+       firstName: "",
+       lastName:"",
+       imagen: "",
+       telNumber: "",
+       instagram: "",
+       rol: "",
+    }
+>>>>>>> mat-clean
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
