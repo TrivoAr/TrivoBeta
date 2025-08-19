@@ -65,8 +65,7 @@ const SalidaSocialSchema = new Schema(
       resource_state: { type: Number },
     },
 
-<<<<<<< HEAD
-=======
+
     cupo:{
       type: Number,
       require: true,
@@ -81,8 +80,6 @@ const SalidaSocialSchema = new Schema(
       ref: "User",
       required: false,
     }
-
->>>>>>> mat-clean
 
 
   },

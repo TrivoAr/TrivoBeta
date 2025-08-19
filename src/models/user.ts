@@ -66,12 +66,10 @@ const UserSchema = new Schema(
     bio: {
       type: String,
     },
-<<<<<<< HEAD
-=======
+
     dni:{
       type: String,
     },
->>>>>>> mat-clean
 
     strava: StravaSchema,
 
