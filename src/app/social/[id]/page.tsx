@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import polyline from "polyline";
 import StravaMap from "@/components/StravaMap";
+import MapComponent from "@/components/MapComponent";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -52,12 +53,14 @@ interface EventData {
     firstname: string;
     lastname: string;
     imagen: string;
+    bio: string;
   };
   locationCoords?: {
     lat: number;
     lng: number;
   };
   precio: string;
+  dificultad: string;
   stravaMap?: {
     id: string;
     summary_polyline: string;
@@ -81,9 +84,13 @@ export default function EventPage({ params }: PageProps) {
   const [yaUnido, setYaUnido] = useState(false);
   const [favorito, setFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const coords = event?.stravaMap?.summary_polyline
-    ? polyline.decode(event.stravaMap.summary_polyline)
-    : [];
+  let decodedCoords: [number, number][] = [];
+
+  if (event?.stravaMap?.summary_polyline) {
+    decodedCoords = polyline
+      .decode(event.stravaMap.summary_polyline)
+      .map(([lat, lng]) => [lng, lat]);
+  }
 
   const router = useRouter();
 
@@ -97,16 +104,29 @@ export default function EventPage({ params }: PageProps) {
 
   let routeGeoJSON = null;
 
+  // if (event?.stravaMap?.summary_polyline) {
+  //   console.log("que digo", event.stravaMap);
+  //   try {
+  //     const coords = polyline.decode(event.stravaMap.summary_polyline);
+  //     routeGeoJSON = {
+  //       type: "Feature",
+  //       geometry: {
+  //         type: "LineString",
+  //         coordinates: coords.map(([lat, lng]) => [lng, lat]),
+  //       },
+  //     };
+  //   } catch (err) {
+  //     console.error("Error decodificando la polyline:", err);
+  //   }
+  // }
+
+  let routeCoords: [number, number][] = [];
+
   if (event?.stravaMap?.summary_polyline) {
     try {
-      const coords = polyline.decode(event.stravaMap.summary_polyline);
-      routeGeoJSON = {
-        type: "Feature",
-        geometry: {
-          type: "LineString",
-          coordinates: coords.map(([lat, lng]) => [lng, lat]),
-        },
-      };
+      routeCoords = polyline
+        .decode(event.stravaMap.summary_polyline)
+        .map(([lat, lng]) => [lng, lat]);
     } catch (err) {
       console.error("Error decodificando la polyline:", err);
     }
@@ -272,7 +292,7 @@ export default function EventPage({ params }: PageProps) {
   console.log("saida", event);
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto h-[1000px]">
+    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
       <div className="relative w-full h-[176px] ">
         <div
           style={{
@@ -375,51 +395,305 @@ export default function EventPage({ params }: PageProps) {
           </svg>
         </button>
       </div>
-      <div className="px-4 py-6">
-        <h1 className="text-xl  font-semibold mb-4 text-center">
-          {/* <span className="bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent font-semibold">
-          {event.deporte}
-        </span>{" "} */}{" "}
-          {event.nombre}
-        </h1>
-        <div className="text-sm text-gray-700 mt-3 flex flex-col gap-1 justify-between">
-          <div className="flex items-center gap-2">
-            <img
-              src="/assets/icons/Locationgray.svg"
-              alt=""
-              className="w-[14px] h-[14px] object-cover"
-            />
+      <div className="px-4 py-2">
+        <h1 className="text-xl  font-semibold text-center">{event.nombre}</h1>
+        <div className="text-sm text-[#808488] flex flex-col w-full gap-1 justify-center items-center">
+          <div className="flex items-center justify-center">
+            <svg
+              height="13px"
+              width="13px"
+              version="1.1"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              fill="#FF3D00"
+              stroke="#FF3D00"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <path
+                  style={{ fill: "#FF3D00" }}
+                  d="M255.999,0C166.683,0,94.278,72.405,94.278,161.722c0,81.26,62.972,235.206,161.722,350.278 c98.75-115.071,161.722-269.018,161.722-350.278C417.722,72.405,345.316,0,255.999,0z"
+                ></path>{" "}
+                <g style={{ opacity: "0.1" }}>
+                  {" "}
+                  <path d="M168.207,125.87c15.735-64.065,67.63-109.741,128.634-120.664C283.794,1.811,270.109,0,255.999,0 C166.683,0,94.277,72.405,94.277,161.722c0,73.715,51.824,207.247,135.167,317.311C170.39,349.158,150.032,199.872,168.207,125.87z "></path>{" "}
+                </g>{" "}
+                <path
+                  style={{ fill: "#FFFF" }}
+                  d="M255.999,235.715c-40.81,0-74.014-33.203-74.019-74.014c0.005-40.795,33.209-73.998,74.019-73.998 s74.014,33.203,74.019,74.014C330.015,202.513,296.809,235.715,255.999,235.715z"
+                ></path>{" "}
+              </g>
+            </svg>
             <span>{event.localidad}</span>
           </div>
-          {/* <div className="flex items-center gap-2 pl-[50px]">
-          <img
-            src="/assets/icons/Calendargray.svg"
-            alt=""
-            className="w-[14px] h-[14px] object-cover"
-          />
-          <span>{new Date(event.fecha).toLocaleDateString()}</span>
-        </div> */}
-          {/* <div className="flex items-center gap-2">
-          <img
-            src="/assets/icons/Clockgray.svg"
-            alt=""
-            className="w-[14px] h-[14px] object-cover"
-          />
-          <span>{event.hora}</span>
-        </div> */}
-          <div className="flex items-center gap-2">
-            <img
-              src="/assets/icons/Usergray.svg"
-              alt=""
-              className="w-[14px] h-[14px] object-cover"
-            />
-            <span>{event.deporte}</span>
-          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-2"></div>
         </div>
 
-        <div className="flex justify-between items-center mt-4">
-          <div className="h-full">
-            <p className="text-sm font-medium text-[#808488]">Participantes</p>
+        <div className="w-full flex items-center flex-col mt-2">
+          <div className="flex items-center justify-start gap-2 w-[90%]">
+            <div className="h-[80px] w-[80px] bg-white shadow-md rounded-full flex justify-center items-center border">
+              <img
+                src={event.creador_id.imagen}
+                alt="Organizador"
+                className="h-[70px] w-[70px] rounded-full object-cover border"
+              />
+            </div>
+
+            <span className="text-sm  pr-[20px] font-light">
+              Organizado por {event.creador_id.firstname}{" "}
+              {event.creador_id.lastname}
+            </span>
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-2"></div>
+        </div>
+
+        <div className="w-full flex flex-col items-center mt-3">
+          <div className="w-[90%] flex flex-col items-center gap-2">
+            <div className="text-sm flex items-center w-full font-light gap-1">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                width={20}
+                height={20}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <path
+                    d="M15 7C16.1046 7 17 6.10457 17 5C17 3.89543 16.1046 3 15 3C13.8954 3 13 3.89543 13 5C13 6.10457 13.8954 7 15 7Z"
+                    stroke="#000000"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <path
+                    d="M12.6133 8.26691L9.30505 12.4021L13.4403 16.5374L11.3727 21.0861"
+                    stroke="#000000"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <path
+                    d="M6.4104 9.5075L9.79728 6.19931L12.6132 8.26692L15.508 11.5752H19.2297"
+                    stroke="#000000"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <path
+                    d="M8.89152 15.7103L7.65095 16.5374H4.34277"
+                    stroke="#000000"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                </g>
+              </svg>
+              {event.deporte}
+            </div>
+            <div className="text-sm flex items-center w-full font-light gap-1">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                width={20}
+                height={20}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <rect width="24" height="24" fill="white"></rect>{" "}
+                  <path
+                    d="M18 9C18 13.7462 14.2456 18.4924 12.6765 20.2688C12.3109 20.6827 11.6891 20.6827 11.3235 20.2688C9.75444 18.4924 6 13.7462 6 9C6 7 7.5 3 12 3C16.5 3 18 7 18 9Z"
+                    stroke="#000000"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <circle
+                    cx="12"
+                    cy="9"
+                    r="2"
+                    stroke="#000000"
+                    stroke-linejoin="round"
+                  ></circle>{" "}
+                </g>
+              </svg>
+              {event.localidad}
+            </div>
+            <div className="text-sm flex items-center w-full font-light gap-1">
+              <svg
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                stroke="#000000"
+                height={18}
+                width={18}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <circle cx="32" cy="32" r="24"></circle>
+                  <polyline points="40 44 32 32 32 16"></polyline>
+                </g>
+              </svg>
+              {event.duracion} de duración del evento
+            </div>
+            <div className="text-sm flex items-center w-full font-light gap-1 capitalize">
+              <svg
+                fill="#000000"
+                viewBox="0 0 32 32"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                height={18}
+                width={18}
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <title>signal</title>{" "}
+                  <path d="M2 25.25c-0.414 0-0.75 0.336-0.75 0.75v0 4c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-4c-0-0.414-0.336-0.75-0.75-0.75v0zM8.968 19.25c-0.414 0-0.75 0.336-0.75 0.75v0 10c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-10c-0-0.414-0.336-0.75-0.75-0.75v0zM16 13.25c-0.414 0-0.75 0.336-0.75 0.75v0 16c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-16c-0-0.414-0.336-0.75-0.75-0.75v0zM30 1.25c-0.414 0-0.75 0.336-0.75 0.75v0 28c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-28c-0-0.414-0.336-0.75-0.75-0.75v0zM23 7.249c-0.414 0-0.75 0.336-0.75 0.75v0 22.001c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-22.001c-0-0.414-0.336-0.75-0.75-0.75v0z"></path>{" "}
+                </g>
+              </svg>
+              {event.dificultad}
+            </div>
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
+        </div>
+        <div className="w-full flex flex-col items-center mt-3">
+          <div className="w-[90%] font-extralight text-justify">
+            {event.descripcion}
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
+        </div>
+
+        <div className="w-full flex flex-col items-center">
+          <div className="w-[90%]">
+          <p className="mb-2">
+            <span className="text-lg font-normal">Punto de encuentro</span>
+            <br />
+            <span className="text-sm text-gray-600 mb-2 font-extralight">
+              {event.ubicacion}
+            </span>
+          </p>
+          {event.locationCoords ? (
+            <div className="w-full h-[300px] rounded-xl overflow-hidden border z-0">
+              <MapComponent
+                position={{
+                  lat: event.locationCoords.lat,
+                  lng: event.locationCoords.lng,
+                }}
+                onChange={() => {}} // callback vacío si no quieres actualizar nada
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">
+              No hay coordenadas disponibles.
+            </p>
+          )}
+        </div>
+        <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
+        </div>
+        
+        <div className="mt-3 w-full flex flex-col items-center">
+          <div className="flex flex-col w-[90%] gap-2">
+          <span className="text-lg font-normal">Recorrido</span>
+          <div className="rounded-xl" style={{ width: "100%", height: "300px" }}>
+            {decodedCoords.length > 0 && <StravaMap coords={routeCoords} />}
+          </div>
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
+        </div>
+
+      
+
+        <div className="w-full flex flex-col items-center mt-6">
+          <div className="flex justify-center flex-col items-center gap-3">
+            <div className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3">
+              <div
+                className="rounded-full h-[100px] w-[100px] shadow-md"
+                style={{
+                  backgroundImage: `url(${event.creador_id.imagen})`,
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                }}
+              ></div>
+              <div className="flex flex-col items-center">
+                <h2 className="text-xl font-normal">
+                  {event.creador_id.firstname} {event.creador_id.lastname}
+                </h2>
+                <p className="text-sm font-light text-slate-400 mb-1">Profesor</p>
+                <a
+                  href={`https://wa.me/${event.telefonoOrganizador?.replace(
+                    /\D/g,
+                    ""
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
+                >
+                  Contacto
+                </a>
+              </div>
+            </div>
+            <div className="w-[90%] font-extralight text-justify">{event.creador_id.bio}</div>
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
+        </div>
+
+          <div className="flex flex-col items-center mt-6">
+          <div className="w-[90%]">
+          <h2 className="text-lg font-normal mb-1">
+            Grupo de Whatsapp
+          </h2>
+          {event.whatsappLink && (
+            <div className="flex justify-center mt-2">
+              <a
+                href={event.whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-white shadow-md justify-center"
+              >
+                Unirse{" "}
+              </a>
+            </div>
+          )}
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
+        </div>
+
+
+
+
+          <div className="flex w-full justify-center items-center mt-4">
+          <div className="w-[90%]">
+            <p className="text-lg font-normal mb-1">Participantes</p>
             <div className="flex -space-x-2 mt-1">
               {miembros.length > 0 ? (
                 <>
@@ -437,7 +711,7 @@ export default function EventPage({ params }: PageProps) {
                     />
                   ))}
                   {miembros.length > 2 && (
-                    <div className="h-8 w-8 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
+                    <div className="h-40 w-40 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
                       +{miembros.length - 2}
                     </div>
                   )}
@@ -449,217 +723,30 @@ export default function EventPage({ params }: PageProps) {
               )}
             </div>
           </div>
-
-          <div className="h-full">
-            <p className="text-sm font-medium text-[#808488]">Organiza</p>
-            <div className="flex items-center justify-start mt-1 gap-2">
-              <img
-                src={event.creador_id.imagen}
-                alt="Organizador"
-                className="h-8 w-8 rounded-full object-cover border"
-              />
-              <span className="text-sm  pr-[20px]">
-                {event.creador_id.firstname}
-              </span>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-            Descripcion
-          </h2>
-          <p className="text-sm text-[#808488] leading-relaxed">
-            {event.descripcion}
-          </p>
-        </div>
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-            Grupo de Whatsapp
-          </h2>
-          <p className="text-sm text-gray-600 mb-2">
-            Unite al grupo de la salida para más información:
-          </p>
-          {event.whatsappLink && (
-            <div className="flex justify-center mt-2">
-              <a
-                href={event.whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border border-green-500 text-green-500 px-4 py-2 rounded-md font-medium hover:bg-green-50 transition"
-              >
-                Grupo{" "}
-                <img
-                  src="/assets/Logo/Whatsapp.svg"
-                  alt="Grupo"
-                  className="w-5 h-5"
-                />
-              </a>
-            </div>
-          )}
-        </div>
-        <div className="mt-6 ">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-            Ubicación
-          </h2>
-          <p className="mb-2">
-            <span className="text-slate-500 font-bold">Direcccion:</span>
-            <br />
-            <span className="text-sm text-gray-600 mb-2">
-              {" "}
-              {event.ubicacion}
-            </span>
-          </p>
-          {event.locationCoords ? (
-            <div className="w-full h-48 rounded-xl overflow-hidden border z-0">
-              <MapContainer
-                center={[event.locationCoords.lat, event.locationCoords.lng]}
-                zoom={15}
-                scrollWheelZoom={false}
-                style={{ height: "100%", width: "100%" }}
-                className="z-2"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker
-                  position={[
-                    event.locationCoords.lat,
-                    event.locationCoords.lng,
-                  ]}
-                >
-                  <Popup>{event.nombre}</Popup>
-                </Marker>
-              </MapContainer>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600">
-              No hay coordenadas disponibles.
-            </p>
-          )}
-        </div>
 
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-            Recorrido
-          </h2>
-          {event.stravaMap?.summary_polyline ? (
-            <StravaMap summary_polyline={event?.stravaMap?.summary_polyline} />
-          ) : (
-            <p className="text-sm text-gray-600">
-              No hay recorrido disponible.
-            </p>
-          )}
-        </div>
 
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent mb-1">
-            Organizador{" "}
-          </h2>
-          <div className="flex justify-center gap-3">
-            <div className="bg-white p-3 w-auto h-[160px] rounded-[15px] flex shadow-md self-center justify-around items-center gap-3">
-              <div
-                className="rounded-full h-[100px] w-[100px] shadow-md"
-                style={{
-                  backgroundImage: `url(${event.creador_id.imagen})`,
-                  backgroundSize: "cover",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center",
-                }}
-              ></div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-700 mb-1">
-                  {event.creador_id.firstname} {event.creador_id.lastname}
-                </h2>
-                <a
-                  href={`https://wa.me/${event.telefonoOrganizador?.replace(
-                    /\D/g,
-                    ""
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white font-bold border  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] px-[15px] py-[5px] rounded-[15px]"
-                >
-                  Contacto
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* <div className="mt-8 mb-[200px]">
-        <button
-          onClick={handleAccion}
-          className={`w-full py-3 rounded-[15px] font-semibold transition ${
-            yaUnido
-              ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
-              : "bg-green-100 text-green-600 hover:bg-green-600 hover:text-white"
-          }`}
-        >
-          {yaUnido ? "Salir " : "Unirse a la salida"}
-        </button>
-      </div> */}
-
-        {/* Barra fija sobre el mapa */}
-
-        {/* {session?.user?.id === event.creador_id._id && (
-      <div className="fixed bottom-[100px] w-[100%] left-1/2 -translate-x-1/2  px-2">
-        <div className="bg-white shadow-md rounded-xl px-4 py-3 flex justify-between items-center">
-          <div>
-            <p className="text-xs text-gray-400">
-              {new Date(event.fecha).toLocaleDateString()}, {event.hora} hs
-            </p>
-            <p className="font-semibold text-sm text-gray-800">
-              {event.ubicacion}
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-            <button className="bg-gray-100 hover:bg-gray-200 px-3 py-2 text-sm rounded-xl flex items-center gap-1">
-              <img src="/assets/icons/Users-group.svg" className="w-4 h-4" />
-              Participantes
-            </button>
-              <button
-                onClick={() => router.push(`/social/editar/${event._id}`)}
-                className="bg-gray-100 hover:bg-gray-200 px-3 py-2 text-sm rounded-xl flex items-center gap-1"
-              >
-                <img src="/assets/icons/Edit.svg" className="w-4 h-4" />
-                Editar
-              </button>
-            
-          </div>
-        </div>
-      </div>)} */}
 
         <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-between items-center">
+          <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-4  flex justify-between items-center">
             <div className="w-[50%] flex flex-col">
-              <p className="font-semibold text-sm text-gray-800">
-                {event.localidad}
+              <p className="font-semibold text-gray-800 text-lg">
+                ${event.precio}
               </p>
               <p className="text-xs text-gray-400">
                 {parseLocalDate(event.fecha)}, {event.hora} hs
               </p>
-              <p className="text-xs text-gray-400">
-                Duracion: {event.duracion}{" "}
-              </p>
             </div>
 
-            <div className="flex h-[60px] w-[50%] gap-3 justify-center items-center">
-              <button
-                className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-2"
-                onClick={() => router.push(`/social/miembros/${event._id}`)}
-              >
-                {/* <img src="/assets/icons/Users-group.svg" className="w-[30px] h-[30px]" /> */}
-                <span>Participantes</span>
-              </button>
+            <div className="flex h-[60px] w-[50%] justify-center items-center">
 
               {session?.user?.id === event.creador_id._id ? (
                 // Si es el creador, mostrar botón editar
                 <button
                   onClick={() => router.push(`/social/editar/${event._id}`)}
-                  className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border p-3 font-semibold"
+                  className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border w-[90px] font-semibold"
                 >
                   Editar
                 </button>

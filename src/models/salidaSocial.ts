@@ -65,6 +65,21 @@ const SalidaSocialSchema = new Schema(
       resource_state: { type: Number },
     },
 
+    cupo:{
+      type: Number,
+      require: true,
+    },
+
+    detalles:{
+      type: String,
+    },
+
+    profesorId:{
+       type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    }
+
 
 
   },
