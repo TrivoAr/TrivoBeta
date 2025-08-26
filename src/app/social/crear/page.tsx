@@ -9,6 +9,7 @@ import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
 import mapboxgl from "mapbox-gl";
+import { set } from "mongoose";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
 
@@ -47,6 +48,9 @@ export default function CrearSalidaPage() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [profes, setprofes] = useState([]);
+  const [queryProfesor, setQueryProfesor] = useState("");
+  const [profesorSuggestions, setProfesorSuggestions] = useState<any[]>([]);
 
   const [suggestions, setSuggestions] = useState<
     Array<{ display_name: string; lat: string; lon: string }>
@@ -82,15 +86,9 @@ export default function CrearSalidaPage() {
     },
     cupo: 0,
     detalles: "",
-     profesorId:{
-       id: "",
-       firstName: "",
-       lastName:"",
-       imagen: "",
-       telNumber: "",
-       instagram: "",
-       rol: "",
-    }
+    cbu: "",
+    alias: "",
+    
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
@@ -288,8 +286,16 @@ export default function CrearSalidaPage() {
         const res = await fetch(
           `/api/strava/activities?userId=${session?.user.id}`
         );
+
         const data = await res.json();
-        setActivities(data);
+
+        if(data.error){
+          return
+          
+        }else{
+          setActivities(data);
+        }
+        
       } catch (err) {
         console.error("Error cargando actividades:", err);
       } finally {
@@ -297,7 +303,21 @@ export default function CrearSalidaPage() {
       }
     };
 
+    const fetchProfes = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/profile/profes`);
+        const data = await res.json();
+        setprofes(data);
+      } catch (err) {
+        console.error("Error al obtener los profes", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (session?.user.id) fetchActivities();
+    fetchProfes();
   }, [session?.user.id]);
 
   return (
@@ -381,6 +401,30 @@ export default function CrearSalidaPage() {
       </label>
 
       <label className="block">
+        CBU/Alias
+        <input
+          name="alias"
+          value={formData.alias}
+          onChange={handleChange}
+          placeholder="Alias"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white mb-2"
+        />
+      </label>
+
+
+      <label className="block">
+        Cupo
+        <input
+          name="cupo"
+          type="number"
+          value={formData.cupo}
+          onChange={handleChange}
+          placeholder="Cantidad maxima de personas"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
+
+      <label className="block">
         Fecha
         <input
           type="date"
@@ -409,6 +453,16 @@ export default function CrearSalidaPage() {
           value={formData.descripcion}
           onChange={handleChange}
           placeholder="Organizamos una salida de running"
+          className="w-full px-3 py-4 border rounded-[15px] shadow-md"
+        />
+      </label>
+      <label className="block">
+        Que incluye la salida?
+        <textarea
+          name="detalles"
+          value={formData.detalles}
+          onChange={handleChange}
+          placeholder="Seguro, guia, etc..."
           className="w-full px-3 py-4 border rounded-[15px] shadow-md"
         />
       </label>
@@ -479,13 +533,73 @@ export default function CrearSalidaPage() {
           }}
         >
           <option value="">Selecciona una actividad</option>
-          {activities.map((a) => (
+          {activities?.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name} - {Math.round(a.distance / 1000)} km
             </option>
           ))}
         </select>
       </label>
+
+      {/* <label className="block">
+        Seleccionar Profesor
+        <select
+          name="profesorId"
+          value={formData.profesorId}
+          onChange={handleProfesorSelect}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        >
+          <option value="">Selecciona un profesor</option>
+          {profes.map((p: any) => (
+            <option key={p._id} value={p._id}>
+              {p.firstname} {p.lastname}
+            </option>
+          ))}
+        </select>
+      </label> */}
+
+
+      <label className="block relative">
+  Asignar profesor
+  <input
+    type="text"
+    value={queryProfesor} // <- usa el estado de búsqueda
+    onChange={(e) => {
+      const value = e.target.value;
+      setQueryProfesor(value);
+
+      // Filtrar sugerencias localmente
+      const filtered = profes.filter((p) =>
+        p.firstname.toLowerCase().includes(value.toLowerCase())
+      );
+      setProfesorSuggestions(filtered);
+    }}
+    placeholder="Buscar profesor..."
+    className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+  />
+  {profesorSuggestions.length > 0 && (
+    <ul className="absolute top-full left-0 right-0 bg-white border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
+      {profesorSuggestions.map((p) => (
+        <li
+          key={p._id}
+          className="px-4 py-2 cursor-pointer hover:bg-orange-100"
+          onClick={() => {
+            setFormData((prev) => ({ ...prev, profesorId: p._id }));
+            setQueryProfesor(`${p.firstname} ${p.lastname}`);
+            setProfesorSuggestions([]);
+          }}
+        >
+          {p.firstname} {p.lastname}
+        </li>
+      ))}
+    </ul>
+  )}
+</label>
+
+
+
+
+
 
       <div className="flex flex-col gap-2">
         <div className="relative">

@@ -16,38 +16,98 @@ function EditProfilePage() {
     facebook: "",
     twitter: "",
     bio: "",
+    dni: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (session?.user) {
-      setFormData({
-        fullname: `${session.user.fullname}`,
-        email: session.user.email,
-        telnumber: session.user.telnumber,
-        rol: session.user.role,
-        instagram: session.user.instagram,
-        facebook: session.user.facebook,
-        twitter: session.user.twitter,
-        bio: session.user.bio,
-      });
+  // useEffect(() => {
+  //   if (session?.user) {
+      // const res = await fetch("/api/profile");
+      // const data = await res.json();
+      // setFormData({
+      //   fullname: `${session.user.fullname}`,
+      //   email: session.user.email,
+      //   telnumber: session.user.telnumber,
+      //   rol: session.user.role,
+      //   instagram: session.user.instagram,
+      //   facebook: session.user.facebook,
+      //   twitter: session.user.twitter,
+      //   bio: session.user.bio,
+      //   dni: session.user.dni || "",
+      // });
 
-      const loadImage = async () => {
-        try {
-          const url = await getProfileImage(
-            "profile-image.jpg",
-            session.user.id
-          );
-          setProfileImage(url);
-        } catch {
-          setProfileImage(session.user.imagen);
+      //  const fetchProfile = async () => {
+      // try {
+      //   const res = await fetch("/api/profile");
+      //   const data = await res.json();
+      //   if (res.ok) {
+      //     setFormData({
+      //       fullname: `${data.firstname} ${data.lastname}`,
+      //       email: data.email || "",
+      //       telnumber: data.telnumber || "",
+      //       rol: data.role || "",
+      //       instagram: data.instagram || "",
+      //       facebook: data.facebook || "",
+      //       twitter: data.twitter || "",
+      //       bio: data.bio || "",
+      //       dni: data.dni || "",
+      //     });
+
+  //     const loadImage = async () => {
+  //       try {
+  //         const url = await getProfileImage(
+  //           "profile-image.jpg",
+  //           session.user.id
+  //         );
+  //         setProfileImage(url);
+  //       } catch {
+  //         setProfileImage(session.user.imagen);
+  //       }
+  //     };
+  //     loadImage();
+  //   }
+  // }, [session]);
+
+
+
+
+  useEffect(() => {
+  if (session?.user) {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/profile");
+        const data = await res.json();
+        if (res.ok) {
+          setFormData({
+            fullname: `${data.firstname} ${data.lastname}`,
+            email: data.email || "",
+            telnumber: data.telnumber || "",
+            rol: data.role || "",
+            instagram: data.instagram || "",
+            facebook: data.facebook || "",
+            twitter: data.twitter || "",
+            bio: data.bio || "",
+            dni: data.dni || "",
+          });
+          // Cargar imagen
+          const url = await getProfileImage("profile-image.jpg", data._id);
+          setProfileImage(url || data.imagen);
+        } else {
+          console.error(data.error);
         }
-      };
-      loadImage();
-    }
-  }, [session]);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchProfile();
+  }
+}, [session]);
+
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,6 +132,7 @@ function EditProfilePage() {
           lastname: fullname.split(" ")[1] || "",
           telnumber: fullTelNumber,
           email,
+          dni: formData.dni,
           instagram: formData.instagram,
           facebook: formData.facebook,
           twitter: formData.twitter,
@@ -120,6 +181,17 @@ function EditProfilePage() {
         onChange={handleImageUpload}
         className="mb-4 text-sm"
       />
+        <label className="block">
+        Numero de documento (DNI)
+        <input
+          type="text"
+          name="dni"
+          value={formData.dni}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Numero de documento"
+        />
+      </label>
       <label className="block">
         Nombre y apellido
         <input
@@ -162,31 +234,8 @@ function EditProfilePage() {
           name="instagram"
           value={formData.instagram}
           onChange={handleChange}
-          placeholder="Enlace a Instagram"
+          placeholder="usuario de instagram"
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        />
-      </label>
-
-      <label className="block">
-        Facebook usuario
-        <input
-          type="text"
-          name="facebook"
-          value={formData.facebook}
-          onChange={handleChange}
-          placeholder="Enlace a Facebook"
-          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-        />
-      </label>
-      <label className="block">
-        Twitter/X usuario
-        <input
-          type="text"
-          name="twitter"
-          value={formData.twitter}
-          onChange={handleChange}
-          placeholder="Enlace a Twitter/X"
-          className="w-full p-3 rounded-lg border border-gray-300 mb-6"
         />
       </label>
 

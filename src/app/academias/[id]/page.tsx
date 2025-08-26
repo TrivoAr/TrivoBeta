@@ -78,7 +78,6 @@ export default function AcademiaDetailPage({
   const [miReview, setMiReview] = useState<Review | null>(null);
   const [esFavorito, setEsFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
   const [loadingReviews, setLoadingReviews] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
@@ -514,40 +513,6 @@ export default function AcademiaDetailPage({
             </g>
           </svg>
         </button>
-
-        {/* <button className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-          >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <path
-                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>{" "}
-              <path
-                d="M16 8L12 4M12 4L8 8M12 4L12 16"
-                stroke="#000000"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>{" "}
-            </g>
-          </svg>
-        </button> */}
       </div>
 
       <div className="flex w-full mt-2 px-3 justify-center">

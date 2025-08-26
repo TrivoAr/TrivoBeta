@@ -62,6 +62,7 @@ export async function PUT(req: Request) {
       facebook,
       twitter,
       bio,
+      dni,
     } = body; // Eliminar 'rol' de aquí, ya que no quieres que se actualice.
 
     if (!firstname || !lastname || !telnumber || !email) {
@@ -81,6 +82,7 @@ export async function PUT(req: Request) {
     user.lastname = lastname;
     user.telnumber = telnumber;
     user.email = email;
+    user.dni = dni;
 
     user.instagram = instagram;
     user.facebook = facebook;

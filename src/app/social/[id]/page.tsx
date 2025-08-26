@@ -3,31 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
-import toast, { Toaster } from "react-hot-toast";
 import polyline from "polyline";
 import StravaMap from "@/components/StravaMap";
 import MapComponent from "@/components/MapComponent";
-
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import PaymentModal from "@/components/PaymentModal";
 import "leaflet/dist/leaflet.css";
-import type { LatLngExpression } from "leaflet";
 import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
-import { url } from "inspector";
-// import "MatchLoadingSkeleton" from "components/MatchLoadingSkeleton";
-
-// Configuración del icono por defecto de Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+import { Toaster } from "sonner";
+import { toast } from "sonner";
 
 interface PageProps {
   params: {
@@ -42,6 +30,7 @@ interface EventData {
   deporte: string;
   fecha: string;
   hora: string;
+  cupo: number;
   duracion: string;
   descripcion: string;
   imagen: string;
@@ -67,12 +56,46 @@ interface EventData {
     polyline: string;
     resource_state: number;
   };
+
+  profesorId: {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    imagen: string;
+    telNumero: string;
+    bio: string;
+    rol: string;
+  };
+
+  detalles: string;
+  alias: string;
+  cbu: string;
 }
 
 interface Miembro {
   _id: string;
-  nombre: string;
+  firstname: string;
+  lastname: string;
   imagen: string;
+  estado: string;
+  pago_id: {
+    comprobanteUrl: string;
+    estado: string;
+    salidaId: string;
+    userId: string;
+    _id: string;
+  };
+  dni: string;
+}
+
+interface Profe {
+  _id: string;
+  firstname: string;
+  lastname: string;
+  imagen: string;
+  telNumber: string;
+  bio: string;
+  rol: string;
 }
 
 export default function EventPage({ params }: PageProps) {
@@ -81,9 +104,27 @@ export default function EventPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
-  const [yaUnido, setYaUnido] = useState(false);
+  const [yaUnido, setYaUnido] = useState<
+    "no" | "pendiente" | "rechazado" | "si"
+  >("no");
   const [favorito, setFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [profe, setProfes] = useState<Profe | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFullMap, setShowFullMap] = useState(false);
+  const [profile, setProfile] = useState({
+    fullname: "",
+    email: "",
+    telnumber: "",
+    rol: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    bio: "",
+    dni: "",
+  });
+  const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
+    useState(false);
   let decodedCoords: [number, number][] = [];
 
   if (event?.stravaMap?.summary_polyline) {
@@ -94,31 +135,7 @@ export default function EventPage({ params }: PageProps) {
 
   const router = useRouter();
 
-  //   const routeGeoJSON = {
-  //   type: "Feature",
-  //   geometry: {
-  //     type: "LineString",
-  //     coordinates: coords.map(([lat, lng]) => [lng, lat]),
-  //   },
-  // };
-
   let routeGeoJSON = null;
-
-  // if (event?.stravaMap?.summary_polyline) {
-  //   console.log("que digo", event.stravaMap);
-  //   try {
-  //     const coords = polyline.decode(event.stravaMap.summary_polyline);
-  //     routeGeoJSON = {
-  //       type: "Feature",
-  //       geometry: {
-  //         type: "LineString",
-  //         coordinates: coords.map(([lat, lng]) => [lng, lat]),
-  //       },
-  //     };
-  //   } catch (err) {
-  //     console.error("Error decodificando la polyline:", err);
-  //   }
-  // }
 
   let routeCoords: [number, number][] = [];
 
@@ -136,6 +153,15 @@ export default function EventPage({ params }: PageProps) {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/social/${params.id}`);
+        const res = await axios.get(`/api/profile/${response.data.profesorId}`);
+
+        const fotoProfe = await getProfileImage(
+          "profile-image.jpg",
+          res.data._id
+        );
+        res.data.imagen = fotoProfe;
+
+        setProfes(res.data);
         setEvent(response.data);
       } catch (err) {
         console.error("Error al cargar evento", err);
@@ -148,27 +174,92 @@ export default function EventPage({ params }: PageProps) {
       try {
         const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
         const data = await res.json();
-        setMiembros(data);
+
+        const miembrosAprobados = data.filter(
+          (m: any) => m.pago_id?.estado === "aprobado"
+        );
+
+        setMiembros(miembrosAprobados);
       } catch (err) {
         console.error("Error al cargar miembros", err);
       }
     };
 
-    const checkUnido = async () => {
-      const res = await fetch("/api/social/unirse/estado", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ salidaId: params.id }),
-      });
-      const data = await res.json();
-      setYaUnido(data.unido);
-    };
-
     fetchEvent();
     fetchMiembros();
-    if (session) checkUnido();
+  }, [params.id]);
+
+  useEffect(() => {
+    if (session?.user) {
+      const fetchProfile = async () => {
+        try {
+          const res = await fetch("/api/profile");
+          const data = await res.json();
+          if (res.ok) {
+            setProfile({
+              fullname: `${data.firstname} ${data.lastname}`,
+              email: data.email || "",
+              telnumber: data.telnumber || "",
+              rol: data.role || "",
+              instagram: data.instagram || "",
+              facebook: data.facebook || "",
+              twitter: data.twitter || "",
+              bio: data.bio || "",
+              dni: data.dni || "",
+            });
+          } else {
+            console.error(data.error);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (!event?._id || !session?.user?.id) return;
+
+    const checkUnido = async () => {
+      try {
+        const res = await fetch(`/api/social/miembros/${event._id}`);
+        const data = await res.json();
+
+        console.log("que japi 2", data);
+
+        const miMiembro = data.find(
+          (m: any) => m.usuario_id?._id === session?.user?.id
+        );
+
+        if (!miMiembro) {
+          setYaUnido("no");
+        } else if (miMiembro.pago_id?.estado === "pendiente") {
+          setYaUnido("pendiente");
+        } else if (miMiembro.pago_id?.estado === "rechazado") {
+          setYaUnido("rechazado");
+        } else if (miMiembro.pago_id?.estado === "aprobado") {
+          setYaUnido("si");
+        }
+      } catch (err) {
+        console.error("Error en checkUnido:", err);
+      }
+    };
+
+    const checkFavorito = async () => {
+      try {
+        const res = await fetch(`/api/favoritos/sociales/${params.id}`);
+        const data = await res.json();
+        setFavorito(data.favorito);
+      } catch (err) {
+        console.error("Error al verificar favorito:", err);
+      }
+    };
+
+    checkUnido();
     checkFavorito();
-  }, [params.id, session]);
+  }, [event?._id, session?.user?.id]);
 
   const handleAccion = async () => {
     if (!session) {
@@ -176,23 +267,15 @@ export default function EventPage({ params }: PageProps) {
       return;
     }
 
-    const metodo = yaUnido ? "DELETE" : "POST";
-    const url = yaUnido
-      ? `/api/social/unirse?salidaId=${params.id}`
-      : "/api/social/unirse";
-
-    const res = await fetch(url, {
-      method: metodo,
-      headers: { "Content-Type": "application/json" },
-      body: yaUnido ? null : JSON.stringify({ salidaId: params.id }),
-    });
-
-    if (res.ok) {
-      alert(yaUnido ? "Has salido de la salida" : "¡Te uniste exitosamente!");
-      setYaUnido(!yaUnido);
-    } else {
-      const msg = await res.text();
-      alert("Error: " + msg);
+    // Si no está unido, enviamos solicitud
+    if (yaUnido === "no") {
+      const res = await fetch(`/api/social/miembros/${event._id}`);
+      const data = await res.json();
+      if (data.length === event.cupo) {
+        toast.error("Cupo completo. No puedes unirte.");
+        return;
+      }
+      setShowPaymentModal(true);
     }
   };
 
@@ -288,8 +371,6 @@ export default function EventPage({ params }: PageProps) {
       year: "2-digit",
     });
   };
-
-  console.log("saida", event);
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
@@ -433,10 +514,10 @@ export default function EventPage({ params }: PageProps) {
             </svg>
             <span>{event.localidad}</span>
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-2"></div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-4"></div>
         </div>
 
-        <div className="w-full flex items-center flex-col mt-2">
+        <div className="w-full flex items-center flex-col mt-6">
           <div className="flex items-center justify-start gap-2 w-[90%]">
             <div className="h-[80px] w-[80px] bg-white shadow-md rounded-full flex justify-center items-center border">
               <img
@@ -451,11 +532,11 @@ export default function EventPage({ params }: PageProps) {
               {event.creador_id.lastname}
             </span>
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-2"></div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
         </div>
 
-        <div className="w-full flex flex-col items-center mt-3">
-          <div className="w-[90%] flex flex-col items-center gap-2">
+        <div className="w-full flex flex-col items-center mt-6">
+          <div className="w-[80%] flex flex-col items-center gap-3">
             <div className="text-sm flex items-center w-full font-light gap-1">
               <svg
                 viewBox="0 0 24 24"
@@ -557,7 +638,7 @@ export default function EventPage({ params }: PageProps) {
                   <polyline points="40 44 32 32 32 16"></polyline>
                 </g>
               </svg>
-              {event.duracion} de duración del evento
+              {event.duracion} de duración de la salida
             </div>
             <div className="text-sm flex items-center w-full font-light gap-1 capitalize">
               <svg
@@ -583,62 +664,94 @@ export default function EventPage({ params }: PageProps) {
               {event.dificultad}
             </div>
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
-        <div className="w-full flex flex-col items-center mt-3">
+        <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[90%] font-extralight text-justify">
             {event.descripcion}
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
 
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[90%]">
-          <p className="mb-2">
-            <span className="text-lg font-normal">Punto de encuentro</span>
-            <br />
-            <span className="text-sm text-gray-600 mb-2 font-extralight">
-              {event.ubicacion}
-            </span>
-          </p>
-          {event.locationCoords ? (
-            <div className="w-full h-[300px] rounded-xl overflow-hidden border z-0">
-              <MapComponent
-                position={{
-                  lat: event.locationCoords.lat,
-                  lng: event.locationCoords.lng,
-                }}
-                onChange={() => {}} // callback vacío si no quieres actualizar nada
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600">
-              No hay coordenadas disponibles.
+            <p className="mb-2">
+              <span className="text-lg font-normal">Punto de encuentro</span>
+              <br />
+              <span className="text-sm text-gray-600 mb-2 font-extralight">
+                {event.ubicacion}
+              </span>
             </p>
-          )}
-        </div>
-        <div className="w-[90%] border-b borderb-[#808488] mt-3"></div>
-        </div>
-        
-        <div className="mt-3 w-full flex flex-col items-center">
-          <div className="flex flex-col w-[90%] gap-2">
-          <span className="text-lg font-normal">Recorrido</span>
-          <div className="rounded-xl" style={{ width: "100%", height: "300px" }}>
-            {decodedCoords.length > 0 && <StravaMap coords={routeCoords} />}
+            {event.locationCoords ? (
+              <div className="w-full relative h-[300px] rounded-xl overflow-hidden border z-0">
+                <MapComponent
+                  position={{
+                    lat: event.locationCoords.lat,
+                    lng: event.locationCoords.lng,
+                  }}
+                  onChange={() => {}}
+                  editable={false}
+                  showControls={false} // callback vacío si no quieres actualizar nada
+                />
+                <div
+                  className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                  onClick={() => setShowFullMapPuntoDeEncuntro(true)}
+                >
+                  Tocar para ampliar
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600">
+                No hay coordenadas disponibles.
+              </p>
+            )}
           </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
+        </div>
+
+        <div className="mt-10 w-full flex flex-col items-center">
+          <div className="flex flex-col w-[90%] gap-2">
+            <span className="text-lg font-normal">Recorrido</span>
+            <div
+              className="w-full h-64 rounded-xl overflow-hidden cursor-pointer relative"
+              style={{ width: "100%", height: "300px" }}
+            >
+              {decodedCoords.length > 0 && (
+                <>
+                  <StravaMap coords={routeCoords} />
+                  <div
+                    className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                    onClick={() => setShowFullMap(true)}
+                  >
+                    Tocar para ampliar
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-10"></div>
+        </div>
+
+        <div className="w-full flex flex-col items-center mt-6">
+          <div className="text-lg font-normal mb-1 w-[90%]">
+            ¿Que incluye la inscripción?
+          </div>
+          <div className="w-[90%] font-extralight text-justify break-words">
+            {event.detalles}
           </div>
           <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
         </div>
 
-      
-
-        <div className="w-full flex flex-col items-center mt-6">
+        <div className="w-full flex flex-col items-center mt-8">
           <div className="flex justify-center flex-col items-center gap-3">
-            <div className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3">
+            <div
+              className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
+              onClick={() => router.push(`/profile/${profe._id}`)}
+            >
               <div
                 className="rounded-full h-[100px] w-[100px] shadow-md"
                 style={{
-                  backgroundImage: `url(${event.creador_id.imagen})`,
+                  backgroundImage: `url(${profe.imagen})`,
                   backgroundSize: "cover",
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "center",
@@ -646,64 +759,60 @@ export default function EventPage({ params }: PageProps) {
               ></div>
               <div className="flex flex-col items-center">
                 <h2 className="text-xl font-normal">
-                  {event.creador_id.firstname} {event.creador_id.lastname}
+                  {profe.firstname} {profe.lastname}
                 </h2>
-                <p className="text-sm font-light text-slate-400 mb-1">Profesor</p>
+                <p className="text-sm font-light text-slate-400 mb-1">
+                  Profesor
+                </p>
                 <a
-                  href={`https://wa.me/${event.telefonoOrganizador?.replace(
-                    /\D/g,
-                    ""
-                  )}`}
+                  href={`https://wa.me/${profe.telNumber?.replace(/\D/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
+                  className="text-white z-50 font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
                 >
                   Contacto
                 </a>
               </div>
             </div>
-            <div className="w-[90%] font-extralight text-justify">{event.creador_id.bio}</div>
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
-        </div>
-
-          <div className="flex flex-col items-center mt-6">
-          <div className="w-[90%]">
-          <h2 className="text-lg font-normal mb-1">
-            Grupo de Whatsapp
-          </h2>
-          {event.whatsappLink && (
-            <div className="flex justify-center mt-2">
-              <a
-                href={event.whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-white shadow-md justify-center"
-              >
-                Unirse{" "}
-              </a>
+            <div className="w-[90%] font-extralight text-justify">
+              {profe.bio}
             </div>
-          )}
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
         </div>
 
+        <div className="flex flex-col items-center mt-8">
+          <div className="w-[90%]">
+            <h2 className="text-lg font-normal mb-1">Grupo de Whatsapp</h2>
+            {event.whatsappLink && (
+              <div className="flex justify-center mt-2">
+                <a
+                  href={event.whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-white shadow-md justify-center"
+                >
+                  Unirse{" "}
+                </a>
+              </div>
+            )}
+          </div>
+          <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
+        </div>
 
-
-
-          <div className="flex w-full justify-center items-center mt-4">
+        <div className="flex w-full justify-center items-center mt-6">
           <div className="w-[90%]">
             <p className="text-lg font-normal mb-1">Participantes</p>
             <div className="flex -space-x-2 mt-1">
               {miembros.length > 0 ? (
                 <>
-                  {miembros.slice(0, 2).map((m) => (
+                  {miembros.slice(0, 4).map((m) => (
                     <img
                       key={m._id}
                       src={m.imagen}
-                      alt={m.nombre}
-                      className="h-8 w-8 rounded-full object-cover border shadow-md"
-                      title={m.nombre}
+                      alt={m.firstname}
+                      className="h-24 w-24 rounded-full object-cover border shadow-md"
+                      // title={m.}
                       onError={(e) =>
                         ((e.target as HTMLImageElement).src =
                           "/assets/icons/person_24dp_E8EAED.svg")
@@ -717,31 +826,37 @@ export default function EventPage({ params }: PageProps) {
                   )}
                 </>
               ) : (
-                <span className="text-xs text-gray-500">
-                  Nadie se ha unido aún
-                </span>
+                <span className="text-gray-500">Nadie se ha unido aún</span>
               )}
             </div>
           </div>
         </div>
 
-
-
-
-
-        <div className="fixed bottom-[70px] w-[100%] left-1/2 -translate-x-1/2 z-50">
+        <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
           <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-4  flex justify-between items-center">
             <div className="w-[50%] flex flex-col">
-              <p className="font-semibold text-gray-800 text-lg">
-                ${event.precio}
+              <p className="font-semibold text-gray-800 text-xl underline">
+                ${Number(event.precio).toLocaleString("es-AR")}
               </p>
               <p className="text-xs text-gray-400">
                 {parseLocalDate(event.fecha)}, {event.hora} hs
               </p>
+              <div className="flex w-full justify-between">
+                <p
+                  className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${
+                    (event.cupo - miembros.length) / event.cupo > 0.5
+                      ? "bg-green-100 text-green-800"
+                      : (event.cupo - miembros.length) / event.cupo > 0.2
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  Cupos: {event.cupo - miembros.length}/{event.cupo}
+                </p>
+              </div>
             </div>
 
             <div className="flex h-[60px] w-[50%] justify-center items-center">
-
               {session?.user?.id === event.creador_id._id ? (
                 // Si es el creador, mostrar botón editar
                 <button
@@ -751,16 +866,29 @@ export default function EventPage({ params }: PageProps) {
                   Editar
                 </button>
               ) : (
-                // Si NO es el creador, mostrar botón unirse/salir
                 <button
-                  onClick={handleAccion}
-                  className={`rounded-[10px]  p-2 h-[30px] flex justify-center items-center transition shadow-md ${
-                    yaUnido
-                      ? "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
-                      : "bg-orange-500 text-white hover:text-white"
-                  }`}
+                  onClick={() => {
+                    if (!profile.dni || !profile.telnumber) {
+                      toast.error(
+                        "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
+                      );
+                      router.push("/dashboard/profile/editar");
+                      return;
+                    }
+                    handleAccion();
+                  }}
+                  disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
+                  className={`rounded-[20px] w-[150px] p-3 h-[40px] flex justify-center items-center font-semibold text-lg
+        ${yaUnido === "no" ? "bg-[#C95100] text-white" : ""}
+        ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
+        ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}
+        ${yaUnido === "si" ? "bg-[#001A46] text-white" : ""}
+      `}
                 >
-                  {yaUnido ? "Salir" : "Matchear"}
+                  {yaUnido === "no" && "Unirse"}
+                  {yaUnido === "pendiente" && "Solicitud enviada"}
+                  {yaUnido === "rechazado" && "Reenviar"}
+                  {yaUnido === "si" && "Miembro"}
                 </button>
               )}
             </div>
@@ -773,6 +901,51 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="pb-[200px]" />
       </div>
+
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        salidaId={params.id}
+        precio={event.precio}
+        cbu={event.cbu}
+        alias={event.alias}
+        userId={session?.user.id}
+      />
+
+      {showFullMap && (
+        <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
+          <button
+            className="absolute top-4 right-4 z-50 rounded-full bg-white text-black font-bold w-[35px] h-[35px] shadow"
+            onClick={() => setShowFullMap(false)}
+          >
+            ✕
+          </button>
+          <div className="w-full h-full">
+            <StravaMap coords={routeCoords} />
+          </div>
+        </div>
+      )}
+      {showFullMapPuntoDeEncuntro && (
+        <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
+          <button
+            className="absolute top-4 right-4 z-50 rounded-full bg-white text-black font-bold w-[35px] h-[35px] shadow"
+            onClick={() => setShowFullMapPuntoDeEncuntro(false)}
+          >
+            ✕
+          </button>
+          <div className="w-full h-full">
+            <MapComponent
+              position={{
+                lat: event.locationCoords.lat,
+                lng: event.locationCoords.lng,
+              }}
+              onChange={() => {}}
+              editable={false}
+              showControls={false}
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

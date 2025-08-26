@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     salida_id: salidaId,
   });
 
-  return NextResponse.json({ unido: !!miembro });
+  return NextResponse.json({ unido: !!miembro, pendiente: !!miembro && !miembro.aprobado  });
 }
 
 export async function GET() {

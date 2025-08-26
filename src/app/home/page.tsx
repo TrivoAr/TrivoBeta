@@ -10,6 +10,8 @@ import { data } from "autoprefixer";
 import TeamEventPage from "../team-social/[id]/page";
 import TeamSocial from "@/models/teamSocial";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
+import EventCard from "@/components/EventCard";
+import StravaMap from "@/components/StravaMap";
 
 const categories = [
   { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
@@ -34,6 +36,14 @@ type EventType = {
     lng: number;
   };
   teacher: string;
+    dificultad?: string;
+  stravaMap?:{
+        id:  string,
+        summary_polyline: string,
+        polyline: string,
+        resource_state: number,
+  }
+  cupo: number;
 };
 
 type ModalEvent = {
@@ -61,30 +71,6 @@ type Academia = {
   imagen: string;
   imagenUrl: string;
 };
-
-// const discounts = [
-//   {
-//     id: 1,
-//     title: "20% OFF",
-//     subtitle: "en toda la carta",
-//     image: "/assets/icons/bonaportada.png",
-//     logo: "/assets/icons/bona.png",
-//   },
-//   {
-//     id: 2,
-//     title: "25% OFF",
-//     subtitle: "en la cuota mensual",
-//     image: "/assets/icons/rc.png",
-//     logo: "/assets/icons/Logo-RC-Gym 1.png",
-//   },
-//   {
-//     id: 3,
-//     title: "40% OFF",
-//     subtitle: "en todas las salas",
-//     image: "/assets/icons/gold-rush.png",
-//     logo: "/assets/icons/escaperoom.png",
-//   },
-// ];
 
 export default function Home() {
   const router = useRouter();
@@ -118,7 +104,7 @@ export default function Home() {
           title: item.nombre,
           date: item.fecha,
           time: item.hora,
-          price: item.precio, // o podés poner un valor fijo como "Gratis"
+          price: item.precio,
           image: item.imagen,
           category: item.deporte,
           creadorId: item.creador_id._id,
@@ -126,7 +112,10 @@ export default function Home() {
           location: item.ubicacion,
           locationCoords: item.locationCoords,
           highlighted: false,
-          teacher: item.creador_id?.firstname || "Sin profe", // Podés cambiar esto si tenés un campo para destacar
+          dificultad: item.dificultad,
+          teacher: item.creador_id?.firstname || "Sin profe",
+          cupo: item.cupo,
+          stravaMap: item.stravaMap,
         }));
 
         setEvents(mappedData);
@@ -220,7 +209,7 @@ export default function Home() {
   today.setHours(0, 0, 0, 0);
   console.log(academias);
 
-  const futureEvents = social.filter((event) => {
+  const futureEvents = events.filter((event) => {
     if (!event.date) return false;
 
     const [year, month, day] = event.date.split("-").map(Number);
@@ -236,77 +225,13 @@ export default function Home() {
     return eventDate >= today;
   });
 
-  const parseLocalDate = (isoDateString: string): string => {
-    const [year, month, day] = isoDateString.split("-");
-    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-    return localDate.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
-  };
+ 
 
-  const SocialTeamSkeleton = () => (
-    <div className="flex space-x-4">
-      {[1, 2].map((i) => (
-        <div
-          key={i}
-          className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 flex flex-col justify-between relative bg-gray-200 animate-pulse"
-        >
-          <div className="absolute inset-0 bg-gray-300 rounded-2xl" />
-          <div className="absolute top-2 right-2 w-14 h-5 bg-gray-300 rounded-full z-10" />
-          <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-            <div className="w-32 h-4 bg-gray-300 rounded mb-2" />
-            <div className="w-20 h-3 bg-gray-300 rounded mb-1" />
-            <div className="w-16 h-3 bg-gray-300 rounded mb-1" />
-            <div className="w-14 h-3 bg-gray-300 rounded mb-1" />
-            <div className="flex justify-end">
-              <div className="w-16 h-6 bg-gray-300 rounded-full mt-2" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
-  const SalidasSkeleton = () => (
-    <div className="flex space-x-4">
-      {[1, 2].map((i) => (
-        <div
-          key={i}
-          className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative bg-gray-200 animate-pulse"
-        >
-          <div className="absolute inset-0 bg-gray-300" />
-          <div className="absolute inset-0 p-4 flex flex-col justify-between">
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <div className="w-24 h-3 bg-gray-300 rounded" />
-                <div className="w-20 h-3 bg-gray-300 rounded" />
-                <div className="w-16 h-3 bg-gray-300 rounded" />
-              </div>
-              <div className="w-10 h-5 bg-gray-300 rounded-full" />
-            </div>
-            <div className="flex justify-end">
-              <div className="w-[79px] h-[22px] bg-gray-300 rounded-[20px]" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
-  const AcademiasSkeleton = () => (
-    <div className="flex space-x-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border bg-gray-200 animate-pulse"
-        >
-          <div className="absolute inset-0 bg-gray-300" />
-        </div>
-      ))}
-    </div>
-  );
+
+
+  console.log("que verga", futureEvents);
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -314,259 +239,22 @@ export default function Home() {
         selectedLocalidad={selectedLocalidad}
         setSelectedLocalidad={setSelectedLocalidad}
       />
-      {/* Categorías */}
-      <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
-        {categories.map((cat) => (
-          <button
-            key={cat.label}
-            onClick={() => setSelectedCategory(cat.label)}
-            className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px]  border shadow-md ${
-              selectedCategory === cat.label
-                ? "border-2 border-orange-200 text-orange-300"
-                : "bg-white text-[#808488]"
-            } flex flex-col items-center justify-center`}
-          >
-            <img
-              src={cat.icon}
-              alt={cat.label}
-              className="w-[25px] h-[25px] object-contain mb-4 border-[#C76C01]"
-            />
-            <span className="text-[11px] font-semibold leading-none text-center">
-              {cat.label}
-            </span>
-          </button>
-        ))}
-      </div>
 
-      {/* Salidas destacadas */}
-      <section>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-medium mb-3">Salidas destacadas</h2>
-        </div>
-
-        <div className="overflow-x-auto scrollbar-hide">
-          {futureEvents.length === 0 && events.length === 0 ? (
-            <SalidasSkeleton />
-          ) : futureEvents.length > 0 ? (
-            <div className="flex space-x-4">
-              {futureEvents.map((event) => (
-                <div
-                  key={event._id}
-                  className="flex-shrink-0 w-[310px] h-[176px] rounded-[15px] overflow-hidden shadow-md relative"
-                >
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-[#00000080] p-4 flex flex-col justify-between">
-                    <div className="flex justify-between items-start">
-                      <div className="text-white space-y-1">
-                        <p className="text-xs flex items-center gap-1">
-                          <img
-                            src="/assets/icons/Location.svg"
-                            alt=""
-                            className="w-[14px] h-[14px] object-cover"
-                          />{" "}
-                          {event.localidad}
-                        </p>
-                        <p className="text-xs flex items-center gap-1">
-                          <img
-                            src="/assets/icons/Calendar.svg"
-                            alt=""
-                            className="w-[14px] h-[14px] object-cover"
-                          />{" "}
-                          {parseLocalDate(event.date)}
-                        </p>
-                        <p className="text-xs flex items-center gap-1">
-                          <img
-                            src="/assets/icons/Clock.svg"
-                            alt=""
-                            className="w-[14px] h-[14px] object-cover"
-                          />{" "}
-                          {event.time}
-                        </p>
-                      </div>
-                      <span className="bg-[#000000B2] text-white  text-[10px] font-bold px-2 py-[2px] rounded-full">
-                        {event.category}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-end ">
-                      <button
-                        onClick={() => {
-                          setSelectedEvent({
-                            id: event._id,
-                            title: event.title,
-                            date: event.date,
-                            time: event.time,
-                            location: event.location,
-                            locationCoords: event.locationCoords,
-                            localidad: event.localidad,
-                            creadorId: event.creadorId, // reemplazá si tenés el link real
-                            teacher: event.teacher, // o podrías vincularlo con el `creador_id` si tenés su info
-                            participants: ["👤", "👤", "👤"], // podés mapear esto después
-                          });
-                          setIsModalOpen(true);
-                        }}
-                        className="text-white text-[10px] font-semibold h-[22px] w-[79px] rounded-[20px]  z-20 bg-[#C95100]"
-                      >
-                        Unirse
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[#666]">No hay salidas cargadas</p>
-          )}
-        </div>
-      </section>
-
-      {/* Social Team */}
-      <section>
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl">Social Team</h2>
-        </div>
-        <div className="overflow-x-auto scrollbar-hide">
-          {futureTeamSocialEvents.length === 0 &&
-          teamSocialEvents.length === 0 ? (
-            <SocialTeamSkeleton />
-          ) : futureTeamSocialEvents.length > 0 ? (
-            <div className="flex space-x-4">
-              {futureTeamSocialEvents.map((event) => (
-                <div
-                  key={event._id}
-                  className="flex-shrink-0 w-[240px] h-[180px] rounded-2xl p-4 text-white flex flex-col justify-between relative bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url(${event.image})`,
-                  }}
-                >
-                  <div className="absolute inset-0 bg-black/40 rounded-2xl z-0" />
-                  <div className="absolute top-2 right-2 bg-[#000000B2] text-white text-[10px] font-semibold px-2 py-[2px] rounded-full z-10">
-                    {event.category}
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-white">
-                    <p className="text-sm font-semibold mb-1">{event.title}</p>
-                    <p className="text-xs flex items-center gap-1 mb-[2px]">
-                      <img
-                        src="/assets/icons/Calendar.svg"
-                        alt=""
-                        className="w-[14px] h-[14px]"
-                      />
-                      {parseLocalDate(event.date)}
-                    </p>
-                    <p className="text-xs flex items-center gap-1 mb-[2px]">
-                      <img
-                        src="/assets/icons/Clock.svg"
-                        alt=""
-                        className="w-[14px] h-[14px]"
-                      />
-                      {event.time}
-                    </p>
-                    <p className="text-xs flex items-center gap-1">
-                      <img
-                        src="/assets/icons/Us Dollar Circled.svg"
-                        alt=""
-                        className="w-[14px] h-[14px]"
-                      />
-                      ${Number(event.price).toLocaleString("es-AR")}
-                    </p>
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => router.push(`/team-social/${event._id}`)}
-                        className="self-end mt-2 text-white text-xs font-semibold rounded-full px-4 py-1 bg-[#C95100]"
-                      >
-                        Info
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[#666]">No hay social teams cargados</p>
-          )}
-        </div>
-      </section>
-
-      {/* Academias destacadas */}
-
-      <section>
-        <div className="">
-          <h2 className="text-2xl font-medium mb-3">Grupos de entrenamiento</h2>
-        </div>
-        <div
-          className={`overflow-x-auto scrollbar-hide ${
-            academias.length > 0 ? "h-[245px]" : "h-auto"
-          }`}
-        >
-          {" "}
-          {academias.length === 0 ? (
-            <AcademiasSkeleton />
-          ) : (
-            <div className="flex space-x-4">
-              {academias.length > 0 ? (
-                academias.map((academia) => (
-                  <div
-                    key={academia._id}
-                    className="flex-shrink-0 w-[240px] h-[170px] rounded-[20px] overflow-hidden shadow-md relative border"
-                    style={{
-                      backgroundImage: `linear-gradient(
-      0deg,
-      rgba(0,0,0,0.2),
-      rgba(0,0,0,0.2)),url(${academia.imagenUrl})`,
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                    }}
-                    onClick={() => router.push(`/academias/${academia._id}`)}
-                  ></div>
-                ))
-              ) : (
-                <p className="text-[#666]">No hay grupos de entrenamientos</p>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Kpons Section */}
-      <section className="pb-[150px]">
-        {/* <div className="flex justify-between items-center ">
-          <img
-            src="/assets/icons/Group 33832.png"
-            alt="Kpons"
-            className="h-[130px] object-contain"
+      <section className="flex flex-col gap-3">
+        <h1 className="text-xl font-medium">Salidas destacadas</h1>
+        {futureEvents.map((event) => (
+          <EventCard
+            key={event._id}
+            event={event}
+            onJoin={(e) => console.log("Unido a:", e.title)}
+            onMap={(coords) =>
+              console.log("Abrir mapa en:", coords.lat, coords.lng)
+            }
           />
-          <button className="text-sm text-gray-400">Próximamente</button>
-        </div>
-        <div className="space-y-3 mt-[-20px] pb-[80px]">
-          {discounts.map((promo) => (
-            <div
-              key={promo.id}
-              className="w-full h-[80px] rounded-xl overflow-hidden relative flex items-center px-4 text-white"
-              style={{
-                backgroundImage: `url(${promo.image})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              <div className="z-10">
-                <p className="text-xl font-bold">{promo.title}</p>
-                <p className="text-sm">{promo.subtitle}</p>
-              </div>
-              <img
-                src={promo.logo}
-                alt="Logo"
-                className="ml-auto w-12 h-12 object-contain z-10"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40" />
-            </div>
-          ))}
-        </div> */}
+        ))}
       </section>
+      <div className="pb-[200px]"></div>
+
       <EventModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
