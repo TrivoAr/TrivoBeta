@@ -119,7 +119,7 @@ const DashboardPage: React.FC = () => {
   const { data: session, status } = useSession();
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [salidaSocial, setSalidaSocial] = useState<EventType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("Mi panel");
+  const [selectedCategory, setSelectedCategory] = useState("Mis match");
   const [salidaTeamSocial, setSalidaTeamSocial] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [miMatch, setMiMatch] = useState<any[]>([]);
@@ -152,7 +152,6 @@ const DashboardPage: React.FC = () => {
         const data = await res.json();
 
         console.log("teams donde estoy:", data);
-        
 
         setMiMatchTeamSocial(data); // o como sea que se llame tu estado
       } catch (err) {
@@ -543,19 +542,16 @@ const DashboardPage: React.FC = () => {
   };
 
   const parseLocalDate = (isoDateString: string | undefined): string => {
-  if (!isoDateString) return "Fecha inválida";
+    if (!isoDateString) return "Fecha inválida";
 
-  const [year, month, day] = isoDateString.split("-");
-  const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-  return localDate.toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "2-digit",
-  });
-};
-
-
-
+    const [year, month, day] = isoDateString.split("-");
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
@@ -565,6 +561,7 @@ const DashboardPage: React.FC = () => {
       />
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
+          cat.label === "Mi panel" && session.user.role !== "admin" ? null : (
           <button
             key={cat.label}
             onClick={() => setSelectedCategory(cat.label)}
@@ -578,9 +575,10 @@ const DashboardPage: React.FC = () => {
               {cat.label}
             </span>
           </button>
-        ))}
+        )))}
       </div>
-      {selectedCategory === "Mi panel" ? (
+
+      {session.user.role === "admin" && selectedCategory === "Mi panel" ? (
         <section>
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-2xl font-medium">Mis salidas</h2>
@@ -849,8 +847,7 @@ const DashboardPage: React.FC = () => {
                               ${Number(event.price).toLocaleString("es-AR")}
                             </p>
                             <p className="font-light">
-                              {parseLocalDate(event.date)}
-                              , {event.time} hs
+                              {parseLocalDate(event.date)}, {event.time} hs
                             </p>
                           </div>
                         </div>
@@ -1557,9 +1554,7 @@ const DashboardPage: React.FC = () => {
                           ${Number(event.price).toLocaleString("es-AR")}
                         </p>
                         <p className="font-light">
-                      
-                          {parseLocalDate(event.date)}
-                          , {event.time} hs
+                          {parseLocalDate(event.date)}, {event.time} hs
                         </p>
                       </div>
                     </div>

@@ -75,8 +75,17 @@ const SalidaSocialSchema = new Schema(
       type: String,
     },
 
+
+    cbu:{
+      type:String,
+    },
+
+    alias:{
+      type:String,
+    },
+
     profesorId:{
-       type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
     }

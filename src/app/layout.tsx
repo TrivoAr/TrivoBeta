@@ -1,6 +1,6 @@
 import Providers from "./Providers";
 import Navbar from "../components/Navbar";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -40,7 +40,7 @@ export default function RootLayout({
 
       </head>
       <body className="flex flex-col items-center w-full">
-        <Toaster />
+        <Toaster richColors position="top-right" />
         <Providers>
           <div className="">{children}</div>
           <Navbar />

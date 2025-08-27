@@ -17,12 +17,13 @@ export async function GET(req: NextRequest) {
   const salidaId = req.nextUrl.searchParams.get("salidaId");
   if (!salidaId) return new Response("Falta salidaId", { status: 400 });
 
-  const miembros = await MiembroSalida.find({ salida_id: salidaId }).populate("usuario_id", "firstname lastname email telnumber");
+  const miembros = await MiembroSalida.find({ salida_id: salidaId }) .populate("usuario_id", "firstname lastname email telnumber dni").populate("pago_id");
   
 
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
       const usuario = m.usuario_id;
+      const pago = m.pago_id;
       let imagenUrl;
 
       try {
@@ -39,13 +40,23 @@ export async function GET(req: NextRequest) {
         email: usuario.email,
         telnumber: usuario.telnumber,
         imagen: imagenUrl,
+        dni: usuario.dni || "",
+         pago_id: pago
+        ? {
+            _id: pago._id,
+            comprobanteUrl: pago.comprobanteUrl || "",
+            estado: pago.estado || "",
+            salidaId: pago.salidaId || "",
+            userId: pago.userId || "",
+          }
+        : null,
+
       };
     })
   );
 
   return new Response(JSON.stringify(miembrosConImagen), { status: 200 });
 }
-
 
 export async function POST(req) {
   await connectDB();
@@ -55,31 +66,32 @@ export async function POST(req) {
   const { salida_id } = await req.json();
   const usuario_id = session.user.id;
 
-  // 1. Validar que no esté ya unido
+  // Validar que no esté ya solicitado
   const yaEsMiembro = await MiembroSalida.findOne({ salida_id, usuario_id });
-  if (yaEsMiembro)
-    return new Response("Ya estás unido a esta salida", { status: 400 });
+  if (yaEsMiembro) {
+    return new Response("Ya tienes una solicitud para esta salida", { status: 400 });
+  }
 
-  // 2. Crear el miembro
+  // Crear solicitud pendiente
   const nuevoMiembro = await MiembroSalida.create({
     salida_id,
     usuario_id,
     rol: "miembro",
+    estado: "pendiente", // 👈
   });
 
-  // 3. Obtener salida para saber quién es el organizador
+  // Notificar al organizador
   const salida = await SalidaSocial.findById(salida_id);
   if (!salida) return new Response("Salida no encontrada", { status: 404 });
 
-  const creadorId = salida.creador_id || salida.usuario_id; // según cómo la tengas nombrada
+  const creadorId = salida.creador_id || salida.usuario_id;
 
-  // 4. Crear notificación
   if (String(creadorId) !== String(usuario_id)) {
     await Notificacion.create({
       userId: creadorId,
       fromUserId: usuario_id,
-      type: "joined_event",
-      message: `${session.user.fullname || "Alguien"} se unió a tu salida.`,
+      type: "join_request",
+      message: `${session.user.fullname || "Alguien"} pidió unirse a tu salida.`,
     });
   }
 

@@ -24,6 +24,7 @@ declare module "next-auth" {
         expires_at: number;
         athlete_id: number;
       };
+      dni?: string;
     };
   }
 
@@ -49,6 +50,8 @@ declare module "next-auth" {
       expires_at: number;
       athlete_id: number;
     };
+
+    dni?: string;
   }
 }
 

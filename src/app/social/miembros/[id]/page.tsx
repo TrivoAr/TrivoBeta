@@ -8,12 +8,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import {
-  FaInstagram,
-  FaFacebookF,
-  FaTwitter,
-  FaUserCircle,
-} from "react-icons/fa";
+import { FaInstagram } from "react-icons/fa";
+import PaymentReviewModal from "@/components/PaymentReviewModal";
+import ExportUsuarios from "@/app/utils/ExportUsuarios";
+import { constructNow } from "date-fns";
+import { se } from "date-fns/locale";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,6 +43,7 @@ interface EventData {
     lastname: string;
     imagen: string;
   };
+
   locationCoords?: { lat: number; lng: number };
 }
 
@@ -53,7 +53,12 @@ interface Miembro {
   email: string;
   telnumber: string;
   imagen: string;
+  dni: string;
   instagram?: string;
+  pago_id: {
+    _id: string;
+    estado: string;
+  };
 }
 
 export default function EventPage({ params }: PageProps) {
@@ -63,7 +68,15 @@ export default function EventPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState<
+    "todos" | "aprobado" | "rechazado" | "pendiente"
+  >("todos"); // 👈 filtro
   const [selectedMiembro, setSelectedMiembro] = useState<Miembro | null>(null);
+  const [reviewModal, setReviewModal] = useState<{
+    open: boolean;
+    miembroId?: string;
+    pagoId?: string;
+  }>({ open: false });
   const router = useRouter();
 
   useEffect(() => {
@@ -81,8 +94,10 @@ export default function EventPage({ params }: PageProps) {
     const fetchMiembros = async () => {
       try {
         const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+
         const data = await res.json();
-        console.log("miembro puto", data);
+
+        console.log("Datos de miembros:", data);
         setMiembros(data);
       } catch (err) {
         console.error("Error al cargar miembros", err);
@@ -93,16 +108,30 @@ export default function EventPage({ params }: PageProps) {
     fetchMiembros();
   }, [params.id, session]);
 
-  const filteredMiembros = miembros.filter((miembro) =>
-    miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  console.log(filteredMiembros);
+  // const filteredMiembros = miembros.filter((miembro) =>
+  //   miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
-  const placeholders = Array.from(
-    { length: filteredMiembros.length },
-    (_, index) => index + 1
-  );
-  console.log("que pingo es esto", placeholders);
+  const filteredMiembros = miembros.filter((miembro) => {
+    const matchName = miembro.nombre
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchPago =
+      paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
+    return matchName && matchPago;
+  });
+
+  const miembrosAprobados = miembros
+    .filter((miembro) => miembro.pago_id.estado === "aprobado")
+    .map((miembro) => ({
+      dni: miembro.dni,
+      nombre: miembro.nombre,
+      telefono: miembro.telnumber,
+      email: miembro.email,
+      estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
+    }));
+
+  console.log("Miembros filtrados:", filteredMiembros);
 
   if (loading)
     return (
@@ -174,8 +203,10 @@ export default function EventPage({ params }: PageProps) {
       </main>
     );
 
+  console.log("Session data:", miembros);
+
   return (
-    <div className="w-[390px] p-4 relative">
+    <div className="w-[390px] p-4 relative flex flex-col">
       <button
         onClick={() => router.back()}
         className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px]"
@@ -190,6 +221,7 @@ export default function EventPage({ params }: PageProps) {
       <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">
         Participantes
       </p>
+
       <div className="px-1 mb-5">
         <input
           type="text"
@@ -199,6 +231,31 @@ export default function EventPage({ params }: PageProps) {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
         />
       </div>
+
+      {/* 🎯 filtro por estado */}
+
+      {session?.user?.id === event?.creador_id?._id ? (
+        <div className="px-1 mb-5">
+          <select
+            value={paymentFilter}
+            onChange={(e) =>
+              setPaymentFilter(
+                e.target.value as
+                  | "todos"
+                  | "aprobado"
+                  | "rechazado"
+                  | "pendiente"
+              )
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="todos">Todos</option>
+            <option value="aprobado">Aprobados ✅</option>
+            <option value="rechazado">Rechazados ❌</option>
+            <option value="pendiente">Pendientes ⏳</option>
+          </select>
+        </div>
+      ) : null}
 
       <table className="w-[370px]">
         <thead>
@@ -215,28 +272,34 @@ export default function EventPage({ params }: PageProps) {
           {filteredMiembros.map((miembro, index) => (
             <tr
               key={index}
-              className="w-full h-[70px] text-center cursor-pointer hover:bg-gray-100"
-              onClick={() => setSelectedMiembro(miembro)}
+              className="w-full h-[90px]  text-center cursor-pointer hover:bg-gray-100"
             >
-              <td className="flex justify-center items-center h-[70px]">
+              <td className="flex justify-center">
                 <img
                   src={miembro.imagen}
                   alt={miembro.nombre}
-                  className="w-[50px] h-[50px] rounded-full"
+                  className="w-[60px] h-[60px] rounded-full object-cover"
+                  onClick={() => setSelectedMiembro(miembro)}
                 />
               </td>
-              <td>{miembro.nombre}</td>
+              <td className="">{miembro.nombre}</td>
               {session?.user?.id === event?.creador_id?._id ? (
-                <td>
-                  {" "}
-                  <button>
-                    {" "}
+                <td className="flex justify-center items-center gap-2 h-full w-full">
+                  <button
+                    onClick={() =>
+                      setReviewModal({
+                        open: true,
+                        miembroId: miembro._id,
+                        pagoId: miembro.pago_id._id,
+                      })
+                    }
+                  >
                     <svg
                       viewBox="0 0 24 24"
+                      fill="none"
                       height={25}
                       width={25}
-                      fill="none"
-                      stroke="#6f6d6d"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
                       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                       <g
@@ -247,37 +310,29 @@ export default function EventPage({ params }: PageProps) {
                       <g id="SVGRepo_iconCarrier">
                         {" "}
                         <path
-                          d="M20.5001 6H3.5"
-                          stroke="#6e6c6c"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25ZM9.75 12C9.75 10.7574 10.7574 9.75 12 9.75C13.2426 9.75 14.25 10.7574 14.25 12C14.25 13.2426 13.2426 14.25 12 14.25C10.7574 14.25 9.75 13.2426 9.75 12Z"
+                          fill="#000"
                         ></path>{" "}
                         <path
-                          d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
-                          stroke="#6e6c6c"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        ></path>{" "}
-                        <path
-                          d="M9.5 11L10 16"
-                          stroke="#6e6c6c"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        ></path>{" "}
-                        <path
-                          d="M14.5 11L14 16"
-                          stroke="#6e6c6c"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        ></path>{" "}
-                        <path
-                          d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6"
-                          stroke="#6e6c6c"
-                          stroke-width="1.5"
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 3.25C7.48587 3.25 4.44529 5.9542 2.68057 8.24686L2.64874 8.2882C2.24964 8.80653 1.88206 9.28392 1.63269 9.8484C1.36564 10.4529 1.25 11.1117 1.25 12C1.25 12.8883 1.36564 13.5471 1.63269 14.1516C1.88206 14.7161 2.24964 15.1935 2.64875 15.7118L2.68057 15.7531C4.44529 18.0458 7.48587 20.75 12 20.75C16.5141 20.75 19.5547 18.0458 21.3194 15.7531L21.3512 15.7118C21.7504 15.1935 22.1179 14.7161 22.3673 14.1516C22.6344 13.5471 22.75 12.8883 22.75 12C22.75 11.1117 22.6344 10.4529 22.3673 9.8484C22.1179 9.28391 21.7504 8.80652 21.3512 8.28818L21.3194 8.24686C19.5547 5.9542 16.5141 3.25 12 3.25ZM3.86922 9.1618C5.49864 7.04492 8.15036 4.75 12 4.75C15.8496 4.75 18.5014 7.04492 20.1308 9.1618C20.5694 9.73159 20.8263 10.0721 20.9952 10.4545C21.1532 10.812 21.25 11.2489 21.25 12C21.25 12.7511 21.1532 13.188 20.9952 13.5455C20.8263 13.9279 20.5694 14.2684 20.1308 14.8382C18.5014 16.9551 15.8496 19.25 12 19.25C8.15036 19.25 5.49864 16.9551 3.86922 14.8382C3.43064 14.2684 3.17374 13.9279 3.00476 13.5455C2.84684 13.188 2.75 12.7511 2.75 12C2.75 11.2489 2.84684 10.812 3.00476 10.4545C3.17374 10.0721 3.43063 9.73159 3.86922 9.1618Z"
+                          fill="#000"
                         ></path>{" "}
                       </g>
                     </svg>
                   </button>
+                  <div
+                    className={`w-[20px] h-[20px]  rounded-full ${
+                      miembro.pago_id.estado === "aprobado"
+                        ? "bg-green-600"
+                        : miembro.pago_id.estado === "rechazado"
+                          ? "bg-red-600"
+                          : "bg-yellow-600"
+                    }`}
+                  ></div>
                 </td>
               ) : null}
             </tr>
@@ -305,22 +360,25 @@ export default function EventPage({ params }: PageProps) {
             {/* Overlay SOLO en parte inferior */}
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
-                <p className="text-white text-xl font-semibold mb-1" onClick={() => router.push(`/profile/${selectedMiembro._id}`)}>
+                <p
+                  className="text-white text-xl font-semibold mb-1"
+                  onClick={() => router.push(`/profile/${selectedMiembro._id}`)}
+                >
                   {selectedMiembro.nombre}
                 </p>
                 <p className="text-white text-sm opacity-80">
                   {selectedMiembro.email}
                 </p>
                 <p className="text-white text-xs mt-2">
-                    {selectedMiembro.instagram && (
-                                <a
-                                  href={`https://instagram.com/${selectedMiembro.instagram}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <FaInstagram />
-                                </a>
-                              )}
+                  {selectedMiembro.instagram && (
+                    <a
+                      href={`https://instagram.com/${selectedMiembro.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaInstagram />
+                    </a>
+                  )}
                 </p>
               </div>
             </div>
@@ -335,6 +393,17 @@ export default function EventPage({ params }: PageProps) {
           </div>
         </div>
       )}
+
+      <PaymentReviewModal
+        isOpen={reviewModal.open}
+        onClose={() => setReviewModal({ open: false })}
+        miembroId={reviewModal.miembroId || ""}
+        pagoId={reviewModal.pagoId || ""}
+      />
+
+      {session?.user?.id === event?.creador_id?._id ? (
+        <ExportUsuarios usuarios={miembrosAprobados} />
+      ) : null}
 
       <div className="pb-[100px]"></div>
     </div>

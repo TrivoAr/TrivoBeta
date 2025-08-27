@@ -7,46 +7,13 @@ import SalidaSocial from "@/models/salidaSocial";
 import Notificacion from "@/models/notificacion";
 import User from "@/models/user";
 
-// export async function POST(req: Request) {
-//   await connectDB();
-
-//   const session = await getServerSession(authOptions);
-//   if (!session) return new Response("No autorizado", { status: 401 });
-
-//   const { salidaId } = await req.json();
-//   const user = await User.findOne({ email: session.user?.email });
-//   if (!user) return new Response("Usuario no encontrado", { status: 404 });
-
-//   const salida = await SalidaSocial.findById(salidaId);
-//   if (!salida) return new Response("Salida no encontrada", { status: 404 });
-
-//   const yaEsMiembro = await MiembroSalida.findOne({
-//     usuario_id: user._id,
-//     salida_id: salidaId,
-//   });
-
-//   if (yaEsMiembro) {
-//     return new Response("Ya eres miembro de esta salida", { status: 400 });
-//   }
-
-//   const nuevoMiembro = new MiembroSalida({
-//     usuario_id: user._id,
-//     salida_id: salidaId,
-//   });
-
-//   await nuevoMiembro.save();
-
-//   return new Response(JSON.stringify(nuevoMiembro), { status: 200 });
-// }
-
-
 export async function POST(req: Request) {
   await connectDB();
 
   const session = await getServerSession(authOptions);
   if (!session) return new Response("No autorizado", { status: 401 });
 
-  const { salidaId } = await req.json();
+  const { salidaId, pago_id } = await req.json();
 
   const user = await User.findOne({ email: session.user?.email });
   if (!user) return new Response("Usuario no encontrado", { status: 404 });
@@ -63,10 +30,12 @@ export async function POST(req: Request) {
     return new Response("Ya eres miembro de esta salida", { status: 400 });
   }
 
-  const nuevoMiembro = new MiembroSalida({
-    usuario_id: user._id,
-    salida_id: salidaId,
-  });
+ const nuevoMiembro = new MiembroSalida({
+  usuario_id: user._id,
+  salida_id: salidaId,
+  estado: "pendiente",
+  pago_id: pago_id,
+});
 
   await nuevoMiembro.save();
 
@@ -78,7 +47,7 @@ export async function POST(req: Request) {
         fromUserId: user._id,
         salidaId: salida._id,           // el que se unió
         type: "joined_event",
-        message: `${user.firstname} se unió a tu salida ${salida.nombre}.`,
+        message: `${user.firstname} quiere unirse a tu salida ${salida.nombre}.`,
       });
       console.log("✅ Notificación creada");
     } catch (error) {

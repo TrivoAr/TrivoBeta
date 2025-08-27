@@ -15,7 +15,7 @@ const NotificacionSchema = new mongoose.Schema({
   salidaId: { type: mongoose.Schema.Types.ObjectId, ref: "SalidaSocial" },
   type: {
     type: String,
-    enum: ["joined_event", "like", "comment", "solicitud_respuesta", "solicitud_recibida"],
+    enum: ["joined_event", "like", "comment", "solicitud_respuesta", "solicitud_recibida", "pago_aprobado"],
     required: true,
   },
   message: {
