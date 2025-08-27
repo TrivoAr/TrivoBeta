@@ -148,7 +148,9 @@ function ProfilePage() {
       try {
         const res = await fetch("/api/strava/status");
         const data = await res.json();
+        
         setStravaConnected(data.connected);
+
         console.log("Strava connected:", data.connected);
       } catch (error) {
         console.error("Error verificando Strava:", error);
