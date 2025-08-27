@@ -130,3 +130,4 @@ export default function StravaMap({ coords }: StravaMapProps) {
 
   return <div ref={mapContainerRef} className="w-full h-full" />;
 }
+
