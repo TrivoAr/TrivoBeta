@@ -153,15 +153,21 @@ export default function EventPage({ params }: PageProps) {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/social/${params.id}`);
-        const res = await axios.get(`/api/profile/${response.data.profesorId}`);
 
-        const fotoProfe = await getProfileImage(
-          "profile-image.jpg",
-          res.data._id
-        );
-        res.data.imagen = fotoProfe;
+        console.log("Respuesta del evento:", response.data.profesorId);
 
-        setProfes(res.data);
+        if (response.data.profesorId) {
+          const res = await axios.get(
+            `/api/profile/${response.data.profesorId}`
+          );
+          const fotoProfe = await getProfileImage(
+            "profile-image.jpg",
+            res.data._id
+          );
+          res.data.imagen = fotoProfe;
+          setProfes(res.data);
+        }
+
         setEvent(response.data);
       } catch (err) {
         console.error("Error al cargar evento", err);
@@ -278,6 +284,7 @@ export default function EventPage({ params }: PageProps) {
       setShowPaymentModal(true);
     }
   };
+
 
   const checkFavorito = async () => {
     try {
@@ -709,77 +716,83 @@ export default function EventPage({ params }: PageProps) {
           <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
 
-        <div className="mt-10 w-full flex flex-col items-center">
-          <div className="flex flex-col w-[90%] gap-2">
-            <span className="text-lg font-normal">Recorrido</span>
-            <div
-              className="w-full h-64 rounded-xl overflow-hidden cursor-pointer relative"
-              style={{ width: "100%", height: "300px" }}
-            >
-              {decodedCoords.length > 0 && (
-                <>
-                  <StravaMap coords={routeCoords} />
-                  <div
-                    className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
-                    onClick={() => setShowFullMap(true)}
-                  >
-                    Tocar para ampliar
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-10"></div>
-        </div>
-
-        <div className="w-full flex flex-col items-center mt-6">
-          <div className="text-lg font-normal mb-1 w-[90%]">
-            ¿Que incluye la inscripción?
-          </div>
-          <div className="w-[90%] font-extralight text-justify break-words">
-            {event.detalles}
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
-        </div>
-
-        <div className="w-full flex flex-col items-center mt-8">
-          <div className="flex justify-center flex-col items-center gap-3">
-            <div
-              className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
-              onClick={() => router.push(`/profile/${profe._id}`)}
-            >
-              <div
-                className="rounded-full h-[100px] w-[100px] shadow-md"
-                style={{
-                  backgroundImage: `url(${profe.imagen})`,
-                  backgroundSize: "cover",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center",
-                }}
-              ></div>
-              <div className="flex flex-col items-center">
-                <h2 className="text-xl font-normal">
-                  {profe.firstname} {profe.lastname}
-                </h2>
-                <p className="text-sm font-light text-slate-400 mb-1">
-                  Profesor
-                </p>
-                <a
-                  href={`https://wa.me/${profe.telNumber?.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white z-50 font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
+        {event.stravaMap.id ? (
+          <>
+            {" "}
+            <div className="mt-10 w-full flex flex-col items-center">
+              <div className="flex flex-col w-[90%] gap-2">
+                <span className="text-lg font-normal">Recorrido</span>
+                <div
+                  className="w-full h-64 rounded-xl overflow-hidden cursor-pointer relative"
+                  style={{ width: "100%", height: "300px" }}
                 >
-                  Contacto
-                </a>
+                  {decodedCoords.length > 0 && (
+                    <>
+                      <StravaMap coords={routeCoords} />
+                      <div
+                        className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                        onClick={() => setShowFullMap(true)}
+                      >
+                        Tocar para ampliar
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="w-[90%] border-b borderb-[#808488] mt-10"></div>
+            </div>
+            <div className="w-full flex flex-col items-center mt-6">
+              <div className="text-lg font-normal mb-1 w-[90%]">
+                ¿Que incluye la inscripción?
+              </div>
+              <div className="w-[90%] font-extralight text-justify break-words">
+                {event.detalles}
+              </div>
+              <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
+            </div>
+          </>
+        ) : null}
+
+        {profe ? (
+          <div className="w-full flex flex-col items-center mt-8">
+            <div className="flex justify-center flex-col items-center gap-3">
+              <div
+                className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
+                onClick={() => router.push(`/profile/${profe._id}`)}
+              >
+                <div
+                  className="rounded-full h-[100px] w-[100px] shadow-md"
+                  style={{
+                    backgroundImage: `url(${profe?.imagen})`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                  }}
+                ></div>
+                <div className="flex flex-col items-center">
+                  <h2 className="text-xl font-normal">
+                    {profe?.firstname} {profe?.lastname}
+                  </h2>
+                  <p className="text-sm font-light text-slate-400 mb-1">
+                    Profesor
+                  </p>
+                  <a
+                    href={`https://wa.me/${profe?.telNumber?.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white z-50 font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
+                  >
+                    Contacto
+                  </a>
+                </div>
+              </div>
+              <div className="w-[90%] font-extralight text-justify">
+                {profe.bio}
               </div>
             </div>
-            <div className="w-[90%] font-extralight text-justify">
-              {profe.bio}
-            </div>
+            <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
-        </div>
+        ) : null}
 
         <div className="flex flex-col items-center mt-8">
           <div className="w-[90%]">
