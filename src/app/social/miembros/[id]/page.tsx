@@ -12,6 +12,7 @@ import { FaInstagram } from "react-icons/fa";
 import PaymentReviewModal from "@/components/PaymentReviewModal";
 import ExportUsuarios from "@/app/utils/ExportUsuarios";
 import { constructNow } from "date-fns";
+import { se } from "date-fns/locale";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -120,17 +121,15 @@ export default function EventPage({ params }: PageProps) {
     return matchName && matchPago;
   });
 
-
   const miembrosAprobados = miembros
-  .filter(miembro => miembro.pago_id.estado === "aprobado")
-  .map(miembro => ({
-    dni: miembro.dni,
-    nombre: miembro.nombre,
-    telefono: miembro.telnumber,
-    email: miembro.email,
-    estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
-  }));
-
+    .filter((miembro) => miembro.pago_id.estado === "aprobado")
+    .map((miembro) => ({
+      dni: miembro.dni,
+      nombre: miembro.nombre,
+      telefono: miembro.telnumber,
+      email: miembro.email,
+      estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
+    }));
 
   console.log("Miembros filtrados:", filteredMiembros);
 
@@ -204,10 +203,7 @@ export default function EventPage({ params }: PageProps) {
       </main>
     );
 
-
-
-    console.log("Session data:", miembros);
-
+  console.log("Session data:", miembros);
 
   return (
     <div className="w-[390px] p-4 relative flex flex-col">
@@ -225,6 +221,7 @@ export default function EventPage({ params }: PageProps) {
       <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">
         Participantes
       </p>
+
       <div className="px-1 mb-5">
         <input
           type="text"
@@ -234,23 +231,31 @@ export default function EventPage({ params }: PageProps) {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
         />
       </div>
+
       {/* 🎯 filtro por estado */}
-      <div className="px-1 mb-5">
-        <select
-          value={paymentFilter}
-          onChange={(e) =>
-            setPaymentFilter(
-              e.target.value as "todos" | "aprobado" | "rechazado" | "pendiente"
-            )
-          }
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-        >
-          <option value="todos">Todos</option>
-          <option value="aprobado">Aprobados ✅</option>
-          <option value="rechazado">Rechazados ❌</option>
-          <option value="pendiente">Pendientes ⏳</option>
-        </select>
-      </div>
+
+      {session?.user?.id === event?.creador_id?._id ? (
+        <div className="px-1 mb-5">
+          <select
+            value={paymentFilter}
+            onChange={(e) =>
+              setPaymentFilter(
+                e.target.value as
+                  | "todos"
+                  | "aprobado"
+                  | "rechazado"
+                  | "pendiente"
+              )
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="todos">Todos</option>
+            <option value="aprobado">Aprobados ✅</option>
+            <option value="rechazado">Rechazados ❌</option>
+            <option value="pendiente">Pendientes ⏳</option>
+          </select>
+        </div>
+      ) : null}
 
       <table className="w-[370px]">
         <thead>
@@ -396,9 +401,9 @@ export default function EventPage({ params }: PageProps) {
         pagoId={reviewModal.pagoId || ""}
       />
 
-      <ExportUsuarios
-        usuarios={miembrosAprobados}
-      />
+      {session?.user?.id === event?.creador_id?._id ? (
+        <ExportUsuarios usuarios={miembrosAprobados} />
+      ) : null}
 
       <div className="pb-[100px]"></div>
     </div>
