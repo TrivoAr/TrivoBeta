@@ -816,10 +816,10 @@ export default function EventPage({ params }: PageProps) {
         <div className="flex w-full justify-center items-center mt-6">
           <div className="w-[90%]">
             <p className="text-lg font-normal mb-1">Participantes</p>
-            <div className="flex -space-x-2 mt-1">
+            <div className="flex space-x-2 mt-1 flex-wrap gap-2 justify-center items-center">
               {miembros.length > 0 ? (
                 <>
-                  {miembros.slice(0, 4).map((m) => (
+                  {miembros.slice(0, 5).map((m) => (
                     <img
                       key={m._id}
                       src={m.imagen}
@@ -833,7 +833,7 @@ export default function EventPage({ params }: PageProps) {
                     />
                   ))}
                   {miembros.length > 2 && (
-                    <div className="h-40 w-40 rounded-full bg-white text-xs flex items-center justify-center border text-orange-500 font-semibold shadow-md">
+                    <div className="h-24 w-24 rounded-full bg-white text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md" onClick={() => router.push(`/social/miembros/${event._id}`)}>
                       +{miembros.length - 2}
                     </div>
                   )}
@@ -891,7 +891,7 @@ export default function EventPage({ params }: PageProps) {
                     handleAccion();
                   }}
                   disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
-                  className={`rounded-[20px] w-[150px] p-3 h-[40px] flex justify-center items-center font-semibold text-lg
+                  className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
         ${yaUnido === "no" ? "bg-[#C95100] text-white" : ""}
         ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
         ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}

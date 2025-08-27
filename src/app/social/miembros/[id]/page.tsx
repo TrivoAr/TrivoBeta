@@ -112,14 +112,33 @@ export default function EventPage({ params }: PageProps) {
   //   miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())
   // );
 
-  const filteredMiembros = miembros.filter((miembro) => {
-    const matchName = miembro.nombre
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  // const filteredMiembros = miembros.filter((miembro) => {
+  //   const matchName = miembro.nombre
+  //     .toLowerCase()
+  //     .includes(searchQuery.toLowerCase());
+  //   const matchPago =
+  //     paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
+  //   return matchName && matchPago;
+  // });
+
+  const isOwner = session?.user?.id === event?.creador_id?._id;
+
+const filteredMiembros = miembros.filter((miembro) => {
+  const matchName = miembro.nombre
+    .toLowerCase()
+    .includes(searchQuery.toLowerCase());
+
+  // 🔑 Si es dueño, ve todo con filtros
+  if (isOwner) {
     const matchPago =
       paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
     return matchName && matchPago;
-  });
+  }
+
+  // 🔑 Si NO es dueño, solo ve aprobados
+  return matchName && miembro.pago_id.estado === "aprobado";
+});
+
 
   const miembrosAprobados = miembros
     .filter((miembro) => miembro.pago_id.estado === "aprobado")
