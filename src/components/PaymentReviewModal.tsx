@@ -445,8 +445,8 @@ export default function PaymentReviewModal({
       toast.success(`Pago ${nuevoEstado} con éxito`);
       setPago({ ...pago, estado: nuevoEstado });
 
-      //onClose(); // cerrar modal
-      //window.location.reload(); // recargar página
+      onClose(); // cerrar modal
+      window.location.reload(); // recargar página
     } catch (error) {
       console.error(error);
       toast.error("No se pudo actualizar el estado del pago");

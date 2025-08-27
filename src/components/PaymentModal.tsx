@@ -77,6 +77,8 @@ const handleEnviarPago = async () => {
       }),
     });
 
+    
+
     if (!resPago.ok) {
       toast.error("Error al enviar comprobante.");
       return;
@@ -97,7 +99,8 @@ const handleEnviarPago = async () => {
 
     if (resUnirse.ok) {
       toast.success("Solicitud enviada. Espera aprobación del organizador.");
-      onClose();
+     onClose(); // cerrar modal
+    window.location.reload(); // recargar página
     } else {
       const msg = await resUnirse.text();
       toast.error("Pago guardado pero fallo al enviar solicitud: " + msg);
