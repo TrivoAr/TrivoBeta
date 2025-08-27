@@ -153,15 +153,19 @@ export default function EventPage({ params }: PageProps) {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/social/${params.id}`);
-        const res = await axios.get(`/api/profile/${response.data.profesorId}`);
 
-        const fotoProfe = await getProfileImage(
-          "profile-image.jpg",
-          res.data._id
-        );
-        res.data.imagen = fotoProfe;
+        if (response.data.profesorId) {
+          const res = await axios.get(
+            `/api/profile/${response.data.profesorId}`
+          );
+          const fotoProfe = await getProfileImage(
+            "profile-image.jpg",
+            res.data._id
+          );
+          res.data.imagen = fotoProfe;
+          setProfes(res.data);
+        }
 
-        setProfes(res.data);
         setEvent(response.data);
       } catch (err) {
         console.error("Error al cargar evento", err);
