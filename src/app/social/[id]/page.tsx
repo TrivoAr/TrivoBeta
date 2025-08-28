@@ -67,6 +67,7 @@ interface EventData {
     rol: string;
   };
 
+  shortId: string;
   detalles: string;
   alias: string;
   cbu: string;
@@ -272,6 +273,13 @@ export default function EventPage({ params }: PageProps) {
       setShowLoginModal(true);
       return;
     }
+    if (!profile.dni || !profile.telnumber) {
+      toast.error(
+        "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
+      );
+      router.push("/dashboard/profile/editar");
+      return;
+    }
 
     // Si no está unido, enviamos solicitud
     if (yaUnido === "no") {
@@ -284,7 +292,6 @@ export default function EventPage({ params }: PageProps) {
       setShowPaymentModal(true);
     }
   };
-
 
   const checkFavorito = async () => {
     try {
@@ -438,16 +445,30 @@ export default function EventPage({ params }: PageProps) {
 
         {/* Botón compartir */}
         <button
+          // onClick={() => {
+          //   navigator.clipboard
+          //     .writeText(window.location.href)
+          //     .then(() => {
+          //       // alert("¡Link copiado al portapapeles!");
+          //       toast.success("¡Link copiado al portapapeles!");
+          //     })
+          //     .catch((err) => {
+          //       console.error("Error al copiar el link:", err);
+          //     });
+          // }}
           onClick={() => {
-            navigator.clipboard
-              .writeText(window.location.href)
-              .then(() => {
-                // alert("¡Link copiado al portapapeles!");
-                toast.success("¡Link copiado al portapapeles!");
-              })
-              .catch((err) => {
-                console.error("Error al copiar el link:", err);
-              });
+            const url = event.shortId
+              ? `${window.location.origin}/s/${event.shortId}`
+              : window.location.href;
+
+            if (navigator.share) {
+              navigator.share({ title: event.nombre, url }).catch(() => {});
+            } else {
+              navigator.clipboard
+                .writeText(url)
+                .then(() => toast.success("¡Link copiado al portapapeles!"))
+                .catch((err) => console.error("Error al copiar el link:", err));
+            }
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
         >
@@ -819,7 +840,7 @@ export default function EventPage({ params }: PageProps) {
             <div className="flex space-x-2 mt-1 flex-wrap gap-2 justify-center items-center">
               {miembros.length > 0 ? (
                 <>
-                  {miembros.slice(0, 5).map((m) => (
+                  {miembros.slice(0, 4).map((m) => (
                     <img
                       key={m._id}
                       src={m.imagen}
@@ -832,8 +853,13 @@ export default function EventPage({ params }: PageProps) {
                       }
                     />
                   ))}
-                  {miembros.length > 2 && (
-                    <div className="h-24 w-24 rounded-full bg-white text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md" onClick={() => router.push(`/social/miembros/${event._id}`)}>
+                  {miembros.length > 4 && (
+                    <div
+                      className="h-24 w-24 rounded-full bg-white text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md"
+                      onClick={() =>
+                        router.push(`/social/miembros/${event._id}`)
+                      }
+                    >
                       +{miembros.length - 2}
                     </div>
                   )}
@@ -845,7 +871,10 @@ export default function EventPage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
+        <div
+          className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50
+    ${session ? "bottom-[80px]" : "bottom-[1px]"}`}
+        >
           <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-4  flex justify-between items-center">
             <div className="w-[50%] flex flex-col">
               <p className="font-semibold text-gray-800 text-xl underline">
@@ -881,13 +910,6 @@ export default function EventPage({ params }: PageProps) {
               ) : (
                 <button
                   onClick={() => {
-                    if (!profile.dni || !profile.telnumber) {
-                      toast.error(
-                        "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
-                      );
-                      router.push("/dashboard/profile/editar");
-                      return;
-                    }
                     handleAccion();
                   }}
                   disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
@@ -907,6 +929,7 @@ export default function EventPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}

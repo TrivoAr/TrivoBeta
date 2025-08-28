@@ -88,7 +88,9 @@ const SalidaSocialSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
-    }
+    },
+
+     shortId: { type: String, unique: true, index: true },
 
 
   },

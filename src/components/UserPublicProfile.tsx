@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getProfileImage } from "@/app/api/profile/getProfileImage"; // Asegúrate de tener esta función para obtener la imagen
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   FaInstagram,
   FaFacebookF,
@@ -35,6 +36,8 @@ export default function UserPublicProfile({ userId }: Props) {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
     if (!id) return;
     fetch(`/api/profile/${id}`)
@@ -49,6 +52,8 @@ export default function UserPublicProfile({ userId }: Props) {
               "profile-image.jpg",
               id
             );
+
+            console.log("Imagen de perfil cargada:", imageUrl);
             setProfileImage(imageUrl);
           } catch (error) {
             console.error("Error al obtener la imagen del perfil:", error);
@@ -66,21 +71,38 @@ export default function UserPublicProfile({ userId }: Props) {
   if (!user) return <p className="text-center py-10">Perfil no encontrado</p>;
 
   return (
-    <div className="max-w-md mx-auto p-4 min-h-screen">
+    <div className="w-[390px] flex flex-col p-4 items-center bg-[#F5F5F5] min-h-screen">
+      <div className="relative w-full h-[55px]">
+        <button
+          onClick={() => router.back()}
+          className="absolute top-2 btnFondo shadow-md rounded-full w-9 h-9 flex justify-center items-center"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+
+      </div>
+           
       {/* Imagen de perfil */}
-      <div className="flex flex-col items-center mb-4 bg-white p-4 rounded-[20px] shadow-md border">
-        {user.imagen ? (
+      <div className="flex flex-col items-center mb-4 bg-white p-4 rounded-[20px] shadow-md border w-[90%]">
+        {profileImage ? (
           <div className="relative w-24 h-24 rounded-full overflow-hidden shadow" 
             onClick={() => setShowPreview(true)}>
             {/* Imagen de perfil */}
-            <Image
-              src={profileImage || user.imagen}
-              alt={`${user.firstname} ${user.lastname}`}
-              fill
-              className="object-cover"
+            <div
+              className="w-24 h-24 rounded-full"
+               style={{
+                    backgroundImage: `url(${profileImage})`,
+                    backgroundSize: "cover",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                  }}
             />
           </div>
-        ) : (
+        ) : ( 
           <FaUserCircle className="w-24 h-24 text-gray-300" />
         )}
         <h1 className="text-xl font-bold mt-3 text-center">
@@ -102,7 +124,7 @@ export default function UserPublicProfile({ userId }: Props) {
 
       {/* Redes sociales */}
       {(user.instagram || user.facebook || user.twitter) && (
-        <div className="mt-6">
+        <div className="mt-6 w-[90%]">
           <h2 className="text-sm font-semibold text-gray-700 mb-2">
             Redes sociales
           </h2>
