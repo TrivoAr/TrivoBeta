@@ -83,7 +83,8 @@ export default function AcademiaDetailPage({
   const { data: session } = useSession();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
+    firstname: session?.user.firstname || "",
+    lastname: session?.user.lastname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
@@ -229,7 +230,8 @@ export default function AcademiaDetailPage({
     };
     if (session?.user) {
       setFormData({
-        fullname: session.user.fullname || "",
+        firstname: session.user.firstname || "",
+        lastname: session.user.lastname || "",
         email: session.user.email || "",
         rol: session.user.role || "",
       });
