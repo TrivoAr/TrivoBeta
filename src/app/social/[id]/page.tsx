@@ -281,6 +281,11 @@ export default function EventPage({ params }: PageProps) {
       return;
     }
 
+    if (event.cupo - miembros.length === 0) {
+      toast.error("Cupo completo. No puedes unirte.");
+      return;
+    }
+
     // Si no está unido, enviamos solicitud
     if (yaUnido === "no") {
       const res = await fetch(`/api/social/miembros/${event._id}`);
