@@ -77,6 +77,7 @@ const UserSchema = new Schema(
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
+    resetPasswordAttempts: { type: Number, default: 0 }
   },
   {
     timestamps: true,
