@@ -91,7 +91,7 @@ export async function POST(req) {
       userId: creadorId,
       fromUserId: usuario_id,
       type: "join_request",
-      message: `${session.user.fullname || "Alguien"} pidió unirse a tu salida.`,
+      message: `${session.user.firstname, session.user.lastname || "Alguien"} pidió unirse a tu salida.`,
     });
   }
 
