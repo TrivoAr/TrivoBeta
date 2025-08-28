@@ -79,11 +79,21 @@ useEffect(() => {
     <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
       {/* Avatar */}
       <Link href="/dashboard/profile">
-        <img
+
+
+      {session?.user ? ( <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
           src={profileImage || session?.user?.imagen}
           alt="User Profile"
-        />
+        />):(<div
+          className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
+           style={{
+            backgroundImage: `url("/assets/logo/Trivo T.png")`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
+          }}
+        />)}
+       
       </Link>
 
       {/* Ubicación */}
