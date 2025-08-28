@@ -151,7 +151,7 @@ function EditProfilePage() {
           value={formData.firstname}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Nombre completo"
+          placeholder="Nombre"
         />
       </label>
          <label className="block w-full">
@@ -162,7 +162,7 @@ function EditProfilePage() {
           value={formData.lastname}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Nombre completo"
+          placeholder="Apellido"
         />
       </label>
 
