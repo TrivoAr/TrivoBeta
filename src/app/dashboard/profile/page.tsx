@@ -1,19 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import TopContainer from "@/components/TopContainer";
 import { useRouter } from "next/navigation";
-import { saveProfileImage } from "@/app/api/profile/saveProfileImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
-import Link from "next/link";
-import { FaInstagram, FaFacebookF, FaXTwitter } from "react-icons/fa6";
-import { Pencil } from "lucide-react";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
-  const [showPersonalData, setShowPersonalData] = useState(false);
-  const [showObjectives, setShowObjectives] = useState(false); // Estado para los objetivos
-  const [isEditing, setIsEditing] = useState(false); // Estado para edición
   const [formData, setFormData] = useState({
     firstname: session?.user.firstname|| "",
     lastname: session?.user.lastname || "",
@@ -25,8 +17,6 @@ function ProfilePage() {
     imagen: session?.user.imagen || "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stravaConnected, setStravaConnected] = useState(false);
@@ -64,81 +54,8 @@ function ProfilePage() {
     loadProfileImage();
   }, [session]);
 
-  const horaActual = new Date().getHours();
 
 
-
-
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleEditToggle = () => {
-    setIsEditing((prev) => !prev);
-  };
-
-  const handleSave = async () => {
-    const confirmation = window.confirm(
-      "¿Estás seguro de que deseas guardar los cambios?"
-    );
-    if (!confirmation) return;
-
-    try {
-      const { firstname, lastname, email } = formData; // Excluir 'rol' aquí
-      const response = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstname: firstname || "",
-          lastname: lastname || "",
-          email,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al actualizar el perfil");
-      }
-
-      // Actualiza los datos de la sesión después de guardar los cambios
-      const updatedUser = await response.json();
-      setFormData({
-        firstname: updatedUser.firstname,
-        lastname: updatedUser.lastname,
-        email: updatedUser.email,
-        rol: updatedUser.rol,
-        instagram: updatedUser.instagram,
-        facebook: updatedUser.facebook,
-        twitter: updatedUser.twitter,
-        imagen: updatedUser.imagen,
-      });
-
-      // Si la actualización fue exitosa, se desactiva el modo de edición y cierra sesión
-      setIsEditing(false);
-
-      alert("Los cambios se han guardado correctamente. Se cerrará la sesión.");
-      signOut();
-    } catch (error) {
-      console.error(error);
-      alert("Ocurrió un error al actualizar el perfil. Inténtalo de nuevo.");
-    }
-  };
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setUploadingImage(true);
-      const imageUrl = await saveProfileImage(file, session?.user.id || "");
-      setProfileImage(imageUrl); // Actualiza la imagen mostrada
-      alert("Imagen actualizada con éxito.");
-    } catch (error) {
-      console.error("Error al subir la imagen:", error);
-      alert("Hubo un problema al subir la imagen.");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
 
   const handleSignOut = async () => {
     setIsSubmitting(true);
@@ -161,7 +78,6 @@ function ProfilePage() {
     };
     checkStravaStatus();
   }, []);
-  console.log("usu", session?.user);
 
   return (
     <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
@@ -367,12 +283,6 @@ function ProfilePage() {
       </div>
 
       <div className="text-center pt-4">
-        {/* <button
-         
-          className="w-[140px] mt-[40px] py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-        >
-          Cerrar sesión
-        </button> */}
         <button
           className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
           type="submit"

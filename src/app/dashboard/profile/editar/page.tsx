@@ -23,57 +23,6 @@ function EditProfilePage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (session?.user) {
-      // const res = await fetch("/api/profile");
-      // const data = await res.json();
-      // setFormData({
-      //   fullname: `${session.user.fullname}`,
-      //   email: session.user.email,
-      //   telnumber: session.user.telnumber,
-      //   rol: session.user.role,
-      //   instagram: session.user.instagram,
-      //   facebook: session.user.facebook,
-      //   twitter: session.user.twitter,
-      //   bio: session.user.bio,
-      //   dni: session.user.dni || "",
-      // });
-
-      //  const fetchProfile = async () => {
-      // try {
-      //   const res = await fetch("/api/profile");
-      //   const data = await res.json();
-      //   if (res.ok) {
-      //     setFormData({
-      //       fullname: `${data.firstname} ${data.lastname}`,
-      //       email: data.email || "",
-      //       telnumber: data.telnumber || "",
-      //       rol: data.role || "",
-      //       instagram: data.instagram || "",
-      //       facebook: data.facebook || "",
-      //       twitter: data.twitter || "",
-      //       bio: data.bio || "",
-      //       dni: data.dni || "",
-      //     });
-
-  //     const loadImage = async () => {
-  //       try {
-  //         const url = await getProfileImage(
-  //           "profile-image.jpg",
-  //           session.user.id
-  //         );
-  //         setProfileImage(url);
-  //       } catch {
-  //         setProfileImage(session.user.imagen);
-  //       }
-  //     };
-  //     loadImage();
-  //   }
-  // }, [session]);
-
-
-
-
   useEffect(() => {
   if (session?.user) {
     const fetchProfile = async () => {
@@ -202,7 +151,7 @@ function EditProfilePage() {
           value={formData.firstname}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Nombre completo"
+          placeholder="Nombre"
         />
       </label>
          <label className="block w-full">
@@ -213,11 +162,11 @@ function EditProfilePage() {
           value={formData.lastname}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Nombre completo"
+          placeholder="Apellido"
         />
       </label>
 
-      <label className="block">
+      <label className="block w-full">
         Numero de Telefono
         <input
           type="string"
@@ -229,7 +178,7 @@ function EditProfilePage() {
         />
       </label>
 
-      <label className="block">
+      <label className="block w-full">
         Correo electronico
         <input
           type="email"
@@ -240,7 +189,7 @@ function EditProfilePage() {
           placeholder="Correo electrónico"
         />
       </label>
-      <label className="block">
+      <label className="block w-full">
         Instagram usuario
         <input
           type="text"
@@ -253,7 +202,7 @@ function EditProfilePage() {
       </label>
 
       {session?.user?.role === "dueño de academia" ? (
-        <label className="block">
+        <label className="block w-full">
           Biografia profesor
           <input
             type="text"
