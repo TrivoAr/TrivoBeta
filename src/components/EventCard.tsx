@@ -121,25 +121,40 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
       }
     };
 
-    const fetchMiembros = async () => {
-      try {
-        const res = await fetch(`/api/social/miembros?salidaId=${event._id}`);
-        const data = await res.json();
+    checkFavorito();
+  }, [event._id, session]);
 
+  async function fetchMiembros(salidaId: string) {
+    const res = await fetch(`/api/social/miembros/${salidaId}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Miembros ${res.status}: ${text || "error"}`);
+    }
+    return res.json(); // 👈 esto devuelve, pero nunca lo usás
+  }
+
+  useEffect(() => {
+    const loadMiembros = async () => {
+      try {
+        const data = await fetchMiembros(event._id);
+
+        // si solo querés los aprobados:
         const miembrosAprobados = data.filter(
-          (m: any) => m.pago_id?.estado === "aprobado"
+          (m: Miembro) =>
+            m.estado === "aprobado" || m.pago_id?.estado === "aprobado"
         );
 
         setMiembros(miembrosAprobados);
       } catch (err) {
         console.error("Error al cargar miembros", err);
+        toast.error("No se pudieron cargar los cupos");
       }
     };
 
-    fetchMiembros();
-
-    checkFavorito();
-  }, [event._id, session]);
+    loadMiembros();
+  }, [event._id]);
 
   return (
     <div className="rounded-2xl overflow-hidden shadow-md bg-white w-[360px]">
