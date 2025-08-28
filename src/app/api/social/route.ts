@@ -4,7 +4,23 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
 import Academia from "@/models/academia";
-import User from "@/models/user"; // Asegurate de tener este modelo
+import User from "@/models/user";
+import { nanoid } from "nanoid"; // Asegurate de tener este modelo
+
+
+
+async function generateUniqueShortId() {
+  // Intentos para evitar colisiones
+  for (let i = 0; i < 6; i++) {
+    const candidate = nanoid(8); // 8 chars, ej: 'V1StGXR8'
+    const exists = await SalidaSocial.exists({ shortId: candidate });
+    if (!exists) return candidate;
+  }
+  // fallback muy poco probable
+  return nanoid(12);
+}
+
+
 
 export async function POST(req: Request) {
   await connectDB();
@@ -17,9 +33,11 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   try {
+    const shortId = await generateUniqueShortId();
     const nuevaSalida = await SalidaSocial.create({
       ...body,
       creador_id: session.user.id,
+      shortId,
     });
 
     return NextResponse.json(nuevaSalida, { status: 201 });
@@ -32,18 +50,6 @@ export async function POST(req: Request) {
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-
-    // const session = await getServerSession(authOptions);
-    // if (!session || !session.user?.email) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
-
-    // const user = await User.findOne({ email: session.user.email });
-    // if (!user) {
-    //   return NextResponse.json({ message: "User not found" }, { status: 404 });
-    // }
-
-    
     const salidas = await SalidaSocial.find().populate('creador_id', 'firstname');
 
     return NextResponse.json(salidas, { status: 200 });
