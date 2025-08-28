@@ -87,7 +87,8 @@ export default function Home() {
   const [academias, setAcademias] = useState<Academia[]>([]);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
+    firstname: session?.user.firstname || "",
+    lastname: session?.user.lastname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });

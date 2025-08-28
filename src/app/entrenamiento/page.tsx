@@ -124,7 +124,7 @@ const EntrenamientoPage = () => {
         <div className="flex flex-col w-[390px] items-center">
           <p className="font-bold text-xl">Entrenamiento</p>
           <p className="font-light text-sm text-slate-500">
-            {session?.user?.fullname || "Usuario no identificado"}
+            {session?.user?.firstname  || "Usuario no identificado"}
           </p>
         </div>
       </div>

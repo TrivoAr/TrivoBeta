@@ -102,7 +102,8 @@ export default function GrupoDetailPage({
   const userRole = session?.user?.role;
   const userId = session?.user?.id;
   const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
+    firstname: session?.user.firstname || "",
+    lastname: session?.user.lastname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
@@ -144,7 +145,8 @@ export default function GrupoDetailPage({
     };
     if (session?.user) {
       setFormData({
-        fullname: session.user.fullname || "",
+        firstname: session.user.firstname || "",
+        lastname: session.user.lastname || "",
         email: session.user.email || "",
         rol: session.user.role || "",
       });

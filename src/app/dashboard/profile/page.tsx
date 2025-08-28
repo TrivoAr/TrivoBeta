@@ -15,7 +15,8 @@ function ProfilePage() {
   const [showObjectives, setShowObjectives] = useState(false); // Estado para los objetivos
   const [isEditing, setIsEditing] = useState(false); // Estado para edición
   const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
+    firstname: session?.user.firstname|| "",
+    lastname: session?.user.lastname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
     instagram: session?.user.instagram || "",
@@ -36,7 +37,8 @@ function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       setFormData({
-        fullname: `${session.user.fullname || ""}`,
+        firstname: session.user.firstname || "",
+        lastname:  session.user.lastname ,
         email: session.user.email || "",
         rol: session.user.role || "",
         instagram: session.user.instagram || "",
@@ -83,13 +85,13 @@ function ProfilePage() {
     if (!confirmation) return;
 
     try {
-      const { fullname, email } = formData; // Excluir 'rol' aquí
+      const { firstname, lastname, email } = formData; // Excluir 'rol' aquí
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstname: fullname.split(" ")[0],
-          lastname: fullname.split(" ")[1],
+          firstname: firstname || "",
+          lastname: lastname || "",
           email,
         }),
       });
@@ -101,7 +103,8 @@ function ProfilePage() {
       // Actualiza los datos de la sesión después de guardar los cambios
       const updatedUser = await response.json();
       setFormData({
-        fullname: `${updatedUser.firstname} ${updatedUser.lastname}`,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
         email: updatedUser.email,
         rol: updatedUser.rol,
         instagram: updatedUser.instagram,
@@ -176,7 +179,7 @@ function ProfilePage() {
         </div>
         <div className="">
           <span className="text-2xl w-full text-left ">
-            {formData.fullname}
+            {session?.user.firstname} {session?.user.lastname}{" "}
           </span>
         </div>
         <div className="text-sm text-[#666] capitalize">{formData.rol}</div>

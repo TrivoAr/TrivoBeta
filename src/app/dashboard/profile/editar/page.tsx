@@ -8,7 +8,8 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 function EditProfilePage() {
   const { data: session } = useSession();
   const [formData, setFormData] = useState({
-    fullname: "",
+    firstname: "",
+    lastname: "",
     email: "",
     telnumber: "",
     rol: "",
@@ -81,7 +82,8 @@ function EditProfilePage() {
         const data = await res.json();
         if (res.ok) {
           setFormData({
-            fullname: `${data.firstname} ${data.lastname}`,
+            firstname: data.firstname || "", 
+            lastname: data.lastname  || "",
             email: data.email || "",
             telnumber: data.telnumber || "",
             rol: data.role || "",
@@ -118,7 +120,7 @@ function EditProfilePage() {
     if (!confirmation) return;
 
     try {
-      const { fullname, email, telnumber } = formData;
+      const { firstname, lastname, email, telnumber } = formData;
 
       const fullTelNumber = telnumber.startsWith("+549")
         ? telnumber
@@ -128,8 +130,8 @@ function EditProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstname: fullname.split(" ")[0],
-          lastname: fullname.split(" ")[1] || "",
+          firstname: formData.firstname || "",
+          lastname: formData.lastname || "",
           telnumber: fullTelNumber,
           email,
           dni: formData.dni,
@@ -174,7 +176,7 @@ function EditProfilePage() {
       <img
         src={profileImage || "/assets/icons/default-user.png"}
         alt="Avatar"
-        className="w-24 h-24 rounded-2xl object-cover mb-4"
+        className="w-32 h-32 rounded-full object-cover mb-4"
       />
       <input
         type="file"
@@ -192,12 +194,23 @@ function EditProfilePage() {
           placeholder="Numero de documento"
         />
       </label>
-      <label className="block">
-        Nombre y apellido
+      <label className="block w-full">
+        Nombre
         <input
           type="text"
-          name="fullname"
-          value={formData.fullname}
+          name="firstname"
+          value={formData.firstname}
+          onChange={handleChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
+          placeholder="Nombre completo"
+        />
+      </label>
+         <label className="block w-full">
+        Apeliido
+        <input
+          type="text"
+          name="lastname"
+          value={formData.lastname}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
           placeholder="Nombre completo"

@@ -276,7 +276,8 @@ export const authOptions: AuthOptions = {
         return {
           id: userFound._id.toString(),
           email: userFound.email,
-          fullname: `${userFound.firstname} ${userFound.lastname}`,
+          firstname: userFound.firstname,
+          lastname: userFound.lastname,
           telnumber: userFound.telnumber,
           role: userFound.rol,
           imagen: userFound.imagen,
@@ -354,7 +355,8 @@ export const authOptions: AuthOptions = {
       token.user = {
         id: dbUser._id.toString(),
         email: dbUser.email,
-        fullname: `${dbUser.firstname} ${dbUser.lastname}`,
+        firstname: dbUser.firstname, 
+        lastname: dbUser.lastname,
         role: dbUser.rol,
         imagen: dbUser.imagen,
         instagram: dbUser.instagram,

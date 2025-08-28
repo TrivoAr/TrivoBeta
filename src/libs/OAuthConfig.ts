@@ -37,7 +37,8 @@ export default function StravaProvider<P extends StravaProfile>(
       return {
         id: profile.id.toString(),
         email: profile.email,
-        fullname: `${profile.firstname} ${profile.lastname}`,
+        firstname: profile.firstname,
+        lastname: profile.lastname,
         telnumber: "",
         role: "alumno",
         bio: "",
