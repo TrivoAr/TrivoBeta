@@ -52,7 +52,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         email,
-        fullname: `${firstname} ${lastname}`,
+        firstname: firstname,
+        lastname: lastname,
         createdAt: savedUser.createdAt,
         updatedAt: savedUser.updatedAt,
       },

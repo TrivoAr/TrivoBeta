@@ -133,7 +133,8 @@ const DashboardPage: React.FC = () => {
     "San Miguel de Tucuman"
   );
   const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
+    firstname: session?.user.firstname || "",
+    lastname: session?.user.lastname || "",
     email: session?.user.email || "",
     rol: session?.user.role || "",
   });
@@ -339,7 +340,8 @@ const DashboardPage: React.FC = () => {
     }
     if (session?.user) {
       setFormData({
-        fullname: session.user.fullname || "",
+        firstname: session.user.firstname || "",
+        lastname: session.user.lastname || "",
         email: session.user.email || "",
         rol: session.user.role || "",
       });
