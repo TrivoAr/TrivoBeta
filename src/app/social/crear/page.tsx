@@ -9,6 +9,8 @@ import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
 import mapboxgl from "mapbox-gl";
+import DescriptionEditor from "@/components/DescriptionEditor";
+import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { set } from "mongoose";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
@@ -50,6 +52,7 @@ export default function CrearSalidaPage() {
   const [loading, setLoading] = useState(false);
   const [profes, setprofes] = useState([]);
   const [queryProfesor, setQueryProfesor] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [profesorSuggestions, setProfesorSuggestions] = useState<any[]>([]);
 
   const [suggestions, setSuggestions] = useState<
@@ -88,7 +91,6 @@ export default function CrearSalidaPage() {
     detalles: "",
     cbu: "",
     alias: "",
-    
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
@@ -289,13 +291,11 @@ export default function CrearSalidaPage() {
 
         const data = await res.json();
 
-        if(data.error){
-          return
-          
-        }else{
+        if (data.error) {
+          return;
+        } else {
           setActivities(data);
         }
-        
       } catch (err) {
         console.error("Error cargando actividades:", err);
       } finally {
@@ -411,7 +411,6 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-
       <label className="block">
         Cupo
         <input
@@ -446,7 +445,7 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <label className="block">
+      {/* <label className="block">
         Descripción
         <textarea
           name="descripcion"
@@ -455,7 +454,27 @@ export default function CrearSalidaPage() {
           placeholder="Organizamos una salida de running"
           className="w-full px-3 py-4 border rounded-[15px] shadow-md"
         />
-      </label>
+      </label> */}
+
+      <div className="space-y-2">
+        <label className="block">
+          Descripción{" "}
+        </label>
+
+        <DescriptionEditor
+          defaultValue={formData.descripcion}
+          onChange={(val) =>
+            setFormData((prev) => ({ ...prev, descripcion: val }))
+          }
+          maxChars={2000}
+        />
+
+        {/* Preview compacto opcional en el form (ya viene arriba dentro del editor, si preferís podés sacar este bloque) */}
+        {/* <div className="mt-2">
+    <DescriptionMarkdown text={formData.descripcion} />
+  </div> */}
+      </div>
+
       <label className="block">
         Que incluye la salida?
         <textarea
@@ -558,48 +577,42 @@ export default function CrearSalidaPage() {
         </select>
       </label> */}
 
-
       <label className="block relative">
-  Asignar profesor
-  <input
-    type="text"
-    value={queryProfesor} // <- usa el estado de búsqueda
-    onChange={(e) => {
-      const value = e.target.value;
-      setQueryProfesor(value);
+        Asignar profesor
+        <input
+          type="text"
+          value={queryProfesor} // <- usa el estado de búsqueda
+          onChange={(e) => {
+            const value = e.target.value;
+            setQueryProfesor(value);
 
-      // Filtrar sugerencias localmente
-      const filtered = profes.filter((p) =>
-        p.firstname.toLowerCase().includes(value.toLowerCase())
-      );
-      setProfesorSuggestions(filtered);
-    }}
-    placeholder="Buscar profesor..."
-    className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
-  />
-  {profesorSuggestions.length > 0 && (
-    <ul className="absolute top-full left-0 right-0 bg-white border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
-      {profesorSuggestions.map((p) => (
-        <li
-          key={p._id}
-          className="px-4 py-2 cursor-pointer hover:bg-orange-100"
-          onClick={() => {
-            setFormData((prev) => ({ ...prev, profesorId: p._id }));
-            setQueryProfesor(`${p.firstname} ${p.lastname}`);
-            setProfesorSuggestions([]);
+            // Filtrar sugerencias localmente
+            const filtered = profes.filter((p) =>
+              p.firstname.toLowerCase().includes(value.toLowerCase())
+            );
+            setProfesorSuggestions(filtered);
           }}
-        >
-          {p.firstname} {p.lastname}
-        </li>
-      ))}
-    </ul>
-  )}
-</label>
-
-
-
-
-
+          placeholder="Buscar profesor..."
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+        {profesorSuggestions.length > 0 && (
+          <ul className="absolute top-full left-0 right-0 bg-white border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
+            {profesorSuggestions.map((p) => (
+              <li
+                key={p._id}
+                className="px-4 py-2 cursor-pointer hover:bg-orange-100"
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, profesorId: p._id }));
+                  setQueryProfesor(`${p.firstname} ${p.lastname}`);
+                  setProfesorSuggestions([]);
+                }}
+              >
+                {p.firstname} {p.lastname}
+              </li>
+            ))}
+          </ul>
+        )}
+      </label>
 
       <div className="flex flex-col gap-2">
         <div className="relative">

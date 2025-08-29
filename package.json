@@ -54,7 +54,10 @@
     "react-leaflet": "^4.2.1",
     "react-loading-skeleton": "^3.5.0",
     "react-map-gl": "^8.0.4",
+    "react-markdown": "^10.1.0",
     "react-pdf": "^5.7.2",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
     "resend": "^4.7.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
@@ -66,6 +69,7 @@
   },
   "devDependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/bcryptjs": "^2.4.2",
     "@types/leaflet": "^1.9.18",
     "@types/mapbox-gl": "^3.4.1",
