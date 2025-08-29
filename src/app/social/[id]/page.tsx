@@ -14,6 +14,7 @@ import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
+import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { Toaster } from "sonner";
 import { toast } from "sonner";
 
@@ -701,7 +702,7 @@ export default function EventPage({ params }: PageProps) {
         </div>
         <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[90%] font-extralight text-justify">
-            {event.descripcion}
+            <DescriptionMarkdown text={event.descripcion} />
           </div>
           <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
@@ -865,7 +866,7 @@ export default function EventPage({ params }: PageProps) {
                         router.push(`/social/miembros/${event._id}`)
                       }
                     >
-                      +{miembros.length - 2}
+                      +{miembros.length - 4}
                     </div>
                   )}
                 </>
