@@ -12,6 +12,7 @@ import TeamSocial from "@/models/teamSocial";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import EventCard from "@/components/EventCard";
 import StravaMap from "@/components/StravaMap";
+import EmptyState from "@/components/EmptyState";
 
 const categories = [
   { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
@@ -242,8 +243,10 @@ export default function Home() {
       />
 
       <section className="flex flex-col gap-3">
-        <h1 className="text-xl font-medium">Salidas destacadas</h1>
-        {futureEvents.map((event) => (
+        <h1 className="text-xl font-medium">Proximas salidas</h1>
+
+
+        {futureEvents.length > 0 ? (futureEvents.map((event) => (
           <EventCard
             key={event._id}
             event={event}
@@ -252,7 +255,11 @@ export default function Home() {
               console.log("Abrir mapa en:", coords.lat, coords.lng)
             }
           />
-        ))}
+        ))) : (<EmptyState title ="Sin salidas disponibles"
+  description= "Una vez que carguemos salidas, las vas a ver acá." imageSrc="/assets/icons/emptyTrekking.png"></EmptyState>) }
+
+
+
       </section>
       <div className="pb-[200px]"></div>
 

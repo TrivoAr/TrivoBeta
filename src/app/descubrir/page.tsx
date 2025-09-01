@@ -15,7 +15,7 @@ export default function Page() {
         title="Página en construcción"
         description="Los devs estamos trabajando para traerte nuevas funcionalidades. ¡Vuelve pronto!"
         subdecription=""
-        imageSrc="/assets/icons/astronaut-dog-svgrepo-com.svg"
+        imageSrc="/assets/icons/emptyExplication.png"
         primaryAction={{onClick: () => route.push("/home"), label: "Volver al Home"}}
       />
     </div>
