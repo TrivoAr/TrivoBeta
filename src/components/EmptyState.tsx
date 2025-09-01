@@ -25,7 +25,7 @@ export default function EmptyState({
       role="status"
       className="w-full rounded-2xl p-6 flex flex-col justify-center items-center text-center gap-4"
     >
-      <div className="relative w-40 h-52 opacity-90">
+      <div className="relative w-48 h-56 opacity-90">
         <Image src={imageSrc} alt="" fill className="object-contain" />
       </div>
 
