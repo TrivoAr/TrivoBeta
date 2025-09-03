@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import LoginModal from "@/components/Modals/LoginModal";
-
+import MapComponent from "@/components/MapComponent";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
@@ -15,6 +15,7 @@ import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { se } from "date-fns/locale";
+import PaymentModal from "@/components/PaymentModal";
 
 // Configuración del icono por defecto de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -56,6 +57,10 @@ interface EventData {
     lat: number;
     lng: number;
   };
+  shortId: string;
+  detalles: string;
+  alias: string;
+  cbu: string;
 }
 
 interface Miembro {
@@ -73,10 +78,52 @@ export default function TeamEventPage({ params }: PageProps) {
   const router = useRouter();
   const [favorito, setFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+   const [profile, setProfile] = useState({
+    fullname: "",
+    email: "",
+    telnumber: "",
+    rol: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    bio: "",
+    dni: "",
+  });
    const [yaUnido, setYaUnido] = useState<
     "no" | "pendiente" | "rechazado" | "si"
   >("no");
+const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
+    useState(false);
+     useEffect(() => {
+    if (session?.user) {
+      const fetchProfile = async () => {
+        try {
+          const res = await fetch("/api/profile");
+          const data = await res.json();
+          if (res.ok) {
+            setProfile({
+              fullname: `${data.firstname} ${data.lastname}`,
+              email: data.email || "",
+              telnumber: data.telnumber || "",
+              rol: data.role || "",
+              instagram: data.instagram || "",
+              facebook: data.facebook || "",
+              twitter: data.twitter || "",
+              bio: data.bio || "",
+              dni: data.dni || "",
+            });
+          } else {
+            console.error(data.error);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
+      fetchProfile();
+    }
+  }, [session]);
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -91,6 +138,8 @@ export default function TeamEventPage({ params }: PageProps) {
       }
     };
 
+
+
     const fetchMiembros = async () => {
       try {
         const res = await fetch(
@@ -103,14 +152,29 @@ export default function TeamEventPage({ params }: PageProps) {
       }
     };
 
-    const checkUnido = async () => {
-      const res = await fetch("/api/team-social/unirse/estado", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamSocialId: params.id }), // 👈 aquí
-      });
-      const data = await res.json();
-      setYaUnido(data.unido);
+   const checkUnido = async () => {
+      try {
+        const res = await fetch(`/api/social/miembros/${event._id}`);
+        const data = await res.json();
+
+        console.log("que japi 2", data);
+
+        const miMiembro = data.find(
+          (m: any) => m.usuario_id?._id === session?.user?.id
+        );
+
+        if (!miMiembro) {
+          setYaUnido("no");
+        } else if (miMiembro.pago_id?.estado === "pendiente") {
+          setYaUnido("pendiente");
+        } else if (miMiembro.pago_id?.estado === "rechazado") {
+          setYaUnido("rechazado");
+        } else if (miMiembro.pago_id?.estado === "aprobado") {
+          setYaUnido("si");
+        }
+      } catch (err) {
+        console.error("Error en checkUnido:", err);
+      }
     };
 
     fetchEvent();
@@ -123,25 +187,28 @@ export default function TeamEventPage({ params }: PageProps) {
       setShowLoginModal(true);
       return;
     }
+     if (!profile.dni || !profile.telnumber) {
+      toast.error(
+        "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
+      );
+      router.push("/dashboard/profile/editar");
+      return;
+    }
 
+    if (event.cupo - miembros.length === 0) {
+      toast.error("Cupo completo. No puedes unirte.");
+      return;
+    }
 
-    const metodo = yaUnido ? "DELETE" : "POST";
-    const url = yaUnido
-      ? `/api/team-social/unirse?teamSocialId=${params.id}` // 👈 aquí
-      : "/api/team-social/unirse";
-
-    const res = await fetch(url, {
-      method: metodo,
-      headers: { "Content-Type": "application/json" },
-      body: yaUnido ? null : JSON.stringify({ teamSocialId: params.id }), // 👈 aquí
-    });
-
-    if (res.ok) {
-      alert(yaUnido ? "Has salido del evento" : "¡Te uniste exitosamente!");
-      setYaUnido(yaUnido === "si" ? "no" : "si");
-    } else {
-      const msg = await res.text();
-      alert("Error: " + msg);
+    // Si no está unido, enviamos solicitud
+    if (yaUnido === "no") {
+      const res = await fetch(`/api/social/miembros/${event._id}`);
+      const data = await res.json();
+      if (data.length === event.cupo) {
+        toast.error("Cupo completo. No puedes unirte.");
+        return;
+      }
+      setShowPaymentModal(true);
     }
   };
 
@@ -557,21 +624,29 @@ export default function TeamEventPage({ params }: PageProps) {
     {event.locationCoords ? (
       <div className="w-full relative h-[300px] rounded-xl overflow-hidden border shadow-md z-0">
         {/* Map Component */}
-        <MapContainer
-          center={[event.locationCoords.lat, event.locationCoords.lng]}
-          zoom={15}
-          scrollWheelZoom={false}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={[event.locationCoords.lat, event.locationCoords.lng]}>
-            <Popup>{event.nombre}</Popup>
-          </Marker>
-        </MapContainer>
-
+        {event.locationCoords ? (
+                      <div className="w-full relative h-[300px] rounded-xl overflow-hidden border z-0">
+                        <MapComponent
+                          position={{
+                            lat: event.locationCoords.lat,
+                            lng: event.locationCoords.lng,
+                          }}
+                          onChange={() => {}}
+                          editable={false}
+                          showControls={false} // callback vacío si no quieres actualizar nada
+                        />
+                        <div
+                          className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                          onClick={() => setShowFullMapPuntoDeEncuntro(true)}
+                        >
+                          Tocar para ampliar
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-600">
+                        No hay coordenadas disponibles.
+                      </p>
+                    )}
         {/* Botón "Tocar para ampliar" */}
         {/* <div
           className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-3 py-1 rounded cursor-pointer hover:bg-opacity-70 transition"
@@ -726,43 +801,37 @@ export default function TeamEventPage({ params }: PageProps) {
         </button>
       ) : (
         <button
-          onClick={() => handleAccion()}
-          disabled={yaUnido === "pendiente" || yaUnido === "si"}
-          className={`rounded-full px-6 h-[40px] flex justify-center items-center font-semibold text-lg transition
-            ${
-              yaUnido === "no"
-                ? "bg-[#C95100] text-white hover:bg-[#a54100]"
-                : ""
-            }
-            ${
-              yaUnido === "pendiente"
-                ? "bg-gray-400 text-white opacity-70 cursor-not-allowed"
-                : ""
-            }
-            ${
-              yaUnido === "rechazado"
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : ""
-            }
-            ${
-              yaUnido === "si"
-                ? "bg-[#001A46] text-white cursor-not-allowed"
-                : ""
-            }
-          `}
-        >
-          {yaUnido === "no" && "Unirse"}
-          {yaUnido === "pendiente" && "Solicitud enviada"}
-          {yaUnido === "rechazado" && "Reenviar"}
-          {yaUnido === "si" && "Miembro"}
-        </button>
+                  onClick={() => {
+                    handleAccion();
+                  }}
+                  disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
+                  className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
+        ${yaUnido === "no" ? "bg-[#C95100] text-white" : ""}
+        ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
+        ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}
+        ${yaUnido === "si" ? "bg-[#001A46] text-white" : ""}
+      `}
+                >
+                  {yaUnido === "no" && "Unirse"}
+                  {yaUnido === "pendiente" && "Solicitud enviada"}
+                  {yaUnido === "rechazado" && "Reenviar"}
+                  {yaUnido === "si" && "Miembro"}
+                </button>
       )}
     </div>
   </div>
 </div>
 
        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-
+         <PaymentModal
+               isOpen={showPaymentModal}
+               onClose={() => setShowPaymentModal(false)}
+               salidaId={params.id}
+               precio={event.precio}
+               cbu={event.cbu}
+               alias={event.alias}
+               userId={session?.user.id}
+             />
       <div className="pb-[200px]" />
   
     </main>
