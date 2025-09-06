@@ -11,7 +11,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   // Verificar que el usuario tenga el rol de "dueño"
-  if (session.user.role !== "dueño de academia") {
+  if (session.user.rol !== "dueño de academia") {
     return res.status(403).json({ message: "No tienes permisos para crear una academia" });
   }
 
