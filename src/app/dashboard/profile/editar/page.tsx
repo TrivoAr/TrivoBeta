@@ -201,7 +201,7 @@ function EditProfilePage() {
         />
       </label>
 
-      {session?.user?.role === "dueño de academia" ? (
+      {session?.user?.rol === "dueño de academia" ? (
         <label className="block w-full">
           Biografia profesor
           <input
