@@ -86,7 +86,7 @@ export default function AcademiaDetailPage({
     firstname: session?.user.firstname || "",
     lastname: session?.user.lastname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || "",
+    rol: session?.user.rol || "",
   });
 
   const [groupImages, setGroupImages] = useState<{ [key: string]: string }>({});
@@ -233,7 +233,7 @@ export default function AcademiaDetailPage({
         firstname: session.user.firstname || "",
         lastname: session.user.lastname || "",
         email: session.user.email || "",
-        rol: session.user.role || "",
+        rol: session.user.rol || "",
       });
     }
 
@@ -833,7 +833,7 @@ export default function AcademiaDetailPage({
         ) : null}
       </div>
 
-      {session?.user?.role === "alumno" && esMiembro && (
+      {session?.user?.rol === "alumno" && esMiembro && (
         <div className="flex flex-col w-full items-center">
           {miReview ? (
             <ReviewButtonWithModal
