@@ -429,6 +429,39 @@ export default function EventPage({ params }: PageProps) {
     },
   });
 
+
+    const { data: profile, isLoading: loadingProfile } = useQuery({
+  queryKey: ["profile", session?.user?.id],
+  enabled: !!session?.user?.id,
+  queryFn: async () => {
+    const res = await fetch("/api/profile");
+    if (!res.ok) throw new Error("No se pudo cargar el perfil");
+    return res.json();
+  },
+});
+
+const handleAccion = () => {
+  if (!session) {
+    toast.error("Debes iniciar sesión");
+    return;
+  }
+  if (loadingProfile) {
+    toast.loading("Cargando perfil...");
+    return;
+  }
+  if (!profile?.dni || !profile?.telnumber) {
+    toast.error("Completa tu perfil con DNI y teléfono");
+    router.push("/dashboard/profile/editar");
+    return;
+  }
+  if (event.cupo - miembros.length === 0) {
+    toast.error("Cupo completo. No puedes unirte.");
+    return;
+  }
+  setShowPaymentModal(true);
+};
+
+
   // 📌 Estado de unión del usuario
   const { data: yaUnido = "no" } = useQuery({
     queryKey: ["unido", params.id, session?.user?.id],
@@ -539,36 +572,6 @@ export default function EventPage({ params }: PageProps) {
   //     setShowPaymentModal(true);
   // };
 
-  const { data: profile, isLoading: loadingProfile } = useQuery({
-  queryKey: ["profile", session?.user?.id],
-  enabled: !!session?.user?.id,
-  queryFn: async () => {
-    const res = await fetch("/api/profile");
-    if (!res.ok) throw new Error("No se pudo cargar el perfil");
-    return res.json();
-  },
-});
-
-const handleAccion = () => {
-  if (!session) {
-    toast.error("Debes iniciar sesión");
-    return;
-  }
-  if (loadingProfile) {
-    toast.loading("Cargando perfil...");
-    return;
-  }
-  if (!profile?.dni || !profile?.telnumber) {
-    toast.error("Completa tu perfil con DNI y teléfono");
-    router.push("/dashboard/profile/editar");
-    return;
-  }
-  if (event.cupo - miembros.length === 0) {
-    toast.error("Cupo completo. No puedes unirte.");
-    return;
-  }
-  setShowPaymentModal(true);
-};
 
 
 
