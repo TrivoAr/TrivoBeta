@@ -10,12 +10,11 @@ import MapComponent from "@/components/MapComponent";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import PaymentModal from "@/components/PaymentModal";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import Skeleton from "react-loading-skeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
-import { Toaster } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface PageProps {
@@ -100,241 +99,379 @@ interface Profe {
   rol: string;
 }
 
+// export default function EventPage({ params }: PageProps) {
+//   const { data: session } = useSession();
+//   const [event, setEvent] = useState<EventData | null>(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+//   const [miembros, setMiembros] = useState<Miembro[]>([]);
+//   const [yaUnido, setYaUnido] = useState<
+//     "no" | "pendiente" | "rechazado" | "si"
+//   >("no");
+//   const [favorito, setFavorito] = useState(false);
+//   const [showLoginModal, setShowLoginModal] = useState(false);
+//   const [profe, setProfes] = useState<Profe | null>(null);
+//   const [showPaymentModal, setShowPaymentModal] = useState(false);
+//   const [showFullMap, setShowFullMap] = useState(false);
+//   const [profile, setProfile] = useState({
+//     fullname: "",
+//     email: "",
+//     telnumber: "",
+//     rol: "",
+//     instagram: "",
+//     facebook: "",
+//     twitter: "",
+//     bio: "",
+//     dni: "",
+//   });
+//   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
+//     useState(false);
+//   let decodedCoords: [number, number][] = [];
+
+//   if (event?.stravaMap?.summary_polyline) {
+//     decodedCoords = polyline
+//       .decode(event.stravaMap.summary_polyline)
+//       .map(([lat, lng]) => [lng, lat]);
+//   }
+
+//   const router = useRouter();
+
+//   let routeGeoJSON = null;
+
+//   let routeCoords: [number, number][] = [];
+
+//   if (event?.stravaMap?.summary_polyline) {
+//     try {
+//       routeCoords = polyline
+//         .decode(event.stravaMap.summary_polyline)
+//         .map(([lat, lng]) => [lng, lat]);
+//     } catch (err) {
+//       console.error("Error decodificando la polyline:", err);
+//     }
+//   }
+
+//   useEffect(() => {
+//     const fetchEvent = async () => {
+//       try {
+//         const response = await axios.get(`/api/social/${params.id}`);
+
+//         console.log("Respuesta del evento:", response.data.profesorId);
+
+//         if (response.data.profesorId) {
+//           const res = await axios.get(
+//             `/api/profile/${response.data.profesorId}`
+//           );
+//           const fotoProfe = await getProfileImage(
+//             "profile-image.jpg",
+//             res.data._id
+//           );
+//           res.data.imagen = fotoProfe;
+//           setProfes(res.data);
+//         }
+
+//         setEvent(response.data);
+//       } catch (err) {
+//         console.error("Error al cargar evento", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     const fetchMiembros = async () => {
+//       try {
+//         const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+//         const data = await res.json();
+
+//         const miembrosAprobados = data.filter(
+//           (m: any) => m.pago_id?.estado === "aprobado"
+//         );
+
+//         setMiembros(miembrosAprobados);
+//       } catch (err) {
+//         console.error("Error al cargar miembros", err);
+//       }
+//     };
+
+//     fetchEvent();
+//     fetchMiembros();
+//   }, [params.id]);
+
+//   useEffect(() => {
+//     if (session?.user) {
+//       const fetchProfile = async () => {
+//         try {
+//           const res = await fetch("/api/profile");
+//           const data = await res.json();
+//           if (res.ok) {
+//             setProfile({
+//               fullname: `${data.firstname} ${data.lastname}`,
+//               email: data.email || "",
+//               telnumber: data.telnumber || "",
+//               rol: data.role || "",
+//               instagram: data.instagram || "",
+//               facebook: data.facebook || "",
+//               twitter: data.twitter || "",
+//               bio: data.bio || "",
+//               dni: data.dni || "",
+//             });
+//           } else {
+//             console.error(data.error);
+//           }
+//         } catch (error) {
+//           console.error(error);
+//         }
+//       };
+
+//       fetchProfile();
+//     }
+//   }, [session]);
+
+//   useEffect(() => {
+//     if (!event?._id || !session?.user?.id) return;
+
+//     const checkUnido = async () => {
+//       try {
+//         const res = await fetch(`/api/social/miembros/${event._id}`);
+//         const data = await res.json();
+
+//         console.log("que japi 2", data);
+
+//         const miMiembro = data.find(
+//           (m: any) => m.usuario_id?._id === session?.user?.id
+//         );
+
+//         if (!miMiembro) {
+//           setYaUnido("no");
+//         } else if (miMiembro.pago_id?.estado === "pendiente") {
+//           setYaUnido("pendiente");
+//         } else if (miMiembro.pago_id?.estado === "rechazado") {
+//           setYaUnido("rechazado");
+//         } else if (miMiembro.pago_id?.estado === "aprobado") {
+//           setYaUnido("si");
+//         }
+//       } catch (err) {
+//         console.error("Error en checkUnido:", err);
+//       }
+//     };
+
+//     const checkFavorito = async () => {
+//       try {
+//         const res = await fetch(`/api/favoritos/sociales/${params.id}`);
+//         const data = await res.json();
+//         setFavorito(data.favorito);
+//       } catch (err) {
+//         console.error("Error al verificar favorito:", err);
+//       }
+//     };
+
+//     checkUnido();
+//     checkFavorito();
+//   }, [event?._id, session?.user?.id]);
+
+//   const handleAccion = async () => {
+//     if (!session) {
+//       setShowLoginModal(true);
+//       return;
+//     }
+//     if (!session.user.dni || !session.user.telnumber) {
+//       toast.error(
+//         "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
+//       );
+//       router.push("/dashboard/profile/editar");
+//       return;
+//     }
+
+//     if (event.cupo - miembros.length === 0) {
+//       toast.error("Cupo completo. No puedes unirte.");
+//       return;
+//     }
+
+//     // Si no está unido, enviamos solicitud
+//     if (yaUnido === "no") {
+//       const res = await fetch(`/api/social/miembros/${event._id}`);
+//       const data = await res.json();
+//       if (data.length === event.cupo) {
+//         toast.error("Cupo completo. No puedes unirte.");
+//         return;
+//       }
+//       setShowPaymentModal(true);
+//     }
+//   };
+
+//   const checkFavorito = async () => {
+//     try {
+//       const res = await fetch(`/api/favoritos/sociales/${params.id}`);
+//       const data = await res.json();
+//       setFavorito(data.favorito);
+//     } catch (err) {
+//       console.error("Error al verificar favorito:", err);
+//     }
+//   };
+
+//   const toggleFavorito = async () => {
+//     if (!session) {
+//       setShowLoginModal(true);
+//       return;
+//     }
+
+//     try {
+//       const res = await fetch(`/api/favoritos/sociales/${params.id}`, {
+//         method: "POST",
+//       });
+
+//       if (!res.ok) throw new Error("No se pudo cambiar favorito");
+
+//       const data = await res.json();
+//       setFavorito(data.favorito);
+//       toast.success(
+//         data.favorito
+//           ? "Salida agregada a favoritos"
+//           : "Salida eliminada de favoritos"
+//       );
+//     } catch (err) {
+//       console.error("Error al hacer toggle de favorito:", err);
+//     }
+//   };
+
+
+  // if (error || !event)
+  //   return (
+  //     <main className="py-20 text-center">
+  //       {error || "Evento no encontrado"}
+  //     </main>
+  //   );
+
+  // const parseLocalDate = (isoDateString: string): string => {
+  //   const [year, month, day] = isoDateString.split("-");
+  //   const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+  //   return localDate.toLocaleDateString("es-AR", {
+  //     day: "2-digit",
+  //     month: "2-digit",
+  //     year: "2-digit",
+  //   });
+  // };
+
 export default function EventPage({ params }: PageProps) {
   const { data: session } = useSession();
-  const [event, setEvent] = useState<EventData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [miembros, setMiembros] = useState<Miembro[]>([]);
-  const [yaUnido, setYaUnido] = useState<
-    "no" | "pendiente" | "rechazado" | "si"
-  >("no");
-  const [favorito, setFavorito] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [profe, setProfes] = useState<Profe | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showFullMap, setShowFullMap] = useState(false);
-  const [profile, setProfile] = useState({
-    fullname: "",
-    email: "",
-    telnumber: "",
-    rol: "",
-    instagram: "",
-    facebook: "",
-    twitter: "",
-    bio: "",
-    dni: "",
-  });
-  const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
-    useState(false);
-  let decodedCoords: [number, number][] = [];
-
-  if (event?.stravaMap?.summary_polyline) {
-    decodedCoords = polyline
-      .decode(event.stravaMap.summary_polyline)
-      .map(([lat, lng]) => [lng, lat]);
-  }
-
   const router = useRouter();
-
-  let routeGeoJSON = null;
-
+  const queryClient = useQueryClient();
+  const [showFullMap, setShowFullMap] = useState(false);
+  const [profe, setProfe] = useState<Profe | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] = useState(false);
+  let decodedCoords: [number, number][] = [];
   let routeCoords: [number, number][] = [];
 
+
+
+
+
+  // 📌 Evento
+  const {
+    data: event,
+    isLoading: loadingEvent,
+    error: errorEvent,
+  } = useQuery({
+    queryKey: ["event", params.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/social/${params.id}`);
+      if (!res.ok) throw new Error("Error cargando evento");
+      return res.json();
+    },
+  });
+
   if (event?.stravaMap?.summary_polyline) {
-    try {
-      routeCoords = polyline
-        .decode(event.stravaMap.summary_polyline)
-        .map(([lat, lng]) => [lng, lat]);
-    } catch (err) {
-      console.error("Error decodificando la polyline:", err);
-    }
-  }
+  decodedCoords = polyline.decode(event.stravaMap.summary_polyline).map(([lat, lng]) => [lng, lat]);
+  routeCoords = decodedCoords;
+}
 
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const response = await axios.get(`/api/social/${params.id}`);
-
-        console.log("Respuesta del evento:", response.data.profesorId);
-
-        if (response.data.profesorId) {
-          const res = await axios.get(
-            `/api/profile/${response.data.profesorId}`
-          );
-          const fotoProfe = await getProfileImage(
-            "profile-image.jpg",
-            res.data._id
-          );
-          res.data.imagen = fotoProfe;
-          setProfes(res.data);
-        }
-
-        setEvent(response.data);
-      } catch (err) {
-        console.error("Error al cargar evento", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchMiembros = async () => {
-      try {
-        const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
-        const data = await res.json();
-
-        const miembrosAprobados = data.filter(
-          (m: any) => m.pago_id?.estado === "aprobado"
-        );
-
-        setMiembros(miembrosAprobados);
-      } catch (err) {
-        console.error("Error al cargar miembros", err);
-      }
-    };
-
-    fetchEvent();
-    fetchMiembros();
-  }, [params.id]);
-
-  useEffect(() => {
-    if (session?.user) {
-      const fetchProfile = async () => {
-        try {
-          const res = await fetch("/api/profile");
-          const data = await res.json();
-          if (res.ok) {
-            setProfile({
-              fullname: `${data.firstname} ${data.lastname}`,
-              email: data.email || "",
-              telnumber: data.telnumber || "",
-              rol: data.role || "",
-              instagram: data.instagram || "",
-              facebook: data.facebook || "",
-              twitter: data.twitter || "",
-              bio: data.bio || "",
-              dni: data.dni || "",
-            });
-          } else {
-            console.error(data.error);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-
-      fetchProfile();
-    }
-  }, [session]);
-
-  useEffect(() => {
-    if (!event?._id || !session?.user?.id) return;
-
-    const checkUnido = async () => {
-      try {
-        const res = await fetch(`/api/social/miembros/${event._id}`);
-        const data = await res.json();
-
-        console.log("que japi 2", data);
-
-        const miMiembro = data.find(
-          (m: any) => m.usuario_id?._id === session?.user?.id
-        );
-
-        if (!miMiembro) {
-          setYaUnido("no");
-        } else if (miMiembro.pago_id?.estado === "pendiente") {
-          setYaUnido("pendiente");
-        } else if (miMiembro.pago_id?.estado === "rechazado") {
-          setYaUnido("rechazado");
-        } else if (miMiembro.pago_id?.estado === "aprobado") {
-          setYaUnido("si");
-        }
-      } catch (err) {
-        console.error("Error en checkUnido:", err);
-      }
-    };
-
-    const checkFavorito = async () => {
-      try {
-        const res = await fetch(`/api/favoritos/sociales/${params.id}`);
-        const data = await res.json();
-        setFavorito(data.favorito);
-      } catch (err) {
-        console.error("Error al verificar favorito:", err);
-      }
-    };
-
-    checkUnido();
-    checkFavorito();
-  }, [event?._id, session?.user?.id]);
-
-  const handleAccion = async () => {
-    if (!session) {
-      setShowLoginModal(true);
-      return;
-    }
-    if (!profile.dni || !profile.telnumber) {
-      toast.error(
-        "Debes completar tu perfil con DNI y teléfono antes de enviar el comprobante"
-      );
-      router.push("/dashboard/profile/editar");
-      return;
-    }
-
-    if (event.cupo - miembros.length === 0) {
-      toast.error("Cupo completo. No puedes unirte.");
-      return;
-    }
-
-    // Si no está unido, enviamos solicitud
-    if (yaUnido === "no") {
-      const res = await fetch(`/api/social/miembros/${event._id}`);
+  // 📌 Miembros aprobados
+  const {
+    data: miembros = [],
+    isLoading: loadingMiembros,
+  } = useQuery({
+    queryKey: ["miembros", params.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+      if (!res.ok) throw new Error("Error cargando miembros");
       const data = await res.json();
-      if (data.length === event.cupo) {
-        toast.error("Cupo completo. No puedes unirte.");
-        return;
-      }
-      setShowPaymentModal(true);
-    }
-  };
+      return data.filter((m: any) => m.pago_id?.estado === "aprobado");
+    },
+  });
 
-  const checkFavorito = async () => {
-    try {
+  // 📌 Favorito
+  const { data: favorito = false } = useQuery({
+    queryKey: ["favorito", params.id],
+    queryFn: async () => {
       const res = await fetch(`/api/favoritos/sociales/${params.id}`);
+      if (!res.ok) return false;
       const data = await res.json();
-      setFavorito(data.favorito);
-    } catch (err) {
-      console.error("Error al verificar favorito:", err);
-    }
-  };
+      return data.favorito;
+    },
+  });
 
-  const toggleFavorito = async () => {
-    if (!session) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    try {
+  const toggleFavoritoMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`/api/favoritos/sociales/${params.id}`, {
         method: "POST",
       });
-
       if (!res.ok) throw new Error("No se pudo cambiar favorito");
-
-      const data = await res.json();
-      setFavorito(data.favorito);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["favorito", params.id], data.favorito);
       toast.success(
         data.favorito
           ? "Salida agregada a favoritos"
           : "Salida eliminada de favoritos"
       );
-    } catch (err) {
-      console.error("Error al hacer toggle de favorito:", err);
-    }
+    },
+  });
+
+  // 📌 Estado de unión del usuario
+  const { data: yaUnido = "no" } = useQuery({
+    queryKey: ["unido", params.id, session?.user?.id],
+    enabled: !!session?.user?.id && !!event?._id,
+    queryFn: async () => {
+      const res = await fetch(`/api/social/miembros/${params.id}`);
+      if (!res.ok) return "no";
+      const data = await res.json();
+      const miMiembro = data.find(
+        (m: any) => m.usuario_id?._id === session?.user?.id
+      );
+
+      if (!miMiembro) return "no";
+      if (miMiembro.pago_id?.estado === "pendiente") return "pendiente";
+      if (miMiembro.pago_id?.estado === "rechazado") return "rechazado";
+      if (miMiembro.pago_id?.estado === "aprobado") return "si";
+      return "no";
+    },
+  });
+
+  // 📌 Perfil del usuario (para validar DNI/tel)
+  const { data: profile } = useQuery({
+    queryKey: ["profile", session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: async () => {
+      const res = await fetch("/api/profile");
+      if (!res.ok) throw new Error("No se pudo cargar el perfil");
+      return res.json();
+    },
+  });
+
+
+    const parseLocalDate = (isoDateString: string): string => {
+    const [year, month, day] = isoDateString.split("-");
+    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    return localDate.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
   };
 
-  if (loading)
+   if (loadingEvent || loadingMiembros)
     return (
       <main className="bg-[#FEFBF9] min-h-screen px-4 py-6 w-[390px] mx-auto">
         {/* Back button */}
@@ -375,22 +512,35 @@ export default function EventPage({ params }: PageProps) {
         </div>
       </main>
     );
-  if (error || !event)
+
+  if (errorEvent || !event) {
     return (
       <main className="py-20 text-center">
-        {error || "Evento no encontrado"}
+        {errorEvent ? "Error cargando evento" : "Evento no encontrado"}
       </main>
     );
+  }
 
-  const parseLocalDate = (isoDateString: string): string => {
-    const [year, month, day] = isoDateString.split("-");
-    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
-    return localDate.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-    });
+  // 📌 Validar cupo y datos del perfil
+  const handleAccion = () => {
+    if (!session) {
+      toast.error("Debes iniciar sesión");
+      return;
+    }
+    if (!profile?.dni || !profile?.telnumber) {
+      toast.error("Completa tu perfil con DNI y teléfono");
+      router.push("/dashboard/profile/editar");
+      return;
+    }
+    if (event.cupo - miembros.length === 0) {
+      toast.error("Cupo completo. No puedes unirte.");
+      return;
+    }
+      setShowPaymentModal(true);
   };
+
+
+
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
@@ -419,7 +569,7 @@ export default function EventPage({ params }: PageProps) {
         </button>
 
         <button
-          onClick={toggleFavorito}
+          onClick={() => toggleFavoritoMutation.mutate()}
           className="absolute top-2 right-[55px] btnFondo shadow-md rounded-full p-2 flex justify-center items-center"
         >
           {favorito ? (
@@ -448,20 +598,7 @@ export default function EventPage({ params }: PageProps) {
             </svg>
           )}
         </button>
-
-        {/* Botón compartir */}
         <button
-          // onClick={() => {
-          //   navigator.clipboard
-          //     .writeText(window.location.href)
-          //     .then(() => {
-          //       // alert("¡Link copiado al portapapeles!");
-          //       toast.success("¡Link copiado al portapapeles!");
-          //     })
-          //     .catch((err) => {
-          //       console.error("Error al copiar el link:", err);
-          //     });
-          // }}
           onClick={() => {
             const url = event.shortId
               ? `${window.location.origin}/s/${event.shortId}`
@@ -743,7 +880,7 @@ export default function EventPage({ params }: PageProps) {
           <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
 
-        {event.stravaMap.id ? (
+        {event.stravaMap?.id ? (
           <>
             {" "}
             <div className="mt-10 w-full flex flex-col items-center">

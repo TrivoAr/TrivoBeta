@@ -1,14 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-     images: {
-      remotePatterns: [
+  experimental: {
+    serverComponentsExternalPackages: ["pdfkit"],
+    // importante en serverless: incluye los AFM de pdfkit dentro del bundle
+    outputFileTracingIncludes: {
+      "/api/**": ["./node_modules/pdfkit/js/data/**"],
+    },
+  },
+
+  images: {
+    remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
       },
     ],
-    domains: ['firebasestorage.googleapis.com'],
-    domains: ['ui-avatars.com'],
+    domains: ["firebasestorage.googleapis.com"],
+    domains: ["ui-avatars.com"],
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -17,15 +25,14 @@ const nextConfig = {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       kerberos: false,
-      '@mongodb-js/zstd': false,
-      '@aws-sdk/credential-providers': false,
+      "@mongodb-js/zstd": false,
+      "@aws-sdk/credential-providers": false,
       snappy: false,
       aws4: false,
-      'mongodb-client-encryption': false,
+      "mongodb-client-encryption": false,
     };
     return config;
   },
-  
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

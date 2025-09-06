@@ -136,7 +136,7 @@ const DashboardPage: React.FC = () => {
     firstname: session?.user.firstname || "",
     lastname: session?.user.lastname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || "",
+    rol: session?.user.rol || "",
   });
   const [academiasFavoritas, setAcademiasFavoritas] = useState<Academia[]>([]);
   const router = useRouter();
@@ -200,7 +200,7 @@ const DashboardPage: React.FC = () => {
         try {
           let url = `/api/academias?owner=true`;
 
-          if (session?.user.role !== "dueño de academia") {
+          if (session?.user.rol !== "dueño de academia") {
             url = `/api/academias?userId=${session.user.id}`; // Nueva API para obtener academias de un usuario
           }
           const res = await fetch(url);
@@ -343,7 +343,7 @@ const DashboardPage: React.FC = () => {
         firstname: session.user.firstname || "",
         lastname: session.user.lastname || "",
         email: session.user.email || "",
-        rol: session.user.role || "",
+        rol: session.user.rol || "",
       });
     }
   }, [session]);
@@ -563,7 +563,7 @@ const DashboardPage: React.FC = () => {
       />
       <div className="flex space-x-3 justify-center overflow-x-auto pb-2 scrollbar-hide">
         {categories.map((cat) => (
-          cat.label === "Mi panel" && session.user.role !== "admin" ? null : (
+          cat.label === "Mi panel" && session.user.rol !== "admin" ? null : (
           <button
             key={cat.label}
             onClick={() => setSelectedCategory(cat.label)}
@@ -580,7 +580,7 @@ const DashboardPage: React.FC = () => {
         )))}
       </div>
 
-      {session.user.role === "admin" && selectedCategory === "Mi panel" ? (
+      {session.user.rol === "admin" && selectedCategory === "Mi panel" ? (
         <section>
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-2xl font-medium">Mis salidas</h2>
@@ -1697,83 +1697,6 @@ const DashboardPage: React.FC = () => {
 
 export default DashboardPage;
 
-{
-  /* Eventos */
-}
-{
-  /*
-        <div>
-  <h2 className="text-xl font-semibold mb-3 pl-4 pr-4">Eventos</h2>
-  <div className="scroll-container overflow-x-auto pl-4 pr-4">
-    <div className="flex space-x-4">
-      <div className="bg-white rounded-lg shadow min-w-[200px]">
-        <Image
-          src={Eventos1}
-          alt="Carrera"
-          className="w-full h-24 object-cover rounded-t-lg"
-        />
-        <div className="p-4">
-          <p className="text-sm font-medium">Carrera Mes del TDAH</p>
-          <p className="text-xs text-gray-600">Sábado 27 de Julio</p>
-        </div>
-      </div>
-      <div className="bg-white rounded-lg shadow min-w-[200px]">
-        <Image
-          src={Eventos2}
-          alt="Maratón"
-          className="w-full h-24 object-cover rounded-t-lg"
-        />
-        <div className="p-4">
-          <p className="text-sm font-medium">Maratón Independencia</p>
-          <p className="text-xs text-gray-600">Domingo 21 de Julio</p>
-        </div>
-      </div>
-      <div className="bg-white rounded-lg shadow min-w-[200px]">
-        <Image
-          src={Eventos2}
-          alt="Maratón"
-          className="w-full h-24 object-cover rounded-t-lg"
-        />
-        <div className="p-4">
-          <p className="text-sm font-medium">Maratón Independencia</p>
-          <p className="text-xs text-gray-600">Domingo 21 de Julio</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>*/
-}
-{
-  /* Aventuras */
-}
-{
-  /*
-        <div className="pl-4 pr-4">
-          <br />
-          <h2 className="text-xl font-semibold mb-3">Aventuras</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg shadow">
-              <Image
-                src={Eventos1}
-                alt="Carrera"
-                className="w-full h-24 object-cover rounded-t-lg"
-              />
-              <div className="p-4">
-                <p className="text-sm font-medium">Carrera Mes del TDAH</p>
-                <p className="text-xs text-gray-600">Sábado 27 de Julio</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow">
-              <Image
-                src={Eventos1}
-                alt="Maratón"
-                className="w-full h-24 object-cover rounded-t-lg"
-              />
-              <div className="p-4">
-                <p className="text-sm font-medium">Maratón Independencia</p>
-                <p className="text-xs text-gray-600">Domingo 21 de Julio</p>
-              </div>
-            </div>
-          </div>
-        </div>*/
-}
+
+
+

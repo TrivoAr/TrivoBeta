@@ -91,7 +91,7 @@ export default function Home() {
     firstname: session?.user.firstname || "",
     lastname: session?.user.lastname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || "",
+    rol: session?.user.rol || "",
   });
 
   useEffect(() => {
