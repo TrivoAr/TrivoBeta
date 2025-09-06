@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import LoginModal from "@/components/Modals/LoginModal";
-
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LatLngExpression } from "leaflet";
