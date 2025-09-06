@@ -90,7 +90,7 @@ export default function AcademiasPage() {
           <span className="text-[#C76C01]">Academias</span>{" "}
           {selectedDiscipline.charAt(0).toUpperCase() + selectedDiscipline.slice(1)}
         </h2>
-        {session?.user.role === "dueño de academia" && (
+        {session?.user.rol === "dueño de academia" && (
           <button onClick={() => router.push("/academias/crear")}>
             <img src="/assets/Logo/add-circle-svgrepo-com.svg" className="w-[26px] h-[26px]" alt="Agregar academia" />
           </button>
