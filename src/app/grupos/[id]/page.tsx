@@ -99,13 +99,13 @@ export default function GrupoDetailPage({
   const router = useRouter();
   const { data: session } = useSession();
 
-  const userRole = session?.user?.role;
+  const userRole = session?.user?.rol;
   const userId = session?.user?.id;
   const [formData, setFormData] = useState({
     firstname: session?.user.firstname || "",
     lastname: session?.user.lastname || "",
     email: session?.user.email || "",
-    rol: session?.user.role || "",
+    rol: session?.user.rol || "",
   });
 
   useEffect(() => {
@@ -148,7 +148,7 @@ export default function GrupoDetailPage({
         firstname: session.user.firstname || "",
         lastname: session.user.lastname || "",
         email: session.user.email || "",
-        rol: session.user.role || "",
+        rol: session.user.rol || "",
       });
     }
     checkUserAccess(); // Ejecutar la función para verificar el acceso

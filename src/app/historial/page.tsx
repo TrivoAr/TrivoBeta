@@ -140,8 +140,8 @@ export default function HistorialPagos() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={`font-semibold ${session?.user.role === "dueño de academia" ? "text-green-500" : "text-red-500"}`}>
-                      {session?.user.role === "dueño de academia" ? `+${pago.monto}` : `-${pago.monto}`}
+                    <p className={`font-semibold ${session?.user.rol === "dueño de academia" ? "text-green-500" : "text-red-500"}`}>
+                      {session?.user.rol === "dueño de academia" ? `+${pago.monto}` : `-${pago.monto}`}
                     </p>
                     <p className="text-sm text-gray-500">
                       {new Date(pago.fecha_pago).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

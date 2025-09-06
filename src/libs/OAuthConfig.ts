@@ -40,7 +40,7 @@ export default function StravaProvider<P extends StravaProfile>(
         firstname: profile.firstname,
         lastname: profile.lastname,
         telnumber: "",
-        role: "alumno",
+        rol: "alumno",
         bio: "",
         instagram: "",
         imagen: profile.profile || "",
