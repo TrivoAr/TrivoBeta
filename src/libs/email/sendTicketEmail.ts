@@ -38,7 +38,6 @@ export async function sendTicketEmail({
     subject: `Tu QR para ${titulo}`,
     html,
     attachments: [
-      { filename: "qr.png", content: qrBase64,  contentType: "image/png" },
       { filename: "entrada.pdf", content: pdfBase64, contentType: "application/pdf" },
     ],
   });
