@@ -229,7 +229,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   return (
     <div className="flex flex-col justify-center items-center bg-[#FEFBF9] mb-[150px]">
       <Toaster position="top-center" />
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-2xl p-6">
+      <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]">
         <h1 className="text-center font-normal text-2xl mb-4">Editar salida</h1>
 
         {/* Nombre */}
@@ -237,7 +237,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           name="nombre"
           defaultValue={salida.nombre}
           onChange={(e) => (salida.nombre = e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           placeholder="Nombre"
         />
 
@@ -245,7 +245,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <select
           defaultValue={salida.localidad || ""}
           onChange={(e) => (salida.localidad = e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Localidad</option>
           <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
@@ -258,7 +258,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <select
           defaultValue={salida.deporte || ""}
           onChange={(e) => (salida.deporte = e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Selecciona un deporte</option>
           <option value="Running">Running</option>
@@ -271,7 +271,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <select
           defaultValue={salida.duracion || ""}
           onChange={(e) => (salida.duracion = e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
@@ -283,7 +283,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <select
           defaultValue={salida.dificultad || ""}
           onChange={(e) => (salida.dificultad = e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Dificultad</option>
           <option value="facil">Principiantes</option>
@@ -297,7 +297,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           defaultValue={salida.precio}
           onChange={(e) => (salida.precio = e.target.value)}
           placeholder="Precio"
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         {/* Alias / CBU */}
@@ -306,7 +306,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           defaultValue={salida.alias}
           onChange={(e) => (salida.alias = e.target.value)}
           placeholder="Alias/CBU"
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         {/* Cupo */}
@@ -316,7 +316,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           defaultValue={salida.cupo}
           onChange={(e) => (salida.cupo = Number(e.target.value))}
           placeholder="Cupo"
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
 
         {/* Fecha y Hora */}
@@ -325,13 +325,13 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
             type="date"
             defaultValue={salida.fecha?.split("T")[0]}
             onChange={(e) => (salida.fecha = e.target.value)}
-            className="w-1/2 px-4 py-2 border rounded"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
           />
           <input
             type="time"
             defaultValue={salida.hora}
             onChange={(e) => (salida.hora = e.target.value)}
-            className="w-1/2 px-4 py-2 border rounded"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
           />
         </div>
 
@@ -343,12 +343,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         />
 
         {/* Detalles */}
-        <textarea
+        {/* <textarea
           defaultValue={salida.detalles}
           onChange={(e) => (salida.detalles = e.target.value)}
           placeholder="¿Qué incluye la salida?"
           className="w-full px-4 py-2 border rounded mb-3"
-        />
+        /> */}
 
         {/* Teléfono */}
         <input
@@ -356,7 +356,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           defaultValue={salida.telefonoOrganizador}
           onChange={(e) => (salida.telefonoOrganizador = e.target.value)}
           placeholder="Teléfono organizador"
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
 
         {/* WhatsApp */}
@@ -365,14 +365,14 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           defaultValue={salida.whatsappLink}
           onChange={(e) => (salida.whatsappLink = e.target.value)}
           placeholder="Link de WhatsApp"
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
 
         {/* Profesor */}
         <select
           defaultValue={salida.profesorId || ""}
           onChange={(e) => (salida.profesorId = e.target.value || undefined)}
-          className="w-full px-4 py-2 border rounded mb-3"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Sin profesor</option>
           {profesQuery.data?.map((p: any) => (
@@ -395,7 +395,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
               }))
             }
             placeholder="Buscar ubicación..."
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
           />
 
           {suggestions.length > 0 && (

@@ -468,13 +468,8 @@ export default function CrearSalidaPage() {
           }
           maxChars={2000}
         />
-
-        {/* Preview compacto opcional en el form (ya viene arriba dentro del editor, si preferís podés sacar este bloque) */}
-        {/* <div className="mt-2">
-    <DescriptionMarkdown text={formData.descripcion} />
-  </div> */}
       </div>
-
+{/* 
       <label className="block">
         Que incluye la salida?
         <textarea
@@ -484,7 +479,7 @@ export default function CrearSalidaPage() {
           placeholder="Seguro, guia, etc..."
           className="w-full px-3 py-4 border rounded-[15px] shadow-md"
         />
-      </label>
+      </label> */}
 
       <label className="block">
         Link del grupo de WhatsApp

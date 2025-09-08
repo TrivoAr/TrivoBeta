@@ -302,3 +302,55 @@ export async function PATCH(
     return jsonErr("Error interno", 500);
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectDB();
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return jsonErr("No autorizado", 401);
+    }
+
+    // buscamos el miembro con su salida
+    const miembro = await MiembroSalida.findById(params.id)
+      .populate("salida_id", "creador_id")
+      .lean<{ 
+        _id: string; 
+        salida_id: string | { _id: string; creador_id: string } 
+      }>();
+
+    if (!miembro) return jsonErr("Miembro no encontrado", 404);
+
+    // resolvemos el id de la salida
+    const salidaId =
+      typeof miembro.salida_id === "string"
+        ? miembro.salida_id
+        : miembro.salida_id?._id;
+
+    if (!salidaId) return jsonErr("Salida no encontrada", 404);
+
+    const salida = await SalidaSocial.findById(salidaId).select("creador_id");
+    if (!salida) return jsonErr("Salida no encontrada", 404);
+
+    if (String(salida.creador_id) !== String(session.user.id)) {
+      return jsonErr("No autorizado para borrar miembros", 403);
+    }
+
+    // eliminamos el miembro + pago
+    await MiembroSalida.findByIdAndDelete(params.id);
+    await Pago.deleteOne({ miembro_id: params.id }).catch(() => {});
+
+    // refrescamos cache
+    // @ts-ignore
+    revalidateTag(`salida:${salidaId}`);
+
+    return jsonOk({ message: "Miembro eliminado correctamente" }, 200);
+  } catch (error) {
+    console.error("DELETE /miembros/:id error:", error);
+    return jsonErr("Error interno", 500);
+  }
+}

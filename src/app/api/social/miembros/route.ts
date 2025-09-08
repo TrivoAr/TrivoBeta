@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
   const salidaId = req.nextUrl.searchParams.get("salidaId");
   if (!salidaId) return new Response("Falta salidaId", { status: 400 });
 
-  const miembros = await MiembroSalida.find({ salida_id: salidaId }) .populate("usuario_id", "firstname lastname email telnumber dni").populate("pago_id");
-  
+  const miembros = await MiembroSalida.find({ salida_id: salidaId })
+    .populate("usuario_id", "firstname lastname email telnumber dni")
+    .populate("pago_id");
 
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
@@ -27,30 +28,34 @@ export async function GET(req: NextRequest) {
       let imagenUrl;
 
       try {
-        imagenUrl = await getProfileImage("profile-image.jpg", usuario._id.toString());
+        imagenUrl = await getProfileImage(
+          "profile-image.jpg",
+          usuario._id.toString()
+        );
       } catch {
-        imagenUrl =`https://ui-avatars.com/api/?name=${encodeURIComponent(
-            usuario.firstname
-          )}&length=1&background=random&color=fff&size=128`;
+        imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          usuario.firstname
+        )}&length=1&background=random&color=fff&size=128`;
       }
 
       return {
-        _id: usuario._id,
-        nombre: `${usuario.firstname} ${usuario.lastname}`.trim() || usuario.email,
+        _id: m._id,
+        usuarioId: usuario._id,
+        nombre:
+          `${usuario.firstname} ${usuario.lastname}`.trim() || usuario.email,
         email: usuario.email,
         telnumber: usuario.telnumber,
         imagen: imagenUrl,
         dni: usuario.dni || "",
-         pago_id: pago
-        ? {
-            _id: pago._id,
-            comprobanteUrl: pago.comprobanteUrl || "",
-            estado: pago.estado || "",
-            salidaId: pago.salidaId || "",
-            userId: pago.userId || "",
-          }
-        : null,
-
+        pago_id: pago
+          ? {
+              _id: pago._id,
+              comprobanteUrl: pago.comprobanteUrl || "",
+              estado: pago.estado || "",
+              salidaId: pago.salidaId || "",
+              userId: pago.userId || "",
+            }
+          : null,
       };
     })
   );
@@ -69,7 +74,9 @@ export async function POST(req) {
   // Validar que no esté ya solicitado
   const yaEsMiembro = await MiembroSalida.findOne({ salida_id, usuario_id });
   if (yaEsMiembro) {
-    return new Response("Ya tienes una solicitud para esta salida", { status: 400 });
+    return new Response("Ya tienes una solicitud para esta salida", {
+      status: 400,
+    });
   }
 
   // Crear solicitud pendiente
@@ -91,7 +98,7 @@ export async function POST(req) {
       userId: creadorId,
       fromUserId: usuario_id,
       type: "join_request",
-      message: `${session.user.firstname, session.user.lastname || "Alguien"} pidió unirse a tu salida.`,
+      message: `${(session.user.firstname, session.user.lastname || "Alguien")} pidió unirse a tu salida.`,
     });
   }
 
