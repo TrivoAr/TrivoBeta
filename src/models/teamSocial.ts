@@ -9,13 +9,13 @@ const TeamSocialSchema = new Schema(
     fecha: { type: String, required: true },
     hora: { type: String, required: true },
     duracion: { type: String, required: true },
-        whatsappLink: {
+    whatsappLink: {
       type: String,
     },
     telefonoOrganizador: {
       type: String,
     },
-      localidad: {
+    localidad: {
       type: String,
     },
     descripcion: { type: String },
@@ -24,12 +24,35 @@ const TeamSocialSchema = new Schema(
       lat: { type: Number },
       lng: { type: Number },
     },
-   creadorId: {
-  type: Schema.Types.ObjectId,
-  ref: "User",
-  required: true,
-}
+    creadorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    cupo: {
+      type: Number,
+      require: true,
+    },
 
+    stravaActivity: {
+      type: Schema.Types.ObjectId,
+      ref: "StravaActivity",
+      required: false,
+    },
+
+    stravaMap: {
+      id: { type: String },
+      summary_polyline: { type: String },
+      polyline: { type: String },
+      resource_state: { type: Number },
+    },
+    cbu: {
+      type: String,
+    },
+
+    alias: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
