@@ -49,6 +49,8 @@ export default function CrearTeamPage() {
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [activities, setActivities] = useState<any[]>([]);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
@@ -66,6 +68,16 @@ export default function CrearTeamPage() {
     localidad: "",
     telefonoOrganizador: session?.user.telnumber || "",
     coords: null as LatLng | null,
+    stravaMap: {
+      id: "",
+      summary_polyline: "",
+      polyline: "",
+      resource_state: 0,
+    },
+    cupo: 0,
+    detalles: "",
+    cbu: "",
+    alias: "",
   });
   const [coords, setCoords] = useState<Coords>({
     lat: -26.8333,
@@ -249,6 +261,28 @@ export default function CrearTeamPage() {
     };
   }, [debouncedFetch]);
 
+useEffect(() => {
+  const fetchActivities = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/strava/activities?userId=${session?.user.id}`);
+      const data = await res.json();
+
+      if (data.error) {
+        console.error("Error al traer actividades:", data.error);
+        return;
+      }
+      
+      setActivities(data);
+    } catch (err) {
+      console.error("Error cargando actividades:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (session?.user.id) fetchActivities();
+}, [session?.user.id]);
   return (
     <form
       onSubmit={handleSubmit}
@@ -271,7 +305,7 @@ export default function CrearTeamPage() {
         name="localidad"
         value={formData.localidad}
         onChange={handleChange}
-        className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
       >
         <option value="">Localidad</option>
         <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
@@ -284,9 +318,32 @@ export default function CrearTeamPage() {
         Precio
         <input
           name="precio"
+          type="number"
           value={formData.precio}
           onChange={handleChange}
           placeholder="$9.999"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+        />
+      </label>
+      <label className="block">
+        CBU/Alias
+        <input
+          name="alias"
+          value={formData.alias}
+          onChange={handleChange}
+          placeholder="Alias"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white mb-2"
+        />
+      </label>
+
+      <label className="block">
+        Cupo
+        <input
+          name="cupo"
+          type="number"
+          value={formData.cupo}
+          onChange={handleChange}
+          placeholder="Cantidad maxima de personas"
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
@@ -309,7 +366,7 @@ export default function CrearTeamPage() {
           name="duracion"
           value={formData.duracion}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
@@ -325,7 +382,7 @@ export default function CrearTeamPage() {
           name="fecha"
           value={formData.fecha}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
       </label>
       <label className="block">
@@ -335,7 +392,7 @@ export default function CrearTeamPage() {
           name="hora"
           value={formData.hora}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
       </label>
 
@@ -388,6 +445,38 @@ export default function CrearTeamPage() {
             <span className="text-gray-500 z-0">Subir imagen</span>
           )}
         </div>
+      </label>
+
+      <label className="block">
+        Actividades Strava
+        <select
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          onChange={(e) => {
+            const selectedId = e.target.value;
+            const selectedActivity = activities.find(
+              (a) => a.id.toString() === selectedId
+            );
+
+            if (selectedActivity) {
+              setFormData((prev) => ({
+                ...prev,
+                stravaMap: {
+                  id: selectedActivity.map.id,
+                  summary_polyline: selectedActivity.map.summary_polyline,
+                  polyline: selectedActivity.map.polyline,
+                  resource_state: selectedActivity.map.resource_state,
+                },
+              }));
+            }
+          }}
+        >
+          <option value="">Selecciona una actividad</option>
+          {activities?.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name} - {Math.round(a.distance / 1000)} km
+            </option>
+          ))}
+        </select>
       </label>
 
       {/* <label className="block relative">
