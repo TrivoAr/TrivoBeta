@@ -139,7 +139,6 @@
 //   return matchName && miembro.pago_id.estado === "aprobado";
 // });
 
-
 //   const miembrosAprobados = miembros
 //     .filter((miembro) => miembro.pago_id.estado === "aprobado")
 //     .map((miembro) => ({
@@ -228,28 +227,29 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import { FaInstagram } from "react-icons/fa";
+import { toast } from "sonner";
 import PaymentReviewModal from "@/components/PaymentReviewModal";
 import ExportUsuarios from "@/app/utils/ExportUsuarios";
 
 export default function EventPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState<
     "todos" | "aprobado" | "rechazado" | "pendiente"
   >("todos");
   const [selectedMiembro, setSelectedMiembro] = useState<any>(null);
- const [reviewModal, setReviewModal] = useState<{
-  open: boolean;
-  miembroId?: string;
-  pagoId?: string;
-}>({ open: false });
-
+  const [reviewModal, setReviewModal] = useState<{
+    open: boolean;
+    miembroId?: string;
+    pagoId?: string;
+  }>({ open: false });
 
   // 🔹 Query evento
   const {
@@ -296,6 +296,41 @@ export default function EventPage({ params }: { params: { id: string } }) {
     return matchName && miembro.pago_id.estado === "aprobado";
   });
 
+  const deleteMiembroMutation = useMutation({
+    mutationFn: async (miembroId: string) => {
+      const res = await axios.delete(`/api/social/miembros/${miembroId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Miembro borrado correctamente ✅");
+      queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
+    },
+    onError: (err: any) => {
+      console.error(err);
+      toast.error("❌ No se pudo borrar al miembro");
+    },
+  });
+
+function handleDelete(miembroId: string) {
+  toast.warning("¿Seguro que quieres borrar este miembro?", {
+    description: "Esta acción no se puede deshacer",
+    action: {
+      label: "Confirmar",
+      onClick: () => {
+        deleteMiembroMutation.mutate(miembroId);
+      },
+    },
+    cancel: {
+      label: "Cancelar",
+      onClick: () => {
+        toast.dismiss();
+      },
+    },
+    duration: Infinity, // 👈 para que no se cierre solo
+  });
+}
+
+
   // 🔹 Loading UI
   if (loading) return <Skeleton height={200} count={5} />;
 
@@ -307,17 +342,15 @@ export default function EventPage({ params }: { params: { id: string } }) {
     );
   }
 
-
   const miembrosAprobados = miembros
-  .filter((miembro) => miembro.pago_id.estado === "aprobado")
-  .map((miembro) => ({
-    dni: miembro.dni,
-    nombre: miembro.nombre,
-    telefono: miembro.telnumber,
-    email: miembro.email,
-    estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
-  }));
-
+    .filter((miembro) => miembro.pago_id.estado === "aprobado")
+    .map((miembro) => ({
+      dni: miembro.dni,
+      nombre: miembro.nombre,
+      telefono: miembro.telnumber,
+      email: miembro.email,
+      estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
+    }));
 
   return (
     <div className="w-[390px] p-4 relative flex flex-col">
@@ -399,6 +432,59 @@ export default function EventPage({ params }: { params: { id: string } }) {
               <td className="">{miembro.nombre}</td>
               {session?.user?.id === event?.creador_id?._id ? (
                 <td className="flex justify-center items-center gap-2 h-full w-full">
+                  <button
+                    onClick={() => handleDelete(miembro._id)}
+                    disabled={deleteMiembroMutation.isPending}
+                    className=""
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      height={25}
+                      width={25}
+                    >
+                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        {" "}
+                        <path
+                          d="M9.1709 4C9.58273 2.83481 10.694 2 12.0002 2C13.3064 2 14.4177 2.83481 14.8295 4"
+                          stroke="#1C274C"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M20.5001 6H3.5"
+                          stroke="#1C274C"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
+                          stroke="#1C274C"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M9.5 11L10 16"
+                          stroke="#1C274C"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M14.5 11L14 16"
+                          stroke="#1C274C"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        ></path>{" "}
+                      </g>
+                    </svg>
+                  </button>
                   <button
                     onClick={() =>
                       setReviewModal({
