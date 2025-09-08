@@ -126,87 +126,106 @@ export default function CrearTeamPage() {
     handleCoordsChange(coords);
   }, []);
 
+
+  const setUbicacionBoth = (val: string) => {
+  setUbicacion(val);
+  setFormData(prev => ({ ...prev, ubicacion: val }));
+};
+
   // 🔄 Cambiar coordenadas y buscar dirección
-  const handleCoordsChange = async ({ lat, lng }: Coords) => {
-    setCoords({ lat, lng });
-    try {
-      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lng}`);
-      const data = await res.json();
-      if (data.display_name) {
-        setUbicacion(data.display_name);
-      }
-    } catch (err) {
-      console.error("Error reverse geocoding:", err);
+const handleCoordsChange = async ({ lat, lng }: Coords) => {
+  setCoords({ lat, lng });
+  setFormData(prev => ({ ...prev, coords: { lat, lng } })); // <-- sync
+
+  try {
+    const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lng}`);
+    const data = await res.json();
+    if (data.display_name) {
+      setUbicacionBoth(data.display_name); // <-- sync input + formData
     }
-  };
+  } catch (err) {
+    console.error("Error reverse geocoding:", err);
+  }
+};
 
 
-   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    debouncedFetchSuggestions(value);
-    setUbicacion(value);
+const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value;
+  setUbicacionBoth(value); // <-- antes: sólo setUbicacion
 
-    if (value.length < 3) {
-      setSuggestions([]);
+  debouncedFetchSuggestions(value);
+
+  if (value.length < 3) {
+    setSuggestions([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
+    const data = await res.json();
+    setSuggestions(data);
+  } catch (err) {
+    console.error("Error fetching suggestions:", err);
+  }
+};
+
+const handleSuggestionClick = (s: { display_name: string; lat: string; lon: string }) => {
+  const lat = parseFloat(s.lat);
+  const lng = parseFloat(s.lon);
+
+  setUbicacionBoth(s.display_name);
+  setCoords({ lat, lng });
+  setFormData(prev => ({ ...prev, coords: { lat, lng } })); // <-- sync
+
+  marker.current!.setLngLat([lng, lat]);
+  map.current!.flyTo({ center: [lng, lat], zoom: 14 });
+  setSuggestions([]);
+};
+
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    if (!formData.ubicacion || !formData.coords) {
+      toast.error("Seleccioná una ubicación en el mapa o desde las sugerencias");
+      setIsSubmitting(false);
       return;
     }
 
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
-      const data = await res.json();
-      setSuggestions(data);
-    } catch (err) {
-      console.error("Error fetching suggestions:", err);
-    }
-  };
-
-    const handleSuggestionClick = (s: any) => {
-    setUbicacion(s.display_name);
-    setCoords({ lat: s.lat, lng: s.lon });
-    marker.current!.setLngLat([s.lon, s.lat]);
-    map.current!.flyTo({ center: [s.lon, s.lat], zoom: 14 });
-    setSuggestions([]);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
     let imageUrl = "";
-    setIsSubmitting(true);
-
-    try {
-      if (imagen) {
-        const imageRef = ref(storage, `team-social/${uuidv4()}`);
-        await uploadBytes(imageRef, imagen);
-        imageUrl = await getDownloadURL(imageRef);
-      }
-
-      const salidaData = {
-        ...formData,
-        imagen: imageUrl,
-        locationCoords: formData.coords,
-      };
-
-      const res = await fetch("/api/team-social", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(salidaData),
-      });
-      console.log("SALIDA A ENVIAR", salidaData);
-
-      if (res.ok) {
-        toast.success("Social team creado con exito");
-        router.push("/home");
-      } else {
-        setIsSubmitting(false);
-        toast.error("Error al crear salida, datos incompletos");
-        const error = await res.json();
-        console.error("Error al crear team social:", error);
-      }
-    } catch (err) {
-      console.error("Error inesperado:", err);
-      setIsSubmitting(false);
+    if (imagen) {
+      const imageRef = ref(storage, `team-social/${uuidv4()}`);
+      await uploadBytes(imageRef, imagen);
+      imageUrl = await getDownloadURL(imageRef);
     }
-  };
+
+    const salidaData = {
+      ...formData,
+      imagen: imageUrl,
+      locationCoords: formData.coords, // ya NO será null
+    };
+
+    const res = await fetch("/api/team-social", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(salidaData),
+    });
+
+    if (res.ok) {
+      toast.success("Social team creado con éxito");
+      router.push("/home");
+    } else {
+      setIsSubmitting(false);
+      const error = await res.json();
+      console.error("Error al crear team social:", error);
+      toast.error("Error al crear salida, datos incompletos");
+    }
+  } catch (err) {
+    console.error("Error inesperado:", err);
+    setIsSubmitting(false);
+  }
+};
 
   const coordsToSave = formData.coords || defaultCoords;
 

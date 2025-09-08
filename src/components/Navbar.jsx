@@ -143,7 +143,7 @@ function Navbar() {
 
           {/* Crear salida */}
 
-          {session.user.role === "admin" ? (
+          {session.user.rol === "admin" ? (
             <NavItem
               label="Crear salida"
               icon={
