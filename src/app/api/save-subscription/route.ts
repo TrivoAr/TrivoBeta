@@ -3,6 +3,7 @@ import Subscription from "@/models/subscription";
 import { getServerSession } from "next-auth/next"; 
 import { authOptions } from "../../../libs/authOptions"; 
 import webPush from "web-push";
+import { connectDB } from "@/libs/mongodb";
 
 // Configura las claves VAPID para usar con web-push
 webPush.setVapidDetails(
@@ -13,6 +14,9 @@ webPush.setVapidDetails(
 
 export async function POST(req: Request) {
   try {
+    // Conectar a la base de datos
+    await connectDB();
+    
     // Obtener la sesión del usuario
     const session = await getServerSession(authOptions); // Usar getServerSession con las opciones de autenticación
 
@@ -30,19 +34,30 @@ export async function POST(req: Request) {
       user_id: session.user.id, // Usamos el user_id de la sesión
     };
 
-    // Guardar la suscripción en la base de datos
-    /*await Subscription.create(newSubscription);*/
-
-    // Enviar una notificación push a través de Web Push
-    const payload = JSON.stringify({
-      title: "Nuevo Entrenamiento Asignado",
-      message: "Te asignamos un entrenamiento.",
+    // Verificar si ya existe una suscripción para este usuario y endpoint
+    const existingSubscription = await Subscription.findOne({
+      user_id: session.user.id,
+      endpoint: subscription.endpoint
     });
 
-    // Enviar la notificación push
+    if (!existingSubscription) {
+      // Guardar la suscripción en la base de datos
+      await Subscription.create(newSubscription);
+      console.log("Nueva suscripción guardada para usuario:", session.user.id);
+    } else {
+      console.log("Suscripción ya existe para usuario:", session.user.id);
+    }
+
+    // Enviar una notificación push de bienvenida
+    const payload = JSON.stringify({
+      title: "¡Notificaciones activadas!",
+      body: "Ahora recibirás notificaciones de Trivo en tu dispositivo.",
+    });
+
+    // Enviar la notificación push de confirmación
     await webPush.sendNotification(subscription, payload);
 
-    return NextResponse.json({ message: "Suscripción guardada y notificación enviada correctamente" }, { status: 200 });
+    return NextResponse.json({ message: "Suscripción guardada y notificación de confirmación enviada" }, { status: 200 });
   } catch (error) {
     console.error("Error al guardar la suscripción o enviar la notificación:", error);
     return NextResponse.json({ error: "Error al guardar la suscripción o enviar la notificación" }, { status: 500 });

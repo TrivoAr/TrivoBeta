@@ -1,6 +1,6 @@
 // api/profile/getProfileImage.ts
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { storage } from "@/libs/firebaseConfig.js";
 
 export const getProfileImage = async (fileName: string, userId: string): Promise<string> => {
     try {

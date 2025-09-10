@@ -65,6 +65,7 @@ export default function CrearSalidaPage() {
   const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [selectedLocality, setSelectedLocality] = useState<string>("");
   const [locationDetecting, setLocationDetecting] = useState(false);
+  const [gpsLocationDetected, setGpsLocationDetected] = useState(false);
   
   // Hooks para datos de ubicación
   const { data: provinces } = useProvinces();
@@ -236,13 +237,57 @@ export default function CrearSalidaPage() {
 
   // Función para detectar ubicación por GPS
   const detectLocationFromGPS = async () => {
+    // Verificar soporte de geolocalización
     if (!navigator.geolocation) {
-      toast.error("Geolocalización no soportada");
+      toast.error("Geolocalización no soportada en este dispositivo");
+      return;
+    }
+
+    // Verificar si estamos en HTTPS (requerido para GPS en producción)
+    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      toast.error("GPS requiere conexión segura (HTTPS)");
       return;
     }
 
     setLocationDetecting(true);
-
+    
+    // Mostrar instrucciones más específicas para móviles
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const message = isMobile 
+      ? "📱 Presiona 'Permitir' cuando aparezca la solicitud de ubicación"
+      : "🌍 Buscando ubicación... Acepta los permisos cuando aparezcan";
+    
+    toast.loading(message, { 
+      duration: 6000,
+      id: 'gps-search'
+    });
+    
+    // Para dispositivos móviles, mostrar toast adicional con instrucciones
+    if (isMobile) {
+      setTimeout(() => {
+        toast("💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo", {
+          duration: 4000,
+          icon: "💡"
+        });
+      }, 2000);
+    }
+    
+    // Intentar verificar si los permisos ya están concedidos (solo si está disponible)
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'denied') {
+          setLocationDetecting(false);
+          toast.dismiss('gps-search');
+          toast.error("🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página", { duration: 8000 });
+          return;
+        }
+      }
+    } catch (e) {
+      // Ignorar errores de permissions API (no disponible en todos los navegadores)
+    }
+    
+    // Llamar directamente a getCurrentPosition (esto pide permisos automáticamente)
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const coords = {
@@ -300,10 +345,16 @@ export default function CrearSalidaPage() {
           // Actualizar coordenadas del mapa
           handleCoordsChange(coords);
           
-          toast.success(`Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
+          // Limpiar toast de loading y mostrar success
+          toast.dismiss('gps-search');
+          toast.success(`📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
+          setGpsLocationDetected(true);
         } catch (error) {
           console.error("Error detectando ubicación:", error);
-          toast.error("Error al detectar ubicación específica");
+          
+          // Limpiar toast de loading y mostrar error
+          toast.dismiss('gps-search');
+          toast.error("⚠️ Error al detectar ubicación específica");
           
           // Al menos actualizar coordenadas del mapa
           handleCoordsChange(coords);
@@ -313,13 +364,44 @@ export default function CrearSalidaPage() {
       },
       (error) => {
         console.error("Error GPS:", error);
-        toast.error("No se pudo obtener ubicación GPS");
         setLocationDetecting(false);
+        
+        // Limpiar toast de loading
+        toast.dismiss('gps-search');
+        
+        // Mensajes de error más específicos con iconos e instrucciones para móviles
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            if (isMobile) {
+              toast.error("🙅‍♂️ Permisos denegados. Ve a Configuración > Sitios web > Ubicación y permite el acceso", { duration: 8000 });
+              // Mostrar instrucciones adicionales para móviles después de un momento
+              setTimeout(() => {
+                toast("💡 En algunos móviles también puedes presionar el icono de candado en la barra de dirección", {
+                  duration: 6000,
+                  icon: "💡"
+                });
+              }, 1000);
+            } else {
+              toast.error("🙅‍♂️ Permisos denegados. Habilita ubicación en configuración del navegador", { duration: 6000 });
+            }
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("📱 GPS no disponible. Verifica que esté activado en tu dispositivo", { duration: 5000 });
+            break;
+          case error.TIMEOUT:
+            toast.error("⏱️ Tiempo agotado. Verifica tu conexión e intenta nuevamente", { duration: 4000 });
+            break;
+          default:
+            toast.error("⚠️ Error de GPS. Intenta nuevamente", { duration: 4000 });
+            break;
+        }
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
+        enableHighAccuracy: false, // Cambiar a false para mejor compatibilidad móvil
+        timeout: 20000, // Más tiempo para móviles (20s)
+        maximumAge: 30000 // Cache por 30 segundos (menos agresivo)
       }
     );
   };
@@ -343,32 +425,63 @@ export default function CrearSalidaPage() {
   
   // Actualizar posición del mapa cuando se selecciona una provincia manualmente
   useEffect(() => {
-    if (selectedProvince && provinceCoords[selectedProvince] && map.current) {
+    // Validar que tenemos todo lo necesario y el mapa esté listo
+    if (!selectedProvince || !provinceCoords[selectedProvince] || !map.current) {
+      return;
+    }
+
+    try {
       const provinceCenter = provinceCoords[selectedProvince];
       
       // Solo actualizar si el mapa no tiene ya una posición específica del GPS
       if (!markerPos || (markerPos.lat === defaultCoords.lat && markerPos.lng === defaultCoords.lng)) {
-        // Centrar el mapa en la provincia seleccionada
-        map.current.flyTo({
-          center: [provinceCenter.lng, provinceCenter.lat],
-          zoom: 10, // Zoom apropiado para ver la provincia
-          speed: 1.2,
-          curve: 1.42
-        });
-        
-        // Actualizar marker position
-        setMarkerPos(provinceCenter);
-        
-        // Mover el marcador
-        if (marker.current) {
-          marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
+        // Validar que el mapa esté completamente cargado
+        if (map.current.isStyleLoaded()) {
+          // Centrar el mapa en la provincia seleccionada
+          map.current.easeTo({
+            center: [provinceCenter.lng, provinceCenter.lat],
+            zoom: 10, // Zoom apropiado para ver la provincia
+            duration: 1000
+          });
+          
+          // Actualizar marker position
+          setMarkerPos(provinceCenter);
+          
+          // Mover el marcador si existe
+          if (marker.current) {
+            marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
+          }
+          
+          // Actualizar formData con las nuevas coordenadas
+          setFormData(prev => ({ ...prev, coords: provinceCenter }));
+        } else {
+          // Si el mapa aún no está cargado, esperar y reintentar
+          const retryTimeout = setTimeout(() => {
+            if (map.current && map.current.isStyleLoaded()) {
+              map.current.easeTo({
+                center: [provinceCenter.lng, provinceCenter.lat],
+                zoom: 10,
+                duration: 1000
+              });
+              setMarkerPos(provinceCenter);
+              if (marker.current) {
+                marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
+              }
+              setFormData(prev => ({ ...prev, coords: provinceCenter }));
+            }
+          }, 1000);
+          
+          return () => clearTimeout(retryTimeout);
         }
-        
-        // Actualizar formData con las nuevas coordenadas
-        setFormData(prev => ({ ...prev, coords: provinceCenter }));
       }
+    } catch (error) {
+      console.error('Error actualizando posición del mapa:', error);
+      // En caso de error, al menos actualizar las coordenadas sin tocar el mapa
+      const provinceCenter = provinceCoords[selectedProvince];
+      setMarkerPos(provinceCenter);
+      setFormData(prev => ({ ...prev, coords: provinceCenter }));
     }
-  }, [selectedProvince, markerPos]);
+  }, [selectedProvince, defaultCoords.lat, defaultCoords.lng]);
 
   useEffect(() => {
     if (map.current) return; // evitar inicializar dos veces
@@ -508,34 +621,50 @@ export default function CrearSalidaPage() {
 
       {/* Sección de Ubicación con GPS */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Ubicación</h3>
-          <button
-            type="button"
-            onClick={detectLocationFromGPS}
-            disabled={locationDetecting}
-            className="flex items-center gap-2 px-3 py-2 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors disabled:opacity-50"
-          >
-            {locationDetecting ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-            )}
-            {locationDetecting ? "Detectando..." : "Detectar GPS"}
-          </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Ubicación</h3>
+            <button
+              type="button"
+              onClick={detectLocationFromGPS}
+              disabled={locationDetecting}
+              className="flex items-center gap-2 px-3 py-2 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors disabled:opacity-50"
+            >
+              {locationDetecting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              )}
+              {locationDetecting ? "Detectando..." : "Usar mi ubicación"}
+            </button>
+          </div>
+          
+          {/* Texto explicativo mejorado */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-700">
+              💡 <strong>Tip:</strong> Presiona "Usar mi ubicación" para detectar automáticamente tu provincia, localidad y posición en el mapa.
+            </p>
+          </div>
         </div>
 
         {/* Select de Provincia */}
-        <select
-          name="provincia"
-          value={selectedProvince}
-          onChange={(e) => {
-            const provinceId = e.target.value;
-            setSelectedProvince(provinceId);
-            setSelectedLocality(""); // Reset localidad
+        <div className="relative">
+          {gpsLocationDetected && (
+            <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-10">
+              ✓ GPS
+            </div>
+          )}
+          <select
+            name="provincia"
+            value={selectedProvince}
+            onChange={(e) => {
+              const provinceId = e.target.value;
+              setSelectedProvince(provinceId);
+              setSelectedLocality(""); // Reset localidad
+              setGpsLocationDetected(false); // Reset GPS indicator si cambian manualmente
             
             const province = provinces?.find(p => p.id === provinceId);
             setFormData(prev => ({ 
@@ -552,15 +681,23 @@ export default function CrearSalidaPage() {
               {province.name}
             </option>
           ))}
-        </select>
+          </select>
+        </div>
 
         {/* Select de Localidad */}
-        <select
+        <div className="relative">
+          {gpsLocationDetected && formData.localidad && (
+            <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-10">
+              ✓ GPS
+            </div>
+          )}
+          <select
           name="localidad"
           value={selectedLocality}
           onChange={(e) => {
             const localityId = e.target.value;
             setSelectedLocality(localityId);
+            setGpsLocationDetected(false); // Reset GPS indicator si cambian manualmente
             
             const locality = localities?.find(l => l.id === localityId);
             setFormData(prev => ({ 
@@ -579,13 +716,24 @@ export default function CrearSalidaPage() {
               {locality.name}
             </option>
           ))}
-        </select>
+          </select>
+        </div>
 
         {/* Mostrar ubicación detectada */}
         {formData.provincia && formData.localidad && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-[15px]">
-            <p className="text-sm text-green-700">
-              📍 <strong>{formData.provincia}</strong>, {formData.localidad}
+          <div className={`p-3 border rounded-[15px] ${
+            gpsLocationDetected 
+              ? 'bg-green-50 border-green-200' 
+              : 'bg-gray-50 border-gray-200'
+          }`}>
+            <p className={`text-sm ${
+              gpsLocationDetected ? 'text-green-700' : 'text-gray-600'
+            }`}>
+              {gpsLocationDetected ? (
+                <>🎯 <strong>Ubicación detectada automáticamente:</strong> {formData.provincia}, {formData.localidad}</>
+              ) : (
+                <>📍 <strong>Ubicación seleccionada:</strong> {formData.provincia}, {formData.localidad}</>
+              )}
             </p>
           </div>
         )}

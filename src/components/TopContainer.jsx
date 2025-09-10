@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
@@ -97,18 +97,44 @@ useEffect(() => {
   return () => {
     window.removeEventListener('notificationMarkedAsRead', handleNotificationUpdate);
   };
-
-  const loadProfileImage = async () => {
-    try {
-      const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
-      setProfileImage(imageUrl);
-    } catch (error) {
-      setProfileImage(session.user.imagen);
-    }
-  };
-
-  loadProfileImage();
 }, [session]);
+
+// Función separada para cargar imagen de perfil
+const loadProfileImage = useCallback(async () => {
+  if (!session?.user?.id) {
+    console.log("No session or user ID available");
+    return;
+  }
+  
+  console.log("Loading profile image for user:", session.user.id);
+  console.log("Session user imagen:", session.user.imagen);
+  
+  try {
+    const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+    console.log("Firebase image URL:", imageUrl);
+    if (imageUrl) {
+      setProfileImage(imageUrl);
+    } else {
+      // Si no hay imagen de Firebase, usar la del session
+      const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
+      console.log("Using fallback image:", fallbackImage);
+      setProfileImage(fallbackImage);
+    }
+  } catch (error) {
+    console.log("Error cargando imagen de perfil:", error);
+    // Fallback: usar imagen del session o imagen por defecto
+    const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
+    console.log("Using fallback after error:", fallbackImage);
+    setProfileImage(fallbackImage);
+  }
+}, [session]);
+
+// useEffect separado para cargar imagen de perfil
+useEffect(() => {
+  if (session?.user) {
+    loadProfileImage();
+  }
+}, [session, loadProfileImage]);
 
 
   if (status === "loading") {
@@ -126,18 +152,26 @@ useEffect(() => {
       <Link href="/dashboard/profile">
 
 
-      {session?.user ? ( <img
+      {session?.user ? (
+        <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-          src={profileImage || session?.user?.imagen}
+          src={profileImage || session?.user?.imagen || "/assets/logo/Trivo T.png"}
           alt="User Profile"
-        />):(<div
-          className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-           style={{
+          onError={(e) => {
+            // Si falla cargar la imagen, usar imagen por defecto
+            e.target.src = "/assets/logo/Trivo T.png";
+          }}
+        />
+      ) : (
+        <div
+          className="h-[48px] w-[48px] rounded-[15px] shadow-md"
+          style={{
             backgroundImage: `url("/assets/logo/Trivo T.png")`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
-        />)}
+        />
+      )}
        
       </Link>
 

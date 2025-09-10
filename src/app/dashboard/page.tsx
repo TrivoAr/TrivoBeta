@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TopContainer from "@/components/TopContainer";
-import PushManager from "../../components/PushManager";
 import { DashboardCard } from "@/components/Dashboard/DashboardCard";
 import { Toaster } from "react-hot-toast";
 import { toast } from "react-hot-toast";
@@ -459,7 +458,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PushManager />
       <Toaster position="top-center" />
       
       <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
