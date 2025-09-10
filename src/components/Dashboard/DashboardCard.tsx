@@ -18,6 +18,7 @@ export interface DashboardCardProps {
   onDelete?: () => void;
   onToggleFavorite?: () => void;
   onViewMembers?: () => void;
+  onClick?: () => void;
   isFavorite?: boolean;
   showActions?: boolean;
   type: 'salida' | 'team' | 'academia' | 'entrenamiento';
@@ -39,6 +40,7 @@ export const DashboardCard = ({
   onDelete,
   onToggleFavorite,
   onViewMembers,
+  onClick,
   isFavorite = false,
   showActions = false,
   type
@@ -53,8 +55,25 @@ export const DashboardCard = ({
     setImageLoading(false);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Evitar activar el click si se clickeó en un botón
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) {
+      return;
+    }
+    
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <div className="flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border bg-white mx-auto mb-4">
+    <div 
+      className={`flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border bg-white mx-auto mb-4 ${
+        onClick ? 'cursor-pointer hover:shadow-lg transition-shadow duration-200' : ''
+      }`}
+      onClick={handleCardClick}
+    >
       {/* Imagen */}
       <div className="relative h-[115px] bg-slate-200">
         {imageLoading && (

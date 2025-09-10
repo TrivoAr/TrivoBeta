@@ -123,8 +123,8 @@ export async function PATCH(
 
     if (!miembroCompleto) return jsonErr("Miembro no encontrado", 404);
 
-    const salida = miembroCompleto.salida_id as any;
-    const usuario = miembroCompleto.usuario_id as any;
+    const salida = (miembroCompleto as any).salida_id;
+    const usuario = (miembroCompleto as any).usuario_id;
     
     if (!salida || !usuario) return jsonErr("Datos incompletos", 404);
 

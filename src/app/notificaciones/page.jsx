@@ -3,17 +3,52 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import NotificationItem from "@/components/NotificationItem";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const NotificacionesPage = () => {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [estimatedCount, setEstimatedCount] = useState(3); // Estimado inicial
 
 useEffect(() => {
   const fetchNotificaciones = async () => {
     try {
+      // Primero hacer una llamada rápida para obtener conteos aproximados
+      const quickCount = async () => {
+        try {
+          const [notiRes, solRes] = await Promise.all([
+            axios.get("/api/notificaciones"),
+            axios.get("/api/academias/solicitudes"),
+          ]);
+          
+          const notificaciones = notiRes.data || [];
+          const solicitudes = solRes.data?.filter(s => s.estado === "pendiente") || [];
+          
+          // Filtrar por los últimos 3 días para estimado
+          const tresDiasAtras = new Date();
+          tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
+          
+          const recentNotifications = notificaciones.filter(n => {
+            const fecha = new Date(n.createdAt);
+            return fecha >= tresDiasAtras;
+          });
+          
+          const totalEstimated = recentNotifications.length + solicitudes.length;
+          setEstimatedCount(Math.max(totalEstimated, 2)); // Mínimo 2 skeletons
+          
+          return { notificaciones, solicitudes: solRes.data || [] };
+        } catch (error) {
+          setEstimatedCount(3); // Fallback
+          throw error;
+        }
+      };
+
+      const { notificaciones, solicitudes: solicitudesData } = await quickCount();
+
       const [notiRes, solRes] = await Promise.all([
-        axios.get("/api/notificaciones"),
-        axios.get("/api/academias/solicitudes"),
+        Promise.resolve({ data: notificaciones }),
+        Promise.resolve({ data: solicitudesData }),
       ]);
 
       const notificacionesNormales = notiRes.data.map((n) => ({
@@ -40,7 +75,29 @@ useEffect(() => {
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      setNotificaciones(todas);
+      // Filtrar notificaciones de los últimos 3 días
+      const tresDiasAtras = new Date();
+      tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
+      
+      const notificacionesRecientes = [];
+      const notificacionesAntiguas = [];
+      
+      todas.forEach(notificacion => {
+        const fechaNotificacion = new Date(notificacion.createdAt);
+        if (fechaNotificacion >= tresDiasAtras) {
+          notificacionesRecientes.push(notificacion);
+        } else if (!notificacion.read && notificacion.tipo === "notificacion") {
+          // Solo marcar como leídas las notificaciones normales, no las solicitudes
+          notificacionesAntiguas.push(notificacion._id);
+        }
+      });
+
+      // Marcar como leídas las notificaciones antiguas en segundo plano
+      if (notificacionesAntiguas.length > 0) {
+        markMultipleAsRead(notificacionesAntiguas);
+      }
+
+      setNotificaciones(notificacionesRecientes);
     } catch (err) {
       console.error("Error al cargar notificaciones o solicitudes", err);
     } finally {
@@ -60,23 +117,81 @@ useEffect(() => {
       setNotificaciones((prev) =>
         prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
+      
+      // Emitir evento para que otros componentes se actualicen
+      window.dispatchEvent(new CustomEvent('notificationMarkedAsRead', { detail: { id } }));
     } catch (error) {
       console.error("Error marcando como leída", error);
     }
   };
 
+  const markMultipleAsRead = async (ids) => {
+    try {
+      // Marcar múltiples notificaciones como leídas en paralelo
+      await Promise.all(
+        ids.map(id => axios.post(`/api/notificaciones/${id}/markAsRead`))
+      );
+      console.log(`${ids.length} notificaciones antiguas marcadas como leídas`);
+    } catch (error) {
+      console.error("Error marcando notificaciones antiguas como leídas", error);
+    }
+  };
+
+  // Componente skeleton para notificaciones
+  const NotificationSkeleton = () => (
+    <div className="flex items-center space-x-3 p-3 rounded-lg border-l-4 border-gray-200 bg-white w-full max-w-none">
+      {/* Avatar skeleton */}
+      <Skeleton circle height={64} width={64} className="flex-shrink-0" />
+      
+      {/* Contenido skeleton */}
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton height={16} width={200} />
+          <Skeleton circle height={8} width={8} />
+        </div>
+        <Skeleton height={12} width={250} className="mb-2" />
+        <div className="flex items-center justify-between mt-2">
+          <Skeleton height={10} width={100} />
+          <Skeleton height={10} width={120} />
+        </div>
+      </div>
+    </div>
+  );
+
   console.log("Notificaciones:", notificaciones);
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
+    <div className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
       <h1 className="text-xl font-semibold mb-5 mt-2">
         Notificaciones
       </h1>
 
       {loading ? (
-        <p className="text-center text-gray-500">Cargando...</p>
+        <div className="flex flex-col space-y-3 w-full">
+          {[...Array(Math.min(estimatedCount, 8))].map((_, index) => (
+            <NotificationSkeleton key={index} />
+          ))}
+        </div>
       ) : notificaciones.length === 0 ? (
-        <p className="text-center text-gray-500">No tenés notificaciones.</p>
+        <div className="text-center py-12 text-gray-500">
+          <div className="mb-4">
+            <svg 
+              className="mx-auto h-16 w-16 text-gray-300" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={1} 
+                d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 11-15 0v5h5l-5-5 5-5h-5v5a7.5 7.5 0 1115 0v-5z" 
+              />
+            </svg>
+          </div>
+          <p className="text-lg font-medium">No tenés notificaciones recientes</p>
+          <p className="text-sm mt-2">Solo mostramos notificaciones de los últimos 3 días</p>
+        </div>
       ) : (
         <div className="flex flex-col space-y-3">
           {notificaciones.map((n) => (

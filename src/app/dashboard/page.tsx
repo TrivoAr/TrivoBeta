@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TopContainer from "@/components/TopContainer";
 import PushManager from "../../components/PushManager";
@@ -9,9 +9,15 @@ import { DashboardCard } from "@/components/Dashboard/DashboardCard";
 import { Toaster } from "react-hot-toast";
 import { toast } from "react-hot-toast";
 import dayjs from "dayjs";
-import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
-import { getSocialImage } from "@/app/api/social/getSocialImage";
-import { getTeamSocialImage } from "@/app/api/team-social/getTeamSocialImage";
+import { 
+  useMyAcademias, 
+  useMySalidasSociales, 
+  useMyMatches, 
+  useMyFavorites,
+  useToggleFavorite,
+  useDeleteAcademia,
+  useDeleteSalidaSocial 
+} from "@/hooks/useDashboard";
 
 interface Academia {
   _id: string;
@@ -73,24 +79,29 @@ interface TeamSocial {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  // Para usuarios no-admin, comenzar en la primera pestaña disponible (Mis match)
   const [activeCategory, setActiveCategory] = useState(0);
   const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   
-  // Mi Panel states
-  const [academias, setAcademias] = useState<Academia[]>([]);
-  const [salidasSociales, setSalidasSociales] = useState<SalidaSocial[]>([]);
+  // TanStack Query hooks
+  const { data: academias = [], isLoading: isLoadingAcademias } = useMyAcademias();
+  const { data: salidasSociales = [], isLoading: isLoadingSalidas } = useMySalidasSociales(session?.user?.id);
+  const { data: matchesData, isLoading: isLoadingMatches } = useMyMatches();
+  const { data: favoritosData, isLoading: isLoadingFavoritos } = useMyFavorites(session?.user?.id);
   
-  // Mis Match states
-  const [miMatchSalidas, setMiMatchSalidas] = useState<SalidaSocialMatch[]>([]);
-  const [miMatchTeams, setMiMatchTeams] = useState<TeamSocial[]>([]);
+  // Mutations
+  const toggleFavoriteMutation = useToggleFavorite();
+  const deleteAcademiaMutation = useDeleteAcademia();
+  const deleteSalidaMutation = useDeleteSalidaSocial();
   
-  // Mis Favoritos states
-  const [favoritosAcademias, setFavoritosAcademias] = useState<Academia[]>([]);
-  const [favoritosSalidas, setFavoritosSalidas] = useState<SalidaSocialMatch[]>([]);
-  const [favoritosTeams, setFavoritosTeams] = useState<TeamSocial[]>([]);
+  // Extract data from queries
+  const miMatchSalidas = matchesData?.salidas || [];
+  const miMatchTeams = matchesData?.teams || [];
+  const favoritosAcademias = favoritosData?.academias || [];
+  const favoritosSalidas = favoritosData?.salidas || [];
+  const favoritosTeams = favoritosData?.teams || [];
   
-  const [loading, setLoading] = useState(true);
+  // Loading state - any of the relevant queries loading
+  const loading = isLoadingAcademias || isLoadingSalidas || isLoadingMatches || isLoadingFavoritos;
 
   // Definir categorías basándose en el rol del usuario
   const getCategories = () => {
@@ -112,252 +123,47 @@ export default function DashboardPage() {
 
   const categories = getCategories();
 
-  const fetchMiPanel = async () => {
-    try {
-      // Obtener academias del usuario
-      const academiasRes = await fetch(`/api/academias?owner=true`);
-      if (academiasRes.ok) {
-        const academiasData = await academiasRes.json();
-        const filteredAcademias = Array.isArray(academiasData) ? academiasData.filter((academia: Academia) => 
-          academia._id && academia.nombre_academia
-        ) : [];
-
-        // Obtener imágenes de Firebase para cada academia
-        const academiasConImagenes = await Promise.all(
-          filteredAcademias.map(async (academia: Academia) => {
-            try {
-              const imagenUrl = await getAcademyImage("profile-image.jpg", academia._id);
-              return { ...academia, imagenUrl };
-            } catch (error) {
-              return {
-                ...academia,
-                imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`
-              };
-            }
-          })
-        );
-
-        setAcademias(academiasConImagenes);
-      }
-
-      // Obtener salidas sociales del usuario
-      const salidasRes = await fetch(`/api/social`);
-      if (salidasRes.ok) {
-        const salidasData = await salidasRes.json();
-        const filteredSalidas = Array.isArray(salidasData) ? salidasData.filter((salida: any) => {
-          // Si creador_id es un objeto (populado), comparar con _id
-          const creadorId = typeof salida.creador_id === 'object' ? salida.creador_id?._id : salida.creador_id;
-          return creadorId === session?.user?.id;
-        }) : [];
-
-        // Usar la imagen ya guardada en la base de datos o placeholder
-        const salidasConImagenes = filteredSalidas.map((salida: any) => {
-          const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-          return {
-            ...salida,
-            imagen: imagenUrl
-          };
-        });
-
-        setSalidasSociales(salidasConImagenes);
-      }
-    } catch (error) {
-      toast.error("Error al cargar mi panel");
-    }
-  };
-
-  const fetchMisMatch = async () => {
-    try {
-      // Obtener salidas donde soy miembro
-      const salidasRes = await fetch(`/api/social/mis-match`);
-      if (salidasRes.ok) {
-        const salidasData = await salidasRes.json();
-        const data = Array.isArray(salidasData) ? salidasData : [];
-
-        // Usar la imagen ya guardada en la base de datos o placeholder si no existe
-        const salidasConImagenes = data.map((salida: any) => {
-          const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-          return {
-            ...salida,
-            imagen: imagenUrl
-          };
-        });
-        setMiMatchSalidas(salidasConImagenes);
-      }
-
-      // Obtener teams donde soy miembro
-      const teamsRes = await fetch(`/api/team-social/mis`);
-      if (teamsRes.ok) {
-        const teamsData = await teamsRes.json();
-        const data = Array.isArray(teamsData) ? teamsData : [];
-
-        // Obtener imágenes para each team
-        const teamsConImagenes = await Promise.all(
-          data.map(async (team: TeamSocial) => {
-            try {
-              const imagenUrl = await getTeamSocialImage("team-social-image.jpg", team._id);
-              return { ...team, imagen: imagenUrl };
-            } catch (error) {
-              return {
-                ...team,
-                imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`
-              };
-            }
-          })
-        );
-
-        setMiMatchTeams(teamsConImagenes);
-      }
-    } catch (error) {
-      toast.error("Error al cargar matches");
-    }
-  };
-
-  const fetchMisFavoritos = async () => {
-    try {
-      const response = await fetch(`/api/profile/${session?.user?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        const favoritos = data.favoritos || {};
-
-        // Fetch salidas favoritas
-        if (favoritos.salidas && favoritos.salidas.length > 0) {
-          const salidasPromises = favoritos.salidas.map(async (salidaId: string) => {
-            try {
-              const res = await fetch(`/api/social/${salidaId}`);
-              if (!res.ok) return null;
-              
-              const salida = await res.json();
-              
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-              return { ...salida, imagen: imagenUrl };
-            } catch (error) {
-              return null;
-            }
-          });
-          
-          const salidas = await Promise.all(salidasPromises);
-          setFavoritosSalidas(salidas.filter(Boolean) as SalidaSocialMatch[]);
-        }
-
-        // Fetch teams favoritos
-        if (favoritos.teamSocial && favoritos.teamSocial.length > 0) {
-          const teamsPromises = favoritos.teamSocial.map(async (teamId: string) => {
-            try {
-              const res = await fetch(`/api/team-social/${teamId}`);
-              if (!res.ok) return null;
-              
-              const team = await res.json();
-              
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = team.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`;
-              return { ...team, imagen: imagenUrl };
-            } catch (error) {
-              return null;
-            }
-          });
-          
-          const teams = await Promise.all(teamsPromises);
-          setFavoritosTeams(teams.filter(Boolean) as TeamSocial[]);
-        }
-
-        // Fetch academias favoritas
-        if (favoritos.academias && favoritos.academias.length > 0) {
-          const academiasPromises = favoritos.academias.map(async (academiaId: string) => {
-            try {
-              const res = await fetch(`/api/academias/${academiaId}`);
-              if (!res.ok) return null;
-              
-              const academia = await res.json();
-              
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = academia.imagenUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`;
-              return { ...academia, imagenUrl };
-            } catch (error) {
-              return null;
-            }
-          });
-          
-          const academias = await Promise.all(academiasPromises);
-          setFavoritosAcademias(academias.filter(Boolean) as Academia[]);
-        }
-      }
-    } catch (error) {
-      toast.error("Error al cargar favoritos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteAcademia = async (id: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar esta academia?")) return;
     
-    try {
-      const response = await fetch(`/api/academias/${id}/eliminar`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
+    deleteAcademiaMutation.mutate(id, {
+      onSuccess: () => {
         toast.success("Academia eliminada correctamente");
-        setAcademias(prev => prev.filter(academia => academia._id !== id));
+      },
+      onError: () => {
+        toast.error("Error al eliminar academia");
       }
-    } catch (error) {
-      toast.error("Error al eliminar academia");
-    }
+    });
   };
 
   const handleDeleteSalidaSocial = async (id: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar esta salida social?")) return;
     
-    try {
-      const response = await fetch(`/api/social/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
+    deleteSalidaMutation.mutate(id, {
+      onSuccess: () => {
         toast.success("Salida social eliminada correctamente");
-        setSalidasSociales(prev => prev.filter(salida => salida._id !== id));
+      },
+      onError: () => {
+        toast.error("Error al eliminar salida social");
       }
-    } catch (error) {
-      toast.error("Error al eliminar salida social");
-    }
+    });
   };
 
   const handleToggleFavorite = async (tipo: 'academias' | 'sociales' | 'teamsocial', id: string) => {
-    try {
-      const response = await fetch(`/api/favoritos/${tipo}/${id}`, {
-        method: "POST",
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Si se quitó de favoritos (favorito = false), actualizar el estado local
+    toggleFavoriteMutation.mutate({ tipo, id }, {
+      onSuccess: (result) => {
         if (!result.favorito) {
-          if (tipo === 'academias') {
-            setFavoritosAcademias(prev => prev.filter(item => item._id !== id));
-          } else if (tipo === 'sociales') {
-            setFavoritosSalidas(prev => prev.filter(item => item._id !== id));
-          } else if (tipo === 'teamsocial') {
-            setFavoritosTeams(prev => prev.filter(item => item._id !== id));
-          }
           toast.success("Eliminado de favoritos");
+        } else {
+          toast.success("Agregado a favoritos");
         }
+      },
+      onError: () => {
+        toast.error("Error al actualizar favoritos");
       }
-    } catch (error) {
-      toast.error("Error al actualizar favoritos");
-    }
+    });
   };
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      // Solo ejecutar fetchMiPanel si el usuario es admin
-      if (session.user.rol === "admin") {
-        fetchMiPanel();
-      }
-      fetchMisMatch();
-      fetchMisFavoritos();
-    }
-  }, [session]);
 
   // Redireccionar si no hay sesión
   if (status === "loading") {
@@ -407,6 +213,7 @@ export default function DashboardPage() {
                     price={academia.precio}
                     type="academia"
                     showActions={true}
+                    onClick={() => router.push(`/academias/${academia._id}`)}
                     onEdit={() => router.push(`/academias/${academia._id}/editar`)}
                     onDelete={() => handleDeleteAcademia(academia._id)}
                     onViewMembers={() => router.push(`/academias/${academia._id}/miembros`)}
@@ -446,6 +253,7 @@ export default function DashboardPage() {
                     price={salida.precio}
                     type="salida"
                     showActions={true}
+                    onClick={() => router.push(`/social/${salida._id}`)}
                     onEdit={() => router.push(`/social/editar/${salida._id}`)}
                     onDelete={() => handleDeleteSalidaSocial(salida._id)}
                     onViewMembers={() => router.push(`/social/miembros/${salida._id}`)}
@@ -478,6 +286,7 @@ export default function DashboardPage() {
                 price={salida.precio}
                 teacher={`${salida.creador_id?.firstname} ${salida.creador_id?.lastname}`}
                 type="salida"
+                onClick={() => router.push(`/social/${salida._id}`)}
                 showActions={false}
               />
             ))}
@@ -496,6 +305,7 @@ export default function DashboardPage() {
                 time={team.hora}
                 price={team.precio}
                 type="team"
+                onClick={() => router.push(`/team-social/${team._id}`)}
                 showActions={false}
               />
             ))}
@@ -550,6 +360,7 @@ export default function DashboardPage() {
                     localidad={academia.localidad}
                     price={academia.precio}
                     type="academia"
+                    onClick={() => router.push(`/academias/${academia._id}`)}
                     showActions={true}
                     isFavorite={true}
                     onToggleFavorite={() => handleToggleFavorite('academias', academia._id)}
@@ -576,6 +387,7 @@ export default function DashboardPage() {
                     price={salida.precio}
                     teacher={`${salida.creador_id?.firstname} ${salida.creador_id?.lastname}`}
                     type="salida"
+                    onClick={() => router.push(`/social/${salida._id}`)}
                     showActions={true}
                     isFavorite={true}
                     onToggleFavorite={() => handleToggleFavorite('sociales', salida._id)}
@@ -601,6 +413,7 @@ export default function DashboardPage() {
                     time={team.hora}
                     price={team.precio}
                     type="team"
+                    onClick={() => router.push(`/team-social/${team._id}`)}
                     showActions={true}
                     isFavorite={true}
                     onToggleFavorite={() => handleToggleFavorite('teamsocial', team._id)}
@@ -645,14 +458,13 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+    <>
+      <PushManager />
       <Toaster position="top-center" />
       
-      {/* Header */}
-      <TopContainer selectedLocalidad={selectedLocalidad} setSelectedLocalidad={setSelectedLocalidad} />
-      
-      {/* Push Manager */}
-      <PushManager />
+      <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+        {/* Header */}
+        <TopContainer selectedLocalidad={selectedLocalidad} setSelectedLocalidad={setSelectedLocalidad} />
 
       {/* Main Content */}
       <div className="px-4">
@@ -693,8 +505,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Footer spacing */}
-      <div className="h-[100px]"></div>
-    </div>
+        {/* Footer spacing */}
+        <div className="h-[100px]"></div>
+      </main>
+    </>
   );
 }

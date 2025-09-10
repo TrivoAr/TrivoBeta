@@ -13,6 +13,8 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
   // Función para manejar el click en la notificación con navegación dinámica
   const handleNotificationClick = async () => {
     try {
+      console.log("Notification clicked:", notification);
+      
       // Marcar como leída
       if (!notification.read) {
         await onMarkAsRead(notification._id);
@@ -20,12 +22,16 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 
       // Navegar según el tipo de notificación
       if (notification.actionUrl) {
+        console.log("Navigating to actionUrl:", notification.actionUrl);
         router.push(notification.actionUrl);
       } else {
         // Fallback a navegación basada en tipo
         const navUrl = getNavigationUrl(notification);
+        console.log("Navigating to navUrl:", navUrl);
         if (navUrl) {
           router.push(navUrl);
+        } else {
+          console.log("No navigation URL found for notification");
         }
       }
     } catch (error) {
@@ -35,7 +41,10 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 
   // Función para determinar la URL de navegación basada en el tipo
   const getNavigationUrl = (notification) => {
-    switch (notification.type) {
+    const type = notification.type || notification.tipo;
+    console.log("Getting navigation URL for type:", type, notification);
+    
+    switch (type) {
       case "miembro_aprobado":
       case "joined_event":
         return notification.salidaId ? `/social/${notification.salidaId}` : null;
@@ -51,36 +60,49 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
       case "pago_aprobado":
         return `/dashboard`; // ir al dashboard para ver el estado
       
+      case "solicitud":
+        // Para solicitudes de academia
+        return `/dashboard`; // o la página específica de gestión
+      
+      case "notificacion":
+        // Para notificaciones generales, intentar extraer URL de metadata
+        if (notification.salidaId) return `/social/${notification.salidaId}`;
+        if (notification.academiaId) return `/academias/${notification.academiaId}`;
+        if (notification.teamSocialId) return `/team-social/${notification.teamSocialId}`;
+        break;
+      
       default:
-        // Para tipos legacy, navegar al perfil del usuario
-        const profileId = notification.fromUserId || notification.userId;
-        return profileId ? `/profile/${profileId}` : null;
+        // Para tipos legacy o desconocidos, navegar al dashboard como fallback seguro
+        console.log("Unknown notification type:", type);
+        return `/dashboard`;
     }
+    
+    return null;
   };
 
   // Función para obtener el icono según el tipo de notificación
   const getNotificationIcon = (type) => {
     switch (type) {
       case "miembro_aprobado":
-        return "✅";
+        return "";
       case "miembro_rechazado":
-        return "❌";
+        return "";
       case "joined_event":
-        return "🎉";
+        return "";
       case "nueva_salida":
-        return "🏃";
+        return "";
       case "nueva_academia":
-        return "🏫";
+        return "";
       case "nuevo_team":
-        return "👥";
+        return "";
       case "pago_aprobado":
-        return "💰";
+        return "";
       case "solicitud_recibida":
       case "solicitud_academia":
       case "solicitud_team":
-        return "📩";
+        return "";
       default:
-        return "🔔";
+        return "";
     }
   };
 
@@ -135,7 +157,7 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
-        className="rounded-full object-cover w-12 h-12 flex-shrink-0 border-2 border-gray-200"
+        className="rounded-full object-cover w-16 h-16 flex-shrink-0 border-2 border-gray-200"
       />
       
       {/* Icono de tipo de notificación */}
@@ -176,13 +198,13 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
             onClick={handleAceptar}
             className="bg-green-500 text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition-colors"
           >
-            ✓ Aceptar
+            Aceptar
           </button>
           <button
             onClick={handleRechazar}
             className="bg-red-500 text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
           >
-            ✕ Rechazar
+            Rechazar
           </button>
         </div>
       )}

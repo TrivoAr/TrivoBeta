@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
+import { getTeamSocialImage } from "@/app/api/team-social/getTeamSocialImage";
 
 interface Academia {
   _id: string;
@@ -71,11 +73,22 @@ export function useMyAcademias() {
         academia._id && academia.nombre_academia
       ) : [];
 
-      // Procesar imágenes
-      return filteredAcademias.map((academia: Academia) => ({
-        ...academia,
-        imagenUrl: academia.imagenUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`
-      }));
+      // Obtener imágenes de Firebase para cada academia
+      const academiasConImagenes = await Promise.all(
+        filteredAcademias.map(async (academia: Academia) => {
+          try {
+            const imagenUrl = await getAcademyImage("profile-image.jpg", academia._id);
+            return { ...academia, imagenUrl };
+          } catch (error) {
+            return {
+              ...academia,
+              imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`
+            };
+          }
+        })
+      );
+
+      return academiasConImagenes;
     },
     staleTime: 1000 * 60 * 10, // 10 minutos
   });
@@ -133,11 +146,20 @@ export function useMyMatches() {
         imagen: salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
       })) : [];
       
-      // Procesar teams
-      const teams = Array.isArray(teamsData) ? teamsData.map((team: any) => ({
-        ...team,
-        imagen: team.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`
-      })) : [];
+      // Procesar teams - obtener imágenes de Firebase
+      const teams = Array.isArray(teamsData) ? await Promise.all(
+        teamsData.map(async (team: TeamSocial) => {
+          try {
+            const imagenUrl = await getTeamSocialImage("team-social-image.jpg", team._id);
+            return { ...team, imagen: imagenUrl };
+          } catch (error) {
+            return {
+              ...team,
+              imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`
+            };
+          }
+        })
+      ) : [];
       
       return { salidas, teams };
     },
