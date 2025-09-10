@@ -24,12 +24,10 @@ const UploadImage = ({ folder, onUploadComplete }) => {
         setProgress(progress);
       },
       (error) => {
-        console.error("Upload failed:", error);
         setError("Failed to upload image. Please try again.");
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log("File available at:", downloadURL);
           onUploadComplete(downloadURL); // Notify parent about the uploaded file's URL
           setFile(null); // Reset file input
           setProgress(0); // Reset progress

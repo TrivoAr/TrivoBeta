@@ -1,6 +1,6 @@
 // api/academias/getAcademyImage.ts
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { storage } from "@/libs/firebaseConfig.js";
 
 
 export const getAcademyImage = async (fileName: string, academyId: string): Promise<string> => {

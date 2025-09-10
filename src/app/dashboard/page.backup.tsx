@@ -68,12 +68,15 @@ interface TeamSocial {
   creadorId: string;
 }
 
-// Las categorías se definirán dinámicamente basándose en el rol del usuario
+const categories = [
+  { label: "Mi panel" },
+  { label: "Mis match" }, 
+  { label: "Mis favoritos" },
+];
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  // Para usuarios no-admin, comenzar en la primera pestaña disponible (Mis match)
   const [activeCategory, setActiveCategory] = useState(0);
   const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
   
@@ -92,27 +95,8 @@ export default function DashboardPage() {
   
   const [loading, setLoading] = useState(true);
 
-  // Definir categorías basándose en el rol del usuario
-  const getCategories = () => {
-    const userRole = session?.user?.rol;
-    const baseCategories = [
-      { label: "Mis match", index: 1 }, 
-      { label: "Mis favoritos", index: 2 },
-    ];
-
-    if (userRole === "admin") {
-      return [
-        { label: "Mi panel", index: 0 },
-        ...baseCategories
-      ];
-    }
-    
-    return baseCategories;
-  };
-
-  const categories = getCategories();
-
   const fetchMiPanel = async () => {
+    console.log("fetchMiPanel iniciado");
     try {
       // Obtener academias del usuario
       const academiasRes = await fetch(`/api/academias?owner=true`);
@@ -144,20 +128,24 @@ export default function DashboardPage() {
       const salidasRes = await fetch(`/api/social`);
       if (salidasRes.ok) {
         const salidasData = await salidasRes.json();
-        const filteredSalidas = Array.isArray(salidasData) ? salidasData.filter((salida: any) => {
-          // Si creador_id es un objeto (populado), comparar con _id
-          const creadorId = typeof salida.creador_id === 'object' ? salida.creador_id?._id : salida.creador_id;
-          return creadorId === session?.user?.id;
-        }) : [];
+        const filteredSalidas = Array.isArray(salidasData) ? salidasData.filter((salida: any) => 
+          salida.creador_id === session?.user?.id
+        ) : [];
 
-        // Usar la imagen ya guardada en la base de datos o placeholder
-        const salidasConImagenes = filteredSalidas.map((salida: any) => {
-          const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-          return {
-            ...salida,
-            imagen: imagenUrl
-          };
-        });
+        // Obtener imágenes para cada salida
+        const salidasConImagenes = await Promise.all(
+          filteredSalidas.map(async (salida: any) => {
+            try {
+              const imagenUrl = await getSocialImage("social-image.jpg", salida._id);
+              return { ...salida, imagen: imagenUrl };
+            } catch (error) {
+              return {
+                ...salida,
+                imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
+              };
+            }
+          })
+        );
 
         setSalidasSociales(salidasConImagenes);
       }
@@ -174,14 +162,21 @@ export default function DashboardPage() {
         const salidasData = await salidasRes.json();
         const data = Array.isArray(salidasData) ? salidasData : [];
 
-        // Usar la imagen ya guardada en la base de datos o placeholder si no existe
-        const salidasConImagenes = data.map((salida: any) => {
-          const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-          return {
-            ...salida,
-            imagen: imagenUrl
-          };
-        });
+        // Obtener imágenes para cada salida
+        const salidasConImagenes = await Promise.all(
+          data.map(async (salida: SalidaSocialMatch) => {
+            try {
+              const imagenUrl = await getSocialImage("social-image.jpg", salida._id);
+              return { ...salida, imagen: imagenUrl };
+            } catch (error) {
+              return {
+                ...salida,
+                imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
+              };
+            }
+          })
+        );
+
         setMiMatchSalidas(salidasConImagenes);
       }
 
@@ -229,9 +224,15 @@ export default function DashboardPage() {
               
               const salida = await res.json();
               
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`;
-              return { ...salida, imagen: imagenUrl };
+              try {
+                const imagenUrl = await getSocialImage("social-image.jpg", salida._id);
+                return { ...salida, imagen: imagenUrl };
+              } catch (error) {
+                return {
+                  ...salida,
+                  imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
+                };
+              }
             } catch (error) {
               return null;
             }
@@ -250,9 +251,15 @@ export default function DashboardPage() {
               
               const team = await res.json();
               
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = team.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`;
-              return { ...team, imagen: imagenUrl };
+              try {
+                const imagenUrl = await getTeamSocialImage("team-social-image.jpg", team._id);
+                return { ...team, imagen: imagenUrl };
+              } catch (error) {
+                return {
+                  ...team,
+                  imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`
+                };
+              }
             } catch (error) {
               return null;
             }
@@ -271,9 +278,15 @@ export default function DashboardPage() {
               
               const academia = await res.json();
               
-              // Usar la imagen ya guardada en la base de datos o placeholder
-              const imagenUrl = academia.imagenUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`;
-              return { ...academia, imagenUrl };
+              try {
+                const imagenUrl = await getAcademyImage("profile-image.jpg", academia._id);
+                return { ...academia, imagenUrl };
+              } catch (error) {
+                return {
+                  ...academia,
+                  imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`
+                };
+              }
             } catch (error) {
               return null;
             }
@@ -322,38 +335,11 @@ export default function DashboardPage() {
     }
   };
 
-  const handleToggleFavorite = async (tipo: 'academias' | 'sociales' | 'teamsocial', id: string) => {
-    try {
-      const response = await fetch(`/api/favoritos/${tipo}/${id}`, {
-        method: "POST",
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Si se quitó de favoritos (favorito = false), actualizar el estado local
-        if (!result.favorito) {
-          if (tipo === 'academias') {
-            setFavoritosAcademias(prev => prev.filter(item => item._id !== id));
-          } else if (tipo === 'sociales') {
-            setFavoritosSalidas(prev => prev.filter(item => item._id !== id));
-          } else if (tipo === 'teamsocial') {
-            setFavoritosTeams(prev => prev.filter(item => item._id !== id));
-          }
-          toast.success("Eliminado de favoritos");
-        }
-      }
-    } catch (error) {
-      toast.error("Error al actualizar favoritos");
-    }
-  };
-
   useEffect(() => {
+    console.log("Dashboard useEffect ejecutado:", { session, userId: session?.user?.id });
     if (session?.user?.id) {
-      // Solo ejecutar fetchMiPanel si el usuario es admin
-      if (session.user.rol === "admin") {
-        fetchMiPanel();
-      }
+      console.log("Ejecutando funciones de fetch...");
+      fetchMiPanel();
       fetchMisMatch();
       fetchMisFavoritos();
     }
@@ -374,11 +360,7 @@ export default function DashboardPage() {
   }
 
   const renderContent = () => {
-    // Encontrar la categoría activa por su índice
-    const currentCategory = categories[activeCategory];
-    const categoryIndex = currentCategory?.index;
-
-    switch (categoryIndex) {
+    switch (activeCategory) {
       case 0: // Mi panel
         return (
           <div className="space-y-6">
@@ -534,80 +516,62 @@ export default function DashboardPage() {
         const totalFavoritos = favoritosAcademias.length + favoritosSalidas.length + favoritosTeams.length;
         
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Academias Favoritas */}
-            {favoritosAcademias.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Academias Favoritas</h3>
-                {favoritosAcademias.map((academia) => (
-                  <DashboardCard
-                    key={academia._id}
-                    id={academia._id}
-                    title={academia.nombre_academia}
-                    image={academia.imagenUrl}
-                    category={academia.tipo_disciplina}
-                    location=""
-                    localidad={academia.localidad}
-                    price={academia.precio}
-                    type="academia"
-                    showActions={true}
-                    isFavorite={true}
-                    onToggleFavorite={() => handleToggleFavorite('academias', academia._id)}
-                  />
-                ))}
-              </div>
-            )}
+            {favoritosAcademias.map((academia) => (
+              <DashboardCard
+                key={academia._id}
+                id={academia._id}
+                title={academia.nombre_academia}
+                image={academia.imagenUrl}
+                category={academia.tipo_disciplina}
+                location=""
+                localidad={academia.localidad}
+                price={academia.precio}
+                type="academia"
+                showActions={true}
+                isFavorite={true}
+              />
+            ))}
 
-            {/* Salidas Sociales Favoritas */}
-            {favoritosSalidas.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Salidas Sociales Favoritas</h3>
-                {favoritosSalidas.map((salida) => (
-                  <DashboardCard
-                    key={salida._id}
-                    id={salida._id}
-                    title={salida.nombre}
-                    image={salida.imagen}
-                    category={salida.deporte}
-                    location={salida.ubicacion}
-                    localidad={salida.localidad}
-                    date={dayjs(salida.fecha).format("DD/MM/YYYY")}
-                    time={salida.hora}
-                    price={salida.precio}
-                    teacher={`${salida.creador_id?.firstname} ${salida.creador_id?.lastname}`}
-                    type="salida"
-                    showActions={true}
-                    isFavorite={true}
-                    onToggleFavorite={() => handleToggleFavorite('sociales', salida._id)}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Salidas Favoritas */}
+            {favoritosSalidas.map((salida) => (
+              <DashboardCard
+                key={salida._id}
+                id={salida._id}
+                title={salida.nombre}
+                image={salida.imagen}
+                category={salida.deporte}
+                location={salida.ubicacion}
+                localidad={salida.localidad}
+                date={dayjs(salida.fecha).format("DD/MM/YYYY")}
+                time={salida.hora}
+                price={salida.precio}
+                teacher={`${salida.creador_id?.firstname} ${salida.creador_id?.lastname}`}
+                type="salida"
+                showActions={true}
+                isFavorite={true}
+              />
+            ))}
 
-            {/* Teams Sociales Favoritos */}
-            {favoritosTeams.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Teams Sociales Favoritos</h3>
-                {favoritosTeams.map((team) => (
-                  <DashboardCard
-                    key={team._id}
-                    id={team._id}
-                    title={team.nombre}
-                    image={team.imagen}
-                    category={team.deporte}
-                    location={team.ubicacion}
-                    localidad={team.localidad}
-                    date={dayjs(team.fecha).format("DD/MM/YYYY")}
-                    time={team.hora}
-                    price={team.precio}
-                    type="team"
-                    showActions={true}
-                    isFavorite={true}
-                    onToggleFavorite={() => handleToggleFavorite('teamsocial', team._id)}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Teams Favoritos */}
+            {favoritosTeams.map((team) => (
+              <DashboardCard
+                key={team._id}
+                id={team._id}
+                title={team.nombre}
+                image={team.imagen}
+                category={team.deporte}
+                location={team.ubicacion}
+                localidad={team.localidad}
+                date={dayjs(team.fecha).format("DD/MM/YYYY")}
+                time={team.hora}
+                price={team.precio}
+                type="team"
+                showActions={true}
+                isFavorite={true}
+              />
+            ))}
 
             {totalFavoritos === 0 && (
               <div className="text-center py-12 text-gray-500">

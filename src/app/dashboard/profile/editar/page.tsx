@@ -46,10 +46,8 @@ function EditProfilePage() {
           const url = await getProfileImage("profile-image.jpg", data._id);
           setProfileImage(url || data.imagen);
         } else {
-          console.error(data.error);
         }
       } catch (error) {
-        console.error(error);
       }
     };
 
@@ -114,7 +112,6 @@ function EditProfilePage() {
     }
   };
 
-  console.log(formData);
 
   return (
     <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">

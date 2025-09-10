@@ -45,7 +45,6 @@ function ProfilePage() {
         );
         setProfileImage(imageUrl);
       } catch (error) {
-        console.error("Error al obtener la imagen del perfil:", error);
         // Puedes agregar una imagen predeterminada en caso de error
         setProfileImage(session.user.imagen);
       }
@@ -71,9 +70,7 @@ function ProfilePage() {
         
         setStravaConnected(data.connected);
 
-        console.log("Strava connected:", data.connected);
       } catch (error) {
-        console.error("Error verificando Strava:", error);
       }
     };
     checkStravaStatus();

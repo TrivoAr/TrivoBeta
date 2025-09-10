@@ -46,7 +46,6 @@ export default function PaymentModal({
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    console.log("lo copiaste maquina");
     toast.success("Copiado al portapapeles");
   };
 
@@ -85,7 +84,6 @@ const handleEnviarPago = async () => {
     }
 
     const pagoData = await resPago.json();
-    console.log(pagoData.pago._id);
 
     // 3️⃣ Crear solicitud de unirse con estado pendiente y asociando el pago
     const resUnirse = await fetch("/api/social/unirse", {
@@ -107,7 +105,6 @@ const handleEnviarPago = async () => {
     }
 
   } catch (error) {
-    console.error(error);
     toast.error("Ocurrió un error. Intenta de nuevo.");
   } finally {
     setIsLoading(false);

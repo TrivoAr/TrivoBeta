@@ -22,7 +22,6 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
 
-  console.log("datos", session?.user?.imagen);
 
 useEffect(() => {
   if (!session?.user) return;
@@ -46,7 +45,7 @@ useEffect(() => {
       // Sumar ambas cantidades de forma unificada
       setUnreadCount(noLeidas.length + pendientes.length);
     } catch (error) {
-      console.error("Error al cargar notificaciones o solicitudes", error);
+      // Silently handle notification/request loading errors
     }
   };
 
@@ -73,10 +72,9 @@ useEffect(() => {
     router.push("/notificaciones");
   };
 
-  console.log("imageb", session?.user);
 
   return (
-    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
+    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
       {/* Avatar */}
       <Link href="/dashboard/profile">
 

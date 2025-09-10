@@ -29,7 +29,6 @@ function Navbar() {
       </>
     );
 
-    console.log(session.user.role);
 
     return (
       <li className="flex flex-col items-center justify-center">

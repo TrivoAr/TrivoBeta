@@ -16,12 +16,16 @@ export async function GET() {
     const notificaciones = await Notificacion.find({ userId: session.user.id })
       .sort({ createdAt: -1 })
       .populate("fromUserId", "firstname lastname _id")
-      .populate("salidaId", "nombre");
+      .populate("salidaId", "nombre _id")
+      .populate("academiaId", "nombre_academia _id")
+      .populate("teamSocialId", "nombre _id");
 
     const enriched = await Promise.all(
       notificaciones.map(async (n) => {
         const user = n.fromUserId;
         const salida = n.salidaId;
+        const academia = n.academiaId;
+        const teamSocial = n.teamSocialId;
 
         let imagen = "";
 
@@ -34,15 +38,52 @@ export async function GET() {
           )}&background=random&color=fff&size=128`;
         }
 
+        // Generar actionUrl si no existe
+        let actionUrl = n.actionUrl;
+        if (!actionUrl) {
+          switch (n.type) {
+            case "miembro_aprobado":
+            case "joined_event":
+              actionUrl = salida?._id ? `/social/${salida._id}` : null;
+              break;
+            case "solicitud_academia":
+            case "nueva_academia":
+              actionUrl = academia?._id ? `/academias/${academia._id}` : null;
+              break;
+            case "nuevo_team":
+            case "solicitud_team":
+              actionUrl = teamSocial?._id ? `/team-social/${teamSocial._id}` : null;
+              break;
+            case "pago_aprobado":
+              actionUrl = `/dashboard`;
+              break;
+            default:
+              actionUrl = `/profile/${user._id}`;
+              break;
+          }
+        }
+
         return {
           _id: n._id,
+          type: n.type,
+          message: n.message,
           mensaje: n.message || `${user.firstname} se unió a ${salida?.nombre || "una salida"}`,
           read: n.read,
           createdAt: n.createdAt,
           nombre: `${user.firstname} ${user.lastname}`,
-          salidaNombre: salida?.nombre || null,
           imagen,
           fromUserId: user._id.toString(),
+          // Datos de entidades relacionadas
+          salidaId: salida?._id || null,
+          salidaNombre: salida?.nombre || null,
+          academiaId: academia?._id || null,
+          academiaNombre: academia?.nombre_academia || null,
+          teamSocialId: teamSocial?._id || null,
+          teamSocialNombre: teamSocial?.nombre || null,
+          // Campos de navegación
+          actionUrl,
+          actionType: n.actionType || "navigate",
+          metadata: n.metadata || {},
         };
       })
     );

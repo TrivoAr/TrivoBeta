@@ -100,7 +100,6 @@ const ReviewModal = ({
       onClose();
       onReviewSubmitted?.();
     } catch (error: any) {
-      console.error(error);
       toast.error(error.response?.data?.error || "Error al enviar la reseña");
     } finally {
       setLoading(false);

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+// Removed TanStack Query
 import { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -200,7 +200,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
-      console.error("Error buscando sugerencias:", err);
+      // Silently handle search suggestions error
     }
   };
 
@@ -215,8 +215,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
-      return "Ubicación seleccionada"; // 👈 fallback
+      return "Ubicación seleccionada"; // fallback
     }
   };
 

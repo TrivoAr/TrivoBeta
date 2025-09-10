@@ -14,9 +14,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
       },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+      },
     ],
-    domains: ["firebasestorage.googleapis.com"],
-    domains: ["ui-avatars.com"],
+    domains: ["firebasestorage.googleapis.com", "ui-avatars.com"],
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -11,6 +11,7 @@ import Ticket from "@/models/ticket";
 import { qrPngDataUrl } from "@/libs/qr";
 import { sendTicketEmail } from "@/libs/email/sendTicketEmail";
 import { customAlphabet } from "nanoid";
+import MiembroSalida from "@/models/MiembroSalida";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -116,6 +117,16 @@ export async function PATCH(
 
       if (estado === "aprobado") {
         try {
+          // Actualizar estado del miembro a aprobado cuando se aprueba el pago
+          if (pago.miembro_id) {
+            await MiembroSalida.findByIdAndUpdate(
+              pago.miembro_id,
+              { estado: "aprobado" },
+              { new: true }
+            );
+            console.log("✅ Estado del miembro actualizado a aprobado:", pago.miembro_id);
+          }
+
           // 1) buscar o crear ticket (idempotente)
           let ticket = await Ticket.findOne({
             userId: pago.userId,

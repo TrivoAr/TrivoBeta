@@ -43,7 +43,7 @@ export default function UserPublicProfile({ userId }: Props) {
     fetch(`/api/profile/${id}`)
       .then((res) => res.json())
       .then((data) => setUser(data))
-      .catch((err) => console.error("Error fetching profile:", err))
+      .catch((err) => {/* Silently handle profile fetch error */})
       .finally(() => setLoading(false));
 
      const loadProfileImage = async () => {
@@ -53,11 +53,9 @@ export default function UserPublicProfile({ userId }: Props) {
               id
             );
 
-            console.log("Imagen de perfil cargada:", imageUrl);
             setProfileImage(imageUrl);
           } catch (error) {
-            console.error("Error al obtener la imagen del perfil:", error);
-            // Puedes agregar una imagen predeterminada en caso de error
+            // Silently handle profile image loading error
           }
         };
     
