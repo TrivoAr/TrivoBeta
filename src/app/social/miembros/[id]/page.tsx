@@ -239,6 +239,7 @@ export default function EventPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+ 
 
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState<
@@ -282,19 +283,32 @@ export default function EventPage({ params }: { params: { id: string } }) {
   const error = errorEvent || errorMiembros;
 
   const isOwner = session?.user?.id === event?.creador_id?._id;
+   const safeMiembros = Array.isArray(miembros) ? miembros : [];
 
-  const filteredMiembros = miembros.filter((miembro: any) => {
-    const matchName = miembro.nombre
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  // const filteredMiembros = miembros.filter((miembro: any) => {
+  //   const matchName = miembro.nombre
+  //     .toLowerCase()
+  //     .includes(searchQuery.toLowerCase());
 
-    if (isOwner) {
-      const matchPago =
-        paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
-      return matchName && matchPago;
-    }
-    return matchName && miembro.pago_id.estado === "aprobado";
-  });
+  //   if (isOwner) {
+  //     const matchPago =
+  //       paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
+  //     return matchName && matchPago;
+  //   }
+  //   return matchName && miembro.pago_id.estado === "aprobado";
+  // });
+
+
+  
+const filteredMiembros = safeMiembros.filter((miembro: any) => {
+  const matchName = miembro.nombre?.toLowerCase().includes(searchQuery.toLowerCase());
+  if (isOwner) {
+    const matchPago =
+      paymentFilter === "todos" || miembro.pago_id?.estado === paymentFilter;
+    return matchName && matchPago;
+  }
+  return matchName && miembro.pago_id?.estado === "aprobado";
+});
 
   const deleteMiembroMutation = useMutation({
     mutationFn: async (miembroId: string) => {
@@ -326,7 +340,7 @@ function handleDelete(miembroId: string) {
         toast.dismiss();
       },
     },
-    duration: Infinity, // 👈 para que no se cierre solo
+    duration: Infinity, 
   });
 }
 

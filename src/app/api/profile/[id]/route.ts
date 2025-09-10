@@ -19,7 +19,7 @@ export async function GET(
     }
 
     const user = await User.findById(id).select(
-      "firstname lastname bio imagen rol instagram telnumber createdAt"
+      "firstname lastname bio imagen rol instagram telnumber createdAt favoritos"
     );
 
     if (!user) {

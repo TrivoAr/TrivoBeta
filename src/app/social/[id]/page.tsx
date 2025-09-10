@@ -14,7 +14,7 @@ import Skeleton from "react-loading-skeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 interface PageProps {

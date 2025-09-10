@@ -7,10 +7,11 @@ import { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { storage } from "@/libs/firebaseConfig.js";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
+import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
 
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
@@ -63,6 +64,14 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     lat: -26.8333,
     lng: -65.2167,
   });
+  
+  // Estados para provincia/localidad
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedLocality, setSelectedLocality] = useState<string>("");
+  
+  // Hooks para Argentina locations
+  const { data: provinces = [], isLoading: provincesLoading } = useProvinces();
+  const { data: localities = [], isLoading: localitiesLoading } = useLocalitiesByProvince(selectedProvince);
 
   // -------- Query salida --------
   const salidaQuery = useQuery({
@@ -88,6 +97,23 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       }
     }
   }, [salidaQuery.data]);
+  
+  // Mapear localidad existente a provincia/localidad cuando se cargan los datos
+  useEffect(() => {
+    if (salidaQuery.data?.localidad && provinces.length > 0) {
+      // Buscar en qué provincia está esta localidad
+      for (const province of provinces) {
+        const locality = province.localities.find(l => 
+          l.name.toLowerCase() === salidaQuery.data.localidad.toLowerCase()
+        );
+        if (locality) {
+          setSelectedProvince(province.id);
+          setSelectedLocality(locality.id);
+          break;
+        }
+      }
+    }
+  }, [salidaQuery.data?.localidad, provinces]);
 
   // -------- Query profes --------
   const profesQuery = useQuery({
@@ -183,8 +209,11 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
   const handleSuggestionClick = (s: any) => {
     const coords = { lat: parseFloat(s.lat), lng: parseFloat(s.lon) };
-    salidaQuery.data.ubicacion = s.display_name;
-    salidaQuery.data.locationCoords = coords;
+    setLocalSalida((prev: any) => ({
+      ...prev,
+      ubicacion: s.display_name,
+      locationCoords: coords
+    }));
     setMarkerPos(coords);
     setSuggestions([]);
   };
@@ -200,7 +229,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
-      console.error("Error buscando sugerencias:", err);
+      // Silently handle search suggestions error
     }
   };
 
@@ -215,8 +244,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
-      return "Ubicación seleccionada"; // 👈 fallback
+      return "Ubicación seleccionada"; // fallback
     }
   };
 
@@ -235,16 +263,16 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Nombre */}
         <input
           name="nombre"
-          defaultValue={salida.nombre}
-          onChange={(e) => (salida.nombre = e.target.value)}
+          value={localSalida?.nombre || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, nombre: e.target.value }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           placeholder="Nombre"
         />
 
-        {/* Localidad */}
+        {/* Localidad - Placeholder for province/locality system */}
         <select
-          defaultValue={salida.localidad || ""}
-          onChange={(e) => (salida.localidad = e.target.value)}
+          value={localSalida?.localidad || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, localidad: e.target.value }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Localidad</option>
@@ -256,8 +284,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
         {/* Deporte */}
         <select
-          defaultValue={salida.deporte || ""}
-          onChange={(e) => (salida.deporte = e.target.value)}
+          value={localSalida?.deporte || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, deporte: e.target.value }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Selecciona un deporte</option>
@@ -269,8 +297,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
         {/* Duración */}
         <select
-          defaultValue={salida.duracion || ""}
-          onChange={(e) => (salida.duracion = e.target.value)}
+          value={localSalida?.duracion || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, duracion: e.target.value }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Duración</option>
@@ -281,8 +309,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
         {/* Dificultad */}
         <select
-          defaultValue={salida.dificultad || ""}
-          onChange={(e) => (salida.dificultad = e.target.value)}
+          value={localSalida?.dificultad || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, dificultad: e.target.value }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Dificultad</option>
@@ -294,8 +322,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Precio */}
         <input
           name="precio"
-          defaultValue={salida.precio}
-          onChange={(e) => (salida.precio = e.target.value)}
+          value={localSalida?.precio || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, precio: e.target.value }))}
           placeholder="Precio"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
@@ -303,8 +331,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Alias / CBU */}
         <input
           name="alias"
-          defaultValue={salida.alias}
-          onChange={(e) => (salida.alias = e.target.value)}
+          value={localSalida?.alias || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, alias: e.target.value }))}
           placeholder="Alias/CBU"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
@@ -313,8 +341,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <input
           name="cupo"
           type="number"
-          defaultValue={salida.cupo}
-          onChange={(e) => (salida.cupo = Number(e.target.value))}
+          value={localSalida?.cupo || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, cupo: Number(e.target.value) }))}
           placeholder="Cupo"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
@@ -323,22 +351,22 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <div className="flex gap-3 mb-3">
           <input
             type="date"
-            defaultValue={salida.fecha?.split("T")[0]}
-            onChange={(e) => (salida.fecha = e.target.value)}
+            value={localSalida?.fecha?.split("T")[0] || ""}
+            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, fecha: e.target.value }))}
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
           />
           <input
             type="time"
-            defaultValue={salida.hora}
-            onChange={(e) => (salida.hora = e.target.value)}
+            value={localSalida?.hora || ""}
+            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, hora: e.target.value }))}
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
           />
         </div>
 
         {/* Descripción */}
         <DescriptionEditor
-          value={salida.descripcion ?? ""}
-          onChange={(val) => (salida.descripcion = val)}
+          value={localSalida?.descripcion ?? ""}
+          onChange={(val) => setLocalSalida((prev: any) => ({ ...prev, descripcion: val }))}
           maxChars={2000}
         />
 
@@ -353,8 +381,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Teléfono */}
         <input
           name="telefonoOrganizador"
-          defaultValue={salida.telefonoOrganizador}
-          onChange={(e) => (salida.telefonoOrganizador = e.target.value)}
+          value={localSalida?.telefonoOrganizador || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, telefonoOrganizador: e.target.value }))}
           placeholder="Teléfono organizador"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
@@ -362,16 +390,16 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* WhatsApp */}
         <input
           name="whatsappLink"
-          defaultValue={salida.whatsappLink}
-          onChange={(e) => (salida.whatsappLink = e.target.value)}
+          value={localSalida?.whatsappLink || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, whatsappLink: e.target.value }))}
           placeholder="Link de WhatsApp"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         />
 
         {/* Profesor */}
         <select
-          defaultValue={salida.profesorId || ""}
-          onChange={(e) => (salida.profesorId = e.target.value || undefined)}
+          value={localSalida?.profesorId || ""}
+          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, profesorId: e.target.value || undefined }))}
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
         >
           <option value="">Sin profesor</option>

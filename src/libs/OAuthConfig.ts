@@ -32,8 +32,6 @@ export default function StravaProvider<P extends StravaProfile>(
     
 
     profile(profile: P): User {
-      console.log("Strava Client ID:", options.clientId)
-    console.log("Strava Client Secret:", options.clientSecret)
       return {
         id: profile.id.toString(),
         email: profile.email,

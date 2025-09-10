@@ -105,7 +105,6 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
           : "Academia eliminada de favoritos"
       );
     } catch (error) {
-      console.error("Error al actualizar favoritos:", error);
       toast.error("Hubo un error al actualizar favoritos.");
     }
   };
@@ -117,7 +116,7 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
         const data = await res.json();
         setEsFavorito(data.favorito);
       } catch (err) {
-        console.error("Error al verificar favorito:", err);
+        // Silently fail - favorito check is not critical
       }
     };
 
@@ -148,7 +147,6 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
 
         setMiembros(miembrosAprobados);
       } catch (err) {
-        console.error("Error al cargar miembros", err);
         toast.error("No se pudieron cargar los cupos");
       }
     };

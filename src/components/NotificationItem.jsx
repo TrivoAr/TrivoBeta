@@ -10,6 +10,102 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
   const isSolicitud = notification.tipo === "solicitud";
   const router = useRouter();
 
+  // Función para manejar el click en la notificación con navegación dinámica
+  const handleNotificationClick = async () => {
+    try {
+      console.log("Notification clicked:", notification);
+      
+      // Marcar como leída
+      if (!notification.read) {
+        await onMarkAsRead(notification._id);
+      }
+
+      // Navegar según el tipo de notificación
+      if (notification.actionUrl) {
+        console.log("Navigating to actionUrl:", notification.actionUrl);
+        router.push(notification.actionUrl);
+      } else {
+        // Fallback a navegación basada en tipo
+        const navUrl = getNavigationUrl(notification);
+        console.log("Navigating to navUrl:", navUrl);
+        if (navUrl) {
+          router.push(navUrl);
+        } else {
+          console.log("No navigation URL found for notification");
+        }
+      }
+    } catch (error) {
+      console.error("Error al manejar click de notificación:", error);
+    }
+  };
+
+  // Función para determinar la URL de navegación basada en el tipo
+  const getNavigationUrl = (notification) => {
+    const type = notification.type || notification.tipo;
+    console.log("Getting navigation URL for type:", type, notification);
+    
+    switch (type) {
+      case "miembro_aprobado":
+      case "joined_event":
+        return notification.salidaId ? `/social/${notification.salidaId}` : null;
+      
+      case "solicitud_academia":
+      case "nueva_academia":
+        return notification.academiaId ? `/academias/${notification.academiaId}` : null;
+      
+      case "nuevo_team":
+      case "solicitud_team":
+        return notification.teamSocialId ? `/team-social/${notification.teamSocialId}` : null;
+      
+      case "pago_aprobado":
+        return `/dashboard`; // ir al dashboard para ver el estado
+      
+      case "solicitud":
+        // Para solicitudes de academia
+        return `/dashboard`; // o la página específica de gestión
+      
+      case "notificacion":
+        // Para notificaciones generales, intentar extraer URL de metadata
+        if (notification.salidaId) return `/social/${notification.salidaId}`;
+        if (notification.academiaId) return `/academias/${notification.academiaId}`;
+        if (notification.teamSocialId) return `/team-social/${notification.teamSocialId}`;
+        break;
+      
+      default:
+        // Para tipos legacy o desconocidos, navegar al dashboard como fallback seguro
+        console.log("Unknown notification type:", type);
+        return `/dashboard`;
+    }
+    
+    return null;
+  };
+
+  // Función para obtener el icono según el tipo de notificación
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "miembro_aprobado":
+        return "";
+      case "miembro_rechazado":
+        return "";
+      case "joined_event":
+        return "";
+      case "nueva_salida":
+        return "";
+      case "nueva_academia":
+        return "";
+      case "nuevo_team":
+        return "";
+      case "pago_aprobado":
+        return "";
+      case "solicitud_recibida":
+      case "solicitud_academia":
+      case "solicitud_team":
+        return "";
+      default:
+        return "";
+    }
+  };
+
   const handleAceptar = async () => {
     try {
       await fetch("/api/academias/solicitudes", {
@@ -24,7 +120,7 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
       onRemove(notification._id);
       toast.success("Solicitud aceptada");
     } catch (err) {
-      console.error("Error al aceptar solicitud", err);
+      // Silently handle accept request error
     }
   };
 
@@ -42,60 +138,73 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
       onRemove(notification._id);
       toast.error("Solicitud rechazada");
     } catch (err) {
-      console.error("Error al rechazar solicitud", err);
+      // Silently handle reject request error
     }
   };
 
-  console.log("NotificationItem", notification);
 
   return (
-    <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-100 transition">
+    <div 
+      className={`flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border-l-4 ${
+        notification.read ? 'border-gray-200 bg-white' : 'border-[#C95100] bg-orange-50'
+      }`}
+      onClick={handleNotificationClick}
+    >
+      {/* Avatar del usuario */}
       <div
         style={{
           backgroundImage: `url(${notification.imagen})`,
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
-        className="rounded-full object-cover p-8 w-12 h-12  cursor-pointer"
-        // onClick={() => {
-        //   console.log("notification:", notification);
-        //   const profileId = notification.fromUserId || notification.userId;
-        //   if (profileId) {
-        //     router.push(`/profile/${profileId}`);
-        //   }
-        // }}
-        onClick={() => {
-          const profileId = notification.fromUserId || notification.userId;
-          if (notification.tipo === "notificacion") {
-            onMarkAsRead(notification._id); // ✅ marca como leída
-          }
-          if (profileId) {
-            router.push(`/profile/${profileId}`);
-          }
-        }}
+        className="rounded-full object-cover w-16 h-16 flex-shrink-0 border-2 border-gray-200"
       />
-      <div className="flex-1">
-        <p className="text-sm">
-          <span className="font-semibold">{notification.nombre}</span>{" "}
-          {notification.mensaje}
-        </p>
-        <p className="text-xs text-gray-500">
-          {dayjs(notification.createdAt).fromNow()}
-        </p>
+      
+      {/* Icono de tipo de notificación */}
+      <div className="text-lg">
+        {getNotificationIcon(notification.type)}
       </div>
+      
+      {/* Contenido de la notificación */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <p className={`text-sm ${notification.read ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
+            <span className="font-semibold">{notification.nombre}</span>{" "}
+            {notification.mensaje || notification.message}
+          </p>
+          {!notification.read && (
+            <div className="w-2 h-2 bg-[#C95100] rounded-full flex-shrink-0"></div>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-xs text-gray-500">
+            {dayjs(notification.createdAt).fromNow()}
+          </p>
+          
+          {/* Mostrar hacia dónde llevará la notificación */}
+          {(notification.actionUrl || getNavigationUrl(notification)) && (
+            <p className="text-xs text-[#C95100] font-medium">
+              Toca para ver →
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Botones de acción para solicitudes */}
       {isSolicitud && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={handleAceptar}
-            className="bg-green-500 text-white text-xs px-2 py-1 rounded-full hover:bg-green-600"
+            className="bg-green-500 text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition-colors"
           >
-            ✓
+            Aceptar
           </button>
           <button
             onClick={handleRechazar}
-            className="bg-red-500 text-white text-xs px-2 py-1 rounded-full hover:bg-red-600"
+            className="bg-red-500 text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
           >
-            ✕
+            Rechazar
           </button>
         </div>
       )}

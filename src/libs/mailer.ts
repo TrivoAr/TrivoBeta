@@ -25,8 +25,8 @@ export async function sendPaymentStatusEmail(to: string, estado: string) {
       subject,
       html: `<p>${body}</p>`,
     });
-    console.log(`📧 Email enviado a ${to}`);
+    // Email sent successfully
   } catch (error) {
-    console.error("❌ Error enviando email:", error);
+    // Silently handle email sending error
   }
 }

@@ -74,6 +74,9 @@ const SalidaSocialSchema = new Schema(
     detalles:{
       type: String,
     },
+    provincia:{
+      type: String,
+    },
 
 
     cbu:{

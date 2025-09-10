@@ -108,7 +108,6 @@ export default function StaffScanPage() {
   const onDecode = useCallback((txt: string) => { void onDecodeAsync(txt); }, [onDecodeAsync]);
 
   const onError = useCallback((err: any) => {
-    console.error(err);
     setStatusMsg("⚠️ Error de cámara o permisos.");
   }, []);
 

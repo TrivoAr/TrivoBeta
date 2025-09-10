@@ -8,6 +8,7 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
 import { set } from "mongoose";
+import { useLocationDetection, useSavedLocations } from "@/hooks/useGeolocation";
 
 const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
@@ -22,7 +23,41 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
 
-  console.log("datos", session?.user?.imagen);
+  // TanStack Query hooks para geolocalización
+  const { 
+    detectLocation, 
+    isLoading: locationLoading, 
+    error: locationError, 
+    data: locationData,
+    isSuccess: locationSuccess,
+    reset: resetLocation 
+  } = useLocationDetection();
+
+  const { data: savedLocations } = useSavedLocations();
+
+  // Función para obtener la ubicación del usuario usando TanStack Query
+  const getCurrentLocation = () => {
+    resetLocation(); // Limpiar estado anterior
+    detectLocation(); // Activar detección
+  };
+
+  // Efecto para actualizar el select cuando se detecta ubicación
+  useEffect(() => {
+    if (locationSuccess && locationData && setSelectedLocalidad) {
+      const city = locationData.city;
+      const knownCities = ["San Miguel de Tucuman", "Yerba Buena", "Tafi Viejo"];
+      
+      const foundCity = knownCities.find(cityName => 
+        city.toLowerCase().includes(cityName.toLowerCase().split(" ")[0])
+      );
+      
+      if (foundCity) {
+        setSelectedLocalidad(foundCity);
+      } else {
+        setSelectedLocalidad("Otros");
+      }
+    }
+  }, [locationSuccess, locationData, setSelectedLocalidad]);
 
 useEffect(() => {
   if (!session?.user) return;
@@ -46,11 +81,22 @@ useEffect(() => {
       // Sumar ambas cantidades de forma unificada
       setUnreadCount(noLeidas.length + pendientes.length);
     } catch (error) {
-      console.error("Error al cargar notificaciones o solicitudes", error);
+      // Silently handle notification/request loading errors
     }
   };
 
   fetchData();
+
+  // Listener para cuando se marca una notificación como leída
+  const handleNotificationUpdate = () => {
+    fetchData();
+  };
+
+  window.addEventListener('notificationMarkedAsRead', handleNotificationUpdate);
+  
+  return () => {
+    window.removeEventListener('notificationMarkedAsRead', handleNotificationUpdate);
+  };
 
   const loadProfileImage = async () => {
     try {
@@ -73,10 +119,9 @@ useEffect(() => {
     router.push("/notificaciones");
   };
 
-  console.log("imageb", session?.user);
 
   return (
-    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center">
+    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
       {/* Avatar */}
       <Link href="/dashboard/profile">
 
@@ -98,7 +143,21 @@ useEffect(() => {
 
       {/* Ubicación */}
       <div className="flex flex-col items-center justify-center text-center">
-        <p className="text-gray-500 text-[12px]">Ubicación</p>
+        <div className="flex items-center gap-1 mb-1">
+          <p className="text-gray-500 text-[12px]">Ubicación</p>
+          <button
+            onClick={getCurrentLocation}
+            disabled={locationLoading}
+            className="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
+            title="Detectar mi ubicación"
+          >
+            {locationLoading ? (
+              <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            ) : (null
+            )}
+          </button>
+        </div>
+        
         <div className="flex items-center text-[14px] font-medium text-black">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -110,30 +169,46 @@ useEffect(() => {
           >
             <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
           </svg>
-          <select
-            name="localidad"
-            value={selectedLocalidad}
-            onChange={(e) => setSelectedLocalidad(e.target.value)}
-            className="w-auto p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center"
-          >
-            <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
-            <option value="Yerba Buena" className="w-auto">
-              Yerba Buena
-            </option>
-            <option value="Tafi Viejo">Tafi Viejo</option>
-            <option value="Otros">Otros</option>
-          </select>
-          {/* San Miguel de Tucumán
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-        className="ml-1 w-4 h-4"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg> */}
+          
+          {locationSuccess && locationData ? (
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] text-green-600 mb-1">📍 Detectado</span>
+              <select
+                name="localidad"
+                value={selectedLocalidad}
+                onChange={(e) => setSelectedLocalidad(e.target.value)}
+                className="w-auto p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center text-[12px]"
+              >
+                <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
+                <option value="Yerba Buena">Yerba Buena</option>
+                <option value="Tafi Viejo">Tafi Viejo</option>
+                <option value="Otros">Otros</option>
+                {locationData.city && !["San Miguel de Tucuman", "Yerba Buena", "Tafi Viejo", "Otros"].includes(locationData.city) && (
+                  <option value={locationData.city}>{locationData.city}</option>
+                )}
+              </select>
+            </div>
+          ) : (
+            <select
+              name="localidad"
+              value={selectedLocalidad}
+              onChange={(e) => setSelectedLocalidad(e.target.value)}
+              className="w-auto p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center"
+            >
+              <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
+              <option value="Yerba Buena">Yerba Buena</option>
+              <option value="Tafi Viejo">Tafi Viejo</option>
+              <option value="Otros">Otros</option>
+              {/* Mostrar ubicaciones guardadas si las hay */}
+              {savedLocations && savedLocations.map((loc, index) => (
+                <option key={index} value={loc.city}>{loc.city}</option>
+              ))}
+            </select>
+          )}
+          
+          {locationError && (
+            <span className="text-[10px] text-red-500 ml-1" title={locationError.message}>❌</span>
+          )}
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import mapboxgl from "mapbox-gl";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { set } from "mongoose";
+import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
 
@@ -59,6 +60,16 @@ export default function CrearSalidaPage() {
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estados para provincia/localidad
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedLocality, setSelectedLocality] = useState<string>("");
+  const [locationDetecting, setLocationDetecting] = useState(false);
+  
+  // Hooks para datos de ubicación
+  const { data: provinces } = useProvinces();
+  const { data: localities } = useLocalitiesByProvince(selectedProvince);
+  const locationFromCoordsQuery = useLocationFromCoords();
   const [ubicacion, setUbicacion] = useState("");
   const [coords, setCoords] = useState<Coords>({
     lat: -26.8333,
@@ -77,6 +88,7 @@ export default function CrearSalidaPage() {
     duracion: "",
     descripcion: "",
     localidad: "",
+    provincia: "",
     whatsappLink: "",
     dificultad: "",
     telefonoOrganizador: session?.user.telnumber || "",
@@ -95,6 +107,15 @@ export default function CrearSalidaPage() {
 
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
+  
+  // Coordenadas centrales de cada provincia
+  const provinceCoords: Record<string, LatLng> = {
+    tucuman: { lat: -26.8333, lng: -65.2167 },
+    buenos_aires: { lat: -37.5, lng: -59.5 },
+    cordoba: { lat: -32.0, lng: -64.0 },
+    santa_fe: { lat: -31.0, lng: -61.0 },
+    mendoza: { lat: -34.75, lng: -68.5 },
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -115,6 +136,20 @@ export default function CrearSalidaPage() {
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
+    
+    // Actualizar mapa y marcador
+    if (map.current) {
+      map.current.flyTo({
+        center: [coords.lng, coords.lat],
+        zoom: 15, // Zoom más cercano para ubicaciones específicas
+        speed: 1.5,
+        curve: 1.42
+      });
+    }
+    
+    if (marker.current) {
+      marker.current.setLngLat([coords.lng, coords.lat]);
+    }
 
     const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
     setQuery(direccion);
@@ -126,6 +161,20 @@ export default function CrearSalidaPage() {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords, ubicacion: item.display_name }));
     setQuery(item.display_name);
+    
+    // Actualizar mapa y marcador
+    if (map.current) {
+      map.current.flyTo({
+        center: [coords.lng, coords.lat],
+        zoom: 15,
+        speed: 1.5,
+        curve: 1.42
+      });
+    }
+    
+    if (marker.current) {
+      marker.current.setLngLat([coords.lng, coords.lat]);
+    };
     setSuggestions([]); // cerrar sugerencias
   };
 
@@ -185,6 +234,96 @@ export default function CrearSalidaPage() {
     }
   };
 
+  // Función para detectar ubicación por GPS
+  const detectLocationFromGPS = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocalización no soportada");
+      return;
+    }
+
+    setLocationDetecting(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        try {
+          // Detectar provincia y localidad usando TanStack Query
+          const locationData = await locationFromCoordsQuery.mutateAsync(coords);
+          
+          // Buscar provincia en nuestros datos
+          const province = provinces?.find(p => 
+            p.name.toLowerCase().includes(locationData.province.toLowerCase()) ||
+            p.id === locationData.province
+          );
+
+          if (province) {
+            setSelectedProvince(province.id);
+            setFormData(prev => ({ ...prev, provincia: province.name }));
+
+            // Buscar localidad en esa provincia
+            const locality = province.localities.find(l => 
+              l.name.toLowerCase().includes(locationData.locality.toLowerCase()) ||
+              l.id === locationData.locality
+            );
+
+            if (locality) {
+              setSelectedLocality(locality.id);
+              setFormData(prev => ({ ...prev, localidad: locality.name }));
+            } else {
+              setFormData(prev => ({ ...prev, localidad: locationData.locality }));
+            }
+            
+            // Centrar mapa en la provincia detectada si no tenemos coordenadas exactas del GPS
+            if (!markerPos) {
+              const provinceCenter = provinceCoords[province.id] || coords;
+              setMarkerPos(provinceCenter);
+              setFormData(prev => ({ ...prev, coords: provinceCenter }));
+            }
+          } else {
+            setFormData(prev => ({ 
+              ...prev, 
+              provincia: locationData.province,
+              localidad: locationData.locality 
+            }));
+            
+            // Si no encontramos la provincia, al menos usar las coordenadas GPS
+            if (!markerPos) {
+              setMarkerPos(coords);
+              setFormData(prev => ({ ...prev, coords }));
+            }
+          }
+
+          // Actualizar coordenadas del mapa
+          handleCoordsChange(coords);
+          
+          toast.success(`Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
+        } catch (error) {
+          console.error("Error detectando ubicación:", error);
+          toast.error("Error al detectar ubicación específica");
+          
+          // Al menos actualizar coordenadas del mapa
+          handleCoordsChange(coords);
+        } finally {
+          setLocationDetecting(false);
+        }
+      },
+      (error) => {
+        console.error("Error GPS:", error);
+        toast.error("No se pudo obtener ubicación GPS");
+        setLocationDetecting(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+  };
+
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
   useEffect(() => {
@@ -201,6 +340,35 @@ export default function CrearSalidaPage() {
       debouncedFetch.cancel();
     };
   }, [debouncedFetch]);
+  
+  // Actualizar posición del mapa cuando se selecciona una provincia manualmente
+  useEffect(() => {
+    if (selectedProvince && provinceCoords[selectedProvince] && map.current) {
+      const provinceCenter = provinceCoords[selectedProvince];
+      
+      // Solo actualizar si el mapa no tiene ya una posición específica del GPS
+      if (!markerPos || (markerPos.lat === defaultCoords.lat && markerPos.lng === defaultCoords.lng)) {
+        // Centrar el mapa en la provincia seleccionada
+        map.current.flyTo({
+          center: [provinceCenter.lng, provinceCenter.lat],
+          zoom: 10, // Zoom apropiado para ver la provincia
+          speed: 1.2,
+          curve: 1.42
+        });
+        
+        // Actualizar marker position
+        setMarkerPos(provinceCenter);
+        
+        // Mover el marcador
+        if (marker.current) {
+          marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
+        }
+        
+        // Actualizar formData con las nuevas coordenadas
+        setFormData(prev => ({ ...prev, coords: provinceCenter }));
+      }
+    }
+  }, [selectedProvince, markerPos]);
 
   useEffect(() => {
     if (map.current) return; // evitar inicializar dos veces
@@ -338,18 +506,90 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <select
-        name="localidad"
-        value={formData.localidad}
-        onChange={handleChange}
-        className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
-      >
-        <option value="">Localidad</option>
-        <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
-        <option value="Yerba Buena">Yerba Buena</option>
-        <option value="Tafi Viejo">Tafi Viejo</option>
-        <option value="Otros">Otros</option>
-      </select>
+      {/* Sección de Ubicación con GPS */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Ubicación</h3>
+          <button
+            type="button"
+            onClick={detectLocationFromGPS}
+            disabled={locationDetecting}
+            className="flex items-center gap-2 px-3 py-2 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors disabled:opacity-50"
+          >
+            {locationDetecting ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            )}
+            {locationDetecting ? "Detectando..." : "Detectar GPS"}
+          </button>
+        </div>
+
+        {/* Select de Provincia */}
+        <select
+          name="provincia"
+          value={selectedProvince}
+          onChange={(e) => {
+            const provinceId = e.target.value;
+            setSelectedProvince(provinceId);
+            setSelectedLocality(""); // Reset localidad
+            
+            const province = provinces?.find(p => p.id === provinceId);
+            setFormData(prev => ({ 
+              ...prev, 
+              provincia: province?.name || "",
+              localidad: "" 
+            }));
+          }}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        >
+          <option value="">Seleccionar Provincia</option>
+          {provinces?.map(province => (
+            <option key={province.id} value={province.id}>
+              {province.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Select de Localidad */}
+        <select
+          name="localidad"
+          value={selectedLocality}
+          onChange={(e) => {
+            const localityId = e.target.value;
+            setSelectedLocality(localityId);
+            
+            const locality = localities?.find(l => l.id === localityId);
+            setFormData(prev => ({ 
+              ...prev, 
+              localidad: locality?.name || "" 
+            }));
+          }}
+          disabled={!selectedProvince}
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400 disabled:opacity-50"
+        >
+          <option value="">
+            {!selectedProvince ? "Primero selecciona una provincia" : "Seleccionar Localidad"}
+          </option>
+          {localities?.map(locality => (
+            <option key={locality.id} value={locality.id}>
+              {locality.name}
+            </option>
+          ))}
+        </select>
+
+        {/* Mostrar ubicación detectada */}
+        {formData.provincia && formData.localidad && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-[15px]">
+            <p className="text-sm text-green-700">
+              📍 <strong>{formData.provincia}</strong>, {formData.localidad}
+            </p>
+          </div>
+        )}
+      </div>
 
       <select
         name="deporte"

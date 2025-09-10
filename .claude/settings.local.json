@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__playwright__browser_navigate",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(npm run build:*)",
+      "Bash(taskkill:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(rd:*)",
+      "Bash(dir \"C:\\Users\\matia\\Documents\\GitHub\\Trivo\\Klubo_Mvp\\src\\app\\dashboard\")",
+      "Bash(cmd /c:*)",
+      "Bash(copy:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(findstr:*)",
+      "Bash(npx tsc:*)",
+      "Bash(del page.backup.tsx page_old.tsx page-with-tanstack.tsx page_tanstack_broken.tsx)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run:*)",
+      "Bash(find:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx next build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
