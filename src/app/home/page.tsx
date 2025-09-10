@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import TopContainer from "@/components/TopContainer";
+import PushManager from "@/components/PushManager";
 import EventModal from "@/components/EventModal";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +14,7 @@ import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import EventCard from "@/components/EventCard";
 import StravaMap from "@/components/StravaMap";
 import EmptyState from "@/components/EmptyState";
+import { Toaster } from "react-hot-toast";
 
 const categories = [
   { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
@@ -236,11 +238,14 @@ export default function Home() {
   console.log("que verga", futureEvents);
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer
-        selectedLocalidad={selectedLocalidad}
-        setSelectedLocalidad={setSelectedLocalidad}
-      />
+    <>
+      <PushManager />
+      <Toaster position="top-center" />
+      <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+        <TopContainer
+          selectedLocalidad={selectedLocalidad}
+          setSelectedLocalidad={setSelectedLocalidad}
+        />
 
       <section className="flex flex-col gap-3">
         <h1 className="text-xl font-medium">Proximas salidas</h1>
@@ -263,11 +268,12 @@ export default function Home() {
       </section>
       <div className="pb-[200px]"></div>
 
-      <EventModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        event={selectedEvent}
-      />
-    </main>
+        <EventModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          event={selectedEvent}
+        />
+      </main>
+    </>
   );
 }

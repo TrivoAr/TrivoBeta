@@ -1,4 +1,4 @@
-import { getStravaRoutes } from "../stravaHelper/route";
+import { getStravaRoutes } from "@/libs/stravaHelpers";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

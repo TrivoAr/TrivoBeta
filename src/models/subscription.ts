@@ -1,17 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose from "mongoose";
 
-interface ISubscription extends Document {
-  user_id: mongoose.Schema.Types.ObjectId; // Cambiar a ObjectId
-  endpoint: string;
-  keys: {
-    p256dh: string;
-    auth: string;
-  };
-}
-
-const SubscriptionSchema: Schema = new Schema({
+const SubscriptionSchema = new mongoose.Schema({
   user_id: {
-    type: mongoose.Schema.Types.ObjectId, // Cambiar a ObjectId
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "User",
   },
@@ -23,6 +14,8 @@ const SubscriptionSchema: Schema = new Schema({
     p256dh: { type: String, required: true },
     auth: { type: String, required: true },
   },
+}, {
+  timestamps: true
 });
 
-export default mongoose.models.Subscription || mongoose.model<ISubscription>("Subscription", SubscriptionSchema);
+export default mongoose.models.Subscription || mongoose.model("Subscription", SubscriptionSchema);

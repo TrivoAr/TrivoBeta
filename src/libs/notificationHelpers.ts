@@ -1,5 +1,14 @@
 import { connectDB } from "@/libs/mongodb";
 import Notificacion from "@/models/notificacion";
+import Subscription from "@/models/subscription";
+import webPush from "web-push";
+
+// Configurar VAPID para web-push
+webPush.setVapidDetails(
+  process.env.VAPID_EMAIL!,
+  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+);
 
 interface CreateNotificationParams {
   userId: string; // quien recibe la notificación
@@ -12,6 +21,50 @@ interface CreateNotificationParams {
   actionUrl?: string;
   actionType?: "navigate" | "modal" | "action";
   metadata?: any;
+}
+
+// Función para enviar notificación push al usuario
+async function sendPushNotification(userId: string, title: string, body: string, actionUrl?: string) {
+  try {
+    // Buscar todas las suscripciones del usuario
+    const subscriptions = await Subscription.find({ user_id: userId });
+    
+    if (subscriptions.length === 0) {
+      console.log(`📱 No hay suscripciones push para usuario ${userId}`);
+      return;
+    }
+
+    const payload = JSON.stringify({
+      title,
+      body,
+      url: actionUrl || '/notificaciones',
+      icon: '/icon.png',
+      badge: '/badge.png'
+    });
+
+    // Enviar a todas las suscripciones del usuario
+    const sendPromises = subscriptions.map(async (subscription) => {
+      try {
+        await webPush.sendNotification({
+          endpoint: subscription.endpoint,
+          keys: subscription.keys
+        }, payload);
+        console.log(`📱 Push enviado a usuario ${userId}`);
+      } catch (error: any) {
+        console.error(`❌ Error enviando push a ${userId}:`, error);
+        
+        // Si la suscripción es inválida, eliminarla
+        if (error.statusCode === 410 || error.statusCode === 404) {
+          await Subscription.findByIdAndDelete(subscription._id);
+          console.log(`🗑️ Suscripción inválida eliminada para usuario ${userId}`);
+        }
+      }
+    });
+
+    await Promise.allSettled(sendPromises);
+  } catch (error) {
+    console.error("❌ Error enviando notificación push:", error);
+  }
 }
 
 export async function createNotification({
@@ -44,10 +97,37 @@ export async function createNotification({
     });
 
     console.log(`✅ Notificación creada: ${type} para usuario ${userId}`);
+    
+    // Enviar notificación push al dispositivo del usuario
+    const pushTitle = getPushTitle(type);
+    await sendPushNotification(userId, pushTitle, message, actionUrl);
+    
     return notification;
   } catch (error) {
     console.error("❌ Error al crear notificación:", error);
     throw error;
+  }
+}
+
+// Función para generar títulos específicos según el tipo de notificación
+function getPushTitle(type: string): string {
+  switch (type) {
+    case "miembro_aprobado":
+      return "🎉 Solicitud aprobada";
+    case "miembro_rechazado":
+      return "❌ Solicitud rechazada";
+    case "joined_event":
+      return "👥 Nuevo miembro";
+    case "nueva_salida":
+      return "🚀 Nueva salida";
+    case "pago_aprobado":
+      return "💰 Pago aprobado";
+    case "solicitud_academia":
+      return "🎓 Nueva solicitud";
+    case "solicitud_team":
+      return "⚽ Nueva solicitud";
+    default:
+      return "📱 Trivo";
   }
 }
 

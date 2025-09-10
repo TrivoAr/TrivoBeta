@@ -1,5 +1,5 @@
 // src/app/api/strava/activities/route.ts
-import { getStravaActivities } from "../stravaHelper/route";
+import { getStravaActivities } from "@/libs/stravaHelpers";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
