@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import PushManager from "@/components/PushManager";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -46,7 +47,7 @@ function ProfilePage() {
         setProfileImage(imageUrl);
       } catch (error) {
         // Puedes agregar una imagen predeterminada en caso de error
-        setProfileImage(session.user.imagen);
+        setProfileImage(session?.user?.imagen);
       }
     };
 
@@ -97,6 +98,7 @@ function ProfilePage() {
         </div>
         <div className="text-sm text-[#666] capitalize">{formData.rol}</div>
       </div>
+     
 
       <h2 className="text-sm text-[#989898]  mb-2 w-full text-left">
         Datos personales
@@ -117,12 +119,13 @@ function ProfilePage() {
             <span className="text-[#989898] font-medium">Perfil</span>
           </div>
           <span className="text-gray-400 text-[28px]">›</span>
-        </div>        
+        </div>   
+           
       </div>
 
 
       {/* Redes */}
-      <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes</h2>
+      <h2 className="text-sm text-gray-500 mb-3 w-full text-left">Redes y notificaciones</h2>
       <div className="flex flex-col gap-3 w-full">
         {/* Instagram */}
         <button
@@ -277,6 +280,7 @@ function ProfilePage() {
             {stravaConnected ? "Strava vinculado" : "Vincular Strava"}
           </span>
         </button>
+        <PushManager />   
       </div>
 
       <div className="text-center pt-4">
