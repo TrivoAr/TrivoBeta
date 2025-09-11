@@ -27,15 +27,22 @@ export default function PushManager() {
     if (busy) return;
     setBusy(true);
     try {
+      console.log("🚀 Iniciando proceso de suscripción push...");
+      
       // 0) Chequeos básicos
       if (!session?.user) {
         toast("Iniciá sesión para activar notificaciones");
         return;
       }
+      
+      console.log("✅ Usuario autenticado:", session.user.id);
+      
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
         toast("Este navegador no soporta notificaciones push", { icon: "⚠️" });
         return;
       }
+      
+      console.log("✅ Navegador soporta push notifications");
 
       // iOS: solo funciona en PWA (Agregar a inicio)
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -52,72 +59,106 @@ export default function PushManager() {
         toast.error("Falta VAPID PUBLIC KEY en el cliente");
         return;
       }
-      console.log("VAPID key length:", publicKey.length); // ~87-88
+      
+      console.log("✅ VAPID key presente, longitud:", publicKey.length);
 
-      // 1) Registrar Service Worker
-      const reg = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
-      await navigator.serviceWorker.ready;
+      // Verificar permisos actuales
+      const currentPermission = Notification.permission;
+      console.log("📋 Permiso actual de notificaciones:", currentPermission);
 
-      // 2) Limpiar suscripción previa (evita AbortError con claves viejas)
+      // 1) LIMPIAR TODO PRIMERO
+      console.log("🧹 Limpiando registros previos...");
       try {
-        const existing = await reg.pushManager.getSubscription();
-        if (existing) {
-          console.log("🗑 Desuscribiendo suscripción previa");
-          await existing.unsubscribe();
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        console.log("📝 Service workers registrados:", registrations.length);
+        
+        for (const registration of registrations) {
+          const existing = await registration.pushManager.getSubscription();
+          if (existing) {
+            console.log("🗑️ Desuscribiendo suscripción previa:", existing.endpoint);
+            await existing.unsubscribe();
+          }
+          await registration.unregister();
         }
+        console.log("✅ Limpieza completada");
       } catch (e) {
-        console.warn("No se pudo limpiar suscripción previa:", e);
+        console.warn("⚠️ Error durante limpieza:", e);
       }
+
+      // Esperar un momento después de limpiar
+      await new Promise(r => setTimeout(r, 1000));
+
+      // 2) Registrar Service Worker fresh
+      console.log("📝 Registrando service worker...");
+      const reg = await navigator.serviceWorker.register(SW_URL, { 
+        scope: "/",
+        updateViaCache: 'none' // Forzar actualización
+      });
+      
+      console.log("⏳ Esperando service worker ready...");
+      await navigator.serviceWorker.ready;
+      console.log("✅ Service worker listo");
 
       // 3) Pedir permiso
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        toast("Permiso denegado");
-        return;
-      }
-
-      // 4) Suscribirse (retry una vez si da AbortError)
-      const subscribeOnce = async () =>
-        reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-        });
-
-      let subscription;
-      try {
-        subscription = await subscribeOnce();
-      } catch (err: any) {
-        if (String(err?.name || err).includes("AbortError")) {
-          console.warn("Retry subscribe after AbortError…");
-          await new Promise((r) => setTimeout(r, 250));
-          subscription = await subscribeOnce();
-        } else {
-          throw err;
+      if (currentPermission !== "granted") {
+        console.log("🔐 Pidiendo permiso para notificaciones...");
+        const permission = await Notification.requestPermission();
+        console.log("📋 Nuevo permiso:", permission);
+        if (permission !== "granted") {
+          toast("Permiso denegado");
+          return;
         }
       }
 
-      console.log("📬 Nueva suscripción:", subscription);
+      // 4) Intentar suscribirse UNA sola vez de forma simple
+      console.log("📬 Intentando suscribirse al push service...");
+      console.log("🔑 Usando VAPID key:", publicKey.substring(0, 20) + "...");
+      
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      });
+
+      console.log("✅ Suscripción exitosa:", {
+        endpoint: subscription.endpoint,
+        keys: subscription.toJSON().keys
+      });
 
       // 5) Guardar en backend
+      console.log("💾 Guardando suscripción en backend...");
       const resp = await fetch("/api/save-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subscription),
       });
-      if (!resp.ok) throw new Error(await resp.text());
+      
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error("❌ Error del backend:", errorText);
+        throw new Error(`Backend error: ${errorText}`);
+      }
 
+      console.log("✅ Todo completado exitosamente");
       setSubscribed(true);
       toast.success("📱 Notificaciones activadas");
+      
     } catch (err: any) {
-      console.error("❌ Error al habilitar notificaciones:", err);
-      const msg = String(err?.message || err);
+      console.error("❌ Error completo:", err);
+      console.error("❌ Error name:", err?.name);
+      console.error("❌ Error message:", err?.message);
+      console.error("❌ Error stack:", err?.stack);
+      
+      const errorName = String(err?.name || "");
+      const errorMessage = String(err?.message || err);
 
-      if (msg.includes("applicationServerKey is not valid") || msg.includes("InvalidAccessError")) {
-        toast.error("Clave VAPID inválida. Verificá que frontend y backend usen la misma pública.");
-      } else if (msg.includes("AbortError")) {
-        toast.error("Falló el servicio de push. Reintentá (limpiamos suscripciones previas).");
+      if (errorName === "AbortError") {
+        toast.error("🚫 El navegador canceló la operación. Esto puede pasar si:\n1) Hay múltiples pestañas abiertas\n2) El navegador está bloqueando push notifications\n3) Hay problemas de conectividad");
+      } else if (errorName === "NotSupportedError") {
+        toast.error("❌ Tu navegador o sistema no soporta push notifications");
+      } else if (errorMessage.includes("applicationServerKey is not valid")) {
+        toast.error("🔑 Clave VAPID inválida");
       } else {
-        toast.error("No se pudo activar notificaciones");
+        toast.error(`❌ Error: ${errorName || errorMessage.substring(0, 100)}`);
       }
     } finally {
       setBusy(false);
