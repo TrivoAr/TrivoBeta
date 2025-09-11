@@ -26,135 +26,160 @@ export default function PushManager() {
   const subscribeUser = useCallback(async () => {
     if (busy) return;
     setBusy(true);
-    try {
-      console.log("🚀 Iniciando proceso de suscripción push...");
-      
-      // 0) Chequeos básicos
-      if (!session?.user) {
-        toast("Iniciá sesión para activar notificaciones");
-        return;
-      }
-      
-      console.log("✅ Usuario autenticado:", session.user.id);
-      
-      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-        toast("Este navegador no soporta notificaciones push", { icon: "⚠️" });
-        return;
-      }
-      
-      console.log("✅ Navegador soporta push notifications");
-
-      // iOS: solo funciona en PWA (Agregar a inicio)
-      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      const isStandalone =
-        (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
-        (navigator as any).standalone === true;
-      if (isIOS && !isStandalone) {
-        toast("📲 En iOS instalá la app (Compartir → Agregar a inicio) y abrila desde el ícono.", { icon: "ℹ️" });
-        return;
-      }
-
-      if (!publicKey) {
-        console.error("Falta NEXT_PUBLIC_VAPID_PUBLIC_KEY");
-        toast.error("Falta VAPID PUBLIC KEY en el cliente");
-        return;
-      }
-      
-      console.log("✅ VAPID key presente, longitud:", publicKey.length);
-
-      // Verificar permisos actuales
-      const currentPermission = Notification.permission;
-      console.log("📋 Permiso actual de notificaciones:", currentPermission);
-
-      // 1) LIMPIAR TODO PRIMERO
-      console.log("🧹 Limpiando registros previos...");
+    
+    // Timeout de 30 segundos para todo el proceso
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("TIMEOUT: El proceso tardó más de 30 segundos")), 30000);
+    });
+    
+    const subscriptionPromise = (async () => {
       try {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        console.log("📝 Service workers registrados:", registrations.length);
+        console.log("🚀 Iniciando proceso de suscripción push...");
         
-        for (const registration of registrations) {
-          const existing = await registration.pushManager.getSubscription();
-          if (existing) {
-            console.log("🗑️ Desuscribiendo suscripción previa:", existing.endpoint);
-            await existing.unsubscribe();
-          }
-          await registration.unregister();
-        }
-        console.log("✅ Limpieza completada");
-      } catch (e) {
-        console.warn("⚠️ Error durante limpieza:", e);
-      }
-
-      // Esperar un momento después de limpiar
-      await new Promise(r => setTimeout(r, 1000));
-
-      // 2) Registrar Service Worker fresh
-      console.log("📝 Registrando service worker...");
-      const reg = await navigator.serviceWorker.register(SW_URL, { 
-        scope: "/",
-        updateViaCache: 'none' // Forzar actualización
-      });
-      
-      console.log("⏳ Esperando service worker ready...");
-      await navigator.serviceWorker.ready;
-      console.log("✅ Service worker listo");
-
-      // 3) Pedir permiso
-      if (currentPermission !== "granted") {
-        console.log("🔐 Pidiendo permiso para notificaciones...");
-        const permission = await Notification.requestPermission();
-        console.log("📋 Nuevo permiso:", permission);
-        if (permission !== "granted") {
-          toast("Permiso denegado");
+        // 0) Chequeos básicos
+        if (!session?.user) {
+          toast("Iniciá sesión para activar notificaciones");
           return;
         }
+        
+        console.log("✅ Usuario autenticado:", session.user.id);
+        
+        if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+          toast("Este navegador no soporta notificaciones push", { icon: "⚠️" });
+          return;
+        }
+        
+        console.log("✅ Navegador soporta push notifications");
+
+        // iOS: solo funciona en PWA (Agregar a inicio)
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const isStandalone =
+          (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+          (navigator as any).standalone === true;
+        if (isIOS && !isStandalone) {
+          toast("📲 En iOS instalá la app (Compartir → Agregar a inicio) y abrila desde el ícono.", { icon: "ℹ️" });
+          return;
+        }
+
+        if (!publicKey) {
+          console.error("Falta NEXT_PUBLIC_VAPID_PUBLIC_KEY");
+          toast.error("Falta VAPID PUBLIC KEY en el cliente");
+          return;
+        }
+        
+        console.log("✅ VAPID key presente, longitud:", publicKey.length);
+
+        // Verificar permisos actuales
+        const currentPermission = Notification.permission;
+        console.log("📋 Permiso actual de notificaciones:", currentPermission);
+
+        // 1) SKIP limpieza por ahora - puede estar causando el cuelgue
+        console.log("⚡ Saltando limpieza para evitar cuelgues...");
+
+        // 2) Registrar Service Worker con timeout
+        console.log("📝 Registrando service worker...");
+        const regPromise = navigator.serviceWorker.register(SW_URL, { 
+          scope: "/",
+          updateViaCache: 'none'
+        });
+        
+        const regTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("TIMEOUT registrando service worker")), 5000)
+        );
+        
+        const reg = await Promise.race([regPromise, regTimeout]) as ServiceWorkerRegistration;
+        console.log("✅ Service worker registrado");
+        
+        console.log("⏳ Esperando service worker ready...");
+        const readyPromise = navigator.serviceWorker.ready;
+        const readyTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("TIMEOUT esperando service worker ready")), 5000)
+        );
+        
+        await Promise.race([readyPromise, readyTimeout]);
+        console.log("✅ Service worker listo");
+
+        // 3) Pedir permiso con timeout
+        if (currentPermission !== "granted") {
+          console.log("🔐 Pidiendo permiso para notificaciones...");
+          const permissionPromise = Notification.requestPermission();
+          const permissionTimeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("TIMEOUT pidiendo permisos")), 10000)
+          );
+          
+          const permission = await Promise.race([permissionPromise, permissionTimeout]) as NotificationPermission;
+          console.log("📋 Nuevo permiso:", permission);
+          if (permission !== "granted") {
+            toast("Permiso denegado");
+            return;
+          }
+        }
+
+        // 4) Intentar suscribirse con timeout más corto
+        console.log("📬 Intentando suscribirse al push service...");
+        console.log("🔑 Usando VAPID key:", publicKey.substring(0, 20) + "...");
+        
+        const subscribePromise = reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+        
+        const subscribeTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("TIMEOUT en suscripción push - el navegador no responde")), 8000)
+        );
+        
+        const subscription = await Promise.race([subscribePromise, subscribeTimeout]) as PushSubscription;
+
+        console.log("✅ Suscripción exitosa:", {
+          endpoint: subscription.endpoint,
+          keys: subscription.toJSON().keys
+        });
+
+        // 5) Guardar en backend con timeout
+        console.log("💾 Guardando suscripción en backend...");
+        const fetchPromise = fetch("/api/save-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription),
+        });
+        
+        const fetchTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("TIMEOUT guardando en backend")), 5000)
+        );
+        
+        const resp = await Promise.race([fetchPromise, fetchTimeout]) as Response;
+        
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          console.error("❌ Error del backend:", errorText);
+          throw new Error(`Backend error: ${errorText}`);
+        }
+
+        console.log("✅ Todo completado exitosamente");
+        setSubscribed(true);
+        toast.success("📱 Notificaciones activadas");
+        
+      } catch (err: any) {
+        throw err; // Re-lanzar para que lo capture el Promise.race principal
       }
+    })();
 
-      // 4) Intentar suscribirse UNA sola vez de forma simple
-      console.log("📬 Intentando suscribirse al push service...");
-      console.log("🔑 Usando VAPID key:", publicKey.substring(0, 20) + "...");
-      
-      const subscription = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-
-      console.log("✅ Suscripción exitosa:", {
-        endpoint: subscription.endpoint,
-        keys: subscription.toJSON().keys
-      });
-
-      // 5) Guardar en backend
-      console.log("💾 Guardando suscripción en backend...");
-      const resp = await fetch("/api/save-subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription),
-      });
-      
-      if (!resp.ok) {
-        const errorText = await resp.text();
-        console.error("❌ Error del backend:", errorText);
-        throw new Error(`Backend error: ${errorText}`);
-      }
-
-      console.log("✅ Todo completado exitosamente");
-      setSubscribed(true);
-      toast.success("📱 Notificaciones activadas");
-      
+    try {
+      await Promise.race([subscriptionPromise, timeoutPromise]);
     } catch (err: any) {
       console.error("❌ Error completo:", err);
       console.error("❌ Error name:", err?.name);
       console.error("❌ Error message:", err?.message);
-      console.error("❌ Error stack:", err?.stack);
       
       const errorName = String(err?.name || "");
       const errorMessage = String(err?.message || err);
 
-      if (errorName === "AbortError") {
-        toast.error("🚫 El navegador canceló la operación. Esto puede pasar si:\n1) Hay múltiples pestañas abiertas\n2) El navegador está bloqueando push notifications\n3) Hay problemas de conectividad");
+      if (errorMessage.includes("TIMEOUT")) {
+        toast.error("⏰ El proceso tardó demasiado. Posibles causas:\n1) Conexión lenta\n2) El navegador está bloqueando notificaciones\n3) Problemas con el service worker");
+      } else if (errorName === "AbortError") {
+        toast.error("🚫 El navegador canceló la operación");
       } else if (errorName === "NotSupportedError") {
-        toast.error("❌ Tu navegador o sistema no soporta push notifications");
+        toast.error("❌ Tu navegador no soporta push notifications");
       } else if (errorMessage.includes("applicationServerKey is not valid")) {
         toast.error("🔑 Clave VAPID inválida");
       } else {
