@@ -9,7 +9,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 export const metadata = {
   title: "Trivo app",
-  description: "Encuntra tu tribu de entrenamiento",
+  description: "Encuentra tu tribu de entrenamiento",
 };
 
 export default function RootLayout({
