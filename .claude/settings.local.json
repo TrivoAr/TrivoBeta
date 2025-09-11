@@ -27,7 +27,8 @@
       "Bash(npx eslint:*)",
       "Bash(npx next build:*)",
       "Bash(rg:*)",
-      "Bash(npx web-push:*)"
+      "Bash(npx web-push:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
