@@ -7,6 +7,16 @@ self.addEventListener("activate", (event) => {
   console.log("Service Worker activado");
 });
 
+// Escuchar mensajes para limpiar cache
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    console.log("Limpiando cache del service worker");
+    caches.keys().then(cacheNames => {
+      return Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
+    });
+  }
+});
+
 self.addEventListener("push", function (event) {
   const data = event.data ? event.data.json() : {};
 
