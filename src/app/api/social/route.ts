@@ -3,9 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
-import Academia from "@/models/academia";
-import User from "@/models/user";
-import { nanoid } from "nanoid"; // Asegurate de tener este modelo
+import { nanoid } from "nanoid";
 
 
 
@@ -39,6 +37,22 @@ export async function POST(req: Request) {
       creador_id: session.user.id,
       shortId,
     });
+
+     try {
+      const payload = {
+        title: "Nueva salida publicada 🚀",
+        body: `${nuevaSalida.nombre} en ${nuevaSalida.localidad} el ${nuevaSalida.fecha}`,
+        url: `/salida/${nuevaSalida._id}`, // o `/s/${shortId}` si usas shortId
+      };
+
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-notification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("⚠️ Error al enviar la notificación push:", err);
+    }
 
     return NextResponse.json(nuevaSalida, { status: 201 });
   } catch (error) {
