@@ -124,9 +124,15 @@ export default function PushManager() {
           }
         }
 
-        // 4) CREAR SUSCRIPCIÓN NUEVA de la forma más simple posible
+        // 4) CREAR SUSCRIPCIÓN con estrategia específica por navegador
         console.log("📬 Creando nueva suscripción...");
         console.log("🔑 VAPID key original:", publicKey);
+        
+        // Detectar navegador
+        const isChromium = /Chrome|Chromium|Brave/i.test(navigator.userAgent);
+        const isFirefox = /Firefox/i.test(navigator.userAgent);
+        
+        console.log("🌐 Navegador detectado:", { isChromium, isFirefox });
         
         // Validar la clave VAPID antes de usarla
         console.log("🔄 Procesando VAPID key...");
@@ -137,19 +143,52 @@ export default function PushManager() {
           expectedLength: 65
         });
         
-        // Info adicional del navegador
-        console.log("🌐 Información del navegador:", {
-          userAgent: navigator.userAgent,
-          platform: navigator.platform,
-          serviceWorkerScope: reg.scope,
-          pushManager: !!reg.pushManager
-        });
-        
         console.log("⚡ Intentando suscribirse...");
-        const subscription = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: vapidKey,
-        });
+        
+        let subscription;
+        if (isChromium) {
+          // ESTRATEGIA ESPECIAL PARA CHROMIUM
+          console.log("🔧 Usando estrategia específica para Chromium...");
+          
+          // Esperar un poco más entre pasos
+          await new Promise(r => setTimeout(r, 1000));
+          
+          // Intentar con configuraciones alternativas
+          const strategies = [
+            // Estrategia 1: Configuración estándar
+            {
+              userVisibleOnly: true,
+              applicationServerKey: vapidKey,
+            },
+            // Estrategia 2: Sin applicationServerKey (para algunos casos edge)
+            {
+              userVisibleOnly: true,
+            }
+          ];
+          
+          for (let i = 0; i < strategies.length; i++) {
+            try {
+              console.log(`🎯 Probando estrategia ${i + 1} para Chromium...`);
+              subscription = await reg.pushManager.subscribe(strategies[i]);
+              console.log(`✅ Estrategia ${i + 1} exitosa`);
+              break;
+            } catch (err) {
+              console.warn(`⚠️ Estrategia ${i + 1} falló:`, err.message);
+              if (i === strategies.length - 1) {
+                throw err; // Lanzar el último error si todas fallan
+              }
+              // Esperar antes de probar la siguiente estrategia
+              await new Promise(r => setTimeout(r, 2000));
+            }
+          }
+        } else {
+          // ESTRATEGIA ESTÁNDAR PARA OTROS NAVEGADORES (Firefox, Safari, etc.)
+          console.log("🦊 Usando estrategia estándar para navegadores no-Chromium...");
+          subscription = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: vapidKey,
+          });
+        }
 
         console.log("✅ Suscripción creada:", {
           endpoint: subscription.endpoint.substring(0, 50) + "...",
@@ -182,7 +221,12 @@ export default function PushManager() {
         const errorMessage = String(err?.message || err);
 
         if (errorName === "AbortError") {
-          toast.error("🚫 AbortError: El navegador rechazó la suscripción. Posibles soluciones:\n\n1️⃣ Ve a chrome://settings/content/notifications y elimina este sitio\n2️⃣ Reinicia el navegador completamente\n3️⃣ Verifica que estés en HTTPS");
+          const isChromium = /Chrome|Chromium|Brave/i.test(navigator.userAgent);
+          if (isChromium) {
+            toast.error("🚫 Problema con Chrome/Brave: FCM bloqueado. Soluciones:\n\n✅ Funciona en Firefox\n1️⃣ Usa Firefox temporalmente\n2️⃣ O espera - puede ser temporal\n3️⃣ Verifica tu red/firewall");
+          } else {
+            toast.error("🚫 El navegador rechazó la suscripción");
+          }
         } else if (errorName === "NotSupportedError") {
           toast.error("❌ Tu navegador no soporta push notifications");
         } else if (errorName === "NotAllowedError") {
