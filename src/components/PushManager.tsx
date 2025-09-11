@@ -126,12 +126,26 @@ export default function PushManager() {
 
         // 4) CREAR SUSCRIPCIÓN NUEVA de la forma más simple posible
         console.log("📬 Creando nueva suscripción...");
-        console.log("🔑 VAPID key:", publicKey.substring(0, 20) + "...");
+        console.log("🔑 VAPID key original:", publicKey);
         
         // Validar la clave VAPID antes de usarla
+        console.log("🔄 Procesando VAPID key...");
         const vapidKey = urlBase64ToUint8Array(publicKey);
-        console.log("🔑 VAPID key procesada, length:", vapidKey.length);
+        console.log("🔑 VAPID key procesada:", {
+          length: vapidKey.length,
+          first10: Array.from(vapidKey.slice(0, 10)),
+          expectedLength: 65
+        });
         
+        // Info adicional del navegador
+        console.log("🌐 Información del navegador:", {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          serviceWorkerScope: reg.scope,
+          pushManager: !!reg.pushManager
+        });
+        
+        console.log("⚡ Intentando suscribirse...");
         const subscription = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: vapidKey,
