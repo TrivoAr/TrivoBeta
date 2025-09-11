@@ -22,20 +22,20 @@ export default function PushManager() {
   const [subscribed, setSubscribed] = useState(false);
   const [notificationState, setNotificationState] = useState<string>("checking");
   const publicKey = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "").trim();
+  const [currentProcess, setCurrentProcess] = useState<Promise<any> | null>(null);
 
   const subscribeUser = useCallback(async () => {
-    if (busy) return;
+    // Evitar ejecuciones múltiples
+    if (busy || currentProcess) {
+      console.log("⚠️ Proceso ya en ejecución, ignorando click");
+      return;
+    }
+    
     setBusy(true);
+    console.log("🚀 Iniciando proceso ÚNICO de suscripción push...");
     
-    // Timeout de 30 segundos para todo el proceso
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("TIMEOUT: El proceso tardó más de 30 segundos")), 30000);
-    });
-    
-    const subscriptionPromise = (async () => {
+    const processPromise = (async () => {
       try {
-        console.log("🚀 Iniciando proceso de suscripción push...");
-        
         // 0) Chequeos básicos
         if (!session?.user) {
           toast("Iniciá sesión para activar notificaciones");
@@ -69,126 +69,129 @@ export default function PushManager() {
         
         console.log("✅ VAPID key presente, longitud:", publicKey.length);
 
-        // Verificar permisos actuales
-        const currentPermission = Notification.permission;
-        console.log("📋 Permiso actual de notificaciones:", currentPermission);
+        // 1) Pedir permiso ANTES de hacer nada más
+        console.log("🔐 Verificando/pidiendo permisos...");
+        if (Notification.permission === "default") {
+          const permission = await Notification.requestPermission();
+          console.log("📋 Permiso otorgado:", permission);
+          if (permission !== "granted") {
+            toast.error("❌ Necesitamos permisos para notificaciones");
+            return;
+          }
+        } else if (Notification.permission === "denied") {
+          toast.error("🚫 Las notificaciones están bloqueadas. Ve a configuración del navegador para habilitarlas.");
+          return;
+        }
 
-        // 1) SKIP limpieza por ahora - puede estar causando el cuelgue
-        console.log("⚡ Saltando limpieza para evitar cuelgues...");
-
-        // 2) Registrar Service Worker con timeout
-        console.log("📝 Registrando service worker...");
-        const regPromise = navigator.serviceWorker.register(SW_URL, { 
-          scope: "/",
-          updateViaCache: 'none'
-        });
+        // 2) ESTRATEGIA SIMPLE: No limpiar nada, usar lo que existe
+        console.log("📝 Obteniendo service worker existente...");
+        let reg = await navigator.serviceWorker.getRegistration("/");
         
-        const regTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("TIMEOUT registrando service worker")), 5000)
-        );
+        if (!reg) {
+          console.log("📝 No hay SW, registrando nuevo...");
+          reg = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+        } else {
+          console.log("✅ Usando service worker existente");
+        }
         
-        const reg = await Promise.race([regPromise, regTimeout]) as ServiceWorkerRegistration;
-        console.log("✅ Service worker registrado");
-        
-        console.log("⏳ Esperando service worker ready...");
-        const readyPromise = navigator.serviceWorker.ready;
-        const readyTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("TIMEOUT esperando service worker ready")), 5000)
-        );
-        
-        await Promise.race([readyPromise, readyTimeout]);
+        await navigator.serviceWorker.ready;
         console.log("✅ Service worker listo");
 
-        // 3) Pedir permiso con timeout
-        if (currentPermission !== "granted") {
-          console.log("🔐 Pidiendo permiso para notificaciones...");
-          const permissionPromise = Notification.requestPermission();
-          const permissionTimeout = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("TIMEOUT pidiendo permisos")), 10000)
-          );
+        // 3) Verificar si ya existe una suscripción
+        console.log("🔍 Verificando suscripción existente...");
+        const existingSubscription = await reg.pushManager.getSubscription();
+        
+        if (existingSubscription) {
+          console.log("ℹ️ Ya existe una suscripción, enviando al backend...");
           
-          const permission = await Promise.race([permissionPromise, permissionTimeout]) as NotificationPermission;
-          console.log("📋 Nuevo permiso:", permission);
-          if (permission !== "granted") {
-            toast("Permiso denegado");
-            return;
+          // Intentar guardar la existente (puede que no esté en BD)
+          try {
+            const resp = await fetch("/api/save-subscription", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(existingSubscription),
+            });
+            
+            if (resp.ok) {
+              console.log("✅ Suscripción existente registrada en backend");
+              setSubscribed(true);
+              toast.success("📱 Notificaciones ya estaban activadas");
+              return;
+            }
+          } catch (e) {
+            console.warn("⚠️ Error guardando suscripción existente, creando nueva...");
+            await existingSubscription.unsubscribe();
           }
         }
 
-        // 4) Intentar suscribirse con timeout más corto
-        console.log("📬 Intentando suscribirse al push service...");
-        console.log("🔑 Usando VAPID key:", publicKey.substring(0, 20) + "...");
+        // 4) CREAR SUSCRIPCIÓN NUEVA de la forma más simple posible
+        console.log("📬 Creando nueva suscripción...");
+        console.log("🔑 VAPID key:", publicKey.substring(0, 20) + "...");
         
-        const subscribePromise = reg.pushManager.subscribe({
+        // Validar la clave VAPID antes de usarla
+        const vapidKey = urlBase64ToUint8Array(publicKey);
+        console.log("🔑 VAPID key procesada, length:", vapidKey.length);
+        
+        const subscription = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey),
-        });
-        
-        const subscribeTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("TIMEOUT en suscripción push - el navegador no responde")), 8000)
-        );
-        
-        const subscription = await Promise.race([subscribePromise, subscribeTimeout]) as PushSubscription;
-
-        console.log("✅ Suscripción exitosa:", {
-          endpoint: subscription.endpoint,
-          keys: subscription.toJSON().keys
+          applicationServerKey: vapidKey,
         });
 
-        // 5) Guardar en backend con timeout
-        console.log("💾 Guardando suscripción en backend...");
-        const fetchPromise = fetch("/api/save-subscription", {
+        console.log("✅ Suscripción creada:", {
+          endpoint: subscription.endpoint.substring(0, 50) + "...",
+          hasKeys: !!subscription.toJSON().keys
+        });
+
+        // 5) Guardar en backend
+        console.log("💾 Guardando en backend...");
+        const resp = await fetch("/api/save-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(subscription),
         });
         
-        const fetchTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("TIMEOUT guardando en backend")), 5000)
-        );
-        
-        const resp = await Promise.race([fetchPromise, fetchTimeout]) as Response;
-        
         if (!resp.ok) {
           const errorText = await resp.text();
-          console.error("❌ Error del backend:", errorText);
-          throw new Error(`Backend error: ${errorText}`);
+          console.error("❌ Error del backend:", resp.status, errorText);
+          throw new Error(`Backend error (${resp.status}): ${errorText}`);
         }
 
-        console.log("✅ Todo completado exitosamente");
+        console.log("🎉 Todo completado exitosamente");
         setSubscribed(true);
-        toast.success("📱 Notificaciones activadas");
+        toast.success("📱 Notificaciones activadas correctamente");
         
       } catch (err: any) {
-        throw err; // Re-lanzar para que lo capture el Promise.race principal
+        console.error("❌ Error completo:", err);
+        console.error("❌ Stack:", err?.stack);
+        
+        const errorName = String(err?.name || "");
+        const errorMessage = String(err?.message || err);
+
+        if (errorName === "AbortError") {
+          toast.error("🚫 AbortError: El navegador rechazó la suscripción. Posibles soluciones:\n\n1️⃣ Ve a chrome://settings/content/notifications y elimina este sitio\n2️⃣ Reinicia el navegador completamente\n3️⃣ Verifica que estés en HTTPS");
+        } else if (errorName === "NotSupportedError") {
+          toast.error("❌ Tu navegador no soporta push notifications");
+        } else if (errorName === "NotAllowedError") {
+          toast.error("🚫 Permisos denegados por el navegador");
+        } else if (errorMessage.includes("applicationServerKey is not valid")) {
+          toast.error("🔑 Clave VAPID inválida - contacta al desarrollador");
+        } else if (errorMessage.includes("Backend error")) {
+          toast.error("🔧 Error del servidor - intenta más tarde");
+        } else {
+          toast.error(`❌ Error: ${errorMessage.substring(0, 80)}...`);
+        }
       }
     })();
-
+    
+    setCurrentProcess(processPromise);
+    
     try {
-      await Promise.race([subscriptionPromise, timeoutPromise]);
-    } catch (err: any) {
-      console.error("❌ Error completo:", err);
-      console.error("❌ Error name:", err?.name);
-      console.error("❌ Error message:", err?.message);
-      
-      const errorName = String(err?.name || "");
-      const errorMessage = String(err?.message || err);
-
-      if (errorMessage.includes("TIMEOUT")) {
-        toast.error("⏰ El proceso tardó demasiado. Posibles causas:\n1) Conexión lenta\n2) El navegador está bloqueando notificaciones\n3) Problemas con el service worker");
-      } else if (errorName === "AbortError") {
-        toast.error("🚫 El navegador canceló la operación");
-      } else if (errorName === "NotSupportedError") {
-        toast.error("❌ Tu navegador no soporta push notifications");
-      } else if (errorMessage.includes("applicationServerKey is not valid")) {
-        toast.error("🔑 Clave VAPID inválida");
-      } else {
-        toast.error(`❌ Error: ${errorName || errorMessage.substring(0, 100)}`);
-      }
+      await processPromise;
     } finally {
       setBusy(false);
+      setCurrentProcess(null);
     }
-  }, [session, publicKey, busy]);
+  }, [session, publicKey, busy, currentProcess]);
 
 
 
