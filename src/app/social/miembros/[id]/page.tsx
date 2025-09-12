@@ -135,7 +135,7 @@ function handleDelete(miembroId: string) {
     );
   }
 
-  const miembrosAprobados = miembros
+  const miembrosAprobados = safeMiembros
     .filter((miembro) => miembro.pago_id?.estado === "aprobado")
     .map((miembro) => ({
       dni: miembro.dni,
