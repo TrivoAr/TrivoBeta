@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
-import User from "@/models/user";
 import mongoose from "mongoose";
 import SalidaSocial from "@/models/salidaSocial";
 import Notificacion from "@/models/notificacion";
@@ -43,7 +42,7 @@ export async function GET(req: NextRequest) {
     console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
 
-    const miembrosConImagen = await Promise.all(
+    const miembrosResults = await Promise.allSettled(
       miembros.map(async (m) => {
         try {
           const usuario = m.usuario_id;
@@ -68,7 +67,8 @@ export async function GET(req: NextRequest) {
               "profile-image.jpg",
               usuario._id.toString()
             );
-          } catch {
+          } catch (imageError) {
+            console.log("[GET_MIEMBROS] Image not found for user:", usuario._id, "using fallback");
             imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
               usuario.firstname || "U"
             )}&length=1&background=random&color=fff&size=128`;
@@ -86,10 +86,38 @@ export async function GET(req: NextRequest) {
           };
         } catch (e) {
           console.error("[GET_MIEMBROS] Error processing member:", m._id, e);
-          return { _id: m._id, nombre: "Error interno" };
+          return { 
+            _id: m._id, 
+            nombre: "Error interno",
+            email: "",
+            telnumber: "",
+            imagen: "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
+            dni: "",
+            pago_id: null
+          };
         }
       })
     );
+
+    // Extract successful results and handle failed ones
+    const miembrosConImagen = miembrosResults
+      .map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          console.error("[GET_MIEMBROS] Promise failed for member at index:", index, result.reason);
+          return {
+            _id: miembros[index]?._id || `error_${index}`,
+            nombre: "Error de carga",
+            email: "",
+            telnumber: "",
+            imagen: "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
+            dni: "",
+            pago_id: null
+          };
+        }
+      })
+      .filter(Boolean); // Remove any null/undefined results
 
     return new Response(
   JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []), {
