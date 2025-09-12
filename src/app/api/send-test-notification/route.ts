@@ -8,16 +8,46 @@ import * as admin from "firebase-admin";
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
   try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
+    let credential;
+    let credentialsUsed = "";
+    
+    // Try using service account JSON first (preferred method)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        credential = admin.credential.cert(serviceAccount);
+        credentialsUsed = "JSON service account";
+        console.log("🔥 Using Firebase service account JSON, project:", serviceAccount.project_id);
+        console.log("🔥 Service account email:", serviceAccount.client_email);
+      } catch (parseError) {
+        console.error("❌ Error parsing FIREBASE_SERVICE_ACCOUNT_KEY:", parseError);
+        throw new Error("Invalid FIREBASE_SERVICE_ACCOUNT_KEY JSON format");
+      }
+    } 
+    // Fallback to individual environment variables
+    else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      credential = admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-    console.log("🔥 Firebase Admin initialized");
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      });
+      credentialsUsed = "individual environment variables";
+      console.log("🔥 Using individual env vars, project:", process.env.FIREBASE_PROJECT_ID);
+      console.log("🔥 Client email:", process.env.FIREBASE_CLIENT_EMAIL);
+    } else {
+      console.error("❌ Firebase credentials not found. Available env vars:");
+      console.error("- FIREBASE_SERVICE_ACCOUNT_KEY:", !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      console.error("- FIREBASE_PROJECT_ID:", !!process.env.FIREBASE_PROJECT_ID);
+      console.error("- FIREBASE_CLIENT_EMAIL:", !!process.env.FIREBASE_CLIENT_EMAIL);
+      console.error("- FIREBASE_PRIVATE_KEY:", !!process.env.FIREBASE_PRIVATE_KEY);
+      throw new Error("Firebase credentials not properly configured");
+    }
+
+    admin.initializeApp({ credential });
+    console.log(`🔥 Firebase Admin initialized successfully using ${credentialsUsed}`);
   } catch (error) {
     console.error("❌ Error initializing Firebase Admin:", error);
+    throw error;
   }
 }
 
