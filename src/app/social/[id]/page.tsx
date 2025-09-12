@@ -828,8 +828,8 @@ export default function EventPage({ params }: PageProps) {
           className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50
     ${session ? "bottom-[80px]" : "bottom-[1px]"}`}
         >
-          <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-4  flex justify-between items-center">
-            <div className="w-[50%] flex flex-col">
+          <div className="bg-[#FEFBF9] shadow-md h-[120px] border flex justify-between items-center">
+            <div className="w-[50%] flex flex-col pl-4">
               <p className="font-semibold text-gray-800 text-xl underline">
                 {event.precio == 0 || event.precio === "0" ? (
                   "Gratis"

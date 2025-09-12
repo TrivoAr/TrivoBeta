@@ -1,6 +1,5 @@
-// src/libs/pdf.ts
 import PDFDocument from "pdfkit";
-import { Buffer } from "node:buffer"; // 👈 asegura tipos de Node
+import { Buffer } from "node:buffer";
 
 interface TicketInfo {
   eventName: string;
@@ -14,17 +13,16 @@ interface TicketInfo {
 export async function buildQrPdf(title: string, pngBase64: string, ticketInfo?: TicketInfo): Promise<string> {
   const doc = new PDFDocument({ size: "A5", margin: 40 });
 
-  // Guardamos chunks como Uint8Array (Buffer es Uint8Array)
   const chunks: Uint8Array[] = [];
 
   return await new Promise<string>((resolve) => {
     doc.on("data", (c: Buffer) => {
-      // Buffer extiende Uint8Array, así que entra sin problema
+     
       chunks.push(c);
     });
 
     doc.on("end", () => {
-      // 👇 Cast explícito para contentar a TS en cualquier config
+      
       const buf = Buffer.concat(chunks as readonly Uint8Array[]);
       resolve(buf.toString("base64"));
     });
@@ -33,11 +31,11 @@ export async function buildQrPdf(title: string, pngBase64: string, ticketInfo?: 
     const margin = 40;
     const centerX = pageWidth / 2;
     
-    // Header with brand color
+   
     doc.rect(0, 0, pageWidth, 60)
        .fill('#C95100');
     
-    // Brand title
+   
     doc.fillColor('white')
        .fontSize(24)
        .font('Helvetica-Bold')
