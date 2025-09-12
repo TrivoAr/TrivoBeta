@@ -23,6 +23,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
   const [showLocationModal, setShowLocationModal] = useState(false); // modal de explicación GPS
+  const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false); // si ya interactuó con el modal
 
  
   const { 
@@ -43,9 +44,23 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const confirmLocationRequest = () => {
     setShowLocationModal(false);
+    setHasInteractedWithModal(true);
+    localStorage.setItem('trivo_location_modal_interacted', 'true');
     resetLocation(); // Limpiar estado anterior
     detectLocation(); // Activar detección
   };
+
+  const dismissLocationModal = () => {
+    setShowLocationModal(false);
+    setHasInteractedWithModal(true);
+    localStorage.setItem('trivo_location_modal_interacted', 'true');
+  };
+
+  // Cargar estado persistido al montar
+  useEffect(() => {
+    const hasInteracted = localStorage.getItem('trivo_location_modal_interacted') === 'true';
+    setHasInteractedWithModal(hasInteracted);
+  }, []);
 
   
 useEffect(() => {
@@ -266,7 +281,7 @@ useEffect(() => {
           <span className="text-[10px] text-gray-500">
             {locationSuccess && locationData ? 'Ubicación detectada' : 'Ubicación'}
           </span>
-          {!locationSuccess && !locationLoading && (
+          {!locationSuccess && !locationLoading && !hasInteractedWithModal && (
             <button
               onClick={handleLocationRequest}
               className="text-[10px] text-[#C95100] underline hover:text-[#A04400]"
@@ -379,7 +394,7 @@ useEffect(() => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowLocationModal(false)}
+                onClick={dismissLocationModal}
                 className="flex-1 py-2 px-4 border rounded-[20px] text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Más tarde
