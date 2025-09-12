@@ -78,7 +78,8 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    return new Response(JSON.stringify(miembrosConImagen), {
+    return new Response(
+  JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

@@ -78,21 +78,6 @@ const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } 
 
   const isOwner = session?.user?.id === event?.creador_id?._id;
    const safeMiembros = Array.isArray(miembros) ? miembros : [];
-
-  // const filteredMiembros = miembros.filter((miembro: any) => {
-  //   const matchName = miembro.nombre
-  //     .toLowerCase()
-  //     .includes(searchQuery.toLowerCase());
-
-  //   if (isOwner) {
-  //     const matchPago =
-  //       paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
-  //     return matchName && matchPago;
-  //   }
-  //   return matchName && miembro.pago_id.estado === "aprobado";
-  // });
-
-
   
 const filteredMiembros = safeMiembros.filter((miembro: any) => {
   const matchName = miembro.nombre?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -151,7 +136,7 @@ function handleDelete(miembroId: string) {
   }
 
   const miembrosAprobados = miembros
-    .filter((miembro) => miembro.pago_id.estado === "aprobado")
+    .filter((miembro) => miembro.pago_id?.estado === "aprobado")
     .map((miembro) => ({
       dni: miembro.dni,
       nombre: miembro.nombre,
