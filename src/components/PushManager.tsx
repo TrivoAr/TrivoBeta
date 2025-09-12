@@ -149,36 +149,62 @@ export default function PushManager() {
     }
   }, [session, busy, currentProcess]);
 
+  const sendTestNotification = useCallback(async () => {
+    if (!session?.user || !subscribed) {
+      toast.error("Activa las notificaciones primero");
+      return;
+    }
 
+    setBusy(true);
+    try {
+      console.log("🧪 Enviando notificación de prueba...");
+      
+      const response = await fetch("/api/send-test-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
-//   return (
-//     <div className="">
-//       {notificationState !== "subscribed" && (
-//         <button
-//           onClick={subscribeUser}
-//           className="w-full flex items-center gap-3 px-4 py-3 rounded-[30px] border shadow-sm transition bg-white"
-//         >
-//           🔔 Activar notificaciones
-//         </button>
-//       )}
+      const data = await response.json();
 
-//       {notificationState === "subscribed" && (
-//         <p className="text-green-600 text-sm mt-2">
-//           ✅ Notificaciones activadas
-//         </p>
-//       )}
-//     </div>
-//   );
-// };
-
+      if (response.ok) {
+        toast.success("🧪 Notificación de prueba enviada");
+        console.log("✅ Respuesta:", data);
+      } else {
+        console.error("❌ Error:", data);
+        if (data.tokenRemoved) {
+          setSubscribed(false);
+          toast.error("Token inválido - reactiva las notificaciones");
+        } else {
+          toast.error(`Error: ${data.error}`);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error enviando prueba:", error);
+      toast.error("Error enviando notificación de prueba");
+    } finally {
+      setBusy(false);
+    }
+  }, [session, subscribed]);
 
   return (
-    <button
-      onClick={subscribeUser}
-      disabled={busy || subscribed}
-      className="w-full flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm hover:bg-black/5 disabled:opacity-60"
-    >
-      {subscribed ? "✅ Notificaciones activadas" : busy ? "Activando…" : "🔔 Activar notificaciones"}
-    </button>
+    <div className="space-y-2">
+      <button
+        onClick={subscribeUser}
+        disabled={busy || subscribed}
+        className="w-full flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm hover:bg-black/5 disabled:opacity-60"
+      >
+        {subscribed ? "✅ Notificaciones activadas" : busy ? "Activando…" : "🔔 Activar notificaciones"}
+      </button>
+      
+      {subscribed && (
+        <button
+          onClick={sendTestNotification}
+          disabled={busy}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+        >
+          {busy ? "Enviando..." : "🧪 Enviar prueba"}
+        </button>
+      )}
+    </div>
   );
 }
