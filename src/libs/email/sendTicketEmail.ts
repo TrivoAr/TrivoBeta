@@ -127,7 +127,7 @@ export async function sendTicketEmail({
     html,
     attachments: [
       { filename: "entrada.pdf", content: pdfBase64, contentType: "application/pdf" },
-      { filename: "qr-code.png", content: qrBase64, contentType: "image/png", cid: "qr-image" },
+      { filename: "qr-code.png", content: qrBase64, contentType: "image/png", cid: "qr-image" } as any,
     ],
   });
 
