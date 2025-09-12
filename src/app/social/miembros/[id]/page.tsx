@@ -157,6 +157,7 @@ function handleDelete(miembroId: string) {
       nombre: miembro.nombre,
       telefono: miembro.telnumber,
       email: miembro.email,
+      imagen: miembro.imagen,
       estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
     }));
 
