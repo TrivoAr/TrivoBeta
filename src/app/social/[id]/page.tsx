@@ -178,6 +178,51 @@ export default function EventPage({ params }: PageProps) {
     },
   });
 
+  const joinFreeMutation = useMutation({
+    mutationFn: async () => {
+      // Primero crear el pago para eventos gratuitos
+      const pagoRes = await fetch('/api/social/pago', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          salidaId: params.id,
+          comprobanteUrl: 'EVENTO_GRATUITO', // Marcador para eventos gratuitos
+          estado: 'pendiente',
+        }),
+      });
+      
+      if (!pagoRes.ok) throw new Error("No se pudo crear el registro de pago");
+      const pago = await pagoRes.json();
+
+      // Luego unirse usando el pago_id creado
+      const res = await fetch(`/api/social/unirse`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          salidaId: params.id,
+          pago_id: pago._id,
+        }),
+      });
+      if (!res.ok) throw new Error("No se pudo enviar la solicitud");
+      return res.json();
+    },
+    onSuccess: () => {
+      // Invalidate both queries that might need updating
+      queryClient.invalidateQueries({ queryKey: ["unido", params.id, session?.user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
+      // Optimistically update the status to show immediate feedback
+      queryClient.setQueryData(["unido", params.id, session?.user?.id], "pendiente");
+      toast.success("Solicitud enviada. Espera la aprobación del organizador.");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Error al enviar la solicitud");
+    },
+  });
+
   const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ["profile", session?.user?.id],
     enabled: !!session?.user?.id,
@@ -205,6 +250,11 @@ export default function EventPage({ params }: PageProps) {
     }
     if (event.cupo - miembros.length === 0) {
       toast.error("Cupo completo. No puedes unirte.");
+      return;
+    }
+
+    if (event.precio == 0 || event.precio === "0") {
+      joinFreeMutation.mutate();
       return;
     }
     setShowPaymentModal(true);
@@ -780,7 +830,11 @@ export default function EventPage({ params }: PageProps) {
           <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-4  flex justify-between items-center">
             <div className="w-[50%] flex flex-col">
               <p className="font-semibold text-gray-800 text-xl underline">
-                ${Number(event.precio).toLocaleString("es-AR")}
+                {event.precio == 0 || event.precio === "0" ? (
+                  "Gratis"
+                ) : (
+                  `$${Number(event.precio).toLocaleString("es-AR")}`
+                )}
               </p>
               <p className="text-xs text-gray-400">
                 {parseLocalDate(event.fecha)}, {event.hora} hs
