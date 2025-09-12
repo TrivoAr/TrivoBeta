@@ -60,13 +60,24 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   useEffect(() => {
     const hasInteracted = localStorage.getItem('trivo_location_modal_interacted') === 'true';
     setHasInteractedWithModal(hasInteracted);
-  }, []);
+    
+    // Cargar ubicación guardada si existe
+    const savedLocation = localStorage.getItem('trivo_detected_location');
+    if (savedLocation && setSelectedLocalidad) {
+      setSelectedLocalidad(savedLocation);
+    }
+  }, [setSelectedLocalidad]);
 
   
 useEffect(() => {
   if (locationSuccess && locationData && setSelectedLocalidad) {
     const detectedCity = locationData.city || "Desconocido";
     setSelectedLocalidad(detectedCity);
+    
+    // Guardar ubicación detectada en localStorage
+    if (detectedCity !== "Desconocido") {
+      localStorage.setItem('trivo_detected_location', detectedCity);
+    }
 
     // Guardar en savedLocations si no está
     if (
@@ -281,19 +292,19 @@ useEffect(() => {
           <span className="text-[10px] text-gray-500">
             {locationSuccess && locationData ? 'Ubicación detectada' : 'Ubicación'}
           </span>
-          {!locationSuccess && !locationLoading && !hasInteractedWithModal && (
+          {!locationSuccess && !locationLoading && (
             <button
-              onClick={handleLocationRequest}
+              onClick={hasInteractedWithModal ? confirmLocationRequest : handleLocationRequest}
               className="text-[10px] text-[#C95100] underline hover:text-[#A04400]"
               title="Habilitar ubicación para mejores recomendaciones"
             >
-              Detectar
+              {hasInteractedWithModal ? 'Activar' : 'Detectar'}
             </button>
           )}
         </div>
 
         {/* Mostrar ubicación actual o opciones guardadas */}
-        {(locationData?.city || (savedLocations && savedLocations.length > 0)) ? (
+        {(locationData?.city || (savedLocations && savedLocations.length > 0) || localStorage.getItem('trivo_detected_location')) ? (
           <select
             name="localidad"
             value={selectedLocalidad}
@@ -303,6 +314,13 @@ useEffect(() => {
             {/* Ciudad detectada automáticamente */}
             {locationData?.city && (
               <option value={locationData.city}>{locationData.city}</option>
+            )}
+
+            {/* Ubicación guardada en localStorage (si no está en locationData) */}
+            {!locationData?.city && localStorage.getItem('trivo_detected_location') && (
+              <option value={localStorage.getItem('trivo_detected_location')}>
+                {localStorage.getItem('trivo_detected_location')}
+              </option>
             )}
 
             {/* Ciudades guardadas del usuario */}
