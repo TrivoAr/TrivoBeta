@@ -10,25 +10,37 @@ import Notificacion from "@/models/notificacion";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 export async function GET(req: NextRequest) {
+  let salidaId: string | null = null;
+  
   try {
+    console.log("[GET_MIEMBROS] Starting request");
     await connectDB();
+    console.log("[GET_MIEMBROS] DB connected");
+    
     const session = await getServerSession(authOptions);
     if (!session) {
+      console.log("[GET_MIEMBROS] No session");
       return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
     }
 
-    const salidaId = req.nextUrl.searchParams.get("salidaId");
+    salidaId = req.nextUrl.searchParams.get("salidaId");
+    console.log("[GET_MIEMBROS] salidaId:", salidaId);
+    
     if (!salidaId) {
       return new Response(JSON.stringify({ error: "Falta salidaId" }), { status: 400 });
     }
 
     if (!mongoose.isValidObjectId(salidaId)) {
+      console.log("[GET_MIEMBROS] Invalid ObjectId:", salidaId);
       return new Response(JSON.stringify({ error: "salidaId inválido" }), { status: 400 });
     }
 
+    console.log("[GET_MIEMBROS] Querying miembros for salidaId:", salidaId);
     const miembros = await MiembroSalida.find({ salida_id: salidaId })
       .populate("usuario_id", "firstname lastname email telnumber dni")
       .populate("pago_id");
+    
+    console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
 
     const miembrosConImagen = await Promise.all(
@@ -73,6 +85,7 @@ export async function GET(req: NextRequest) {
             pago_id: pago ? { _id: pago._id, estado: pago.estado || "" } : null,
           };
         } catch (e) {
+          console.error("[GET_MIEMBROS] Error processing member:", m._id, e);
           return { _id: m._id, nombre: "Error interno" };
         }
       })
@@ -84,7 +97,15 @@ export async function GET(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Error interno en GET /miembros" }), { status: 500 });
+    console.error("[GET_MIEMBROS_ERROR]", {
+      salidaId,
+      error: err instanceof Error ? err.message : err,
+      stack: err instanceof Error ? err.stack : undefined
+    });
+    return new Response(JSON.stringify({ 
+      error: "Error interno en GET /miembros",
+      details: process.env.NODE_ENV === 'development' ? err instanceof Error ? err.message : String(err) : undefined
+    }), { status: 500 });
   }
 }
 

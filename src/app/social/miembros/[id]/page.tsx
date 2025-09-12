@@ -28,32 +28,6 @@ export default function EventPage({ params }: { params: { id: string } }) {
     pagoId?: string;
   }>({ open: false });
 
-  // // 🔹 Query evento
-  // const {
-  //   data: event,
-  //   isLoading: loadingEvent,
-  //   error: errorEvent,
-  // } = useQuery({
-  //   queryKey: ["event", params.id],
-  //   queryFn: async () => {
-  //     const res = await axios.get(`/api/social/${params.id}`);
-  //     return res.data;
-  //   },
-  // });
-
-  // // 🔹 Query miembros
-  // const {
-  //   data: miembros = [],
-  //   isLoading: loadingMiembros,
-  //   error: errorMiembros,
-  // } = useQuery({
-  //   queryKey: ["miembros", params.id],
-  //   queryFn: async () => {
-  //     const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
-  //     return res.json();
-  //   },
-  //   enabled: !!params.id,
-  // });
 
   const { data: event, isLoading: loadingEvent,  error: errorEvent, } = useQuery({
   queryKey: ["event", params.id],
@@ -61,15 +35,23 @@ export default function EventPage({ params }: { params: { id: string } }) {
     const res = await axios.get(`/api/social/${params.id}`);
     return res.data;
   },
+  enabled: !!params.id,
+  retry: 2,
+  retryDelay: 1000,
 });
 
 const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } = useQuery({
   queryKey: ["miembros", params.id],
   queryFn: async () => {
     const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch miembros: ${res.status}`);
+    }
     return res.json();
   },
-  enabled: !!event,
+  enabled: !!event && !!params.id,
+  retry: 2,
+  retryDelay: 1000,
 });
 
 
