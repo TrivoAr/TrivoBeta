@@ -22,8 +22,9 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
+  const [showLocationModal, setShowLocationModal] = useState(false); // modal de explicación GPS
 
-  // TanStack Query hooks para geolocalización
+ 
   const { 
     detectLocation, 
     isLoading: locationLoading, 
@@ -35,29 +36,38 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   const { data: savedLocations } = useSavedLocations();
 
-  // Función para obtener la ubicación del usuario usando TanStack Query
-  const getCurrentLocation = () => {
+
+  const handleLocationRequest = () => {
+    setShowLocationModal(true);
+  };
+
+  const confirmLocationRequest = () => {
+    setShowLocationModal(false);
     resetLocation(); // Limpiar estado anterior
     detectLocation(); // Activar detección
   };
 
-  // Efecto para actualizar el select cuando se detecta ubicación
-  useEffect(() => {
-    if (locationSuccess && locationData && setSelectedLocalidad) {
-      const city = locationData.city;
-      const knownCities = ["San Miguel de Tucuman", "Yerba Buena", "Tafi Viejo"];
-      
-      const foundCity = knownCities.find(cityName => 
-        city.toLowerCase().includes(cityName.toLowerCase().split(" ")[0])
-      );
-      
-      if (foundCity) {
-        setSelectedLocalidad(foundCity);
-      } else {
-        setSelectedLocalidad("Otros");
-      }
+  
+useEffect(() => {
+  if (locationSuccess && locationData && setSelectedLocalidad) {
+    const detectedCity = locationData.city || "Desconocido";
+    setSelectedLocalidad(detectedCity);
+
+    // Guardar en savedLocations si no está
+    if (
+      detectedCity !== "Desconocido" &&
+      savedLocations &&
+      !savedLocations.some((loc) => loc.city === detectedCity)
+    ) {
+      // Acá deberías llamar a tu API o método de persistencia
+      axios.post("/api/locations", { city: detectedCity }).catch(() => {
+        console.log("No se pudo guardar la ubicación detectada");
+      });
     }
-  }, [locationSuccess, locationData, setSelectedLocalidad]);
+  }
+}, [locationSuccess, locationData, setSelectedLocalidad, savedLocations]);
+
+
 
 useEffect(() => {
   if (!session?.user) return;
@@ -149,20 +159,23 @@ useEffect(() => {
   return (
     <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
       {/* Avatar */}
-      <Link href="/dashboard/profile">
+      
 
 
       {session?.user ? (
+        <Link href="/dashboard/profile">
         <img
           className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
           src={profileImage || session?.user?.imagen || "/assets/logo/Trivo T.png"}
           alt="User Profile"
           onError={(e) => {
-            // Si falla cargar la imagen, usar imagen por defecto
             e.target.src = "/assets/logo/Trivo T.png";
           }}
         />
+        </Link>
+        
       ) : (
+        <Link href="/login">
         <div
           className="h-[48px] w-[48px] rounded-[15px] shadow-md"
           style={{
@@ -171,12 +184,13 @@ useEffect(() => {
             backgroundSize: "cover",
           }}
         />
+        </Link>
       )}
        
-      </Link>
+      
 
       {/* Ubicación */}
-      <div className="flex flex-col items-center justify-center text-center">
+      {/* <div className="flex flex-col items-center justify-center text-center">
         <div className="flex items-center gap-1 mb-1">
           <p className="text-gray-500 text-[12px]">Ubicación</p>
           <button
@@ -233,17 +247,71 @@ useEffect(() => {
               <option value="Yerba Buena">Yerba Buena</option>
               <option value="Tafi Viejo">Tafi Viejo</option>
               <option value="Otros">Otros</option>
-              {/* Mostrar ubicaciones guardadas si las hay */}
+              
               {savedLocations && savedLocations.map((loc, index) => (
                 <option key={index} value={loc.city}>{loc.city}</option>
               ))}
             </select>
-          )}
+          )} */}
           
-          {locationError && (
+          {/* {locationError && (
             <span className="text-[10px] text-red-500 ml-1" title={locationError.message}>❌</span>
           )}
         </div>
+      </div> */}
+
+      <div className="flex flex-col items-center">
+        {/* Estado de ubicación */}
+        <div className="flex items-center gap-1 mb-1">
+          <span className="text-[10px] text-gray-500">
+            {locationSuccess && locationData ? 'Ubicación detectada' : 'Ubicación'}
+          </span>
+          {!locationSuccess && !locationLoading && (
+            <button
+              onClick={handleLocationRequest}
+              className="text-[10px] text-[#C95100] underline hover:text-[#A04400]"
+              title="Habilitar ubicación para mejores recomendaciones"
+            >
+              Detectar
+            </button>
+          )}
+        </div>
+
+        {/* Mostrar ubicación actual o opciones guardadas */}
+        {(locationData?.city || (savedLocations && savedLocations.length > 0)) ? (
+          <select
+            name="localidad"
+            value={selectedLocalidad}
+            onChange={(e) => setSelectedLocalidad(e.target.value)}
+            className="w-auto px-2 py-1 rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center text-[12px] border border-gray-200"
+          >
+            {/* Ciudad detectada automáticamente */}
+            {locationData?.city && (
+              <option value={locationData.city}>{locationData.city}</option>
+            )}
+
+            {/* Ciudades guardadas del usuario */}
+            {savedLocations && savedLocations.length > 0 && 
+              savedLocations.map((loc, index) => (
+                <option key={index} value={loc.city}>
+                  {loc.city}
+                </option>
+              ))
+            }
+          </select>
+        ) : (
+          <span className="text-[12px] text-gray-400 px-2 py-1">
+            Sin ubicación
+          </span>
+        )}
+
+        {/* Loading indicator */}
+        {locationLoading && (
+          <div className="flex items-center gap-1 mt-1">
+            <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-[10px] text-gray-500">Detectando...</span>
+          </div>
+        )}
       </div>
 
       {/* Notificación */}
@@ -264,6 +332,68 @@ useEffect(() => {
           </span>
         )}
       </div>
+
+      {/* Modal de explicación GPS */}
+      {showLocationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-8 h-8 text-[#C95100]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Activar ubicación
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Para usar Trivo necesitas permitir el acceso a tu ubicación
+              </p>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700">
+                  <strong>Actividades cercanas:</strong> Encuentra eventos y lugares cerca de ti
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700">
+                  <strong>Recomendaciones precisas:</strong> Contenido relevante para tu zona
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700">
+                  <strong>Una sola vez:</strong> Se guarda automáticamente para futuros usos
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 mb-6 text-center">
+              Tu ubicación es privada y solo se usa para mejorar tu experiencia en la app
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLocationModal(false)}
+                className="flex-1 py-2 px-4 border rounded-[20px] text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Más tarde
+              </button>
+              <button
+                onClick={confirmLocationRequest}
+                className="flex-1 py-2 px-4 bg-[#C95100] text-white rounded-[20px] hover:bg-[#A04400] transition-colors"
+              >
+                Activar GPS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

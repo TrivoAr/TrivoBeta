@@ -2,17 +2,11 @@
 
 import { useState, useEffect } from "react";
 import TopContainer from "@/components/TopContainer";
-import PushManager from "@/components/PushManager";
 import EventModal from "@/components/EventModal";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { data } from "autoprefixer";
-import TeamEventPage from "../team-social/[id]/page";
-import TeamSocial from "@/models/teamSocial";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import EventCard from "@/components/EventCard";
-import StravaMap from "@/components/StravaMap";
 import EmptyState from "@/components/EmptyState";
 import { Toaster } from "react-hot-toast";
 
@@ -235,7 +229,7 @@ export default function Home() {
 
 
 
-  console.log("que verga", futureEvents);
+
 
   return (
     <>
