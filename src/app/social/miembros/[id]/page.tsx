@@ -1,227 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import axios from "axios";
-// import { useSession } from "next-auth/react";
-// import L from "leaflet";
-// import "leaflet/dist/leaflet.css";
-// import Skeleton from "react-loading-skeleton";
-// import "react-loading-skeleton/dist/skeleton.css";
-// import { FaInstagram } from "react-icons/fa";
-// import PaymentReviewModal from "@/components/PaymentReviewModal";
-// import ExportUsuarios from "@/app/utils/ExportUsuarios";
-// import { constructNow } from "date-fns";
-// import { se } from "date-fns/locale";
-
-// // Configuración del icono por defecto de Leaflet
-// delete (L.Icon.Default.prototype as any)._getIconUrl;
-// L.Icon.Default.mergeOptions({
-//   iconRetinaUrl:
-//     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-//   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-//   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-// });
-
-// interface PageProps {
-//   params: { id: string };
-// }
-
-// interface EventData {
-//   _id: string;
-//   nombre: string;
-//   ubicacion: string;
-//   deporte: string;
-//   fecha: string;
-//   hora: string;
-//   duracion: string;
-//   descripcion: string;
-//   imagen: string;
-//   creador_id: {
-//     _id: string;
-//     firstname: string;
-//     lastname: string;
-//     imagen: string;
-//   };
-
-//   locationCoords?: { lat: number; lng: number };
-// }
-
-// interface Miembro {
-//   _id: string;
-//   nombre: string;
-//   email: string;
-//   telnumber: string;
-//   imagen: string;
-//   dni: string;
-//   instagram?: string;
-//   pago_id: {
-//     _id: string;
-//     estado: string;
-//   };
-// }
-
-// export default function EventPage({ params }: PageProps) {
-//   const { data: session } = useSession();
-//   const [event, setEvent] = useState<EventData | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [miembros, setMiembros] = useState<Miembro[]>([]);
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [paymentFilter, setPaymentFilter] = useState<
-//     "todos" | "aprobado" | "rechazado" | "pendiente"
-//   >("todos"); // 👈 filtro
-//   const [selectedMiembro, setSelectedMiembro] = useState<Miembro | null>(null);
-//   const [reviewModal, setReviewModal] = useState<{
-//     open: boolean;
-//     miembroId?: string;
-//     pagoId?: string;
-//   }>({ open: false });
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     const fetchEvent = async () => {
-//       try {
-//         const response = await axios.get(`/api/social/${params.id}`);
-//         setEvent(response.data);
-//       } catch (err) {
-//         console.error("Error al cargar evento", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     const fetchMiembros = async () => {
-//       try {
-//         const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
-
-//         const data = await res.json();
-
-//         console.log("Datos de miembros:", data);
-//         setMiembros(data);
-//       } catch (err) {
-//         console.error("Error al cargar miembros", err);
-//       }
-//     };
-
-//     fetchEvent();
-//     fetchMiembros();
-//   }, [params.id, session]);
-
-//   // const filteredMiembros = miembros.filter((miembro) =>
-//   //   miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())
-//   // );
-
-//   // const filteredMiembros = miembros.filter((miembro) => {
-//   //   const matchName = miembro.nombre
-//   //     .toLowerCase()
-//   //     .includes(searchQuery.toLowerCase());
-//   //   const matchPago =
-//   //     paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
-//   //   return matchName && matchPago;
-//   // });
-
-//   const isOwner = session?.user?.id === event?.creador_id?._id;
-
-// const filteredMiembros = miembros.filter((miembro) => {
-//   const matchName = miembro.nombre
-//     .toLowerCase()
-//     .includes(searchQuery.toLowerCase());
-
-//   // 🔑 Si es dueño, ve todo con filtros
-//   if (isOwner) {
-//     const matchPago =
-//       paymentFilter === "todos" || miembro.pago_id.estado === paymentFilter;
-//     return matchName && matchPago;
-//   }
-
-//   // 🔑 Si NO es dueño, solo ve aprobados
-//   return matchName && miembro.pago_id.estado === "aprobado";
-// });
-
-//   const miembrosAprobados = miembros
-//     .filter((miembro) => miembro.pago_id.estado === "aprobado")
-//     .map((miembro) => ({
-//       dni: miembro.dni,
-//       nombre: miembro.nombre,
-//       telefono: miembro.telnumber,
-//       email: miembro.email,
-//       estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
-//     }));
-
-//   console.log("Miembros filtrados:", filteredMiembros);
-
-//   if (loading)
-//     return (
-//       <div
-//         style={{
-//           width: 390,
-//           height: 844,
-//           padding: 16,
-//           display: "flex",
-//           flexDirection: "column",
-//           gap: 16,
-//           background: "#fff",
-//         }}
-//       >
-//         {/* Flecha y título */}
-//         <div
-//           className="flex-col "
-//           style={{ display: "flex", alignItems: "start", gap: 8 }}
-//         >
-//           <Skeleton circle height={32} width={32} /> {/* botón atrás */}
-//           <Skeleton height={24} width={120} /> {/* título "Participantes" */}
-//         </div>
-
-//         {/* Input de búsqueda */}
-//         <Skeleton height={40} width="100%" borderRadius={8} />
-
-//         {/* Encabezado tabla: Foto | Nombre | Acciones */}
-//         <div
-//           style={{
-//             display: "flex",
-//             justifyContent: "space-between",
-//             marginTop: 8,
-//           }}
-//         >
-//           <Skeleton height={16} width={40} />
-//           <Skeleton height={16} width={60} />
-//           {event?.creador_id?._id &&
-//           session?.user?.id === event.creador_id._id ? (
-//             <Skeleton height={16} width={50} />
-//           ) : null}
-//         </div>
-
-//         {/* Lista de participantes */}
-//         {[1, 2].map((item) => (
-//           <div
-//             key={item}
-//             style={{
-//               display: "flex",
-//               alignItems: "center",
-//               justifyContent: "space-between",
-//               marginTop: 16,
-//             }}
-//           >
-//             <Skeleton circle height={40} width={40} /> {/* foto */}
-//             <Skeleton height={16} width={180} /> {/* nombre */}
-//             {event?.creador_id?._id &&
-//             session?.user?.id === event.creador_id._id ? (
-//               <Skeleton height={24} width={24} />
-//             ) : null}
-//           </div>
-//         ))}
-//       </div>
-//     );
-
-//   if (error || !event)
-//     return (
-//       <main className="py-20 text-center">
-//         {error || "Evento no encontrado"}
-//       </main>
-//     );
-
-//   console.log("Session data:", miembros);
 "use client";
 
 import { useState } from "react";
@@ -252,32 +28,50 @@ export default function EventPage({ params }: { params: { id: string } }) {
     pagoId?: string;
   }>({ open: false });
 
-  // 🔹 Query evento
-  const {
-    data: event,
-    isLoading: loadingEvent,
-    error: errorEvent,
-  } = useQuery({
-    queryKey: ["event", params.id],
-    queryFn: async () => {
-      const res = await axios.get(`/api/social/${params.id}`);
-      return res.data;
-    },
-  });
+  // // 🔹 Query evento
+  // const {
+  //   data: event,
+  //   isLoading: loadingEvent,
+  //   error: errorEvent,
+  // } = useQuery({
+  //   queryKey: ["event", params.id],
+  //   queryFn: async () => {
+  //     const res = await axios.get(`/api/social/${params.id}`);
+  //     return res.data;
+  //   },
+  // });
 
-  // 🔹 Query miembros
-  const {
-    data: miembros = [],
-    isLoading: loadingMiembros,
-    error: errorMiembros,
-  } = useQuery({
-    queryKey: ["miembros", params.id],
-    queryFn: async () => {
-      const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
-      return res.json();
-    },
-    enabled: !!params.id,
-  });
+  // // 🔹 Query miembros
+  // const {
+  //   data: miembros = [],
+  //   isLoading: loadingMiembros,
+  //   error: errorMiembros,
+  // } = useQuery({
+  //   queryKey: ["miembros", params.id],
+  //   queryFn: async () => {
+  //     const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+  //     return res.json();
+  //   },
+  //   enabled: !!params.id,
+  // });
+
+  const { data: event, isLoading: loadingEvent,  error: errorEvent, } = useQuery({
+  queryKey: ["event", params.id],
+  queryFn: async () => {
+    const res = await axios.get(`/api/social/${params.id}`);
+    return res.data;
+  },
+});
+
+const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } = useQuery({
+  queryKey: ["miembros", params.id],
+  queryFn: async () => {
+    const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+    return res.json();
+  },
+  enabled: !!event,
+});
+
 
   const loading = loadingEvent || loadingMiembros;
   const error = errorEvent || errorMiembros;
