@@ -181,20 +181,21 @@ export default function EventPage({ params }: PageProps) {
   const joinFreeMutation = useMutation({
     mutationFn: async () => {
       // Primero crear el pago para eventos gratuitos
-      const pagoRes = await fetch('/api/social/pago', {
+      const pagoRes = await fetch('/api/pagos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           salidaId: params.id,
+          userId: session?.user?.id,
           comprobanteUrl: 'EVENTO_GRATUITO', // Marcador para eventos gratuitos
-          estado: 'pendiente',
         }),
       });
       
       if (!pagoRes.ok) throw new Error("No se pudo crear el registro de pago");
-      const pago = await pagoRes.json();
+      const pagoData = await pagoRes.json();
+      const pago = pagoData.pago;
 
       // Luego unirse usando el pago_id creado
       const res = await fetch(`/api/social/unirse`, {

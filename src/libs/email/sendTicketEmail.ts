@@ -80,7 +80,7 @@ export async function sendTicketEmail({
       
       <div style="background:#f8f9fa; padding:20px; border-radius:10px; text-align:center; margin:20px 0;">
         <p style="color:#333; font-weight:bold; margin:0 0 15px 0;">Tu entrada digital está lista</p>
-        <img src="${qrDataUrl}" width="200" height="200" alt="QR Code" style="border:2px solid #e5e5e5; border-radius:8px;"/>
+        <img src="cid:qr-image" width="200" height="200" alt="QR Code" style="border:2px solid #e5e5e5; border-radius:8px;"/>
         <p style="color:#666; font-size:12px; margin:15px 0 0 0;">Mostrá este QR al ingresar al evento</p>
       </div>
       
@@ -115,6 +115,10 @@ export async function sendTicketEmail({
 
   console.log("[SEND_TICKET_EMAIL] Sending email to:", user.email);
   console.log("[SEND_TICKET_EMAIL] PDF size:", pdfBase64.length, "characters");
+  console.log("[SEND_TICKET_EMAIL] From address:", process.env.RESEND_FROM);
+  
+  // Debug: verificar si hay restricciones por dominio
+  console.log("[SEND_TICKET_EMAIL] User email domain:", user.email.split('@')[1]);
 
   const resp = await resend.emails.send({
     from: process.env.RESEND_FROM ?? "Trivo <onboarding@resend.dev>",
@@ -123,6 +127,7 @@ export async function sendTicketEmail({
     html,
     attachments: [
       { filename: "entrada.pdf", content: pdfBase64, contentType: "application/pdf" },
+      { filename: "qr-code.png", content: qrBase64, contentType: "image/png", cid: "qr-image" } as any,
     ],
   });
 
