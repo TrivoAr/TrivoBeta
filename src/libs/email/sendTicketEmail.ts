@@ -121,7 +121,7 @@ export async function sendTicketEmail({
   console.log("[SEND_TICKET_EMAIL] User email domain:", user.email.split('@')[1]);
 
   const resp = await resend.emails.send({
-    from: process.env.RESEND_FROM ?? "Trivo <noreply@trivo.com.ar>",
+    from: process.env.RESEND_FROM ?? "Soporte Trivo <noreply@trivo.com.ar>",
     to: user.email,
     subject: `Tu QR para ${titulo}`,
     html,
