@@ -7,23 +7,16 @@ import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
-import { set } from "mongoose";
 import { useLocationDetection, useSavedLocations } from "@/hooks/useGeolocation";
 
 const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const horaActual = new Date().getHours();
-  const [formData, setFormData] = useState({
-    fullname: session?.user.fullname || "",
-    email: session?.user.email || "",
-  });
   const [profileImage, setProfileImage] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false); // estado solicitudes pendientes
-  const [showLocationModal, setShowLocationModal] = useState(false); // modal de explicación GPS
-  const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false); // si ya interactuó con el modal
+  const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false); 
 
  
   const { 
@@ -213,78 +206,6 @@ useEffect(() => {
         </Link>
       )}
        
-      
-
-      {/* Ubicación */}
-      {/* <div className="flex flex-col items-center justify-center text-center">
-        <div className="flex items-center gap-1 mb-1">
-          <p className="text-gray-500 text-[12px]">Ubicación</p>
-          <button
-            onClick={getCurrentLocation}
-            disabled={locationLoading}
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
-            title="Detectar mi ubicación"
-          >
-            {locationLoading ? (
-              <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-            ) : (null
-            )}
-          </button>
-        </div>
-        
-        <div className="flex items-center text-[14px] font-medium text-black">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="#f97316"
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            className="mr-1"
-          >
-            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" />
-          </svg>
-          
-          {locationSuccess && locationData ? (
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] text-green-600 mb-1">📍 Detectado</span>
-              <select
-                name="localidad"
-                value={selectedLocalidad}
-                onChange={(e) => setSelectedLocalidad(e.target.value)}
-                className="w-auto p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center text-[12px]"
-              >
-                <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
-                <option value="Yerba Buena">Yerba Buena</option>
-                <option value="Tafi Viejo">Tafi Viejo</option>
-                <option value="Otros">Otros</option>
-                {locationData.city && !["San Miguel de Tucuman", "Yerba Buena", "Tafi Viejo", "Otros"].includes(locationData.city) && (
-                  <option value={locationData.city}>{locationData.city}</option>
-                )}
-              </select>
-            </div>
-          ) : (
-            <select
-              name="localidad"
-              value={selectedLocalidad}
-              onChange={(e) => setSelectedLocalidad(e.target.value)}
-              className="w-auto p-auto rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center"
-            >
-              <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
-              <option value="Yerba Buena">Yerba Buena</option>
-              <option value="Tafi Viejo">Tafi Viejo</option>
-              <option value="Otros">Otros</option>
-              
-              {savedLocations && savedLocations.map((loc, index) => (
-                <option key={index} value={loc.city}>{loc.city}</option>
-              ))}
-            </select>
-          )} */}
-          
-          {/* {locationError && (
-            <span className="text-[10px] text-red-500 ml-1" title={locationError.message}>❌</span>
-          )}
-        </div>
-      </div> */}
 
       <div className="flex flex-col items-center">
         {/* Estado de ubicación */}
