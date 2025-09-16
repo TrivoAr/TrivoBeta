@@ -1,5 +1,5 @@
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig.js";
+import { storage } from "@/libs/firebaseConfig";
 
 export const getTeamSocialImage = async (fileName: string, salidaId: string): Promise<string> => {
   try {
