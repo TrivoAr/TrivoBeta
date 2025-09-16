@@ -87,12 +87,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-// Configuración para manejar archivos grandes
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb', // Límite de 10MB por request
-    },
-  },
-};
