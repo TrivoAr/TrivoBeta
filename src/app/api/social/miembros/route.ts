@@ -63,12 +63,18 @@ export async function GET(req: NextRequest) {
 
           let imagenUrl;
           try {
-            imagenUrl = await getProfileImage(
-              "profile-image.jpg",
-              usuario._id.toString()
+            // Create timeout promise (3 seconds)
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Image fetch timeout')), 3000)
             );
+
+            // Race between image fetch and timeout
+            imagenUrl = await Promise.race([
+              getProfileImage("profile-image.jpg", usuario._id.toString()),
+              timeoutPromise
+            ]);
           } catch (imageError) {
-            console.log("[GET_MIEMBROS] Image not found for user:", usuario._id, "using fallback");
+            console.log("[GET_MIEMBROS] Image fetch failed for user:", usuario._id, imageError.message || "unknown error", "using fallback");
             imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
               usuario.firstname || "U"
             )}&length=1&background=random&color=fff&size=128`;
