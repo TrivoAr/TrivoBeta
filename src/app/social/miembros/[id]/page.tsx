@@ -44,20 +44,44 @@ export default function EventPage({ params }: { params: { id: string } }) {
 const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } = useQuery({
   queryKey: ["miembros", params.id],
   queryFn: async () => {
-    const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
+    console.log("[FRONTEND] Fetching miembros for salidaId:", params.id);
+
+    const res = await fetch(`/api/social/miembros?salidaId=${params.id}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
+      console.error("[FRONTEND] API Error:", {
+        status: res.status,
+        error: errorData,
+        salidaId: params.id
+      });
+
+      // Provide more specific error messages
+      if (res.status === 500) {
+        const errorType = errorData.type || 'unknown';
+        throw new Error(`Error del servidor (${errorType}): ${errorData.error || 'Error interno'}`);
+      }
+
       throw new Error(errorData.error || `HTTP ${res.status}`);
     }
+
     const data = await res.json();
+    console.log("[FRONTEND] Received miembros data:", Array.isArray(data) ? data.length : 'not array', data);
     return Array.isArray(data) ? data : [];
   },
-  enabled: !!params.id, // No depender de event
+  enabled: !!params.id,
   retry: (failureCount, error) => {
-    if (error.message.includes('500')) return false; // No reintentar 500s
+    console.log("[FRONTEND] Query retry attempt:", failureCount, error.message);
+    if (error.message.includes('500') || error.message.includes('timeout')) {
+      return failureCount < 1; // Solo 1 reintento para errores de servidor
+    }
     return failureCount < 2;
   },
-  retryDelay: 1000,
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
 });
 
 

@@ -35,10 +35,15 @@ export async function GET(req: NextRequest) {
     }
 
     console.log("[GET_MIEMBROS] Querying miembros for salidaId:", salidaId);
-    const miembros = await MiembroSalida.find({ salida_id: salidaId })
+
+    // Add timeout for database query in production
+    const queryTimeout = process.env.NODE_ENV === 'production' ? 8000 : 15000;
+    const dbQueryPromise = MiembroSalida.find({ salida_id: salidaId })
       .populate("usuario_id", "firstname lastname email telnumber dni")
-      .populate("pago_id");
-    
+      .populate("pago_id")
+      .maxTimeMS(queryTimeout);
+
+    const miembros = await dbQueryPromise;
     console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
 
@@ -63,9 +68,10 @@ export async function GET(req: NextRequest) {
 
           let imagenUrl;
           try {
-            // Create timeout promise (3 seconds)
+            // More aggressive timeout for production (1.5 seconds)
+            const timeoutDuration = process.env.NODE_ENV === 'production' ? 1500 : 3000;
             const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Image fetch timeout')), 3000)
+              setTimeout(() => reject(new Error('Image fetch timeout')), timeoutDuration)
             );
 
             // Race between image fetch and timeout
@@ -74,7 +80,7 @@ export async function GET(req: NextRequest) {
               timeoutPromise
             ]);
           } catch (imageError) {
-            console.log("[GET_MIEMBROS] Image fetch failed for user:", usuario._id, imageError.message || "unknown error", "using fallback");
+            console.log("[GET_MIEMBROS] Image fetch failed for user:", usuario._id, imageError?.message || "unknown error", "using fallback");
             imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
               usuario.firstname || "U"
             )}&length=1&background=random&color=fff&size=128`;
@@ -133,13 +139,25 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[GET_MIEMBROS_ERROR]", {
       salidaId,
+      environment: process.env.NODE_ENV,
       error: err instanceof Error ? err.message : err,
-      stack: err instanceof Error ? err.stack : undefined
+      stack: err instanceof Error ? err.stack : undefined,
+      timestamp: new Date().toISOString()
     });
-    return new Response(JSON.stringify({ 
+
+    // Return more specific error information for debugging
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('time') || errorMessage.includes('maxTimeMS');
+
+    return new Response(JSON.stringify({
       error: "Error interno en GET /miembros",
-      details: process.env.NODE_ENV === 'development' ? err instanceof Error ? err.message : String(err) : undefined
-    }), { status: 500 });
+      type: isTimeout ? "timeout" : "database_error",
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      timestamp: new Date().toISOString()
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }
 
