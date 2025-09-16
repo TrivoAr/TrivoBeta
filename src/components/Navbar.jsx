@@ -67,7 +67,7 @@ function Navbar() {
               >
                 Salida
               </Link>
-              {session.user.role === "dueño de academia" ? (
+              
                 <>
                   <Link
                     href="/team-social/crear"
@@ -84,7 +84,6 @@ function Navbar() {
                     Grupo de entrenamiento
                   </Link>
                 </>
-              ) : null}
 
               <button
                 onClick={() => setIsModalOpen(false)}
