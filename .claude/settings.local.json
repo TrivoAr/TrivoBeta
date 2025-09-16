@@ -28,7 +28,10 @@
       "Bash(npx next build:*)",
       "Bash(rg:*)",
       "Bash(npx web-push:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(tsx -r tsconfig-paths/register -r dotenv/config ./scripts/debug-sponsors.ts:*)",
+      "Bash(npx tsx:*)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

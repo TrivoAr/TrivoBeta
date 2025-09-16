@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "backfill:shortids": "tsx -r tsconfig-paths/register -r dotenv/config ./script/backfill-shortids.ts"
+    "backfill:shortids": "tsx -r tsconfig-paths/register -r dotenv/config ./script/backfill-shortids.ts",
+    "add-sponsor": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-sponsor.ts",
+    "migrate-sponsors": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/migrate-sponsors.ts",
+    "check-sponsors": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/check-sponsors.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.6",
