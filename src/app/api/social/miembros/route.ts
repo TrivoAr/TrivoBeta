@@ -38,6 +38,25 @@ export async function GET(req: NextRequest) {
 
     // Add timeout for database query in production
     const queryTimeout = process.env.NODE_ENV === 'production' ? 8000 : 15000;
+
+    // Verify that the salidaId exists in SalidaSocial first
+    let salidaExists = false;
+    try {
+      const salida = await SalidaSocial.findById(salidaId).select('_id').maxTimeMS(3000);
+      salidaExists = !!salida;
+      console.log("[GET_MIEMBROS] SalidaSocial exists:", salidaExists);
+    } catch (salidaError) {
+      console.log("[GET_MIEMBROS] Error checking salida existence:", salidaError.message);
+    }
+
+    if (!salidaExists) {
+      console.log("[GET_MIEMBROS] SalidaSocial not found, returning empty array");
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const dbQueryPromise = MiembroSalida.find({ salida_id: salidaId })
       .populate("usuario_id", "firstname lastname email telnumber dni")
       .populate("pago_id")
@@ -47,13 +66,17 @@ export async function GET(req: NextRequest) {
     console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
 
+    // Process miembros with additional error handling
     const miembrosResults = await Promise.allSettled(
-      miembros.map(async (m) => {
+      miembros.map(async (m, index) => {
         try {
+          console.log(`[GET_MIEMBROS] Processing member ${index + 1}/${miembros.length}:`, m._id);
+
           const usuario = m.usuario_id;
           const pago = m.pago_id;
 
           if (!usuario) {
+            console.log(`[GET_MIEMBROS] Member ${index + 1} has no usuario_id`);
             return {
               _id: m._id,
               usuarioId: null,
@@ -118,21 +141,28 @@ export async function GET(req: NextRequest) {
           return result.value;
         } else {
           console.error("[GET_MIEMBROS] Promise failed for member at index:", index, result.reason);
+          // Return a safe fallback member
           return {
             _id: miembros[index]?._id || `error_${index}`,
+            usuarioId: miembros[index]?.usuario_id?._id || null,
             nombre: "Error de carga",
             email: "",
             telnumber: "",
             imagen: "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
             dni: "",
-            pago_id: null
+            pago_id: miembros[index]?.pago_id ? {
+              _id: miembros[index].pago_id._id,
+              estado: miembros[index].pago_id.estado || "pendiente"
+            } : null
           };
         }
       })
       .filter(Boolean); // Remove any null/undefined results
 
+    console.log("[GET_MIEMBROS] Returning", miembrosConImagen.length, "processed members");
+
     return new Response(
-  JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []), {
+      JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -145,14 +175,24 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-    // Return more specific error information for debugging
+    // NEVER return 500 in production - always return valid empty array
+    // This prevents the UI from breaking completely
+    if (process.env.NODE_ENV === 'production') {
+      console.log("[GET_MIEMBROS] Production fallback: returning empty array instead of error");
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Return more specific error information for debugging in development
     const errorMessage = err instanceof Error ? err.message : String(err);
     const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('time') || errorMessage.includes('maxTimeMS');
 
     return new Response(JSON.stringify({
       error: "Error interno en GET /miembros",
       type: isTimeout ? "timeout" : "database_error",
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      details: errorMessage,
       timestamp: new Date().toISOString()
     }), {
       status: 500,
