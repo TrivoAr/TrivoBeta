@@ -16,6 +16,7 @@ export default function EventPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const queryClient = useQueryClient();
  
+  
 
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState<
@@ -45,12 +46,17 @@ const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } 
   queryFn: async () => {
     const res = await fetch(`/api/social/miembros?salidaId=${params.id}`);
     if (!res.ok) {
-      throw new Error(`Failed to fetch miembros: ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${res.status}`);
     }
-    return res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   },
-  enabled: !!event && !!params.id,
-  retry: 2,
+  enabled: !!params.id, // No depender de event
+  retry: (failureCount, error) => {
+    if (error.message.includes('500')) return false; // No reintentar 500s
+    return failureCount < 2;
+  },
   retryDelay: 1000,
 });
 
@@ -64,8 +70,8 @@ const { data: miembros = [], isLoading: loadingMiembros, error: errorMiembros } 
 const filteredMiembros = safeMiembros.filter((miembro: any) => {
   const matchName = miembro.nombre?.toLowerCase().includes(searchQuery.toLowerCase());
   if (isOwner) {
-    const matchPago =
-      paymentFilter === "todos" || miembro.pago_id?.estado === paymentFilter;
+    const pagoEstado = miembro.pago_id?.estado || "pendiente";
+    const matchPago = paymentFilter === "todos" || pagoEstado === paymentFilter;
     return matchName && matchPago;
   }
   return matchName && miembro.pago_id?.estado === "aprobado";
@@ -107,13 +113,78 @@ function handleDelete(miembroId: string) {
 
 
   // 🔹 Loading UI
-  if (loading) return <Skeleton height={200} count={5} />;
+  if (loadingEvent) return <Skeleton height={200} count={5} />;
 
-  if (error || !event) {
+  // Manejo específico de errores
+  if (errorEvent || !event) {
     return (
-      <main className="py-20 text-center">
-        {String(error) || "Evento no encontrado"}
-      </main>
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <div className="text-center py-10">
+          <p className="text-red-500 mb-4">Error: {errorEvent?.message || "Evento no encontrado"}</p>
+          <button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["event", params.id] })}
+            className="px-4 py-2 bg-orange-500 text-white rounded"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMiembros) {
+    return (
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">Participantes</p>
+        <div className="text-center py-10">
+          <p className="text-red-500 mb-4">Error al cargar miembros: {errorMiembros.message}</p>
+          <button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ["miembros", params.id] })}
+            className="px-4 py-2 bg-[#C95100] text-white rounded"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingMiembros) {
+    return (
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">Participantes</p>
+        <Skeleton height={100} count={3} />
+      </div>
     );
   }
 
@@ -125,7 +196,7 @@ function handleDelete(miembroId: string) {
       telefono: miembro.telnumber,
       email: miembro.email,
       imagen: miembro.imagen,
-      estado: miembro.pago_id.estado as "pendiente" | "aprobado" | "rechazado",
+      estado: miembro.pago_id?.estado as "pendiente" | "aprobado" | "rechazado",
     }));
 
   return (
@@ -141,7 +212,7 @@ function handleDelete(miembroId: string) {
         />
       </button>
 
-      <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">
+      <p className="font-semibold text-2xl mb-3 mt-3">
         Participantes
       </p>
 
@@ -266,9 +337,10 @@ function handleDelete(miembroId: string) {
                       setReviewModal({
                         open: true,
                         miembroId: miembro._id,
-                        pagoId: miembro.pago_id._id,
+                        pagoId: miembro.pago_id?._id,
                       })
                     }
+                    disabled={!miembro.pago_id?._id}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -301,10 +373,10 @@ function handleDelete(miembroId: string) {
                     </svg>
                   </button>
                   <div
-                    className={`w-[20px] h-[20px]  rounded-full ${
-                      miembro.pago_id.estado === "aprobado"
+                    className={`w-[20px] h-[20px] rounded-full ${
+                      miembro.pago_id?.estado === "aprobado"
                         ? "bg-green-600"
-                        : miembro.pago_id.estado === "rechazado"
+                        : miembro.pago_id?.estado === "rechazado"
                           ? "bg-red-600"
                           : "bg-yellow-600"
                     }`}
