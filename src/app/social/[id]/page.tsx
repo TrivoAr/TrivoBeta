@@ -57,15 +57,21 @@ interface EventData {
     resource_state: number;
   };
 
-  profesorId: {
+  profesorId?: {
     _id: string;
     firstname: string;
     lastname: string;
-    imagen: string;
-    telNumero: string;
-    bio: string;
-    rol: string;
+    imagen?: string;
+    telnumber?: string;
+    bio?: string;
+    rol?: string;
   };
+
+  sponsors?: Array<{
+    _id: string;
+    name: string;
+    imagen?: string;
+  }>
 
   shortId: string;
   detalles: string;
@@ -89,22 +95,12 @@ interface Miembro {
   dni: string;
 }
 
-interface Profe {
-  _id: string;
-  firstname: string;
-  lastname: string;
-  imagen: string;
-  telNumber: string;
-  bio: string;
-  rol: string;
-}
 
 export default function EventPage({ params }: PageProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showFullMap, setShowFullMap] = useState(false);
-  const [profe, setProfe] = useState<Profe | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
@@ -727,17 +723,17 @@ export default function EventPage({ params }: PageProps) {
           </>
         ) : null}
 
-        {profe ? (
+        {event.profesorId ? (
           <div className="w-full flex flex-col items-center mt-8">
             <div className="flex justify-center flex-col items-center gap-3">
               <div
                 className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
-                onClick={() => router.push(`/profile/${profe._id}`)}
+                onClick={() => router.push(`/profile/${event.profesorId._id}`)}
               >
                 <div
                   className="rounded-full h-[100px] w-[100px] shadow-md"
                   style={{
-                    backgroundImage: `url(${profe?.imagen})`,
+                    backgroundImage: `url(${event.profesorId?.imagen})`,
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
@@ -745,13 +741,13 @@ export default function EventPage({ params }: PageProps) {
                 ></div>
                 <div className="flex flex-col items-center">
                   <h2 className="text-xl font-normal">
-                    {profe?.firstname} {profe?.lastname}
+                    {event.profesorId?.firstname} {event.profesorId?.lastname}
                   </h2>
                   <p className="text-sm font-light text-slate-400 mb-1">
                     Profesor
                   </p>
                   <a
-                    href={`https://wa.me/${profe?.telNumber?.replace(/\D/g, "")}`}
+                    href={`https://wa.me/${event.profesorId?.telnumber?.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-white z-50 font-medium border  bg-[#C95100] px-[20px] py-[3px] rounded-[20px]"
@@ -761,7 +757,7 @@ export default function EventPage({ params }: PageProps) {
                 </div>
               </div>
               <div className="w-[90%] font-extralight text-justify">
-                {profe.bio}
+                {event.profesorId.bio}
               </div>
             </div>
             <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
@@ -821,8 +817,54 @@ export default function EventPage({ params }: PageProps) {
                 <span className="text-gray-500">Nadie se ha unido aún</span>
               )}
             </div>
+            <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
           </div>
+          
         </div>
+
+        {/* Sección de Sponsors */}
+        {event.sponsors && event.sponsors.length > 0 && (
+          <div className="flex flex-col items-center mt-8">
+            <div className="w-[90%]">
+              <h2 className="text-lg font-normal mb-3 text-center">
+                {event.sponsors.length === 1 ? 'Sponsor oficial' : 'Sponsors oficiales'}
+              </h2>
+              
+              {event.sponsors.length === 1 ? (
+                // Vista para un solo sponsor (más prominente)
+                <div className="flex justify-center">
+                  {event.sponsors[0].imagen && (
+                    <img 
+                      src={event.sponsors[0].imagen} 
+                      alt={event.sponsors[0].name}
+                      className="w-24 h-24 object-cover rounded-full border shadow-sm"
+                    />
+                  )}
+                </div>
+              ) : (
+                // Vista para múltiples sponsors (grid)
+                <div className="grid grid-cols-2 gap-4">
+                  {event.sponsors.map((sponsor, index) => (
+                    <div key={sponsor._id} className="bg-white p-3 rounded-[15px] shadow-md border flex flex-col items-center gap-2">
+                      {sponsor.imagen && (
+                        <img 
+                          src={sponsor.imagen} 
+                          alt={sponsor.name}
+                          className="w-16 h-16 object-cover rounded-lg border shadow-sm"
+                        />
+                      )}
+                      <span className="text-sm font-medium text-center text-gray-800">
+                        {sponsor.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
+          </div>
+        )}
+        
 
         <div
           className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50

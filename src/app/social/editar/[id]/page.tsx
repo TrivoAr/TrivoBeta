@@ -7,11 +7,12 @@ import { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig.js";
+import { storage } from "@/libs/firebaseConfig";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
 import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import { useSponsors } from "@/hooks/useSponsors";
 
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
@@ -50,6 +51,7 @@ interface SalidaSocial {
   cbu?: string;
   alias?: string;
   profesorId?: string;
+  sponsors?: (string | { _id: string })[];
   imagen?: string;
 }
 
@@ -72,6 +74,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   // Hooks para Argentina locations
   const { data: provinces = [], isLoading: provincesLoading } = useProvinces();
   const { data: localities = [], isLoading: localitiesLoading } = useLocalitiesByProvince(selectedProvince);
+  
+  // Hook para sponsors
+  const { data: sponsorsData, isLoading: sponsorsLoading, error: sponsorsError } = useSponsors();
 
   // -------- Query salida --------
   const salidaQuery = useQuery({
@@ -88,7 +93,14 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   // ✅ reemplaza onSuccess con un useEffect que corre cuando hay data
   useEffect(() => {
     if (salidaQuery.data) {
-      setLocalSalida(salidaQuery.data);
+      // Asegurar que sponsors sea un array
+      const salidaData = {
+        ...salidaQuery.data,
+        sponsors: Array.isArray(salidaQuery.data.sponsors) 
+          ? salidaQuery.data.sponsors.map(s => typeof s === 'string' ? s : s._id)
+          : []
+      };
+      setLocalSalida(salidaData);
       if (salidaQuery.data.locationCoords) {
         setMarkerPos(salidaQuery.data.locationCoords);
       }
@@ -193,6 +205,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     };
 
     if (!payload.profesorId) delete payload.profesorId;
+    if (!payload.sponsors || payload.sponsors.length === 0) delete payload.sponsors;
 
     updateMutation.mutate(payload);
   };
@@ -397,18 +410,135 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         />
 
         {/* Profesor */}
-        <select
-          value={localSalida?.profesorId || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, profesorId: e.target.value || undefined }))}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
-        >
-          <option value="">Sin profesor</option>
-          {profesQuery.data?.map((p: any) => (
-            <option key={p._id} value={p._id}>
-              {p.firstname} {p.lastname}
-            </option>
-          ))}
-        </select>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            Profesor (opcional)
+          </label>
+          
+          <select
+            value={localSalida?.profesorId || ""}
+            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, profesorId: e.target.value || undefined }))}
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          >
+            <option value="">Sin profesor</option>
+            {profesQuery.data?.map((p: any) => (
+              <option key={p._id} value={p._id}>
+                {p.firstname} {p.lastname}
+              </option>
+            ))}
+          </select>
+          
+          {/* Mostrar preview del profesor seleccionado */}
+          {localSalida?.profesorId && profesQuery.data && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px]">
+              {(() => {
+                const selectedProfesor = profesQuery.data.find(p => p._id === localSalida.profesorId);
+                return selectedProfesor ? (
+                  <div className="flex items-center gap-3">
+                    {selectedProfesor.imagen && (
+                      <img 
+                        src={selectedProfesor.imagen} 
+                        alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
+                        className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
+                      />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">
+                        👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname} {selectedProfesor.lastname}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Este profesor aparecerá como instructor de la salida
+                      </p>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
+        </div>
+
+        {/* Selector de Sponsor */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            Sponsor (opcional)
+          </label>
+          
+          {sponsorsLoading ? (
+            <div className="w-full px-4 py-4 border shadow-md rounded-[15px] bg-gray-100 text-gray-500 flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+              Cargando sponsors...
+            </div>
+          ) : sponsorsError ? (
+            <div className="w-full px-4 py-4 border border-red-200 shadow-md rounded-[15px] bg-red-50 text-red-600">
+              Error al cargar sponsors
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="text-sm text-gray-600 mb-2">
+                Selecciona uno o más sponsors (opcional):
+              </div>
+              {sponsorsData?.data?.map((sponsor) => (
+                <label key={sponsor._id} className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={localSalida?.sponsors?.includes(sponsor._id) || false}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setLocalSalida((prev: any) => ({
+                          ...prev,
+                          sponsors: [...(prev.sponsors || []), sponsor._id]
+                        }));
+                      } else {
+                        setLocalSalida((prev: any) => ({
+                          ...prev,
+                          sponsors: (prev.sponsors || []).filter((id: string) => id !== sponsor._id)
+                        }));
+                      }
+                    }}
+                    className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                  />
+                  {sponsor.imagen && (
+                    <img 
+                      src={sponsor.imagen} 
+                      alt={sponsor.name}
+                      className="w-8 h-8 object-cover rounded"
+                    />
+                  )}
+                  <span className="text-sm font-medium">{sponsor.name}</span>
+                </label>
+              ))}
+            </div>
+          )}
+          
+          {/* Mostrar preview de sponsors seleccionados */}
+          {localSalida?.sponsors && localSalida.sponsors.length > 0 && sponsorsData?.data && (
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded-[15px]">
+              <p className="text-sm font-medium text-orange-800 mb-2">
+                🎯 Sponsors seleccionados ({localSalida.sponsors.length}):
+              </p>
+              <div className="space-y-2">
+                {localSalida.sponsors.map(sponsorId => {
+                  const sponsor = sponsorsData.data.find(s => s._id === sponsorId);
+                  return sponsor ? (
+                    <div key={sponsor._id} className="flex items-center gap-2">
+                      {sponsor.imagen && (
+                        <img 
+                          src={sponsor.imagen} 
+                          alt={sponsor.name}
+                          className="w-6 h-6 object-cover rounded"
+                        />
+                      )}
+                      <span className="text-sm text-orange-700">{sponsor.name}</span>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+              <p className="text-xs text-orange-600 mt-2">
+                Estos sponsors aparecerán asociados a tu salida
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Ubicación */}
         <div className="relative mb-3">

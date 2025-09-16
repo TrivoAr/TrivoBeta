@@ -95,6 +95,12 @@ const SalidaSocialSchema = new Schema(
 
      shortId: { type: String, unique: true, index: true },
 
+     sponsors: [{
+      type: Schema.Types.ObjectId,
+      ref: "Sponsors",
+      required: false,
+     }]
+
 
   },
   { timestamps: true }

@@ -13,6 +13,7 @@ import DescriptionEditor from "@/components/DescriptionEditor";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { set } from "mongoose";
 import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import { useSponsors } from "@/hooks/useSponsors";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
 
@@ -71,6 +72,9 @@ export default function CrearSalidaPage() {
   const { data: provinces } = useProvinces();
   const { data: localities } = useLocalitiesByProvince(selectedProvince);
   const locationFromCoordsQuery = useLocationFromCoords();
+  
+  // Hook para sponsors
+  const { data: sponsorsData, isLoading: sponsorsLoading, error: sponsorsError } = useSponsors();
   const [ubicacion, setUbicacion] = useState("");
   const [coords, setCoords] = useState<Coords>({
     lat: -26.8333,
@@ -104,6 +108,8 @@ export default function CrearSalidaPage() {
     detalles: "",
     cbu: "",
     alias: "",
+    sponsors: [] as string[],
+    profesorId: ""
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
@@ -995,7 +1001,118 @@ export default function CrearSalidaPage() {
             ))}
           </ul>
         )}
+        
+        {/* Mostrar preview del profesor seleccionado */}
+        {formData.profesorId && queryProfesor && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px] mt-2">
+            {(() => {
+              const selectedProfesor = profes.find(p => p._id === formData.profesorId);
+              return selectedProfesor ? (
+                <div className="flex items-center gap-3">
+                  {selectedProfesor.imagen && (
+                    <img 
+                      src={selectedProfesor.imagen} 
+                      alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
+                      className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
+                    />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">
+                      👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname} {selectedProfesor.lastname}
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      Este profesor aparecerá como instructor de la salida
+                    </p>
+                  </div>
+                </div>
+              ) : null;
+            })()}
+          </div>
+        )}
       </label>
+
+      {/* Selector de Sponsor */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">
+          Sponsor (opcional)
+        </label>
+        
+        {sponsorsLoading ? (
+          <div className="w-full px-4 py-4 border shadow-md rounded-[15px] bg-gray-100 text-gray-500 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            Cargando sponsors...
+          </div>
+        ) : sponsorsError ? (
+          <div className="w-full px-4 py-4 border border-red-200 shadow-md rounded-[15px] bg-red-50 text-red-600">
+            Error al cargar sponsors
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="text-sm text-gray-600 mb-2">
+              Selecciona uno o más sponsors (opcional):
+            </div>
+            {sponsorsData?.data?.map((sponsor) => (
+              <label key={sponsor._id} className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.sponsors.includes(sponsor._id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setFormData(prev => ({
+                        ...prev,
+                        sponsors: [...prev.sponsors, sponsor._id]
+                      }));
+                    } else {
+                      setFormData(prev => ({
+                        ...prev,
+                        sponsors: prev.sponsors.filter(id => id !== sponsor._id)
+                      }));
+                    }
+                  }}
+                  className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+                />
+                {sponsor.imagen && (
+                  <img 
+                    src={sponsor.imagen} 
+                    alt={sponsor.name}
+                    className="w-8 h-8 object-cover rounded"
+                  />
+                )}
+                <span className="text-sm font-medium">{sponsor.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+        
+        {/* Mostrar preview de sponsors seleccionados */}
+        {formData.sponsors.length > 0 && sponsorsData?.data && (
+          <div className="p-3 bg-orange-50 border border-orange-200 rounded-[15px]">
+            <p className="text-sm font-medium text-orange-800 mb-2">
+              🎯 Sponsors seleccionados ({formData.sponsors.length}):
+            </p>
+            <div className="space-y-2">
+              {formData.sponsors.map(sponsorId => {
+                const sponsor = sponsorsData.data.find(s => s._id === sponsorId);
+                return sponsor ? (
+                  <div key={sponsor._id} className="flex items-center gap-2">
+                    {sponsor.imagen && (
+                      <img 
+                        src={sponsor.imagen} 
+                        alt={sponsor.name}
+                        className="w-6 h-6 object-cover rounded"
+                      />
+                    )}
+                    <span className="text-sm text-orange-700">{sponsor.name}</span>
+                  </div>
+                ) : null;
+              })}
+            </div>
+            <p className="text-xs text-orange-600 mt-2">
+              Estos sponsors aparecerán asociados a tu salida
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="relative">
