@@ -10,6 +10,9 @@ import { storage } from "@/libs/firebaseConfig";
 import { useSession, signOut } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import mapboxgl from "mapbox-gl";
+import { useBares } from "@/hooks/useBares";
+import { useSponsors } from "@/hooks/useSponsors";
+import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
 
@@ -55,6 +58,27 @@ export default function CrearTeamPage() {
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
 
+  // Hooks para obtener bares y sponsors
+  const { data: bares, isLoading: loadingBares } = useBares();
+  const { data: sponsorsResponse, isLoading: loadingSponsors } = useSponsors();
+
+  // Extraer array de sponsors de la respuesta
+  const sponsors = sponsorsResponse?.data || [];
+
+  // Estados para selecciones
+  const [selectedBar, setSelectedBar] = useState<string>("");
+  const [selectedSponsors, setSelectedSponsors] = useState<string[]>([]);
+
+  // Estados para detección de ubicación
+  const [locationDetecting, setLocationDetecting] = useState(false);
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedLocality, setSelectedLocality] = useState("");
+
+  // Hooks para ubicación argentina
+  const { data: provinces } = useProvinces();
+  const { data: localities } = useLocalitiesByProvince(selectedProvince);
+  const locationFromCoordsQuery = useLocationFromCoords();
+
   const [formData, setFormData] = useState({
     nombre: "",
     ubicacion: "",
@@ -66,6 +90,8 @@ export default function CrearTeamPage() {
     descripcion: "",
     whatsappLink: "",
     localidad: "",
+    provincia: "",
+    dificultad: "",
     telefonoOrganizador: session?.user.telnumber || "",
     coords: null as LatLng | null,
     stravaMap: {
@@ -93,6 +119,147 @@ export default function CrearTeamPage() {
     >
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Función para manejar selección múltiple de sponsors
+  const handleSponsorToggle = (sponsorId: string) => {
+    setSelectedSponsors(prev =>
+      prev.includes(sponsorId)
+        ? prev.filter(id => id !== sponsorId)
+        : [...prev, sponsorId]
+    );
+  };
+
+  // Función para detectar ubicación por GPS
+  const detectLocationFromGPS = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocalización no soportada en este dispositivo");
+      return;
+    }
+
+    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      toast.error("GPS requiere conexión segura (HTTPS)");
+      return;
+    }
+
+    setLocationDetecting(true);
+
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const message = isMobile
+      ? "📱 Presiona 'Permitir' cuando aparezca la solicitud de ubicación"
+      : "🌍 Buscando ubicación... Acepta los permisos cuando aparezcan";
+
+    toast.loading(message, {
+      duration: 6000,
+      id: 'gps-search'
+    });
+
+    if (isMobile) {
+      setTimeout(() => {
+        toast("💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo", {
+          duration: 4000,
+          icon: "💡"
+        });
+      }, 2000);
+    }
+
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'denied') {
+          setLocationDetecting(false);
+          toast.dismiss('gps-search');
+          toast.error("🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página", { duration: 8000 });
+          return;
+        }
+      }
+    } catch (e) {
+      // Ignorar errores de permissions API
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        try {
+          const locationData = await locationFromCoordsQuery.mutateAsync(coords);
+
+          const province = provinces?.find(p =>
+            p.name.toLowerCase() === locationData.province?.toLowerCase()
+          );
+
+          if (province) {
+            setSelectedProvince(province.id);
+            setFormData(prev => ({
+              ...prev,
+              provincia: province.name,
+              coords: coords
+            }));
+
+            if (locationData.locality) {
+              setSelectedLocality(locationData.locality);
+              setFormData(prev => ({
+                ...prev,
+                localidad: locationData.locality
+              }));
+            }
+          }
+
+          setCoords(coords);
+          setFormData(prev => ({ ...prev, coords }));
+
+          if (marker.current && map.current) {
+            marker.current.setLngLat([coords.lng, coords.lat]);
+            map.current.flyTo({ center: [coords.lng, coords.lat], zoom: 14 });
+          }
+
+          toast.dismiss('gps-search');
+          toast.success(`📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
+
+        } catch (error) {
+          console.error("Error detectando ubicación:", error);
+          toast.dismiss('gps-search');
+          toast.error("Error al detectar ubicación específica, pero coordenadas obtenidas");
+
+          setCoords(coords);
+          setFormData(prev => ({ ...prev, coords }));
+
+          if (marker.current && map.current) {
+            marker.current.setLngLat([coords.lng, coords.lat]);
+            map.current.flyTo({ center: [coords.lng, coords.lat], zoom: 14 });
+          }
+        }
+
+        setLocationDetecting(false);
+      },
+      (error) => {
+        setLocationDetecting(false);
+        toast.dismiss('gps-search');
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error("🚫 Permiso de ubicación denegado");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error("📍 Ubicación no disponible");
+            break;
+          case error.TIMEOUT:
+            toast.error("⏱️ Tiempo agotado buscando ubicación");
+            break;
+          default:
+            toast.error("❌ Error desconocido obteniendo ubicación");
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 300000
+      }
+    );
   };
 
   useEffect(() => {
@@ -204,6 +371,10 @@ const handleSuggestionClick = (s: { display_name: string; lat: string; lon: stri
       ...formData,
       imagen: imageUrl,
       locationCoords: formData.coords, // ya NO será null
+      bar: selectedBar || null,
+      sponsors: selectedSponsors.length > 0 ? selectedSponsors : [],
+      provincia: formData.provincia,
+      dificultad: formData.dificultad,
     };
 
     const res = await fetch("/api/team-social", {
@@ -320,18 +491,73 @@ useEffect(() => {
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         />
       </label>
-      <select
-        name="localidad"
-        value={formData.localidad}
-        onChange={handleChange}
-        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+      {/* Provincia */}
+      <label className="block">
+        Provincia
+        <select
+          value={selectedProvince}
+          onChange={(e) => {
+            setSelectedProvince(e.target.value);
+            const provinceName = provinces?.find(p => p.id === e.target.value)?.name || "";
+            setFormData(prev => ({ ...prev, provincia: provinceName }));
+            setSelectedLocality(""); // Reset localidad al cambiar provincia
+          }}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+        >
+          <option value="">Seleccionar provincia</option>
+          {provinces?.map((province) => (
+            <option key={province.id} value={province.id}>
+              {province.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Localidad */}
+      <label className="block">
+        Localidad
+        <select
+          value={selectedLocality}
+          onChange={(e) => {
+            setSelectedLocality(e.target.value);
+            const localityName = localities?.find(l => l.id === e.target.value)?.name || e.target.value;
+            setFormData(prev => ({ ...prev, localidad: localityName }));
+          }}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          disabled={!selectedProvince}
+        >
+          <option value="">
+            {selectedProvince ? "Seleccionar localidad" : "Primero selecciona una provincia"}
+          </option>
+          {localities?.map((locality) => (
+            <option key={locality.id} value={locality.id}>
+              {locality.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Botón de GPS */}
+      <button
+        type="button"
+        onClick={detectLocationFromGPS}
+        disabled={locationDetecting}
+        className="w-full py-3 px-4 bg-[#C95100] hover:bg-[#B04500] disabled:bg-[#C95100]/50 text-white rounded-[15px] flex items-center justify-center gap-2 transition-colors"
       >
-        <option value="">Localidad</option>
-        <option value="San Miguel de Tucuman">San Miguel de Tucuman</option>
-        <option value="Yerba Buena">Yerba Buena</option>
-        <option value="Tafi Viejo">Tafi Viejo</option>
-        <option value="Otros">Otros</option>
-      </select>
+        {locationDetecting ? (
+          <>
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Detectando ubicación...
+          </>
+        ) : (
+          <>
+            📍 Detectar mi ubicación
+          </>
+        )}
+      </button>
 
       <label className="block">
         Precio
@@ -379,6 +605,23 @@ useEffect(() => {
         <option value="Trekking">Trekking</option>
         <option value="Otros">Otros</option>
       </select>
+
+      {/* Campo de Dificultad */}
+      <label className="block">
+        Dificultad
+        <select
+          name="dificultad"
+          value={formData.dificultad}
+          onChange={handleChange}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+        >
+          <option value="">Seleccionar dificultad</option>
+          <option value="Principiante">Principiante</option>
+          <option value="Intermedio">Intermedio</option>
+          <option value="Avanzado">Avanzado</option>
+          <option value="Experto">Experto</option>
+        </select>
+      </label>
 
       <label className="block">
         <select
@@ -556,6 +799,66 @@ useEffect(() => {
       />
     </div>
 
+      {/* Selección de Bar */}
+      <label className="block">
+        Bar (opcional)
+        <select
+          value={selectedBar}
+          onChange={(e) => setSelectedBar(e.target.value)}
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          disabled={loadingBares}
+        >
+          <option value="">Seleccionar bar (opcional)</option>
+          {bares?.map((bar) => (
+            <option key={bar._id} value={bar._id}>
+              {bar.name} - {bar.direccion}
+            </option>
+          ))}
+        </select>
+        {loadingBares && <p className="text-sm text-gray-500 mt-1">Cargando bares...</p>}
+      </label>
+
+      {/* Selección de Sponsors */}
+      <div className="block">
+        <label className="block mb-2">Sponsors (opcional)</label>
+        {loadingSponsors ? (
+          <p className="text-sm text-gray-500">Cargando sponsors...</p>
+        ) : (
+          <div className="space-y-2 max-h-40 overflow-y-auto border rounded-[15px] p-3">
+            {sponsors?.map((sponsor) => (
+              <label
+                key={sponsor._id}
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSponsors.includes(sponsor._id)}
+                  onChange={() => handleSponsorToggle(sponsor._id)}
+                  className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                />
+                <div className="flex items-center space-x-2">
+                  {sponsor.imagen && (
+                    <img
+                      src={sponsor.imagen}
+                      alt={sponsor.name}
+                      className="w-8 h-8 rounded object-cover"
+                    />
+                  )}
+                  <span className="text-sm text-gray-700">{sponsor.name}</span>
+                </div>
+              </label>
+            ))}
+            {sponsors?.length === 0 && (
+              <p className="text-sm text-gray-500">No hay sponsors disponibles</p>
+            )}
+          </div>
+        )}
+        {selectedSponsors.length > 0 && (
+          <p className="text-xs text-gray-600 mt-2">
+            {selectedSponsors.length} sponsor(s) seleccionado(s)
+          </p>
+        )}
+      </div>
 
       <button
         className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"

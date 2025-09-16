@@ -50,6 +50,25 @@ const TeamSocialSchema = new Schema(
       type: String,
     },
 
+    bar:{
+      type: Schema.Types.ObjectId,
+      ref: "Bares",
+      require: false,
+    },
+
+     sponsors: [{
+          type: Schema.Types.ObjectId,
+          ref: "Sponsors",
+          required: false,
+         }],
+       provincia:{
+      type: String,
+    },
+
+     dificultad: {
+      type: String,
+    },
+
     alias: {
       type: String,
     },

@@ -628,25 +628,29 @@ export default function CrearSalidaPage() {
       {/* Sección de Ubicación con GPS */}
       <div className="space-y-3">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Ubicación</h3>
-            <button
-              type="button"
-              onClick={detectLocationFromGPS}
-              disabled={locationDetecting}
-              className="flex items-center gap-2 px-3 py-2 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors disabled:opacity-50"
-            >
-              {locationDetecting ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
+          <h3 className="text-lg font-medium">Ubicación</h3>
+
+          {/* Botón GPS */}
+          <button
+            type="button"
+            onClick={detectLocationFromGPS}
+            disabled={locationDetecting}
+            className="w-full py-3 px-4 bg-[#C95100] hover:bg-[#B04500] disabled:bg-[#C95100]/50 text-white rounded-[15px] flex items-center justify-center gap-2 transition-colors"
+          >
+            {locationDetecting ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
-              )}
-              {locationDetecting ? "Detectando..." : "Usar mi ubicación"}
-            </button>
-          </div>
+                Detectando ubicación...
+              </>
+            ) : (
+              <>
+                📍 Detectar mi ubicación
+              </>
+            )}
+          </button>
           
           {/* Texto explicativo mejorado */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">

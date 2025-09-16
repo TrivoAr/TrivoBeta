@@ -10,7 +10,10 @@
     "backfill:shortids": "tsx -r tsconfig-paths/register -r dotenv/config ./script/backfill-shortids.ts",
     "add-sponsor": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-sponsor.ts",
     "migrate-sponsors": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/migrate-sponsors.ts",
-    "check-sponsors": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/check-sponsors.ts"
+    "check-sponsors": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/check-sponsors.ts",
+    "add-bares": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-bares.ts",
+    "add-single-bar": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-single-bar.ts",
+    "check-bares": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/check-bares.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.6",

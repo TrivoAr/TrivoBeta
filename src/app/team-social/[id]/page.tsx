@@ -48,6 +48,19 @@ interface EventData {
   detalles: string;
   alias: string;
   cbu: string;
+  dificultad: string;
+  bar?: {
+    _id: string;
+    name: string;
+    direccion: string;
+    logo: string;
+    imagenesCarrusel: string[];
+  };
+  sponsors?: Array<{
+    _id: string;
+    name: string;
+    imagen: string;
+  }>;
 }
 
 interface Miembro {
@@ -82,6 +95,8 @@ export default function TeamEventPage({ params }: PageProps) {
   >("no");
 const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
      useEffect(() => {
     if (session?.user) {
       const fetchProfile = async () => {
@@ -583,6 +598,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
                   <path d="M2 25.25c-0.414 0-0.75 0.336-0.75 0.75v0 4c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-4c-0-0.414-0.336-0.75-0.75-0.75v0zM8.968 19.25c-0.414 0-0.75 0.336-0.75 0.75v0 10c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-10c-0-0.414-0.336-0.75-0.75-0.75v0zM16 13.25c-0.414 0-0.75 0.336-0.75 0.75v0 16c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-16c-0-0.414-0.336-0.75-0.75-0.75v0zM30 1.25c-0.414 0-0.75 0.336-0.75 0.75v0 28c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-28c-0-0.414-0.336-0.75-0.75-0.75v0zM23 7.249c-0.414 0-0.75 0.336-0.75 0.75v0 22.001c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-22.001c-0-0.414-0.336-0.75-0.75-0.75v0z"></path>{" "}
                 </g>
               </svg>
+              {event.dificultad}
       </div>
       {/* Agregar más detalles como fecha, duración, dificultad si están disponibles */}
     </div>
@@ -730,8 +746,144 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
         )}
       </div>
     </div>
+    <div className="w-[90%] border-b border-gray-300 mt-6"></div>
   </div>
+
+  {/* Bar */}
+  {event.bar && (
+    <div className="flex flex-col items-center mt-6">
+      <div className="w-[90%]">
+        <p className="text-lg font-normal mb-3">Bar para el after</p>
+
+        {/* Información del bar */}
+        <div className="bg-white rounded-[20px] p-4 shadow-md border">
+          <div className="flex items-center gap-3 mb-3">
+            {/* Logo del bar */}
+            <div
+              className="w-16 h-16 rounded-full overflow-hidden border shadow-sm cursor-pointer flex-shrink-0"
+              onClick={() => {
+                setSelectedImage(event.bar!.logo);
+                setShowImageModal(true);
+              }}
+            >
+              <img
+                src={event.bar.logo}
+                alt={event.bar.name}
+                className="w-full h-full object-cover hover:opacity-80 transition"
+                onError={(e) =>
+                  ((e.target as HTMLImageElement).src = "")
+                }
+              />
+            </div>
+
+            {/* Información del bar */}
+            <div className="flex-1">
+              <h3 className="font-medium text-gray-800">{event.bar.name}</h3>
+              <p className="text-sm text-gray-600 flex items-center gap-1">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={14}
+                  height={14}
+                >
+                  <path
+                    d="M18 9C18 13.7462 14.2456 18.4924 12.6765 20.2688C12.3109 20.6827 11.6891 20.6827 11.3235 20.2688C9.75444 18.4924 6 13.7462 6 9C6 7 7.5 3 12 3C16.5 3 18 7 18 9Z"
+                    stroke="#666"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="9"
+                    r="2"
+                    stroke="#666"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {event.bar.direccion}
+              </p>
+            </div>
+          </div>
+
+          {/* Carrusel de imágenes */}
+          {event.bar.imagenesCarrusel && event.bar.imagenesCarrusel.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {event.bar.imagenesCarrusel.map((imagen, index) => (
+                <div
+                  key={index}
+                  className="w-20 h-20 rounded-lg overflow-hidden border shadow-sm cursor-pointer flex-shrink-0"
+                  onClick={() => {
+                    setSelectedImage(imagen);
+                    setShowImageModal(true);
+                  }}
+                >
+                  <img
+                    src={imagen}
+                    alt={`${event.bar!.name} - Imagen ${index + 1}`}
+                    className="w-full h-full object-cover hover:opacity-80 transition"
+                    onError={(e) =>
+                      ((e.target as HTMLImageElement).src = "")
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+    </div>
+  )}
+
+  {/* Sponsors */}
+  {event.sponsors && event.sponsors.length > 0 && (
+    <div className="flex flex-col items-center mt-6">
+      <div className="w-[90%]">
+        <p className="text-lg font-normal mb-3">Sponsors</p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          {event.sponsors.map((sponsor) => (
+            <div
+              key={sponsor._id}
+              className=""
+            >
+              <img
+                src={sponsor.imagen}
+                alt={sponsor.name}
+                className="w-24 h-24 rounded-full object-cover border"
+                onError={(e) =>
+                  ((e.target as HTMLImageElement).src = "/assets/icons/business.svg")
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
 </div>
+
+{/* Modal para ampliar imágenes */}
+{showImageModal && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+    onClick={() => setShowImageModal(false)}
+  >
+    <div className="relative max-w-[90vw] max-h-[90vh]">
+      <button
+        onClick={() => setShowImageModal(false)}
+        className="absolute top-2 right-2 text-white text-2xl font-bold bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center"
+      >
+        ×
+      </button>
+      <img
+        src={selectedImage}
+        alt="Imagen ampliada"
+        className="max-w-full max-h-full object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  </div>
+)}
 
 
       {/* <div className="mt-8 mb-[150px]">
