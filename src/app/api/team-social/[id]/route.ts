@@ -18,7 +18,9 @@ export async function GET(
 
   try {
     const team = await TeamSocial.findById(params.id)
-      .populate("creadorId", "firstname lastname imagen");
+      .populate("creadorId", "firstname lastname imagen")
+      .populate("bar", "name direccion logo imagenesCarrusel")
+      .populate("sponsors", "name imagen");
       
          const salidaObj = team.toObject();
       
