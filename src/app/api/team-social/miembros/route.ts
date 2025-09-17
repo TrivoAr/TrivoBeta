@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
 
   // Buscar miembros por teamsocial_id (no salida_id)
   const miembros = await MiembroTeamSocial.find({ teamsocial_id: teamSocialId }).populate("usuario_id", "firstname lastname email");
+      console.log("Miembros encontrados:", miembros.length); // LOG 2
+    console.log("Primer miembro:", miembros[0]);
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
       const usuario = m.usuario_id as any; // mongoose document

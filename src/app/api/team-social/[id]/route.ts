@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import User from "@/models/user";
+import Bares from "@/models/bares";
+import Sponsors from "@/models/sponsors";
 
 
 
@@ -18,43 +20,63 @@ export async function GET(
 
   try {
     const team = await TeamSocial.findById(params.id)
-      .populate("creadorId", "firstname lastname imagen")
-      .populate("bar", "name direccion logo imagenesCarrusel")
-      .populate("sponsors", "name imagen");
-      
-         const salidaObj = team.toObject();
-      
-          let imagenUrl;
-          try {
-            imagenUrl = await getProfileImage("profile-image.jpg", team.creadorId._id .toString());
-          } catch (error) {
-            imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            team.creadorId.firstname
-          )}&length=1&background=random&color=fff&size=128`;
-          }
-      
-          // Reemplaza el creador_id con el objeto que quieres devolver
-          salidaObj.creadorId = {
-            _id: team.creadorId._id,
-            firstname: team.creadorId.firstname,
-            lastname: team.creadorId.lastname,
-            email: team.creadorId.email,
-            imagen: imagenUrl,
-          };
-      
-      
-      
-      
-      
-      
-      
-      
-      // 👈 Trae solo estos dos campos
+      .populate("creadorId", "firstname lastname imagen");
 
     if (!team) {
       return NextResponse.json({ message: "No encontrado" }, { status: 404 });
     }
 
+    const salidaObj = team.toObject();
+
+    // Obtener datos de bar y sponsors por separado
+    let barData = null;
+    let sponsorsData = [];
+
+    if (team.bar) {
+      try {
+        barData = await Bares.findById(team.bar);
+      } catch (error) {
+        console.log("Error cargando bar:", error);
+      }
+    }
+
+    if (team.sponsors && team.sponsors.length > 0) {
+      try {
+        sponsorsData = await Sponsors.find({ _id: { $in: team.sponsors } });
+      } catch (error) {
+        console.log("Error cargando sponsors:", error);
+      }
+    }
+
+    let imagenUrl;
+    try {
+      imagenUrl = await getProfileImage("profile-image.jpg", team.creadorId._id.toString());
+    } catch (error) {
+      imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        team.creadorId.firstname
+      )}&length=1&background=random&color=fff&size=128`;
+    }
+
+    // Reemplaza el creador_id con el objeto que quieres devolver
+    salidaObj.creadorId = {
+      _id: team.creadorId._id,
+      firstname: team.creadorId.firstname,
+      lastname: team.creadorId.lastname,
+      email: team.creadorId.email,
+      imagen: imagenUrl,
+    };
+
+    // Agregar los datos obtenidos por separado
+    salidaObj.bar = barData;
+    salidaObj.sponsors = sponsorsData;
+      
+      
+      
+      
+      
+      
+      
+      
     return NextResponse.json(salidaObj, { status: 200 });
   } catch (error) {
     console.error("Error al buscar TeamSocial:", error);

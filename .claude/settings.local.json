@@ -31,7 +31,8 @@
       "Bash(npm install:*)",
       "Bash(tsx -r tsconfig-paths/register -r dotenv/config ./scripts/debug-sponsors.ts:*)",
       "Bash(npx tsx:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Read(//c/Users/matia/Downloads/**)"
     ],
     "deny": [],
     "ask": []

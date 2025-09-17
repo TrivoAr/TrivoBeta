@@ -124,6 +124,39 @@ export function useMySalidasSociales(userId?: string) {
   });
 }
 
+
+export function useMyTeamSocials(userId?: string) {
+  return useQuery({
+    queryKey: ['my-team-socials', userId],
+    queryFn: async (): Promise<SalidaSocial[]> => {
+      if (!userId) return [];
+      
+      const response = await fetch('/api/team-social/');
+      if (!response.ok) {
+        throw new Error('Error al cargar salidas sociales');
+      }
+      const data = await response.json();
+      console.log("pito", data);
+      
+      // Filtrar salidas donde el usuario es el creador
+      const filteredSalidas = Array.isArray(data) ? data.filter((salida: any) => {
+        const creadorId = typeof salida.creadorId === 'object' ? salida.creadorId?._id : salida.creadorId;
+        return creadorId === userId;
+      }) : [];
+
+      // Procesar imágenes
+      return filteredSalidas.map((salida: any) => ({
+        ...salida,
+        imagen: salida.imagen || `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
+      }));
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+}
+
+
+
 // Hook para obtener los matches del usuario (salidas donde es miembro)
 export function useMyMatches() {
   return useQuery({
