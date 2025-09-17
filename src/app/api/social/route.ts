@@ -21,22 +21,45 @@ async function generateUniqueShortId() {
 
 
 export async function POST(req: Request) {
+  console.log("[CREATE_SALIDA] Starting request");
   await connectDB();
+  console.log("[CREATE_SALIDA] DB connected");
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
+    console.log("[CREATE_SALIDA] No session/user");
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const body = await req.json();
+  console.log("[CREATE_SALIDA] Received body:", JSON.stringify(body, null, 2));
+
+  // Basic validation
+  if (!body.nombre) {
+    console.log("[CREATE_SALIDA] Missing required field: nombre");
+    return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 });
+  }
 
   try {
     const shortId = await generateUniqueShortId();
-    const nuevaSalida = await SalidaSocial.create({
+    console.log("[CREATE_SALIDA] Generated shortId:", shortId);
+
+    // Convert string numbers to actual numbers for schema validation
+    const processedData = {
       ...body,
+      cupo: body.cupo ? parseInt(body.cupo) : 0,
+      sponsors: body.sponsors || [], // Ensure sponsors array exists
+      // Filter out empty string profesorId to prevent ObjectId cast error
+      profesorId: body.profesorId && body.profesorId.trim() !== "" ? body.profesorId : undefined,
+    };
+    console.log("[CREATE_SALIDA] Processed data:", JSON.stringify(processedData, null, 2));
+
+    const nuevaSalida = await SalidaSocial.create({
+      ...processedData,
       creador_id: session.user.id,
       shortId,
     });
+    console.log("[CREATE_SALIDA] Created salida:", nuevaSalida._id);
 
      try {
       const payload = {
@@ -56,8 +79,20 @@ export async function POST(req: Request) {
 
     return NextResponse.json(nuevaSalida, { status: 201 });
   } catch (error) {
-    console.error("Error al crear la salida social:", error);
-    return NextResponse.json({ error: "Error en el servidor" }, { status: 500 });
+    console.error("[CREATE_SALIDA_ERROR]", {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+      userId: session.user.id
+    });
+
+    // Return more specific error information for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({
+      error: "Error al crear la salida social",
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 

@@ -68,7 +68,7 @@ const SalidaSocialSchema = new Schema(
 
     cupo:{
       type: Number,
-      require: true,
+      required: true,
     },
 
     detalles:{
