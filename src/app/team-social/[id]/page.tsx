@@ -696,10 +696,9 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
           href={event.whatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 border w-full py-3 rounded-lg font-medium bg-white shadow-md justify-center hover:bg-green-50 transition text-green-600"
+          className="inline-flex items-center gap-2 border w-full py-3 rounded-lg font-medium bg-white shadow-md justify-center hover:bg-green-50 transition text-gray-500"
         >
           Unirse
-          <img src="/assets/Logo/Whatsapp.svg" alt="Grupo" className="w-5 h-5" />
         </a>
       </div>
     ) : (

@@ -616,10 +616,9 @@ useEffect(() => {
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
         >
           <option value="">Seleccionar dificultad</option>
-          <option value="Principiante">Principiante</option>
-          <option value="Intermedio">Intermedio</option>
-          <option value="Avanzado">Avanzado</option>
-          <option value="Experto">Experto</option>
+          <option value="Principiante">Facil</option>
+          <option value="Intermedio">Media</option>
+          <option value="Avanzado">Dificil</option>
         </select>
       </label>
 

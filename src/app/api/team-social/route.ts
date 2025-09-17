@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import TeamSocial from "@/models/teamSocial";
+import Bares from "@/models/bares";
 import User from "@/models/user";
 
 export async function POST(req: Request) {

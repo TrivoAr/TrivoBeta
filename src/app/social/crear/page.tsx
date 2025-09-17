@@ -202,6 +202,9 @@ export default function CrearSalidaPage() {
       ...formData,
       imagen: imageUrl,
       locationCoords: coordsToSave,
+      coords: undefined, // Remove the coords field since we're using locationCoords
+      cupo: formData.cupo || 0, // Ensure cupo is a number
+      sponsors: formData.sponsors || [], // Ensure sponsors array exists
     };
 
     const res = await fetch("/api/social", {
@@ -215,8 +218,14 @@ export default function CrearSalidaPage() {
       router.push("/home");
     } else {
       setIsSubmitting(false);
-      toast.error("Error al crear la salida");
-      console.error("Error al crear salida social");
+      try {
+        const errorData = await res.json();
+        console.error("Error al crear salida social:", errorData);
+        toast.error(errorData.error || "Error al crear la salida");
+      } catch (e) {
+        console.error("Error al crear salida social:", res.status);
+        toast.error("Error al crear la salida");
+      }
     }
   };
 
@@ -782,7 +791,7 @@ export default function CrearSalidaPage() {
         className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
       >
         <option value="">Dificultad</option>
-        <option value="facil">Principiantes</option>
+        <option value="facil">Facil</option>
         <option value="media">Media</option>
         <option value="dificil">Dificil</option>
       </select>

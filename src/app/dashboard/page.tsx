@@ -15,7 +15,8 @@ import {
   useMyFavorites,
   useToggleFavorite,
   useDeleteAcademia,
-  useDeleteSalidaSocial 
+  useDeleteSalidaSocial,
+  useMyTeamSocials
 } from "@/hooks/useDashboard";
 
 interface Academia {
@@ -85,6 +86,8 @@ export default function DashboardPage() {
   const { data: academias = [], isLoading: isLoadingAcademias } = useMyAcademias();
   const { data: salidasSociales = [], isLoading: isLoadingSalidas } = useMySalidasSociales(session?.user?.id);
   const { data: matchesData, isLoading: isLoadingMatches } = useMyMatches();
+  const { data: teamSocials = [], isLoading: isLoadingTeamMatches } =
+  useMyTeamSocials(session?.user?.id);
   const { data: favoritosData, isLoading: isLoadingFavoritos } = useMyFavorites(session?.user?.id);
   
   // Mutations
@@ -100,7 +103,7 @@ export default function DashboardPage() {
   const favoritosTeams = favoritosData?.teams || [];
   
   // Loading state - any of the relevant queries loading
-  const loading = isLoadingAcademias || isLoadingSalidas || isLoadingMatches || isLoadingFavoritos;
+  const loading = isLoadingAcademias || isLoadingSalidas || isLoadingMatches || isLoadingFavoritos || isLoadingTeamMatches;
 
   // Definir categorías basándose en el rol del usuario
   const getCategories = () => {
@@ -264,7 +267,58 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+
+
+                 {/* Sección: Mis Team Socials */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-800">Mis Socials Teams</h3>
+                <button 
+                  onClick={() => router.push("/team-social/crear")}
+                  className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
+                >
+                  + Nueva
+                </button>
+              </div>
+
+              {teamSocials.length > 0 ? (
+                teamSocials.map((salida) => (
+                  <DashboardCard
+                    key={salida._id}
+                    id={salida._id}
+                    title={salida.nombre}
+                    image={salida.imagen}
+                    category={salida.deporte}
+                    location={salida.ubicacion}
+                    localidad={salida.localidad}
+                    date={dayjs(salida.fecha).format("DD/MM/YYYY")}
+                    time={salida.hora}
+                    price={salida.precio}
+                    type="salida"
+                    showActions={true}
+                    onClick={() => router.push(`/team-social/${salida._id}`)}
+                    onEdit={() => router.push(`/team-social/editar/${salida._id}`)}
+                    onDelete={() => handleDeleteSalidaSocial(salida._id)}
+                    onViewMembers={() => router.push(`/team-social/miembros/${salida._id}`)}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-[20px]">
+                  <p>No has creado salidas sociales aún</p>
+                </div>
+              )}
+            </div>
+
+
+
+
+
+
+
           </div>
+
+          
         );
         
       case 1: // Mis match
