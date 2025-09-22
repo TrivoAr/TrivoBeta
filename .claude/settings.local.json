@@ -32,7 +32,8 @@
       "Bash(tsx -r tsconfig-paths/register -r dotenv/config ./scripts/debug-sponsors.ts:*)",
       "Bash(npx tsx:*)",
       "Bash(netstat:*)",
-      "Read(//c/Users/matia/Downloads/**)"
+      "Read(//c/Users/matia/Downloads/**)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []

@@ -434,7 +434,7 @@ function handleDelete(miembroId: string) {
               <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
                 <p
                   className="text-white text-xl font-semibold mb-1"
-                  onClick={() => router.push(`/profile/${selectedMiembro._id}`)}
+                  onClick={() => router.push(`/profile/${selectedMiembro.usuarioId}`)}
                 >
                   {selectedMiembro.nombre}
                 </p>
@@ -477,7 +477,7 @@ function handleDelete(miembroId: string) {
         <ExportUsuarios usuarios={miembrosAprobados} />
       ) : null}
 
-      <div className="pb-[100px]"></div>
+      <div className="pb-[150px]"></div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
+import Pago from "@/models/pagos";
 import mongoose from "mongoose";
 import SalidaSocial from "@/models/salidaSocial";
 import Notificacion from "@/models/notificacion";
@@ -10,10 +11,14 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 export async function GET(req: NextRequest) {
   let salidaId: string | null = null;
-  
+
   try {
     console.log("[GET_MIEMBROS] Starting request");
     await connectDB();
+
+    // Ensure Pago model is registered
+    Pago;
+
     console.log("[GET_MIEMBROS] DB connected");
     
     const session = await getServerSession(authOptions);
@@ -210,6 +215,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req) {
   await connectDB();
+
+  // Ensure Pago model is registered
+  Pago;
+
   const session = await getServerSession(authOptions);
   if (!session) return new Response("No autorizado", { status: 401 });
 

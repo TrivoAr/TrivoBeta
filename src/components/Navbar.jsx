@@ -210,7 +210,7 @@ function Navbar() {
 
           {/* Buscar */}
           <NavItem
-            href="/academias"
+            href="/buscar"
             label="Buscar"
             icon={
               <svg
