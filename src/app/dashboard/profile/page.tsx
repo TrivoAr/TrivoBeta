@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import PushManager from "@/components/PushManager";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -78,12 +79,17 @@ function ProfilePage() {
   }, []);
 
   return (
-    <div className="w-[390px] min-h-screen bg-[#FEFBF9] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
+    <div className="w-[390px] min-h-screen bg-background px-4 pt-6 pb-24 flex flex-col items-center text-foreground">
       {/* Header */}
-      <h1 className="text-3xl font-medium w-full text-left mb-4">Perfil</h1>
+      <div className="w-full flex items-center justify-between mb-3">
+         <h1 className="text-3xl font-medium w-full text-left">Perfil</h1>
+          <ThemeToggle />
+
+      </div>
+     
 
       {/* Avatar */}
-      <div className="w-[90%] bg-white border p-5 shadow-md rounded-[20px] flex flex-col items-center mb-4">
+      <div className="w-[90%] bg-card border p-5 shadow-md rounded-[20px] flex flex-col items-center mb-4">
         <div onClick={() => setShowPreview(true)}>
           <img
             src={profileImage || session?.user.imagen}
@@ -107,7 +113,7 @@ function ProfilePage() {
       {/* Cards de Perfil */}
       <div className="w-full flex flex-col gap-1 mb-6">
         <div
-          className="bg-white rounded-[30px] border p-4 flex items-center justify-between shadow-sm"
+          className="bg-card rounded-[30px] border p-4 flex items-center justify-between shadow-sm"
           onClick={() => router.push("/dashboard/profile/editar")}
         >
           <div className="flex items-center gap-3">
@@ -116,9 +122,9 @@ function ProfilePage() {
               alt=""
               className="w-full h-full object-cover"
             />
-            <span className="text-[#989898] font-medium">Perfil</span>
+            <span className="text-muted-foreground font-medium">Perfil</span>
           </div>
-          <span className="text-gray-400 text-[28px]">›</span>
+          <span className="text-muted-foreground text-[28px]">›</span>
         </div>   
            
       </div>
@@ -135,8 +141,8 @@ function ProfilePage() {
               "_blank"
             )
           }
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[30px] border shadow-sm transition 
-      ${formData.instagram ? "border bg-gray-100" : "bg-white"}`}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[30px] border shadow-sm transition
+      ${formData.instagram ? "border bg-muted" : "bg-card"}`}
         >
           <svg
             viewBox="0 0 32 32"
@@ -254,8 +260,8 @@ function ProfilePage() {
         {/* Strava */}
         <button
           onClick={() => (window.location.href = "/api/strava/connect")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[30px] border shadow-sm transition 
-      ${stravaConnected ? "bg-gray-100 border" : "bg-white border"}`}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[30px] border shadow-sm transition
+      ${stravaConnected ? "bg-muted border" : "bg-card border"}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -280,7 +286,7 @@ function ProfilePage() {
             {stravaConnected ? "Strava vinculado" : "Vincular Strava"}
           </span>
         </button>
-        <PushManager />   
+        <PushManager />
       </div>
 
       <div className="text-center pt-4">

@@ -170,7 +170,7 @@ export default function DashboardPage() {
   // Redireccionar si no hay sesión
   if (status === "loading") {
     return (
-      <div className="w-[390px] min-h-screen bg-[#FEFBF9] flex items-center justify-center">
+      <div className="w-[390px] min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C95100]"></div>
       </div>
     );
@@ -193,7 +193,7 @@ export default function DashboardPage() {
             {/* Sección: Mis Academias */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Academias</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Academias</h3>
                 <button 
                   onClick={() => router.push("/academias/crear")}
                   className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                   />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-[20px]">
+                <div className="text-center py-8 text-muted-foreground bg-muted rounded-[20px]">
                   <p>No has creado academias aún</p>
                 </div>
               )}
@@ -231,7 +231,7 @@ export default function DashboardPage() {
             {/* Sección: Mis Salidas Sociales */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Salidas Sociales</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Salidas Sociales</h3>
                 <button 
                   onClick={() => router.push("/social/crear")}
                   className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
@@ -262,7 +262,7 @@ export default function DashboardPage() {
                   />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-[20px]">
+                <div className="text-center py-8 text-muted-foreground bg-muted rounded-[20px]">
                   <p>No has creado salidas sociales aún</p>
                 </div>
               )}
@@ -273,7 +273,7 @@ export default function DashboardPage() {
                  {/* Sección: Mis Team Socials */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Socials Teams</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Socials Teams</h3>
                 <button 
                   onClick={() => router.push("/team-social/crear")}
                   className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                   />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-[20px]">
+                <div className="text-center py-8 text-muted-foreground bg-muted rounded-[20px]">
                   <p>No has creado salidas sociales aún</p>
                 </div>
               )}
@@ -364,10 +364,10 @@ export default function DashboardPage() {
             ))}
 
             {miMatchSalidas.length === 0 && miMatchTeams.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <div className="mb-4">
                   <svg 
-                    className="mx-auto h-16 w-16 text-gray-300" 
+                    className="mx-auto h-16 w-16 text-muted-foreground" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
@@ -401,7 +401,7 @@ export default function DashboardPage() {
             {/* Academias Favoritas */}
             {favoritosAcademias.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Academias Favoritas</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Academias Favoritas</h3>
                 {favoritosAcademias.map((academia) => (
                   <DashboardCard
                     key={academia._id}
@@ -425,7 +425,7 @@ export default function DashboardPage() {
             {/* Salidas Sociales Favoritas */}
             {favoritosSalidas.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Salidas Sociales Favoritas</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Salidas Sociales Favoritas</h3>
                 {favoritosSalidas.map((salida) => (
                   <DashboardCard
                     key={salida._id}
@@ -452,7 +452,7 @@ export default function DashboardPage() {
             {/* Teams Sociales Favoritos */}
             {favoritosTeams.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Mis Teams Sociales Favoritos</h3>
+                <h3 className="text-lg font-semibold text-foreground">Mis Teams Sociales Favoritos</h3>
                 {favoritosTeams.map((team) => (
                   <DashboardCard
                     key={team._id}
@@ -476,10 +476,10 @@ export default function DashboardPage() {
             )}
 
             {totalFavoritos === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-muted-foreground">
                 <div className="mb-4">
                   <svg 
-                    className="mx-auto h-16 w-16 text-gray-300" 
+                    className="mx-auto h-16 w-16 text-muted-foreground" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
@@ -514,7 +514,7 @@ export default function DashboardPage() {
     <>
       <Toaster position="top-center" />
       
-      <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
         {/* Header */}
         <TopContainer selectedLocalidad={selectedLocalidad} setSelectedLocalidad={setSelectedLocalidad} />
 
@@ -522,7 +522,7 @@ export default function DashboardPage() {
       <div className="px-4">
         {/* Navigation Tabs */}
         <div className="mb-6">
-          <div className="flex space-x-1 bg-white rounded-xl p-1 shadow-sm border">
+          <div className="flex space-x-1 bg-card rounded-xl p-1 shadow-sm border">
             {categories.map((category, index) => (
               <button
                 key={index}
@@ -530,7 +530,7 @@ export default function DashboardPage() {
                 className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                   activeCategory === index
                     ? "bg-[#C95100] text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 {category.label}
@@ -541,15 +541,15 @@ export default function DashboardPage() {
 
         {/* Content Section */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <h2 className="text-xl font-bold text-foreground mb-4">
             {categories[activeCategory].label}
           </h2>
           
           {/* Dynamic Content */}
           {loading ? (
             <div className="space-y-4">
-              <div className="animate-pulse bg-gray-200 h-[240px] rounded-[20px]"></div>
-              <div className="animate-pulse bg-gray-200 h-[240px] rounded-[20px]"></div>
+              <div className="animate-pulse bg-muted h-[240px] rounded-[20px]"></div>
+              <div className="animate-pulse bg-muted h-[240px] rounded-[20px]"></div>
             </div>
           ) : (
             renderContent()

@@ -49,7 +49,7 @@ export default function AcademiasPage() {
   });
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+    <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
         <TopContainer
         selectedLocalidad={null}
         setSelectedLocalidad={null}
@@ -64,7 +64,7 @@ export default function AcademiasPage() {
             className={`flex-shrink-0 w-[74px] h-[74px] rounded-[20px] border shadow-md flex flex-col items-center justify-center ${
               selectedDiscipline === d.key
                 ? "border-2 border-orange-200 text-orange-300"
-                : "bg-white text-[#808488]"
+                : "bg-card text-muted-foreground"
             }`}
           >
             <img src={d.icon} alt={d.label} className="w-[25px] h-[25px] mb-2" />
@@ -103,7 +103,7 @@ export default function AcademiasPage() {
           {filtered.length > 0 ? (
             filtered.map(a => (
               <Link key={a._id} href={`/academias/${a._id}`}>
-                <div className="flex-shrink-0 w-[250px] h-[190px] bg-white rounded-[10px] shadow-md overflow-hidden">
+                <div className="flex-shrink-0 w-[250px] h-[190px] bg-card rounded-[10px] shadow-md overflow-hidden">
                   <div
                     className="h-[110px] bg-cover bg-center"
                     style={{ backgroundImage: `url('/assets/Logo/Trivo T.png')`, width:125, height:110, }}

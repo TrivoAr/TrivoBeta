@@ -413,7 +413,7 @@ export default function AcademiaDetailPage({
   };
 
   return (
-    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
+    <div className="flex flex-col w-[390px] items-center bg-background">
       <Toaster position="top-center" />
       <div
         className="relative w-full h-[190px] flex"
@@ -519,11 +519,11 @@ export default function AcademiaDetailPage({
 
       <div className="flex w-full mt-2 px-3 justify-center">
         <div>
-          <h1 className="text-4xl font-bold text-center">
+          <h1 className="text-4xl font-bold text-center text-foreground">
             {academia.nombre_academia}
           </h1>
 
-          <p className="text-sm text-center flex items-center justify-center gap-1">
+          <p className="text-sm text-center flex items-center justify-center gap-1 text-muted-foreground">
             {" "}
             <svg
               height="13px"
@@ -561,23 +561,23 @@ export default function AcademiaDetailPage({
           </p>
         </div>
       </div>
-      <div className="w-[80%] border-b-[0.5px] h-[80px] border-b-[#ccc] flex justify-center items-center">
+      <div className="w-[80%] border-b-[0.5px] h-[80px] border-b-border flex justify-center items-center">
         <div className=" flex flex-col justify-center items-center w-[49%]">
-          <p>{averageRating.toFixed(2)}</p>
+          <p className="text-foreground">{averageRating.toFixed(2)}</p>
           <div className="flex gap-1">
             <RatingStars rating={averageRating} />
           </div>
         </div>
-        <div className="h-[45px] w-[0.5px] border-r border-r-[#ccc]"></div>
+        <div className="h-[45px] w-[0.5px] border-r border-r-border"></div>
         <div className="flex flex-col justify-center items-center w-[49%]">
-          <p className="font-medium text-md">{reviews.length}</p>
-          <p className="font-medium">Reseñas</p>
+          <p className="font-medium text-md text-foreground">{reviews.length}</p>
+          <p className="font-medium text-foreground">Reseñas</p>
         </div>
       </div>
 
-      <div className="w-[80%] border-b-[0.5px] h-[150px] border-b-[#ccc] flex justify-center items-center gap-2">
+      <div className="w-[80%] border-b-[0.5px] h-[150px] border-b-border flex justify-center items-center gap-2">
         <div
-          className="rounded-full border w-[80px] h-[80px]"
+          className="rounded-full border border-border w-[80px] h-[80px]"
           style={{
             backgroundImage: `url(${academia.dueño_id.imagen})`,
             backgroundSize: "cover",
@@ -586,14 +586,14 @@ export default function AcademiaDetailPage({
           }}
         ></div>
         <div className="flex flex-col justify-around h-[80px]">
-          <div className="text-[#666]">
+          <div className="text-muted-foreground">
             <p className="poppins-extralight">
               {academia.dueño_id.firstname} {academia.dueño_id.lastname}
             </p>
           </div>
           <div className="flex gap-2 justify-center items-center">
             <a
-              className="text-[#666] flex justify-center items-center gap-1"
+              className="text-muted-foreground flex justify-center items-center gap-1"
               href={`https://www.instagram.com/${academia.dueño_id.instagram}`}
               target="_blank"
             >
@@ -622,7 +622,7 @@ export default function AcademiaDetailPage({
               </svg>
             </a>
             <a
-              className="w-[105px] h-[30px] bg-[#fff] border shadow-md rounded-[20px] flex justify-center items-center text-[#666] font-semibold"
+              className="w-[105px] h-[30px] bg-card border border-border shadow-md rounded-[20px] flex justify-center items-center text-foreground font-semibold"
               href={`https://wa.me/${academia.dueño_id.telnumber?.replace(
                 /\D/g,
                 ""
@@ -638,11 +638,11 @@ export default function AcademiaDetailPage({
 
       <div className="flex flex-col gap-5 mt-4 w-full">
         <div className="flex items-center ml-8">
-          <h2 className="font-medium text-2xl">Entrenamientos</h2>
+          <h2 className="font-medium text-2xl text-foreground">Entrenamientos</h2>
         </div>
         {grupos.length === 0 ? (
           <div>
-            <p className="text-center poppins-extralight">
+            <p className="text-center poppins-extralight text-muted-foreground">
               No hay grupos de entranamientos
             </p>
           </div>
@@ -655,7 +655,7 @@ export default function AcademiaDetailPage({
                 <div className="flex flex-col w-[170px] gap-1">
                   <div
                     key={grupo._id || null}
-                    className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border relative"
+                    className="bg-card w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border border-border relative"
                     style={{
                       backgroundImage: `url(${groupImages[grupo._id]})`,
                       backgroundSize: "cover",
@@ -687,7 +687,7 @@ export default function AcademiaDetailPage({
       {grupos.map((grupo) => (
   <div key={grupo._id} className="flex flex-col w-[170px] gap-1">
     <div
-      className="bg-white w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border relative"
+      className="bg-card w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border border-border relative"
       style={{
         backgroundImage: `url(${groupImages[grupo._id]})`,
         backgroundSize: "cover",
@@ -702,8 +702,8 @@ export default function AcademiaDetailPage({
     </div>
 
     <div>
-      <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-      <div className="text-[#B8B8B8]">
+      <p className="font-light text-sm text-foreground">{grupo.nombre_grupo}</p>
+      <div className="text-muted-foreground">
         <div className="flex gap-1">
           <p className="font-extralight text-[12px]">
             {grupo.dias ? formatDias(grupo.dias) : ""}{grupo.horario ? `, ${grupo.horario}hs` : ""}
@@ -723,13 +723,13 @@ export default function AcademiaDetailPage({
           </div>
         )}
       </div>
-      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+      <div className="w-[80%] border-b border-b-border mt-5"></div>
 
       <div className="mt-3 flex flex-col w-full px-4">
-        <p className="text-2xl mb-3 font-medium ml-6">Miembros</p>
+        <p className="text-2xl mb-3 font-medium ml-6 text-foreground">Miembros</p>
         <div>
           <div
-            className="h-[130px] w-[160px] p-2 bg-white border shadow-md rounded-[20px] flex flex-col justify-evenly"
+            className="h-[130px] w-[160px] p-2 bg-card border border-border shadow-md rounded-[20px] flex flex-col justify-evenly"
             onClick={() => router.push(`/academias/${academia._id}/miembros`)}
           >
             <div>
@@ -757,13 +757,13 @@ export default function AcademiaDetailPage({
                   <path d="M17.13,43.74H4.27A11.27,11.27,0,0,1,15.54,32.47h0a11.24,11.24,0,0,1,5.29,1.32"></path>
                 </g>
               </svg>
-              <p className="font-light text-[#ccc] text-sm">
+              <p className="font-light text-muted-foreground text-sm">
                 Miembros de la tribu
               </p>
             </div>
 
             <div className="flex items-center justify-end">
-              <p className="text-[#ccc]">Ver</p>
+              <p className="text-muted-foreground">Ver</p>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -782,7 +782,7 @@ export default function AcademiaDetailPage({
                   <rect width="10" height="10" fill="white"></rect>{" "}
                   <path
                     d="M9.5 7L14.5 12L9.5 17"
-                    stroke="#ccc"
+                    stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   ></path>{" "}
@@ -793,14 +793,14 @@ export default function AcademiaDetailPage({
         </div>
       </div>
 
-      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+      <div className="w-[80%] border-b border-b-border mt-5"></div>
       <div className="flex flex-col w-full px-4 mb-2">
         <div className="flex items-center ml-4 mb-2 mt-2">
-          <h2 className="text-2xl mb-3 font-medium ml-4">Reseñas</h2>
+          <h2 className="text-2xl mb-3 font-medium ml-4 text-foreground">Reseñas</h2>
         </div>
 
         {reviews.length === 0 ? (
-          <p className="text-center text-sm text-gray-500 poppins-extralight">
+          <p className="text-center text-sm text-muted-foreground poppins-extralight">
             No hay reseñas para esta academia
           </p>
         ) : (
@@ -824,7 +824,7 @@ export default function AcademiaDetailPage({
         {reviews.length > 0 ? (
           <div className="flex justify-center mt-3 mb-3">
             <button
-              className="text-center underline text-[#666]"
+              className="text-center underline text-muted-foreground"
               onClick={() => router.push(`/academias/${academia._id}/resenas`)}
             >
               Ver todas las reseñas ({reviews.length})
@@ -850,17 +850,17 @@ export default function AcademiaDetailPage({
         </div>
       )}
 
-      <div className="w-[80%] border-b border-b-[#ccc] mt-5"></div>
+      <div className="w-[80%] border-b border-b-border mt-5"></div>
 
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2  flex justify-around items-center">
+        <div className="bg-card shadow-md h-[120px] border border-border px-2  flex justify-around items-center">
           <div className="w-[50%] flex flex-col justify-center items-start gap-1 p-4">
-            <p className="font-medium underline text-xl">
+            <p className="font-medium underline text-xl text-foreground">
               ${Number(academia.precio).toLocaleString("es-AR")}
             </p>
             <p>
               {academia.clase_gratis ? (
-                <p className="text-xs bg-[#EFEFEF] text-[#B8B8B8] h-[20px] w-[110px] rounded-[20px] flex justify-center items-center">
+                <p className="text-xs bg-muted text-muted-foreground h-[20px] w-[110px] rounded-[20px] flex justify-center items-center">
                   {" "}
                   1° clase gratis
                 </p>
@@ -870,15 +870,15 @@ export default function AcademiaDetailPage({
 
           <div className="flex h-[60px] w-[60%] gap-3 justify-center items-center">
             {session?.user?.id === academia.dueño_id._id ? (
-              <div className="flex gap-2 text-[#bbb] justify-center items-center">
+              <div className="flex gap-2 text-muted-foreground justify-center items-center">
                 <button
                   onClick={() => router.push("/grupos/")}
-                  className="bg-white h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
+                  className="bg-card h-[30px] w-[120px] shadow-md text-sm rounded-[20px] flex items-center justify-center border border-border p-4 font-medium"
                 >
                   Crear grupo
                 </button>
                 <button
-                  className="bg-white h-[30px] w-[90px] shadow-md text-sm rounded-[20px] flex items-center justify-center border p-4 font-medium"
+                  className="bg-card h-[30px] w-[90px] shadow-md text-sm rounded-[20px] flex items-center justify-center border border-border p-4 font-medium"
                   onClick={() =>
                     router.push(`/academias/${academia._id}/editar`)
                   }
@@ -894,7 +894,7 @@ export default function AcademiaDetailPage({
                     disabled={hasActiveRequest}
                     className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
                       hasActiveRequest
-                        ? "bg-white text-[#666] border shadow-md"
+                        ? "bg-card text-muted-foreground border-border shadow-md"
                         : "bg-[#C95100] text-white"
                     }`}
                   >

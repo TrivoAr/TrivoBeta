@@ -55,7 +55,7 @@ function Navbar() {
     <>
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-4/5 max-w-sm shadow-lg text-center">
+          <div className="bg-card p-6 rounded-xl w-4/5 max-w-sm shadow-lg text-center">
             <h2 className="text-lg font-semibold mb-4 text-gray-700">
               ¿Qué deseas crear?
             </h2>
@@ -96,7 +96,7 @@ function Navbar() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 w-full h-[95px] bg-white border-t shadow-md z-50 flex items-center justify-center rounded-tl-[15px] rounded-tr-[15px]">
+      <nav className="fixed bottom-0 left-0 w-full h-[95px] bg-card border-t shadow-md z-50 flex items-center justify-center rounded-tl-[15px] rounded-tr-[15px]">
         <ul className="flex items-center gap-[28px]">
           {/* Inicio */}
           <NavItem

@@ -488,7 +488,7 @@ useEffect(() => {
           value={formData.nombre}
           onChange={handleChange}
           placeholder="nombre del equipo"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
       {/* Provincia */}
@@ -502,7 +502,7 @@ useEffect(() => {
             setFormData(prev => ({ ...prev, provincia: provinceName }));
             setSelectedLocality(""); // Reset localidad al cambiar provincia
           }}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
         >
           <option value="">Seleccionar provincia</option>
           {provinces?.map((province) => (
@@ -523,7 +523,7 @@ useEffect(() => {
             const localityName = localities?.find(l => l.id === e.target.value)?.name || e.target.value;
             setFormData(prev => ({ ...prev, localidad: localityName }));
           }}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
           disabled={!selectedProvince}
         >
           <option value="">
@@ -567,7 +567,7 @@ useEffect(() => {
           value={formData.precio}
           onChange={handleChange}
           placeholder="$9.999"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
       <label className="block">
@@ -577,7 +577,7 @@ useEffect(() => {
           value={formData.alias}
           onChange={handleChange}
           placeholder="Alias"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white mb-2"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card mb-2"
         />
       </label>
 
@@ -589,7 +589,7 @@ useEffect(() => {
           value={formData.cupo}
           onChange={handleChange}
           placeholder="Cantidad maxima de personas"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -597,7 +597,7 @@ useEffect(() => {
         name="deporte"
         value={formData.deporte}
         onChange={handleChange}
-        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
       >
         <option value="">Selecciona un deporte</option>
         <option value="Running">Running</option>
@@ -613,7 +613,7 @@ useEffect(() => {
           name="dificultad"
           value={formData.dificultad}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
         >
           <option value="">Seleccionar dificultad</option>
           <option value="Principiante">Facil</option>
@@ -627,7 +627,7 @@ useEffect(() => {
           name="duracion"
           value={formData.duracion}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
@@ -643,7 +643,7 @@ useEffect(() => {
           name="fecha"
           value={formData.fecha}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
       </label>
       <label className="block">
@@ -653,7 +653,7 @@ useEffect(() => {
           name="hora"
           value={formData.hora}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
       </label>
 
@@ -664,7 +664,7 @@ useEffect(() => {
         value={formData.descripcion}
         onChange={handleChange}
         placeholder="Somos un equipo de ciclismo recreativo..."
-        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+        className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
       />
       <label className="block">
         Link del grupo de WhatsApp
@@ -673,7 +673,7 @@ useEffect(() => {
           value={formData.whatsappLink || ""}
           onChange={handleChange}
           placeholder="https://chat.whatsapp.com/..."
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -684,12 +684,12 @@ useEffect(() => {
           value={formData.telefonoOrganizador}
           onChange={handleChange}
           placeholder="+5491123456789"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
       <label className="block">
         Imagen
-        <div className="w-full h-40 bg-white shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+        <div className="w-full h-40 bg-card shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
           <input
             type="file"
             accept="image/*"
@@ -711,7 +711,7 @@ useEffect(() => {
       <label className="block">
         Actividades Strava
         <select
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           onChange={(e) => {
             const selectedId = e.target.value;
             const selectedActivity = activities.find(
@@ -749,7 +749,7 @@ useEffect(() => {
           className="w-full px-4 py-4 border shadow-md rounded-[15px]"
         />
         {suggestions.length > 0 && (
-          <ul className="absolute z-10 bg-white border mt-1 rounded w-full max-h-40 overflow-y-auto">
+          <ul className="absolute z-10 bg-card border mt-1 rounded w-full max-h-40 overflow-y-auto">
             {suggestions.map((item, idx) => (
               <li
                 key={idx}
@@ -779,7 +779,7 @@ useEffect(() => {
           className="w-full p-2 border border-gray-300 rounded"
         />
         {suggestions.length > 0 && (
-          <ul className="absolute bg-white shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
+          <ul className="absolute bg-card shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
             {suggestions.map((s, idx) => (
               <li
                 key={idx}
@@ -804,7 +804,7 @@ useEffect(() => {
         <select
           value={selectedBar}
           onChange={(e) => setSelectedBar(e.target.value)}
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
           disabled={loadingBares}
         >
           <option value="">Seleccionar bar (opcional)</option>

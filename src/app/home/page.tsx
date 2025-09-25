@@ -234,7 +234,7 @@ export default function Home() {
   return (
     <>
       <Toaster position="top-center" />
-      <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
         <TopContainer
           selectedLocalidad={selectedLocalidad}
           setSelectedLocalidad={setSelectedLocalidad}

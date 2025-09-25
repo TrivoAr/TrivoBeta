@@ -46,10 +46,10 @@ export default function Signin() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-[380px] bg-[#FEFBF9] font-sans">
+    <div className="flex items-center justify-center min-h-screen w-[380px] bg-background font-sans">
       <Toaster position="top-center" />
 
-      <div className="w-full h-full bg-[#FEFBF9] overflow-hidden">
+      <div className="w-full h-full bg-background overflow-hidden">
         {/* Logo */}
         <div className="flex flex-col justify-center items-center pt-6 mb-[52px]">
           <Image
@@ -73,7 +73,7 @@ export default function Signin() {
               type="text"
               name="email"
               placeholder="Email"
-              className="w-full h-[55px]  rounded-[15px] bg-white border-[1px] shadow-sm py-2 pl-10 pr-4 text-base placeholder-gray-500 focus:outline-none"
+              className="w-full h-[55px] rounded-[15px] bg-background border border-input shadow-sm py-2 pl-10 pr-4 text-base placeholder-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               required
             />
           </div>
@@ -87,7 +87,7 @@ export default function Signin() {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Contraseña"
-              className="w-full h-[55px]  rounded-[15px] bg-white border-[1px] shadow-sm py-2 pl-10 pr-10 placeholder-gray-500 focus:outline-none"
+              className="w-full h-[55px] rounded-[15px] bg-background border border-input shadow-sm py-2 pl-10 pr-10 placeholder-muted-foreground text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               required
             />
             <button
@@ -99,7 +99,7 @@ export default function Signin() {
                 /* Ojo abierto */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-300"
+                  className="h-5 w-5 text-muted-foreground"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -114,7 +114,7 @@ export default function Signin() {
                 /* Ojo cerrado */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-gray-300"
+                  className="h-5 w-5 text-muted-foreground"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -176,10 +176,10 @@ export default function Signin() {
           </button>
 
           {/* Divider */}
-          <div className="flex items-center text-gray-400 text-sm my-2 ">
-            <hr className="flex-grow border-t" />
+          <div className="flex items-center text-muted-foreground text-sm my-2 ">
+            <hr className="flex-grow border-t border-border" />
             <span className="px-2">- O continua con -</span>
-            <hr className="flex-grow border-t" />
+            <hr className="flex-grow border-t border-border" />
           </div>
 
           {/* Social Buttons */}
@@ -204,7 +204,7 @@ export default function Signin() {
           </div>
 
           {/* Registro */}
-          <p className="text-center text-md text-gray-600 mt-4">
+          <p className="text-center text-md text-muted-foreground mt-4">
             ¿Todavía no sos parte?{" "}
             <a href="/register" className="text-[#C95100] hover:underline">
               Unite ahora

@@ -114,7 +114,7 @@ function EditProfilePage() {
 
 
   return (
-    <div className="w-[390px] min-h-screen bg-[#fdf8f4] px-4 pt-6 pb-24 flex flex-col items-center text-gray-800">
+    <div className="w-[390px] min-h-screen bg-background px-4 pt-6 pb-24 flex flex-col items-center text-foreground">
       <h1 className="text-2xl font-medium  w-full text-left mb-4">
         Editar Perfil
       </h1>
@@ -221,7 +221,7 @@ function EditProfilePage() {
         </button>
         <button
           onClick={() => router.back()}
-          className="w-[140px] mt-[40px] py-2 bg-gray-400 text-white px-6 rounded-full font-bold shadow"
+          className="w-[140px] mt-[40px] py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 rounded-full font-bold shadow"
         >
           Cancelar
         </button>

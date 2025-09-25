@@ -16,6 +16,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { isNightEvent } from "@/lib/theme";
 
 interface PageProps {
   params: {
@@ -300,7 +301,7 @@ export default function EventPage({ params }: PageProps) {
 
   if (loadingEvent || loadingMiembros)
     return (
-      <main className="bg-[#FEFBF9] min-h-screen px-4 py-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen px-4 py-6 w-[390px] mx-auto">
         {/* Back button */}
         <Skeleton circle height={32} width={32} className="mb-4" />
         {/* Título */}
@@ -348,8 +349,19 @@ export default function EventPage({ params }: PageProps) {
     );
   }
 
+  // Verificar si es evento nocturno
+  const eventForNightCheck = {
+    _id: event._id,
+    fecha: event.fecha,
+    hora: event.hora,
+    nombre: event.nombre,
+  };
+  const isNight = isNightEvent(eventForNightCheck);
+
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
+    <main className={`min-h-screen text-foreground w-[390px] mx-auto ${
+      isNight ? 'theme-bg-primary' : 'bg-background'
+    }`} data-theme={isNight ? 'night' : undefined}>
       <div className="relative w-full h-[176px] ">
         <div
           style={{
@@ -454,8 +466,12 @@ export default function EventPage({ params }: PageProps) {
         </button>
       </div>
       <div className="px-4 py-2">
-        <h1 className="text-xl  font-semibold text-center">{event.nombre}</h1>
-        <div className="text-sm text-[#808488] flex flex-col w-full gap-1 justify-center items-center">
+        <h1 className={`text-xl font-semibold text-center ${
+          isNight ? 'theme-text-primary' : 'text-foreground'
+        }`}>{event.nombre}</h1>
+        <div className={`text-sm flex flex-col w-full gap-1 justify-center items-center ${
+          isNight ? 'theme-text-secondary' : 'text-[#808488]'
+        }`}>
           <div className="flex items-center justify-center">
             <svg
               height="13px"
@@ -496,7 +512,7 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="w-full flex items-center flex-col mt-6">
           <div className="flex items-center justify-start gap-2 w-[90%]">
-            <div className="h-[80px] w-[80px] bg-white shadow-md rounded-full flex justify-center items-center border">
+            <div className="h-[80px] w-[80px] bg-card shadow-md rounded-full flex justify-center items-center border">
               <img
                 src={event.creador_id.imagen}
                 alt="Organizador"
@@ -504,7 +520,9 @@ export default function EventPage({ params }: PageProps) {
               />
             </div>
 
-            <span className="text-sm  pr-[20px] font-light">
+            <span className={`text-sm pr-[20px] font-light ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>
               Organizado por {event.creador_id.firstname}{" "}
               {event.creador_id.lastname}
             </span>
@@ -562,7 +580,9 @@ export default function EventPage({ params }: PageProps) {
               </svg>
               {event.deporte}
             </div>
-            <div className="text-sm flex items-center w-full font-light gap-1">
+            <div className={`text-sm flex items-center w-full font-light gap-1 ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -595,7 +615,9 @@ export default function EventPage({ params }: PageProps) {
               </svg>
               {event.localidad}
             </div>
-            <div className="text-sm flex items-center w-full font-light gap-1">
+            <div className={`text-sm flex items-center w-full font-light gap-1 ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>
               <svg
                 viewBox="0 0 64 64"
                 xmlns="http://www.w3.org/2000/svg"
@@ -617,7 +639,9 @@ export default function EventPage({ params }: PageProps) {
               </svg>
               {event.duracion} de duración de la salida
             </div>
-            <div className="text-sm flex items-center w-full font-light gap-1 capitalize">
+            <div className={`text-sm flex items-center w-full font-light gap-1 capitalize ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>
               <svg
                 fill="#000000"
                 viewBox="0 0 32 32"
@@ -644,8 +668,8 @@ export default function EventPage({ params }: PageProps) {
           <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
         <div className="w-full flex flex-col items-center mt-6">
-          <div className="w-[90%] font-extralight text-justify">
-            <DescriptionMarkdown text={event.descripcion} />
+          <div className="w-[90%]">
+            <DescriptionMarkdown text={event.descripcion} isNight={isNight} />
           </div>
           <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
         </div>
@@ -653,9 +677,13 @@ export default function EventPage({ params }: PageProps) {
         <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[90%]">
             <p className="mb-2">
-              <span className="text-lg font-normal">Punto de encuentro</span>
+              <span className={`text-lg font-normal ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>Punto de encuentro</span>
               <br />
-              <span className="text-sm text-gray-600 mb-2 font-extralight">
+              <span className={`text-sm mb-2 font-extralight ${
+                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
+              }`}>
                 {event.ubicacion}
               </span>
             </p>
@@ -678,7 +706,9 @@ export default function EventPage({ params }: PageProps) {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${
+                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
+              }`}>
                 No hay coordenadas disponibles.
               </p>
             )}
@@ -691,7 +721,9 @@ export default function EventPage({ params }: PageProps) {
             {" "}
             <div className="mt-10 w-full flex flex-col items-center">
               <div className="flex flex-col w-[90%] gap-2">
-                <span className="text-lg font-normal">Recorrido</span>
+                <span className={`text-lg font-normal ${
+                  isNight ? 'theme-text-primary' : 'text-foreground'
+                }`}>Recorrido</span>
                 <div
                   className="w-full h-64 rounded-xl overflow-hidden cursor-pointer relative"
                   style={{ width: "100%", height: "300px" }}
@@ -712,10 +744,14 @@ export default function EventPage({ params }: PageProps) {
               <div className="w-[90%] border-b borderb-[#808488] mt-10"></div>
             </div>
             <div className="w-full flex flex-col items-center mt-6">
-              <div className="text-lg font-normal mb-1 w-[90%]">
+              <div className={`text-lg font-normal mb-1 w-[90%] ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>
                 ¿Que incluye la inscripción?
               </div>
-              <div className="w-[90%] font-extralight text-justify break-words">
+              <div className={`w-[90%] font-extralight text-justify break-words ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>
                 {event.detalles}
               </div>
               <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
@@ -727,7 +763,7 @@ export default function EventPage({ params }: PageProps) {
           <div className="w-full flex flex-col items-center mt-8">
             <div className="flex justify-center flex-col items-center gap-3">
               <div
-                className="bg-white p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
+                className="bg-card p-3 w-[300px] rounded-[20px] flex flex-col shadow-md border self-center items-center gap-3"
                 onClick={() => router.push(`/profile/${event.profesorId._id}`)}
               >
                 <div
@@ -740,10 +776,14 @@ export default function EventPage({ params }: PageProps) {
                   }}
                 ></div>
                 <div className="flex flex-col items-center">
-                  <h2 className="text-xl font-normal">
+                  <h2 className={`text-xl font-normal ${
+                    isNight ? 'theme-text-primary' : 'text-foreground'
+                  }`}>
                     {event.profesorId?.firstname} {event.profesorId?.lastname}
                   </h2>
-                  <p className="text-sm font-light text-slate-400 mb-1">
+                  <p className={`text-sm font-light mb-1 ${
+                    isNight ? 'theme-text-secondary' : 'text-muted-foreground'
+                  }`}>
                     Profesor
                   </p>
                   <a
@@ -756,7 +796,9 @@ export default function EventPage({ params }: PageProps) {
                   </a>
                 </div>
               </div>
-              <div className="w-[90%] font-extralight text-justify">
+              <div className={`w-[90%] font-extralight text-justify ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>
                 {event.profesorId.bio}
               </div>
             </div>
@@ -766,14 +808,16 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="flex flex-col items-center mt-8">
           <div className="w-[90%]">
-            <h2 className="text-lg font-normal mb-1">Grupo de Whatsapp</h2>
+            <h2 className={`text-lg font-normal mb-1 ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>Grupo de Whatsapp</h2>
             {event.whatsappLink && (
               <div className="flex justify-center mt-2">
                 <a
                   href={event.whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-white shadow-md justify-center"
+                  className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-card shadow-md justify-center"
                 >
                   Unirse{" "}
                 </a>
@@ -785,7 +829,9 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="flex w-full justify-center items-center mt-6">
           <div className="w-[90%]">
-            <p className="text-lg font-normal mb-1">Participantes</p>
+            <p className={`text-lg font-normal mb-1 ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>Participantes</p>
             <div className="flex space-x-2 mt-1 flex-wrap gap-2 justify-center items-center">
               {miembros.length > 0 ? (
                 <>
@@ -804,7 +850,7 @@ export default function EventPage({ params }: PageProps) {
                   ))}
                   {miembros.length > 4 && (
                     <div
-                      className="h-24 w-24 rounded-full bg-white text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md"
+                      className="h-24 w-24 rounded-full bg-card text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md"
                       onClick={() =>
                         router.push(`/social/miembros/${event._id}`)
                       }
@@ -814,7 +860,9 @@ export default function EventPage({ params }: PageProps) {
                   )}
                 </>
               ) : (
-                <span className="text-gray-500">Nadie se ha unido aún</span>
+                <span className={isNight ? 'theme-text-secondary' : 'text-muted-foreground'}>
+                  Nadie se ha unido aún
+                </span>
               )}
             </div>
             <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
@@ -826,7 +874,9 @@ export default function EventPage({ params }: PageProps) {
         {event.sponsors && event.sponsors.length > 0 && (
           <div className="flex flex-col items-center mt-8">
             <div className="w-[90%]">
-              <h2 className="text-lg font-normal mb-3 text-center">
+              <h2 className={`text-lg font-normal mb-3 text-center ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>
                 {event.sponsors.length === 1 ? 'Sponsor oficial' : 'Sponsors oficiales'}
               </h2>
               
@@ -845,7 +895,7 @@ export default function EventPage({ params }: PageProps) {
                 // Vista para múltiples sponsors (grid)
                 <div className="grid grid-cols-2 gap-4">
                   {event.sponsors.map((sponsor, index) => (
-                    <div key={sponsor._id} className="bg-white p-3 rounded-[15px] shadow-md border flex flex-col items-center gap-2">
+                    <div key={sponsor._id} className="bg-card p-3 rounded-[15px] shadow-md border flex flex-col items-center gap-2">
                       {sponsor.imagen && (
                         <img 
                           src={sponsor.imagen} 
@@ -853,7 +903,9 @@ export default function EventPage({ params }: PageProps) {
                           className="w-16 h-16 object-cover rounded-lg border shadow-sm"
                         />
                       )}
-                      <span className="text-sm font-medium text-center text-gray-800">
+                      <span className={`text-sm font-medium text-center ${
+                        isNight ? 'theme-text-primary' : 'text-gray-800'
+                      }`}>
                         {sponsor.name}
                       </span>
                     </div>
@@ -870,16 +922,24 @@ export default function EventPage({ params }: PageProps) {
           className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50
     ${session ? "bottom-[80px]" : "bottom-[1px]"}`}
         >
-          <div className="bg-[#FEFBF9] shadow-md h-[120px] border flex justify-between items-center">
+          <div className={`shadow-md h-[120px] border flex justify-between items-center ${
+            isNight
+              ? 'theme-bg-secondary border-gray-600'
+              : 'bg-card border-border'
+          }`}>
             <div className="w-[50%] flex flex-col pl-4">
-              <p className="font-semibold text-gray-800 text-xl underline">
+              <p className={`font-semibold text-xl underline ${
+                isNight ? 'theme-text-primary' : 'text-foreground'
+              }`}>
                 {event.precio == 0 || event.precio === "0" ? (
                   "Gratis"
                 ) : (
                   `$${Number(event.precio).toLocaleString("es-AR")}`
                 )}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className={`text-xs ${
+                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
+              }`}>
                 {parseLocalDate(event.fecha)}, {event.hora} hs
               </p>
               <div className="flex w-full justify-between">
@@ -902,7 +962,11 @@ export default function EventPage({ params }: PageProps) {
                 // Si es el creador, mostrar botón editar
                 <button
                   onClick={() => router.push(`/social/editar/${event._id}`)}
-                  className="bg-white h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border w-[90px] font-semibold"
+                  className={`h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border w-[90px] font-semibold ${
+                    isNight
+                      ? 'theme-bg-primary border-gray-600 theme-text-primary'
+                      : 'bg-card border-border text-foreground'
+                  }`}
                 >
                   Editar
                 </button>
@@ -913,10 +977,10 @@ export default function EventPage({ params }: PageProps) {
                   }}
                   disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
                   className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
-        ${yaUnido === "no" ? "bg-[#C95100] text-white" : ""}
+        ${yaUnido === "no" ? (isNight ? "seasonal-gradient text-white" : "bg-[#C95100] text-white") : ""}
         ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
         ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}
-        ${yaUnido === "si" ? "bg-[#001A46] text-white" : ""}
+        ${yaUnido === "si" ? (isNight ? "theme-accent-bg-primary text-white" : "bg-[#001A46] text-white") : ""}
       `}
                 >
                   {yaUnido === "no" && "Unirse"}
@@ -950,7 +1014,7 @@ export default function EventPage({ params }: PageProps) {
       {showFullMap && (
         <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
           <button
-            className="absolute top-4 right-4 z-50 rounded-full bg-white text-black font-bold w-[35px] h-[35px] shadow"
+            className="absolute top-4 right-4 z-50 rounded-full bg-card text-foreground font-bold w-[35px] h-[35px] shadow"
             onClick={() => setShowFullMap(false)}
           >
             ✕
@@ -963,7 +1027,7 @@ export default function EventPage({ params }: PageProps) {
       {showFullMapPuntoDeEncuntro && (
         <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
           <button
-            className="absolute top-4 right-4 z-50 rounded-full bg-white text-black font-bold w-[35px] h-[35px] shadow"
+            className="absolute top-4 right-4 z-50 rounded-full bg-card text-foreground font-bold w-[35px] h-[35px] shadow"
             onClick={() => setShowFullMapPuntoDeEncuntro(false)}
           >
             ✕

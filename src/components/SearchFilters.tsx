@@ -24,7 +24,7 @@ export default function SearchFilters({
 }: SearchFiltersProps) {
   return (
     <div className={`space-y-3 ${className}`}>
-      <h3 className="text-sm font-medium text-gray-700">{title}</h3>
+      <h3 className="text-sm font-medium text-foreground">{title}</h3>
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {options.map((option) => (
           <button
@@ -34,7 +34,7 @@ export default function SearchFilters({
               flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
               ${selected === option.key
                 ? "bg-[#C95100] text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }
             `}
           >

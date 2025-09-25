@@ -137,12 +137,19 @@ useEffect(() => {
     }
   };
 
+  const removeNotification = (id) => {
+    setNotificaciones((prev) => prev.filter((n) => n._id !== id));
+  };
+
   // Componente skeleton para notificaciones
   const NotificationSkeleton = () => (
-    <div className="flex items-center space-x-3 p-3 rounded-lg border-l-4 border-gray-200 bg-white w-full max-w-none">
+    <div
+      className="flex items-center space-x-3 p-3 rounded-lg border-l-4 border-border bg-card w-full max-w-none"
+      aria-hidden="true"
+    >
       {/* Avatar skeleton */}
       <Skeleton circle height={64} width={64} className="flex-shrink-0" />
-      
+
       {/* Contenido skeleton */}
       <div className="flex-1">
         <div className="flex items-center justify-between mb-2">
@@ -161,44 +168,60 @@ useEffect(() => {
   console.log("Notificaciones:", notificaciones);
 
   return (
-    <div className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 w-[390px] mx-auto">
-      <h1 className="text-xl font-semibold mb-5 mt-2">
+    <div className="bg-background min-h-screen text-foreground px-4 py-6 w-[390px] mx-auto">
+      <h1 className="text-xl font-semibold mb-5 mt-2 text-foreground" id="notifications-title">
         Notificaciones
       </h1>
 
       {loading ? (
-        <div className="flex flex-col space-y-3 w-full">
+        <div
+          className="flex flex-col space-y-3 w-full"
+          role="status"
+          aria-live="polite"
+          aria-label="Cargando notificaciones"
+        >
           {[...Array(Math.min(estimatedCount, 8))].map((_, index) => (
             <NotificationSkeleton key={index} />
           ))}
         </div>
       ) : notificaciones.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div
+          className="text-center py-12 text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
           <div className="mb-4">
-            <svg 
-              className="mx-auto h-16 w-16 text-gray-300" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              className="mx-auto h-16 w-16 text-muted-foreground/50"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1} 
-                d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 11-15 0v5h5l-5-5 5-5h-5v5a7.5 7.5 0 1115 0v-5z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 11-15 0v5h5l-5-5 5-5h-5v5a7.5 7.5 0 1115 0v-5z"
               />
             </svg>
           </div>
-          <p className="text-lg font-medium">No tenés notificaciones recientes</p>
-          <p className="text-sm mt-2">Solo mostramos notificaciones de los últimos 3 días</p>
+          <p className="text-lg font-medium text-foreground">No tenés notificaciones recientes</p>
+          <p className="text-sm mt-2 text-muted-foreground">Solo mostramos notificaciones de los últimos 3 días</p>
         </div>
       ) : (
-        <div className="flex flex-col space-y-3">
+        <div
+          className="flex flex-col space-y-3"
+          role="list"
+          aria-labelledby="notifications-title"
+          aria-live="polite"
+        >
           {notificaciones.map((n) => (
             <NotificationItem
               key={n._id}
               notification={n}
               onMarkAsRead={markAsRead}
+              onRemove={removeNotification}
             />
           ))}
         </div>

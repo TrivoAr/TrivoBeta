@@ -38,7 +38,8 @@ const StarRatingInput = ({
             width="32"
             height="32"
             viewBox="0 0 24 24"
-            fill={(hover || rating) >= star ? "#C95100" : "#E0E0E0"}
+            className={(hover || rating) >= star ? "text-[#C95100]" : "text-muted-foreground"}
+            fill="currentColor"
           >
             <path d="M12 .587l3.668 7.57 8.332 1.591-6 5.845 1.42 8.29L12 19.771 4.58 24.293 6 15.593 0 9.748l8.332-1.591z" />
           </svg>
@@ -110,26 +111,26 @@ const ReviewModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-      <div className="bg-white w-[90%] max-w-md p-6 rounded-xl shadow-lg relative">
+      <div className="bg-card w-[90%] max-w-md p-6 rounded-xl shadow-lg relative">
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-xl font-bold text-gray-500 hover:text-gray-800"
+          className="absolute top-2 right-3 text-xl font-bold text-muted-foreground hover:text-foreground"
         >
           ×
         </button>
 
-        <h3 className="text-xl font-semibold mb-4">
+        <h3 className="text-xl font-semibold mb-4 text-foreground">
           {existingReview ? "Editar tu reseña" : "Dejá tu reseña"}
         </h3>
 
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium mb-1">Puntuación</label>
+          <label className="block text-sm font-medium mb-1 text-foreground">Puntuación</label>
           <StarRatingInput rating={rating} setRating={setRating} />
 
-          <label className="block text-sm font-medium mb-1">Comentario</label>
+          <label className="block text-sm font-medium mb-1 text-foreground">Comentario</label>
           <textarea
             rows={4}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full border border-border bg-background text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             placeholder="Contanos tu experiencia..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -170,7 +171,7 @@ const ReviewButtonWithModal = ({
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="bg-[#eee] w-[90%] text-black px-4 py-2 rounded-[10px] font-semibold transition"
+        className="bg-muted w-[90%] text-foreground px-4 py-2 rounded-[10px] font-semibold transition hover:bg-accent"
       >
         {existingReview ? "Editar tu reseña" : "Dejar reseña"}
       </button>

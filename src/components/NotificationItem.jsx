@@ -6,7 +6,7 @@ dayjs.extend(relativeTime);
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-const NotificationItem = ({ notification, onMarkAsRead }) => {
+const NotificationItem = ({ notification, onMarkAsRead, onRemove }) => {
   const isSolicitud = notification.tipo === "solicitud";
   const router = useRouter();
 
@@ -143,12 +143,25 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
   };
 
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleNotificationClick();
+    }
+  };
+
   return (
-    <div 
-      className={`flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border-l-4 ${
-        notification.read ? 'border-gray-200 bg-white' : 'border-[#C95100] bg-orange-50'
+    <div
+      className={`flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 focus:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 transition-colors cursor-pointer border-l-4 ${
+        notification.read ? 'border-border bg-card' : 'border-orange-600 bg-orange-50 dark:bg-orange-950/20'
       }`}
       onClick={handleNotificationClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="listitem"
+      aria-label={`Notificación de ${notification.nombre}: ${notification.mensaje || notification.message}${
+        notification.read ? ' (leída)' : ' (no leída)'
+      }`}
     >
       {/* Avatar del usuario */}
       <div
@@ -157,7 +170,9 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
-        className="rounded-full object-cover w-16 h-16 flex-shrink-0 border-2 border-gray-200"
+        className="rounded-full object-cover w-16 h-16 flex-shrink-0 border-2 border-border"
+        role="img"
+        aria-label={`Foto de perfil de ${notification.nombre}`}
       />
       
       {/* Icono de tipo de notificación */}
@@ -168,24 +183,28 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
       {/* Contenido de la notificación */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <p className={`text-sm ${notification.read ? 'text-gray-600' : 'text-gray-900 font-medium'}`}>
+          <p className={`text-sm ${notification.read ? 'text-muted-foreground' : 'text-foreground font-medium'}`}>
             <span className="font-semibold">{notification.nombre}</span>{" "}
             {notification.mensaje || notification.message}
           </p>
           {!notification.read && (
-            <div className="w-2 h-2 bg-[#C95100] rounded-full flex-shrink-0"></div>
+            <div
+              className="w-2 h-2 bg-orange-600 rounded-full flex-shrink-0"
+              role="status"
+              aria-label="No leída"
+            ></div>
           )}
         </div>
         
         <div className="flex items-center justify-between mt-1">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {dayjs(notification.createdAt).fromNow()}
           </p>
-          
+
           {/* Mostrar hacia dónde llevará la notificación */}
           {(notification.actionUrl || getNavigationUrl(notification)) && (
-            <p className="text-xs text-[#C95100] font-medium">
-              Toca para ver →
+            <p className="text-xs text-orange-600 font-medium">
+              Presiona para ver →
             </p>
           )}
         </div>
@@ -196,13 +215,15 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
         <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={handleAceptar}
-            className="bg-green-500 text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 transition-colors"
+            className="bg-green-500 text-white text-xs px-3 py-1 rounded-full hover:bg-green-600 focus:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
+            aria-label={`Aceptar solicitud de ${notification.nombre}`}
           >
             Aceptar
           </button>
           <button
             onClick={handleRechazar}
-            className="bg-red-500 text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 transition-colors"
+            className="bg-red-500 text-white text-xs px-3 py-1 rounded-full hover:bg-red-600 focus:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+            aria-label={`Rechazar solicitud de ${notification.nombre}`}
           >
             Rechazar
           </button>
