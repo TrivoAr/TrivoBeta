@@ -16,16 +16,18 @@ export function getSeasonalTheme(now: Date, flags: ThemeFlags): SeasonalTheme {
     return 'none';
   }
 
-  if (flags.activeSeasonalTheme !== 'none') {
-    return flags.activeSeasonalTheme;
-  }
-
   const currentISOString = now.toISOString();
 
+  // Primero checkear rangos de fechas (mayor prioridad)
   for (const range of flags.dateRanges) {
     if (currentISOString >= range.start && currentISOString <= range.end) {
       return range.theme;
     }
+  }
+
+  // Si no hay rango activo, usar tema manual como fallback
+  if (flags.activeSeasonalTheme !== 'none') {
+    return flags.activeSeasonalTheme;
   }
 
   return 'none';
