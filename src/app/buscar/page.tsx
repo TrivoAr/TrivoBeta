@@ -200,7 +200,7 @@ export default function BuscarPage() {
   const filteredResults = getFilteredResults();
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
+    <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
       <TopContainer
         selectedLocalidad={null}
         setSelectedLocalidad={null}
@@ -213,7 +213,7 @@ export default function BuscarPage() {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Buscar eventos deportivos..."
-          className="w-full px-4 py-3 border border-gray-300 rounded-[20px] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#C95100] focus:border-[#C95100] transition-all"
+          className="w-full px-4 py-3 border border-border rounded-[20px] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#C95100] focus:border-[#C95100] transition-all bg-card"
         />
       </div>
 
@@ -237,9 +237,9 @@ export default function BuscarPage() {
       {/* Encabezado */}
       <div className="flex justify-between items-center px-1">
         <div>
-          <h2 className="text-2xl font-bold text-[#C76C01]">Eventos Deportivos</h2>
+          <h2 className="text-2xl font-bold text-[#C95100]">Eventos Deportivos</h2>
           {(searchQuery || selectedEventType !== "todos" || selectedDiscipline !== "todos") && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {filteredResults.length} resultado{filteredResults.length !== 1 ? 's' : ''} encontrado{filteredResults.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -250,8 +250,8 @@ export default function BuscarPage() {
       <div className="space-y-3 px-1 flex flex-col gap-3">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="flex items-center gap-3 text-gray-500">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-[#C95100] rounded-full animate-spin "></div>
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="w-4 h-4 border-2 border-border border-t-[#C95100] rounded-full animate-spin "></div>
               Cargando eventos...
             </div>
           </div>
@@ -265,29 +265,29 @@ export default function BuscarPage() {
           ))
         ) : (searchQuery || selectedEventType !== "todos" || selectedDiscipline !== "todos") ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
+            <div className="text-muted-foreground mb-2">
               <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               No se encontraron eventos con los filtros seleccionados
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Intenta cambiar los filtros o buscar algo diferente
             </p>
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
+            <div className="text-muted-foreground mb-2">
               <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Busca academias, salidas sociales o team socials
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Comienza escribiendo o usa los filtros de arriba
             </p>
           </div>

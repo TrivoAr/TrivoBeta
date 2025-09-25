@@ -619,7 +619,7 @@ export default function CrearSalidaPage() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
+      className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-background"
     >
       <Toaster position="top-center" />
       <h2 className="text-center font-normal text-2xl">Crear salida</h2>
@@ -630,7 +630,7 @@ export default function CrearSalidaPage() {
           value={formData.nombre}
           onChange={handleChange}
           placeholder="salida en grupo"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -692,7 +692,7 @@ export default function CrearSalidaPage() {
               localidad: "" 
             }));
           }}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Seleccionar Provincia</option>
           {provinces?.map(province => (
@@ -725,7 +725,7 @@ export default function CrearSalidaPage() {
             }));
           }}
           disabled={!selectedProvince}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400 disabled:opacity-50"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground disabled:opacity-50"
         >
           <option value="">
             {!selectedProvince ? "Primero selecciona una provincia" : "Seleccionar Localidad"}
@@ -776,7 +776,7 @@ export default function CrearSalidaPage() {
           name="duracion"
           value={formData.duracion}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Duración</option>
           <option value="1 hs">1 hs</option>
@@ -803,7 +803,7 @@ export default function CrearSalidaPage() {
           value={formData.precio}
           onChange={handleChange}
           placeholder="$9.999"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -826,7 +826,7 @@ export default function CrearSalidaPage() {
           value={formData.cupo}
           onChange={handleChange}
           placeholder="Cantidad maxima de personas"
-          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -837,7 +837,7 @@ export default function CrearSalidaPage() {
           name="fecha"
           value={formData.fecha}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
       </label>
 
@@ -848,7 +848,7 @@ export default function CrearSalidaPage() {
           name="hora"
           value={formData.hora}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
       </label>
 
@@ -895,7 +895,7 @@ export default function CrearSalidaPage() {
           value={formData.whatsappLink || ""}
           onChange={handleChange}
           placeholder="https://chat.whatsapp.com/..."
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
 
@@ -906,12 +906,12 @@ export default function CrearSalidaPage() {
           value={formData.telefonoOrganizador}
           onChange={handleChange}
           placeholder="+5491123456789"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>
       <label className="block">
         Imagen
-        <div className="w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+        <div className="w-full h-40 bg-card border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
           <input
             type="file"
             accept="image/*"
@@ -933,7 +933,7 @@ export default function CrearSalidaPage() {
       <label className="block">
         Actividades Strava
         <select
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           onChange={(e) => {
             const selectedId = e.target.value;
             const selectedActivity = activities.find(
@@ -968,7 +968,7 @@ export default function CrearSalidaPage() {
           name="profesorId"
           value={formData.profesorId}
           onChange={handleProfesorSelect}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Selecciona un profesor</option>
           {profes.map((p: any) => (
@@ -995,10 +995,10 @@ export default function CrearSalidaPage() {
             setProfesorSuggestions(filtered);
           }}
           placeholder="Buscar profesor..."
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
         {profesorSuggestions.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 bg-white border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
+          <ul className="absolute top-full left-0 right-0 bg-card border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
             {profesorSuggestions.map((p) => (
               <li
                 key={p._id}
@@ -1137,7 +1137,7 @@ export default function CrearSalidaPage() {
             className="w-full p-2 border border-gray-300 rounded"
           />
           {suggestions.length > 0 && (
-            <ul className="absolute bg-white shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
+            <ul className="absolute bg-card shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
               {suggestions.map((s, idx) => (
                 <li
                   key={idx}

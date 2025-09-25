@@ -145,7 +145,7 @@ function handleDelete(miembroId: string) {
       <div className="w-[390px] p-4">
         <button
           onClick={() => router.back()}
-          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
         >
           <img
             src="/assets/icons/Collapse Arrow.svg"
@@ -171,7 +171,7 @@ function handleDelete(miembroId: string) {
       <div className="w-[390px] p-4">
         <button
           onClick={() => router.back()}
-          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
         >
           <img
             src="/assets/icons/Collapse Arrow.svg"
@@ -198,7 +198,7 @@ function handleDelete(miembroId: string) {
       <div className="w-[390px] p-4">
         <button
           onClick={() => router.back()}
-          className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
         >
           <img
             src="/assets/icons/Collapse Arrow.svg"

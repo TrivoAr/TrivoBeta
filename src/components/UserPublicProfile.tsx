@@ -117,10 +117,10 @@ export default function UserPublicProfile({ userId }: Props) {
 
   if (loading) {
     return (
-      <div className="w-[390px] mx-auto bg-gradient-to-br from-[#FEFBF9] to-[#F5F5F5] min-h-screen flex items-center justify-center">
+      <div className="w-[390px] mx-auto bg-background min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 border-4 border-[#C95100] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600">Cargando perfil...</p>
+          <p className="text-muted-foreground">Cargando perfil...</p>
         </div>
       </div>
     );
@@ -128,13 +128,13 @@ export default function UserPublicProfile({ userId }: Props) {
 
   if (!user) {
     return (
-      <div className="w-[390px] mx-auto bg-gradient-to-br from-[#FEFBF9] to-[#F5F5F5] min-h-screen flex items-center justify-center">
+      <div className="w-[390px] mx-auto bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaUserCircle className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FaUserCircle className="w-8 h-8 text-destructive" />
           </div>
-          <p className="text-gray-600 font-medium">Perfil no encontrado</p>
-          <p className="text-sm text-gray-400 mt-1">El usuario que buscas no existe</p>
+          <p className="text-foreground font-medium">Perfil no encontrado</p>
+          <p className="text-sm text-muted-foreground mt-1">El usuario que buscas no existe</p>
         </div>
       </div>
     );
@@ -142,9 +142,9 @@ export default function UserPublicProfile({ userId }: Props) {
 
   const getRolBadge = (rol: string) => {
     const rolConfig = {
-      admin: { icon: FaCrown, bg: "bg-purple-100", text: "text-purple-700", label: "Administrador" },
-      user: { icon: FaRunning, bg: "bg-blue-100", text: "text-blue-700", label: "Alumno" },
-      trainer: { icon: FaRunning, bg: "bg-green-100", text: "text-green-700", label: "Entrenador" }
+      admin: { icon: FaCrown, bg: "bg-purple-100 dark:bg-purple-900/20", text: "text-purple-700 dark:text-purple-400", label: "Administrador" },
+      user: { icon: FaRunning, bg: "bg-blue-100 dark:bg-blue-900/20", text: "text-blue-700 dark:text-blue-400", label: "Alumno" },
+      trainer: { icon: FaRunning, bg: "bg-green-100 dark:bg-green-900/20", text: "text-green-700 dark:text-green-400", label: "Entrenador" }
     };
 
     const config = rolConfig[rol as keyof typeof rolConfig] || rolConfig.user;
@@ -159,7 +159,7 @@ export default function UserPublicProfile({ userId }: Props) {
   };
 
   return (
-    <div className="w-[390px] mx-auto bg-gradient-to-br from-[#FEFBF9] to-[#F5F5F5] min-h-screen">
+    <div className="w-[390px] mx-auto bg-background min-h-screen">
       {/* Header con gradiente */}
       <div className="relative bg-[#C95100] h-32 rounded-b-[40px]">
         <button
@@ -176,7 +176,7 @@ export default function UserPublicProfile({ userId }: Props) {
 
       <div className="px-6 -mt-16 relative z-10">
         {/* Card principal del perfil */}
-        <div className="bg-white rounded-3xl shadow-xl border-0 p-6 mb-6">
+        <div className="bg-card rounded-3xl shadow-xl border-0 p-6 mb-6">
           {/* Imagen de perfil centrada */}
           <div className="flex flex-col items-center -mt-12 mb-4">
             <div
@@ -196,14 +196,14 @@ export default function UserPublicProfile({ userId }: Props) {
                   }}
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <FaUserCircle className="w-16 h-16 text-gray-400" />
+                <div className="w-24 h-24 rounded-full border-4 border-card shadow-lg bg-muted flex items-center justify-center">
+                  <FaUserCircle className="w-16 h-16 text-muted-foreground" />
                 </div>
               )}
             </div>
 
             {/* Información básica */}
-            <h1 className="text-2xl font-bold text-gray-900 mt-4 text-center">
+            <h1 className="text-2xl font-bold text-foreground mt-4 text-center">
               {user.firstname} {user.lastname}
             </h1>
 
@@ -211,7 +211,7 @@ export default function UserPublicProfile({ userId }: Props) {
               {getRolBadge(user.rol)}
             </div>
 
-            <div className="flex items-center gap-2 mt-3 text-gray-500">
+            <div className="flex items-center gap-2 mt-3 text-muted-foreground">
               <FaCalendarAlt className="w-4 h-4" />
               <span className="text-sm">
                 Miembro desde {new Date(user.createdAt).toLocaleDateString('es-AR', {
@@ -225,19 +225,19 @@ export default function UserPublicProfile({ userId }: Props) {
 
         {/* Sección Bio */}
         {user.bio && (
-          <div className="bg-white rounded-2xl shadow-md p-5 mb-4">
+          <div className="bg-card rounded-2xl shadow-md p-5 mb-4">
             <div className="flex items-center gap-2 mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Sobre mí</h2>
+              <h2 className="text-lg font-semibold text-foreground">Sobre mí</h2>
             </div>
-            <p className="text-gray-600 leading-relaxed">{user.bio}</p>
+            <p className="text-muted-foreground leading-relaxed">{user.bio}</p>
           </div>
         )}
 
         {/* Redes sociales */}
         {(user.instagram || user.facebook || user.twitter) && (
-          <div className="bg-white rounded-2xl shadow-md p-5 mb-6">
+          <div className="bg-card rounded-2xl shadow-md p-5 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Redes sociales</h2>
+              <h2 className="text-lg font-semibold text-foreground">Redes sociales</h2>
             </div>
 
             <div className="flex gap-4">
@@ -282,10 +282,10 @@ export default function UserPublicProfile({ userId }: Props) {
 
         {/* Salidas en común */}
         {salidasComunes && salidasComunes.totalComunes > 0 && (
-          <div className="bg-white rounded-2xl shadow-md p-5 mb-4">
+          <div className="bg-card rounded-2xl shadow-md p-5 mb-4">
             <div className="flex items-center gap-2 mb-4">
               <FaUsers className="w-5 h-5 text-[#C95100]" />
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-foreground">
                 Salidas en común ({salidasComunes.totalComunes})
               </h2>
             </div>
@@ -308,12 +308,12 @@ export default function UserPublicProfile({ userId }: Props) {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-800 text-sm">{salida.titulo}</h3>
-                    <p className="text-xs text-gray-500">
+                    <h3 className="font-medium text-foreground text-sm">{salida.titulo}</h3>
+                    <p className="text-xs text-muted-foreground">
                       {new Date(salida.fecha).toLocaleDateString('es-AR')} • Social
                     </p>
                     {salida.ubicacion && (
-                      <p className="text-xs text-gray-400">{salida.ubicacion}</p>
+                      <p className="text-xs text-muted-foreground">{salida.ubicacion}</p>
                     )}
                   </div>
                 </div>
@@ -336,12 +336,12 @@ export default function UserPublicProfile({ userId }: Props) {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-800 text-sm">{salida.titulo}</h3>
-                    <p className="text-xs text-gray-500">
+                    <h3 className="font-medium text-foreground text-sm">{salida.titulo}</h3>
+                    <p className="text-xs text-muted-foreground">
                       {new Date(salida.fecha).toLocaleDateString('es-AR')} • Equipo
                     </p>
                     {salida.ubicacion && (
-                      <p className="text-xs text-gray-400">{salida.ubicacion}</p>
+                      <p className="text-xs text-muted-foreground">{salida.ubicacion}</p>
                     )}
                   </div>
                 </div>
@@ -351,20 +351,20 @@ export default function UserPublicProfile({ userId }: Props) {
         )}
 
         {/* Estadísticas o información adicional */}
-        <div className="bg-white rounded-2xl shadow-md p-5 mb-20">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Estadísticas</h2>
+        <div className="bg-card rounded-2xl shadow-md p-5 mb-20">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Estadísticas</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center bg-gradient-to-br from-[#C95100]/5 to-[#C95100]/10 rounded-xl p-4">
               <div className="text-2xl font-bold text-[#C95100]">
                 {Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24))}
               </div>
-              <div className="text-xs text-gray-600 mt-1">Días en Trivo</div>
+              <div className="text-xs text-muted-foreground mt-1">Días en Trivo</div>
             </div>
-            <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="text-center bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {eventosAsistidos}
               </div>
-              <div className="text-xs text-gray-600 mt-1">Eventos asistidos</div>
+              <div className="text-xs text-muted-foreground mt-1">Eventos asistidos</div>
             </div>
           </div>
         </div>
@@ -384,9 +384,9 @@ export default function UserPublicProfile({ userId }: Props) {
             />
             <button
               onClick={() => setShowPreview(false)}
-              className="absolute -top-4 -right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors"
+              className="absolute -top-4 -right-4 bg-card rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-accent transition-colors"
             >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

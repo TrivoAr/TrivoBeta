@@ -445,11 +445,11 @@ export default function EditarTeamSalida({
   
 
   return (
-    <div className="flex flex-col justify-center items-center bg-[#FEFBF9]">
+    <div className="flex flex-col justify-center items-center bg-background">
       <Toaster position="top-center" /> 
       <button
         onClick={() => router.back()}
-        className="text-[#C76C01] self-start bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
+        className="text-[#C76C01] self-start bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
       >
         <img
           src="/assets/icons/Collapse Arrow.svg"
@@ -475,7 +475,7 @@ export default function EditarTeamSalida({
             value={formData.nombre}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           {/* Provincia */}
@@ -487,7 +487,7 @@ export default function EditarTeamSalida({
               setFormData(prev => ({ ...prev, provincia: provinceName }));
               setSelectedLocality(""); // Reset localidad al cambiar provincia
             }}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
           >
             <option value="">Seleccionar provincia</option>
             {provinces?.map((province) => (
@@ -505,7 +505,7 @@ export default function EditarTeamSalida({
               const localityName = localities?.find(l => l.id === e.target.value)?.name || e.target.value;
               setFormData(prev => ({ ...prev, localidad: localityName }));
             }}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
             disabled={!selectedProvince}
           >
             <option value="">
@@ -547,7 +547,7 @@ export default function EditarTeamSalida({
             value={formData.precio}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           <input
@@ -556,7 +556,7 @@ export default function EditarTeamSalida({
             placeholder="CBU/Alias"
             value={formData.alias}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           <input
@@ -565,14 +565,14 @@ export default function EditarTeamSalida({
             placeholder="Cupo máximo"
             value={formData.cupo}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           <select
             name="deporte"
             value={formData.deporte}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-slate-400"
           >
             <option value="">Selecciona un deporte</option>
             <option value="Running">Running</option>
@@ -586,7 +586,7 @@ export default function EditarTeamSalida({
             name="dificultad"
             value={formData.dificultad}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
           >
             <option value="">Seleccionar dificultad</option>
             <option value="Principiante">Principiante</option>
@@ -599,7 +599,7 @@ export default function EditarTeamSalida({
             name="duracion"
             value={formData.duracion}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-slate-400"
           >
             <option value="">Duración</option>
             <option value="1 hs">1 hs</option>
@@ -614,7 +614,7 @@ export default function EditarTeamSalida({
               value={formData.fecha.split("T")[0]}
               onChange={handleChange}
               required
-              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
             />
             <input
               type="time"
@@ -622,7 +622,7 @@ export default function EditarTeamSalida({
               value={formData.hora}
               onChange={handleChange}
               required
-              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+              className="w-1/2 px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
             />
           </div>
 
@@ -632,7 +632,7 @@ export default function EditarTeamSalida({
             value={formData.descripcion}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           <input
@@ -641,7 +641,7 @@ export default function EditarTeamSalida({
             placeholder="Link del grupo de WhatsApp"
             value={formData.whatsappLink}
             onChange={handleChange}
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
           <input
@@ -651,7 +651,7 @@ export default function EditarTeamSalida({
             value={formData.telefonoOrganizador}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
               <div className="relative">
@@ -665,7 +665,7 @@ export default function EditarTeamSalida({
               className="w-full px-4 py-4 border shadow-md rounded-[15px]"
             />
             {suggestions.length > 0 && (
-              <ul className="absolute bg-white border rounded-md z-10 w-full max-h-40 overflow-y-auto">
+              <ul className="absolute bg-card border rounded-md z-10 w-full max-h-40 overflow-y-auto">
                 {suggestions.map((s, idx) => (
                   <li
                     key={idx}
@@ -689,7 +689,7 @@ export default function EditarTeamSalida({
             <select
               value={selectedBar}
               onChange={(e) => setSelectedBar(e.target.value)}
-              className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-700"
+              className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
               disabled={loadingBares}
             >
               <option value="">Seleccionar bar (opcional)</option>

@@ -1,19 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { Clock, MapPin, Tag } from "lucide-react";
+import { Clock, MapPin, Tag, Moon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import LoginModal from "@/components/Modals/LoginModal";
 import EventModal from "@/components/EventModal";
 import { useSession } from "next-auth/react";
+import { isNightEvent } from "@/lib/theme";
 
 type EventType = {
   _id: string;
   title: string;
-  date: string; // formato: "YYYY-MM-DD"
+  date: string;
   time: string;
   price?: string;
   image: string;
@@ -34,6 +35,8 @@ type EventType = {
     resource_state: number;
   };
   cupo: number;
+  fecha?: string;
+  hora?: string;
 };
 
 interface Miembro {
@@ -66,15 +69,35 @@ type EventCardProps = {
   event: EventType;
   onJoin?: (event: EventType) => void;
   onMap?: (coords: { lat: number; lng: number }) => void;
+  variant?: 'default' | 'night';
 };
 
-export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
+export default function EventCard({ event, onJoin, onMap, variant }: EventCardProps) {
   const [esFavorito, setEsFavorito] = useState(false);
   const { data: session } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [miembros, setMiembros] = useState<Miembro[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const eventForNightCheck = {
+    _id: event._id,
+    fecha: event.fecha || event.date,
+    hora: event.hora || event.time,
+    nombre: event.title,
+  };
+
+  const isNight = variant === 'night' || isNightEvent(eventForNightCheck);
+
+  const cardClasses = useMemo(() => {
+    const baseClasses = "rounded-2xl overflow-hidden shadow-md w-[360px] transition-all duration-300";
+
+    if (isNight) {
+      return `${baseClasses} theme-bg-secondary theme-glow night-pulse`;
+    }
+
+    return `${baseClasses} bg-card`;
+  }, [isNight]);
 
   const parseLocalDate = (isoDateString: string): string => {
     const [year, month, day] = isoDateString.split("-");
@@ -155,7 +178,7 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
   }, [event._id]);
 
   return (
-    <div className="rounded-2xl overflow-hidden shadow-md bg-white w-[360px]">
+    <div className={cardClasses} data-theme={isNight ? 'night' : undefined}>
       {/* Imagen */}
       <div
         className="relative w-full h-[180px]"
@@ -202,23 +225,41 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
       <div className="p-4 space-y-2">
         {/* Encabezado */}
         <div className="flex justify-between items-start">
-          <h2 className="font-bold text-md leading-snug">{event.title}</h2>
-          <span className="text-xs text-gray-700 bg-gray-100 px-3 py-1 rounded-full whitespace-nowrap">
+          <div className="flex-1 mr-2">
+            <h2 className={`font-bold text-md leading-snug ${
+              isNight ? 'theme-text-primary' : 'text-foreground'
+            }`}>
+              {event.title}
+            </h2>
+            {isNight && (
+              <div className="night-badge mt-1">
+                <Moon size={12} />
+                <span>Noche</span>
+              </div>
+            )}
+          </div>
+          <span className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${
+            isNight
+              ? 'theme-accent-bg-primary text-white'
+              : 'text-muted-foreground bg-muted'
+          }`}>
             {event.localidad}
           </span>
         </div>
 
         <div className="flex w-full justify-between">
-          <p className="text-sm text-gray-500 capitalize">
+          <p className={`text-sm capitalize ${
+            isNight ? 'theme-text-secondary' : 'text-muted-foreground'
+          }`}>
             {event.category} · {event.dificultad}
           </p>
           <p
             className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${
               (event.cupo - miembros.length) / event.cupo > 0.5
-                ? "bg-green-100 text-green-800"
+                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
                 : (event.cupo - miembros.length) / event.cupo > 0.2
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
             }`}
           >
             Cupos: {event.cupo - miembros.length}/{event.cupo}
@@ -226,14 +267,18 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
         </div>
 
         {/* Fecha y hora */}
-        <p className="text-sm text-gray-700 flex items-center gap-1">
+        <p className={`text-sm flex items-center gap-1 ${
+          isNight ? 'theme-text-primary' : 'text-foreground'
+        }`}>
           <Clock size={16} />
           {parseLocalDate(event.date)} {event.time} hs
         </p>
 
         {/* Precio */}
         {event.price && (
-          <p className="text-sm font-semibold text-orange-600 flex items-center gap-1">
+          <p className={`text-sm font-semibold flex items-center gap-1 ${
+            isNight ? 'theme-accent-primary' : 'text-orange-600'
+          }`}>
             <Tag size={16} />{" "}
             {event.price === "0"
               ? "Gratis"
@@ -245,29 +290,39 @@ export default function EventCard({ event, onJoin, onMap }: EventCardProps) {
         <div className="flex items-center justify-between mt-10 gap-2">
           <button
             onClick={() => router.push(`/social/${event._id}`)}
-            className="text-white rounded-[20px] w-[50%] h-[40px] bg-[#C95100]"
+            className={`text-white rounded-[20px] h-[40px] transition-all ${
+              isNight
+                ? (event.stravaMap?.id ? 'w-[50%] seasonal-gradient hover:opacity-90' : 'w-[90%] mx-auto seasonal-gradient hover:opacity-90')
+                : 'w-[50%] bg-[#C95100] hover:bg-[#b8470f]'
+            }`}
           >
-            Unirse
+            {isNight ? 'Viví la experiencia nocturna' : 'Unirse'}
           </button>
-          <button
-            className="flex justify-center items-center gap-2 rounded-[20px] border w-[50%] h-[40px] shadow-sm"
-            onClick={() => {
-              setSelectedEvent({
-                id: event._id,
-                locationCoords: event.locationCoords,
-                stravaMap: {
-                  id: event.stravaMap.id,
-                  summary_polyline: event.stravaMap.summary_polyline,
-                  polyline: event.stravaMap.polyline,
-                  resource_state: event.stravaMap.resource_state,
-                },
-              });
-              setIsModalOpen(true);
-            }}
-          >
-            <MapPin size={16} className="mr-1" />
-            Mapa
-          </button>
+          {(event.stravaMap?.id && event.stravaMap?.summary_polyline) && (
+            <button
+              className={`flex justify-center items-center gap-2 rounded-[20px] border w-[50%] h-[40px] shadow-sm transition-colors ${
+                isNight
+                  ? 'border-gray-600 theme-bg-primary hover:theme-accent-bg-secondary/20'
+                  : 'border-border bg-background hover:bg-accent'
+              }`}
+              onClick={() => {
+                setSelectedEvent({
+                  id: event._id,
+                  locationCoords: event.locationCoords,
+                  stravaMap: {
+                    id: event.stravaMap.id,
+                    summary_polyline: event.stravaMap.summary_polyline,
+                    polyline: event.stravaMap.polyline,
+                    resource_state: event.stravaMap.resource_state,
+                  },
+                });
+                setIsModalOpen(true);
+              }}
+            >
+              <MapPin size={16} className="mr-1" />
+              Mapa
+            </button>
+          )}
         </div>
       </div>
       <EventModal

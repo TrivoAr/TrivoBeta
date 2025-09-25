@@ -254,7 +254,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
 
   if (loading)
     return (
-      <main className="bg-[#FEFBF9] min-h-screen px-4 py-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen px-4 py-6 w-[390px] mx-auto">
         {/* Back button */}
         <Skeleton circle height={32} width={32} className="mb-4" />
         {/* Título */}
@@ -311,7 +311,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
   };
 
   return (
-    <main className="bg-[#FEFBF9] min-h-screen text-black  w-[390px] mx-auto">
+    <main className="bg-background min-h-screen text-foreground  w-[390px] mx-auto">
       <div className="relative w-full h-[176px] ">
         <Image
           src={event.imagen}
@@ -451,13 +451,13 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
             </svg>
       <span>{event.localidad}</span>
     </div>
-    <div className="w-[90%] border-b border-gray-300 mt-4"></div>
+    <div className="w-[90%] border-b border-border mt-4"></div>
   </div>
 
   {/* Organizador */}
   <div className="w-full flex flex-col items-center mt-6">
     <div className="flex items-center gap-3 w-[90%]">
-      <div className="h-20 w-20 bg-white shadow-md rounded-full flex justify-center items-center border">
+      <div className="h-20 w-20 bg-card shadow-md rounded-full flex justify-center items-center border">
         <img
           src={event.creadorId.imagen || "/assets/icons/person_24dp_E8EAED.svg"}
           alt="Organizador"
@@ -468,7 +468,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
         Organizado por {event.creadorId.firstname} {event.creadorId.lastname}
       </span>
     </div>
-    <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+    <div className="w-[90%] border-b border-border mt-6"></div>
   </div>
 
   {/* Detalles del evento */}
@@ -602,7 +602,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
       </div>
       {/* Agregar más detalles como fecha, duración, dificultad si están disponibles */}
     </div>
-    <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+    <div className="w-[90%] border-b border-border mt-6"></div>
   </div>
 
   {/* Descripción */}
@@ -610,7 +610,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     <div className="w-[90%] font-extralight text-justify">
       {event.descripcion}
     </div>
-    <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+    <div className="w-[90%] border-b border-border mt-6"></div>
   </div>
 
  {/* Punto de encuentro */}
@@ -619,7 +619,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     <p className="mb-3">
       <span className="text-lg font-normal">Punto de encuentro</span>
       <br />
-      <span className="text-sm text-gray-600 font-extralight">
+      <span className="text-sm text-muted-foreground font-extralight">
         {event.ubicacion}
       </span>
     </p>
@@ -646,7 +646,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         No hay coordenadas disponibles.
                       </p>
                     )}
@@ -659,7 +659,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
         </div> */}
       </div>
     ) : (
-      <p className="text-sm text-gray-500">No hay coordenadas disponibles.</p>
+      <p className="text-sm text-muted-foreground">No hay coordenadas disponibles.</p>
     )}
   </div>
 
@@ -688,7 +688,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
   {/* Grupo de Whatsapp */}
   <div className="flex flex-col items-center mt-6 w-full">
   <div className="w-[90%]">
-    <h2 className="text-lg font-semibold mb-2 text-gray-700">Grupo de Whatsapp</h2>
+    <h2 className="text-lg font-semibold mb-2 text-foreground">Grupo de Whatsapp</h2>
     
     {event.whatsappLink ? (
       <div className="flex justify-center mt-2">
@@ -696,13 +696,13 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
           href={event.whatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 border w-full py-3 rounded-lg font-medium bg-white shadow-md justify-center hover:bg-green-50 transition text-gray-500"
+          className="inline-flex items-center gap-2 border w-full py-3 rounded-lg font-medium bg-card shadow-md justify-center hover:bg-green-50 transition text-muted-foreground"
         >
           Unirse
         </a>
       </div>
     ) : (
-      <p className="text-center text-gray-500 mt-3">
+      <p className="text-center text-muted-foreground mt-3">
         No tiene un grupo vinculado
       </p>
     )}
@@ -733,7 +733,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
             ))}
             {miembros.length > 4 && (
               <div
-                className="h-16 w-16 rounded-full bg-white text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md cursor-pointer"
+                className="h-16 w-16 rounded-full bg-card text-lg flex items-center justify-center border text-orange-500 font-semibold shadow-md cursor-pointer"
                 onClick={() => router.push(`/social/miembros/${event._id}`)}
               >
                 +{miembros.length - 4}
@@ -741,11 +741,11 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
             )}
           </>
         ) : (
-          <span className="text-gray-500">Nadie se ha unido aún</span>
+          <span className="text-muted-foreground">Nadie se ha unido aún</span>
         )}
       </div>
     </div>
-    <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+    <div className="w-[90%] border-b border-border mt-6"></div>
   </div>
 
   {/* Bar */}
@@ -755,7 +755,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
         <p className="text-lg font-normal mb-3">Bar para el after</p>
 
         {/* Información del bar */}
-        <div className="bg-white rounded-[20px] p-4 shadow-md border">
+        <div className="bg-card rounded-[20px] p-4 shadow-md border">
           <div className="flex items-center gap-3 mb-3">
             {/* Logo del bar */}
             <div
@@ -777,8 +777,8 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
 
             {/* Información del bar */}
             <div className="flex-1">
-              <h3 className="font-medium text-gray-800">{event.bar.name}</h3>
-              <p className="text-sm text-gray-600 flex items-center gap-1">
+              <h3 className="font-medium text-foreground">{event.bar.name}</h3>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -830,7 +830,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
           )}
         </div>
       </div>
-      <div className="w-[90%] border-b border-gray-300 mt-6"></div>
+      <div className="w-[90%] border-b border-border mt-6"></div>
     </div>
   )}
 
@@ -903,13 +903,13 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     session ? "bottom-[80px]" : "bottom-0"
   }`}
 >
-  <div className="bg-[#FEFBF9] shadow-lg h-[120px] border-t px-4 flex justify-between items-center">
+  <div className="bg-background shadow-lg h-[120px] border-t px-4 flex justify-between items-center">
     {/* Información del evento */}
     <div className="w-1/2 flex flex-col">
-      <p className="font-semibold text-gray-800 text-xl underline">
+      <p className="font-semibold text-foreground text-xl underline">
         ${Number(event.precio).toLocaleString("es-AR")}
       </p>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground">
         {parseLocalDate(event.fecha)}, {event.hora} hs
       </p>
 
@@ -933,7 +933,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
       {session?.user?.id === event.creadorId._id ? (
         <button
           onClick={() => router.push(`/social/editar/${event._id}`)}
-          className="bg-white shadow-md text-sm rounded-lg flex items-center justify-center border w-[90px] h-[40px] font-semibold hover:bg-gray-100 transition"
+          className="bg-card shadow-md text-sm rounded-lg flex items-center justify-center border w-[90px] h-[40px] font-semibold hover:bg-muted transition"
         >
           Editar
         </button>
@@ -945,7 +945,7 @@ const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
                   disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
                   className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
         ${yaUnido === "no" ? "bg-[#C95100] text-white" : ""}
-        ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
+        ${yaUnido === "pendiente" ? "bg-muted text-white opacity-50" : ""}
         ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}
         ${yaUnido === "si" ? "bg-[#001A46] text-white" : ""}
       `}

@@ -68,14 +68,14 @@ export const DashboardCard = ({
   };
 
   return (
-    <div 
-      className={`flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border bg-white mx-auto mb-4 ${
+    <div
+      className={`flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border border-border bg-card mx-auto mb-4 ${
         onClick ? 'cursor-pointer hover:shadow-lg transition-shadow duration-200' : ''
       }`}
       onClick={handleCardClick}
     >
       {/* Imagen */}
-      <div className="relative h-[115px] bg-slate-200">
+      <div className="relative h-[115px] bg-muted">
         {imageLoading && (
           <div className="absolute inset-0">
             <Skeleton height={115} width={310} />
@@ -101,7 +101,7 @@ export const DashboardCard = ({
       {onToggleFavorite && (
         <button
           onClick={onToggleFavorite}
-          className="absolute top-[10px] right-[10px] p-2 rounded-full bg-white/90 hover:bg-white transition-colors shadow-sm"
+          className="absolute top-[10px] right-[10px] p-2 rounded-full bg-card/90 hover:bg-card transition-colors shadow-sm"
         >
           <svg
             width="24"
@@ -119,32 +119,32 @@ export const DashboardCard = ({
       {/* Contenido */}
       <div className="p-3 flex flex-col gap-1">
         <div className="mt-1">
-          <h1 className="font-semibold text-lg text-gray-800 truncate">
+          <h1 className="font-semibold text-lg text-foreground truncate">
             {title}
           </h1>
-          
-          <div className="flex items-center text-sm text-gray-600 mt-1">
+
+          <div className="flex items-center text-sm text-muted-foreground mt-1">
             <span className="mr-2">📍</span>
             <span className="truncate">{localidad}</span>
           </div>
 
           {/* Información específica por tipo */}
           {(date || time) && (
-            <div className="flex items-center text-sm text-gray-600 mt-1">
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
               <span className="mr-2">🕒</span>
               <span>{date} {time}</span>
             </div>
           )}
 
           {price && (
-            <div className="flex items-center text-sm text-gray-600 mt-1">
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
               <span className="mr-2">💰</span>
               <span>${price}</span>
             </div>
           )}
 
           {teacher && (
-            <div className="flex items-center text-sm text-gray-600 mt-1">
+            <div className="flex items-center text-sm text-muted-foreground mt-1">
               <span className="mr-2">👨‍🏫</span>
               <span className="truncate">{teacher}</span>
             </div>
@@ -158,7 +158,7 @@ export const DashboardCard = ({
           {onViewMembers && (
             <button
               onClick={onViewMembers}
-              className="p-2 rounded-[20px] bg-white/90 hover:bg-white transition-colors shadow-sm"
+              className="p-2 rounded-[20px] bg-card/90 hover:bg-card transition-colors shadow-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C95100" strokeWidth="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -172,7 +172,7 @@ export const DashboardCard = ({
           {onEdit && (
             <button
               onClick={onEdit}
-              className="p-2 rounded-[20px] bg-white/90 hover:bg-white transition-colors shadow-sm"
+              className="p-2 rounded-[20px] bg-card/90 hover:bg-card transition-colors shadow-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C95100" strokeWidth="2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -184,7 +184,7 @@ export const DashboardCard = ({
           {onDelete && (
             <button
               onClick={onDelete}
-              className="p-2 rounded-[20px] bg-white/90 hover:bg-white transition-colors shadow-sm"
+              className="p-2 rounded-[20px] bg-card/90 hover:bg-card transition-colors shadow-sm"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
                 <polyline points="3,6 5,6 21,6" />

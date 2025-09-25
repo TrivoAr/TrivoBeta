@@ -138,7 +138,7 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
   const renderCard = () => {
     return (
-      <div className="w-full bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow h-[210px]">
+      <div className="w-full bg-card rounded-xl shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow h-[210px]">
         <div className="flex">
           <div className="w-[160px] h-[210px] flex-shrink-0 relative overflow-hidden">
             <img
@@ -153,17 +153,17 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   {type === "academia" && (
-                    <span className="text-xs text-orange-600 font-semibold bg-orange-100 px-3 py-1 rounded-full">
+                    <span className="text-xs text-orange-600 font-semibold bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 px-3 py-1 rounded-full">
                       Academia
                     </span>
                   )}
                   {type === "salida" && (
-                    <span className="text-xs text-blue-600 font-semibold bg-blue-100 px-3 py-1 rounded-full">
+                    <span className="text-xs text-blue-600 font-semibold bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 px-3 py-1 rounded-full">
                       Salida Social
                     </span>
                   )}
                   {type === "team-social" && (
-                    <span className="text-xs text-green-600 font-semibold bg-green-100 px-3 py-1 rounded-full">
+                    <span className="text-xs text-green-600 font-semibold bg-green-100 dark:bg-green-900/20 dark:text-green-400 px-3 py-1 rounded-full">
                       Team Social
                     </span>
                   )}
@@ -171,13 +171,13 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "academia" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-gray-900">{data.nombre_academia}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre_academia}</h3>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Tag size={14} />
                         {data.tipo_disciplina}
                       </p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <MapPin size={14} />
                         {data.localidad}
                       </p>
@@ -187,17 +187,17 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "salida" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-gray-900">{data.nombre}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre}</h3>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <MapPin size={14} />
                         {data.localidad}
                       </p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Clock size={14} />
                         {data.fecha}
                       </p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Tag size={14} />
                         {data.deporte}
                       </p>
@@ -207,13 +207,13 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "team-social" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-gray-900">{data.nombre}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre}</h3>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <MapPin size={14} />
                         {data.lugar}
                       </p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Tag size={14} />
                         {data.deporte}
                       </p>

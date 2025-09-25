@@ -100,7 +100,7 @@ export default function EventPage({ params }: PageProps) {
     <div className="w-[390px] p-4 relative">
       <button
         onClick={() => router.back()}
-        className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px]"
+        className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px]"
       >
         <img
           src="/assets/icons/Collapse Arrow.svg"

@@ -191,7 +191,7 @@ export default function PushManager() {
       <button
         onClick={subscribeUser}
         disabled={busy || subscribed}
-        className="w-full flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm hover:bg-black/5 disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 border px-4 py-3 text-sm hover:bg-black/5 disabled:opacity-60 rounded-[30px]"
       >
         {subscribed ? "✅ Notificaciones activadas" : busy ? "Activando…" : "🔔 Activar notificaciones"}
       </button>

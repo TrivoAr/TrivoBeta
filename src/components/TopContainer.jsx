@@ -176,7 +176,7 @@ useEffect(() => {
 
 
   return (
-    <div className="containerTop  bg-[#FEFBF9] h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
+    <div className="containerTop bg-background h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
       {/* Avatar */}
       
 
@@ -230,7 +230,7 @@ useEffect(() => {
             name="localidad"
             value={selectedLocalidad}
             onChange={(e) => setSelectedLocalidad(e.target.value)}
-            className="w-auto px-2 py-1 rounded-[15px] focus:outline-none bg-[#FEFBF9] text-center text-[12px] border border-gray-200"
+            className="w-auto px-2 py-1 rounded-[15px] focus:outline-none bg-background text-center text-[12px] border border-gray-200"
           >
             {/* Ciudad detectada automáticamente */}
             {locationData?.city && (
@@ -273,7 +273,7 @@ useEffect(() => {
         className="relative cursor-pointer"
         onClick={handleNotificationClick}
       >
-        <div className="h-[48px] w-[48px] bg-white border rounded-[15px] shadow-md flex justify-center items-center">
+        <div className="h-[48px] w-[48px] bg-card border rounded-[15px] shadow-md flex justify-center items-center">
           <img
             className="h-[26px] w-[26px] color-black"
             src="/assets/icons/Notification.svg"
@@ -290,7 +290,7 @@ useEffect(() => {
       {/* Modal de explicación GPS */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
+          <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg className="w-8 h-8 text-[#C95100]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,7 +334,7 @@ useEffect(() => {
             <div className="flex gap-3">
               <button
                 onClick={dismissLocationModal}
-                className="flex-1 py-2 px-4 border rounded-[20px] text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2 px-4 border rounded-[20px] text-muted-foreground hover:bg-muted transition-colors"
               >
                 Más tarde
               </button>
