@@ -1,0 +1,125 @@
+:root {
+  --theme-bg-primary: hsl(var(--background));
+  --theme-bg-secondary: hsl(var(--card));
+  --theme-text-primary: hsl(var(--foreground));
+  --theme-text-secondary: hsl(var(--muted-foreground));
+  --theme-accent-primary: #ea580c;
+  --theme-accent-secondary: #f97316;
+  --theme-glow: 0 0 20px rgba(249, 115, 22, 0.1);
+}
+
+[data-theme="night"] {
+  --theme-bg-primary: #0a0a1a;
+  --theme-bg-secondary: #1a1a2e;
+  --theme-text-primary: #e2e8f0;
+  --theme-text-secondary: #94a3b8;
+  --theme-accent-primary: #069494;
+  --theme-accent-secondary: #01796F;
+  --theme-glow: 0 0 20px rgba(6, 148, 148, 0.2);
+}
+
+[data-theme="halloween"] {
+  --theme-bg-primary: #1a0a0a;
+  --theme-bg-secondary: #2d1b1b;
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #e2e8f0;
+  --theme-accent-primary: #fb923c;
+  --theme-accent-secondary: #a855f7;
+  --theme-glow: 0 0 20px rgba(251, 146, 60, 0.3);
+}
+
+[data-theme="christmas"] {
+  --theme-bg-primary: #0a1a0a;
+  --theme-bg-secondary: #1b2d1b;
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #e2e8f0;
+  --theme-accent-primary: #dc2626;
+  --theme-accent-secondary: #16a34a;
+  --theme-glow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="newyear"] {
+  --theme-bg-primary: #1a1a0a;
+  --theme-bg-secondary: #2d2d1b;
+  --theme-text-primary: #fef3c7;
+  --theme-text-secondary: #fde68a;
+  --theme-accent-primary: #f59e0b;
+  --theme-accent-secondary: #eab308;
+  --theme-glow: 0 0 20px rgba(234, 179, 8, 0.3);
+}
+
+.theme-glow {
+  box-shadow: var(--theme-glow);
+}
+
+.theme-bg-primary {
+  background-color: var(--theme-bg-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--theme-bg-secondary);
+}
+
+.theme-text-primary {
+  color: var(--theme-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.theme-accent-primary {
+  color: var(--theme-accent-primary);
+}
+
+.theme-accent-secondary {
+  color: var(--theme-accent-secondary);
+}
+
+.theme-accent-bg-primary {
+  background-color: var(--theme-accent-primary);
+}
+
+.theme-accent-bg-secondary {
+  background-color: var(--theme-accent-secondary);
+}
+
+.night-badge {
+  @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full;
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary));
+  color: white;
+  box-shadow: var(--theme-glow);
+}
+
+.seasonal-gradient {
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="night"] .night-pulse {
+    animation: night-pulse 2s ease-in-out infinite alternate;
+  }
+
+  [data-theme="halloween"] .halloween-flicker {
+    animation: halloween-flicker 3s ease-in-out infinite;
+  }
+
+  [data-theme="newyear"] .sparkle {
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes night-pulse {
+  0% { box-shadow: var(--theme-glow); }
+  100% { box-shadow: 0 0 30px rgba(6, 148, 148, 0.4); }
+}
+
+@keyframes halloween-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
