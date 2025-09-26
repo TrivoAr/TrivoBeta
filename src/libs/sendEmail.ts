@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,7 +13,7 @@ export async function sendEmail({
 }) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Soporte Trivo <noreply@trivo.com.ar>',
+      from: "Soporte Trivo <noreply@trivo.com.ar>",
       to,
       subject,
       html,
@@ -30,4 +30,3 @@ export async function sendEmail({
     throw err;
   }
 }
-

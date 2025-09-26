@@ -41,7 +41,6 @@ async function addSingleBar(barData: {
     console.log(`🆔 ID: ${newBar._id}`);
 
     return newBar;
-
   } catch (error) {
     console.error("❌ Error al agregar bar:", error);
     throw error;
@@ -55,14 +54,14 @@ if (require.main === module) {
     name: "Mi Nuevo Bar",
     locationCoords: {
       lat: -34.6037,
-      lng: -58.3816
+      lng: -58.3816,
     },
     logo: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400",
     imagenesCarrusel: [
       "https://images.unsplash.com/photo-1566737236500-c8ac43014a8e?w=800",
-      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800"
+      "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800",
     ],
-    direccion: "Av. Ejemplo 1234, Buenos Aires"
+    direccion: "Av. Ejemplo 1234, Buenos Aires",
   };
 
   addSingleBar(exampleBar)

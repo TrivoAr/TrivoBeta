@@ -9,7 +9,8 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Desestructuración de los datos que llegan del frontend
-    const { email, password, firstname, lastname, rol, telnumber } = await request.json();
+    const { email, password, firstname, lastname, rol, telnumber } =
+      await request.json();
 
     // Validación de la contraseña
     if (password.length < 6) {
@@ -32,7 +33,6 @@ export async function POST(request: Request) {
     // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 12);
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(firstname)}&length=1&background=random&color=fff&size=128`;
-
 
     // Crear el nuevo usuario
     const user = new User({

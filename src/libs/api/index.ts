@@ -1,7 +1,7 @@
 // API utilities exports
-export * from './ApiHandler.standalone';
-export * from './middlewares';
-export * from './ApiHandlerPresets';
+export * from "./ApiHandler.standalone";
+export * from "./middlewares";
+export * from "./ApiHandlerPresets";
 
 // Re-export types for convenience
 export type {
@@ -11,9 +11,7 @@ export type {
   ApiContext,
   UserRole,
   Resource,
-  Permission
-} from './ApiHandler.standalone';
+  Permission,
+} from "./ApiHandler.standalone";
 
-export type {
-  Middleware
-} from './middlewares';
+export type { Middleware } from "./middlewares";

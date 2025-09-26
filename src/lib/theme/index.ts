@@ -1,5 +1,5 @@
-import { isAfterTime } from './time';
-import type { SeasonalTheme, ActiveTheme, ThemeFlags, Event } from './types';
+import { isAfterTime } from "./time";
+import type { SeasonalTheme, ActiveTheme, ThemeFlags, Event } from "./types";
 
 const NIGHT_START_HOUR = 18;
 
@@ -13,7 +13,7 @@ export function isNightEvent(event: Event): boolean {
 
 export function getSeasonalTheme(now: Date, flags: ThemeFlags): SeasonalTheme {
   if (!flags.enabled) {
-    return 'none';
+    return "none";
   }
 
   const currentISOString = now.toISOString();
@@ -26,11 +26,11 @@ export function getSeasonalTheme(now: Date, flags: ThemeFlags): SeasonalTheme {
   }
 
   // Si no hay rango activo, usar tema manual como fallback
-  if (flags.activeSeasonalTheme !== 'none') {
+  if (flags.activeSeasonalTheme !== "none") {
     return flags.activeSeasonalTheme;
   }
 
-  return 'none';
+  return "none";
 }
 
 export function resolveActiveTheme(options: {
@@ -42,16 +42,16 @@ export function resolveActiveTheme(options: {
   const { now, flags, event, forceNight } = options;
 
   if (forceNight || (event && isNightEvent(event))) {
-    return 'night';
+    return "night";
   }
 
   const seasonal = getSeasonalTheme(now, flags);
-  return seasonal === 'none' ? 'base' : seasonal;
+  return seasonal === "none" ? "base" : seasonal;
 }
 
 export function getThemeDataAttribute(theme: ActiveTheme): string | undefined {
-  return theme === 'base' ? undefined : theme;
+  return theme === "base" ? undefined : theme;
 }
 
-export * from './types';
-export * from './time';
+export * from "./types";
+export * from "./time";

@@ -1,8 +1,11 @@
 const { readFileSync, writeFileSync } = require("fs");
 const axios = require("axios");
 
-const accessToken = process.env.MP_ACCESS_TOKEN || "APP_USR-4970861093465590-010315-67d54047f2b166ed4a4b294ad01bf781-2190675569";
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://klubo-mvp-v1.vercel.app/";
+const accessToken =
+  process.env.MP_ACCESS_TOKEN ||
+  "APP_USR-4970861093465590-010315-67d54047f2b166ed4a4b294ad01bf781-2190675569";
+const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://klubo-mvp-v1.vercel.app/";
 
 const api = {
   message: {
@@ -41,7 +44,7 @@ const api = {
           },
           auto_return: "approved",
         };
-    
+
         const response = await axios.post(
           "https://api.mercadopago.com/checkout/preferences",
           preferenceData,
@@ -52,18 +55,18 @@ const api = {
             },
           }
         );
-    
+
         if (!response.data.init_point) {
           throw new Error("No se pudo generar el punto de inicio de pago");
         }
-    
+
         return response.data.init_point;
       } catch (error) {
         console.error("Error al crear la preferencia:", error);
         throw new Error("Error al crear la preferencia de pago");
       }
-    }
-  }
+    },
+  },
 };
 
 module.exports = api;

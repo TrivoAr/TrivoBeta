@@ -1,26 +1,23 @@
-const nextJest = require('next/jest')
+const nextJest = require("next/jest");
 
 const createJestConfig = nextJest({
-  dir: './',
-})
+  dir: "./",
+});
 
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+  testEnvironment: "jsdom",
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
-  testMatch: [
-    '**/__tests__/**/*.(ts|tsx|js)',
-    '**/*.(test|spec).(ts|tsx|js)'
-  ],
+  testMatch: ["**/__tests__/**/*.(ts|tsx|js)", "**/*.(test|spec).(ts|tsx|js)"],
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/*.stories.{ts,tsx}',
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.stories.{ts,tsx}",
   ],
-  coverageReporters: ['text', 'lcov'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-}
+  coverageReporters: ["text", "lcov"],
+  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
+};
 
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);

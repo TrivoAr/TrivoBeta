@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-export default function TicketUserPage({ params }: { params: { code: string } }) {
+export default function TicketUserPage({
+  params,
+}: {
+  params: { code: string };
+}) {
   const { code } = params;
   const [state, setState] = useState<{
     loading: boolean;
@@ -13,7 +17,9 @@ export default function TicketUserPage({ params }: { params: { code: string } })
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+      const res = await fetch(`/api/tickets/verify/${code}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       setState({ loading: false, ...data });
     })();
@@ -55,7 +61,9 @@ export default function TicketUserPage({ params }: { params: { code: string } })
 
       {/* Nombre salida */}
       {state.salidaNombre && (
-        <h2 className="text-xl font-bold text-slate-900">{state.salidaNombre}</h2>
+        <h2 className="text-xl font-bold text-slate-900">
+          {state.salidaNombre}
+        </h2>
       )}
 
       {/* Título */}

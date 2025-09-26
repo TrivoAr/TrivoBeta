@@ -10,10 +10,10 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const { searchParams } = new URL(req.url);
-    const lat = searchParams.get('lat');
-    const lng = searchParams.get('lng');
-    const radius = searchParams.get('radius'); // en kilómetros
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
+    const radius = searchParams.get("radius"); // en kilómetros
+    const limit = parseInt(searchParams.get("limit") || "20");
 
     let bares;
 
@@ -26,16 +26,18 @@ export async function GET(req: NextRequest) {
         geoLocation: {
           $near: {
             $geometry: {
-              type: 'Point',
-              coordinates: [parseFloat(lng), parseFloat(lat)]
+              type: "Point",
+              coordinates: [parseFloat(lng), parseFloat(lat)],
             },
-            $maxDistance: radiusInMeters
-          }
-        }
+            $maxDistance: radiusInMeters,
+          },
+        },
       }).limit(limit);
     } else {
       // Obtener todos los bares activos
-      bares = await Bares.find({ activo: true }).limit(limit).sort({ createdAt: -1 });
+      bares = await Bares.find({ activo: true })
+        .limit(limit)
+        .sort({ createdAt: -1 });
     }
 
     return NextResponse.json(bares, { status: 200 });
@@ -64,13 +66,7 @@ export async function POST(req: NextRequest) {
     // }
 
     const data = await req.json();
-    const {
-      name,
-      locationCoords,
-      logo,
-      imagenesCarrusel,
-      direccion
-    } = data;
+    const { name, locationCoords, logo, imagenesCarrusel, direccion } = data;
 
     // Validaciones básicas
     if (!name || !locationCoords?.lat || !locationCoords?.lng) {
@@ -99,7 +95,7 @@ export async function POST(req: NextRequest) {
       locationCoords,
       logo,
       imagenesCarrusel,
-      direccion
+      direccion,
     });
 
     await nuevoBar.save();
@@ -107,9 +103,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(nuevoBar, { status: 201 });
   } catch (error) {
     console.error("[CREATE_BAR_ERROR]", error);
-    return NextResponse.json(
-      { error: "Error al crear bar" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear bar" }, { status: 500 });
   }
 }

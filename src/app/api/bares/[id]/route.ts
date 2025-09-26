@@ -25,10 +25,7 @@ export async function GET(
     const bar = await Bares.findById(id);
 
     if (!bar) {
-      return NextResponse.json(
-        { error: "Bar no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Bar no encontrado" }, { status: 404 });
     }
 
     return NextResponse.json(bar, { status: 200 });
@@ -72,32 +69,28 @@ export async function PATCH(
 
     // Campos permitidos para actualizar
     const camposPermitidos = [
-      'name',
-      'locationCoords',
-      'logo',
-      'imagenesCarrusel',
-      'direccion',
-      'activo'
+      "name",
+      "locationCoords",
+      "logo",
+      "imagenesCarrusel",
+      "direccion",
+      "activo",
     ];
 
     const updateData: any = {};
-    camposPermitidos.forEach(campo => {
+    camposPermitidos.forEach((campo) => {
       if (data[campo] !== undefined) {
         updateData[campo] = data[campo];
       }
     });
 
-    const barActualizado = await Bares.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const barActualizado = await Bares.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!barActualizado) {
-      return NextResponse.json(
-        { error: "Bar no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Bar no encontrado" }, { status: 404 });
     }
 
     return NextResponse.json(barActualizado, { status: 200 });
@@ -145,10 +138,7 @@ export async function DELETE(
     );
 
     if (!barEliminado) {
-      return NextResponse.json(
-        { error: "Bar no encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Bar no encontrado" }, { status: 404 });
     }
 
     return NextResponse.json(

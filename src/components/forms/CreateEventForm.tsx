@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
-import { BaseFormField } from './BaseFormField';
-import { LocationPicker } from './LocationPicker';
-import { DateTimePicker } from './DateTimePicker';
-import { ImageUploader } from './ImageUploader';
-import { useSocialEventSubmission } from '@/hooks/useFormSubmission';
+import React from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { BaseFormField } from "./BaseFormField";
+import { LocationPicker } from "./LocationPicker";
+import { DateTimePicker } from "./DateTimePicker";
+import { ImageUploader } from "./ImageUploader";
+import { useSocialEventSubmission } from "@/hooks/useFormSubmission";
 
 /**
  * Interfaces para el formulario de crear evento
@@ -52,31 +52,31 @@ export interface CreateEventFormProps {
  * Opciones para deportes
  */
 const deporteOptions = [
-  { value: '', label: 'Seleccionar deporte' },
-  { value: 'running', label: 'Running' },
-  { value: 'ciclismo', label: 'Ciclismo' },
-  { value: 'natacion', label: 'Natación' },
-  { value: 'futbol', label: 'Fútbol' },
-  { value: 'tenis', label: 'Tenis' },
-  { value: 'basquet', label: 'Básquet' },
-  { value: 'voley', label: 'Vóley' },
-  { value: 'crossfit', label: 'CrossFit' },
-  { value: 'yoga', label: 'Yoga' },
-  { value: 'pilates', label: 'Pilates' },
-  { value: 'escalada', label: 'Escalada' },
-  { value: 'senderismo', label: 'Senderismo' },
-  { value: 'otro', label: 'Otro' }
+  { value: "", label: "Seleccionar deporte" },
+  { value: "running", label: "Running" },
+  { value: "ciclismo", label: "Ciclismo" },
+  { value: "natacion", label: "Natación" },
+  { value: "futbol", label: "Fútbol" },
+  { value: "tenis", label: "Tenis" },
+  { value: "basquet", label: "Básquet" },
+  { value: "voley", label: "Vóley" },
+  { value: "crossfit", label: "CrossFit" },
+  { value: "yoga", label: "Yoga" },
+  { value: "pilates", label: "Pilates" },
+  { value: "escalada", label: "Escalada" },
+  { value: "senderismo", label: "Senderismo" },
+  { value: "otro", label: "Otro" },
 ];
 
 /**
  * Opciones para dificultad
  */
 const dificultadOptions = [
-  { value: '', label: 'Seleccionar dificultad' },
-  { value: 'principiante', label: 'Principiante' },
-  { value: 'intermedio', label: 'Intermedio' },
-  { value: 'avanzado', label: 'Avanzado' },
-  { value: 'experto', label: 'Experto' }
+  { value: "", label: "Seleccionar dificultad" },
+  { value: "principiante", label: "Principiante" },
+  { value: "intermedio", label: "Intermedio" },
+  { value: "avanzado", label: "Avanzado" },
+  { value: "experto", label: "Experto" },
 ];
 
 /**
@@ -87,24 +87,24 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
   onError,
   initialData,
   sponsors = [],
-  userTelefono = ''
+  userTelefono = "",
 }) => {
   const methods = useForm<CreateEventFormData>({
     defaultValues: {
-      nombreSalida: '',
-      fechaHora: '',
+      nombreSalida: "",
+      fechaHora: "",
       precio: 0,
-      deporte: '',
-      duracion: '',
-      descripcion: '',
-      localidad: '',
-      provincia: '',
-      dificultad: '',
+      deporte: "",
+      duracion: "",
+      descripcion: "",
+      localidad: "",
+      provincia: "",
+      dificultad: "",
       telefonoOrganizador: userTelefono,
       cupo: 10,
       sponsors: [],
-      ...initialData
-    }
+      ...initialData,
+    },
   });
 
   const { handleSubmit } = methods;
@@ -124,14 +124,16 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Información básica */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">Información Básica</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Información Básica
+          </h3>
 
           <BaseFormField
             name="nombreSalida"
             label="Nombre del evento"
             type="text"
             placeholder="Ej: Salida de running por el parque"
-            validation={{ required: 'El nombre del evento es requerido' }}
+            validation={{ required: "El nombre del evento es requerido" }}
           />
 
           <BaseFormField
@@ -139,7 +141,7 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
             label="Deporte"
             type="select"
             options={deporteOptions}
-            validation={{ required: 'El deporte es requerido' }}
+            validation={{ required: "El deporte es requerido" }}
           />
 
           <BaseFormField
@@ -148,32 +150,36 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
             type="textarea"
             rows={4}
             placeholder="Describe tu evento..."
-            validation={{ required: 'La descripción es requerida' }}
+            validation={{ required: "La descripción es requerida" }}
           />
         </div>
 
         {/* Fecha y ubicación */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">Fecha y Ubicación</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Fecha y Ubicación
+          </h3>
 
           <DateTimePicker
             name="fechaHora"
             label="Fecha y hora"
             type="datetime-local"
-            validation={{ required: 'La fecha y hora son requeridas' }}
+            validation={{ required: "La fecha y hora son requeridas" }}
           />
 
           <LocationPicker
             name="ubicacion"
             label="Ubicación del evento"
-            validation={{ required: 'La ubicación es requerida' }}
+            validation={{ required: "La ubicación es requerida" }}
             enableGPS
           />
         </div>
 
         {/* Precio y participantes */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">Precio y Participantes</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Precio y Participantes
+          </h3>
 
           <BaseFormField
             name="precio"
@@ -181,7 +187,7 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
             type="number"
             min={0}
             placeholder="0.00"
-            validation={{ required: 'El precio es requerido' }}
+            validation={{ required: "El precio es requerido" }}
           />
 
           <BaseFormField
@@ -190,7 +196,7 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
             type="number"
             min={1}
             placeholder="10"
-            validation={{ required: 'El cupo es requerido' }}
+            validation={{ required: "El cupo es requerido" }}
           />
         </div>
 
@@ -207,7 +213,7 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({
           disabled={submitting}
           className="w-full px-4 py-3 bg-[#C95100] text-white rounded-md font-medium hover:bg-[#A03D00] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? 'Creando evento...' : 'Crear Evento'}
+          {submitting ? "Creando evento..." : "Crear Evento"}
         </button>
       </form>
     </FormProvider>

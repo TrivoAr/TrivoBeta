@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { forwardRef, ReactNode } from 'react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
+import React, { forwardRef, ReactNode } from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export interface BaseCardProps {
   /**
@@ -142,20 +142,20 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
       default: "bg-white border border-gray-200 shadow-sm",
       bordered: "bg-white border-2 border-gray-300",
       elevated: "bg-white shadow-lg border border-gray-100",
-      flat: "bg-gray-50"
+      flat: "bg-gray-50",
     };
 
     const sizes = {
       sm: "w-[280px]",
       default: "w-[320px]",
-      lg: "w-[380px]"
+      lg: "w-[380px]",
     };
 
     const aspectRatios = {
       "1/1": "aspect-square",
       "4/3": "aspect-[4/3]",
       "16/9": "aspect-[16/9]",
-      "3/2": "aspect-[3/2]"
+      "3/2": "aspect-[3/2]",
     };
 
     const baseClasses = cn(
@@ -170,7 +170,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
         "cursor-pointer",
         "hover:shadow-md hover:scale-[1.02]",
         "active:scale-[0.98]",
-        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
       ],
       // Loading styles
       loading && "animate-pulse",
@@ -184,7 +184,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (clickable && onClick && (e.key === 'Enter' || e.key === ' ')) {
+      if (clickable && onClick && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         onClick();
       }
@@ -203,7 +203,9 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
       >
         {/* Image Section */}
         {image && (
-          <div className={cn("relative w-full", aspectRatios[imageAspectRatio])}>
+          <div
+            className={cn("relative w-full", aspectRatios[imageAspectRatio])}
+          >
             {loading && showImageSkeleton ? (
               <div className="w-full h-full bg-gray-200 animate-pulse" />
             ) : (
@@ -217,17 +219,11 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
             )}
 
             {/* Badge */}
-            {badge && (
-              <div className="absolute top-3 left-3 z-10">
-                {badge}
-              </div>
-            )}
+            {badge && <div className="absolute top-3 left-3 z-10">{badge}</div>}
 
             {/* Actions */}
             {actions && (
-              <div className="absolute top-3 right-3 z-10">
-                {actions}
-              </div>
+              <div className="absolute top-3 right-3 z-10">{actions}</div>
             )}
           </div>
         )}
@@ -236,17 +232,21 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
         <div className="p-4 flex-1 flex flex-col">
           {/* Header */}
           {header ? (
-            <div className="mb-3">
-              {header}
-            </div>
+            <div className="mb-3">{header}</div>
           ) : (
             (title || subtitle) && (
               <div className="mb-3">
                 {title && (
-                  <h3 className={cn(
-                    "font-semibold text-gray-900 line-clamp-2",
-                    size === "sm" ? "text-sm" : size === "lg" ? "text-lg" : "text-base"
-                  )}>
+                  <h3
+                    className={cn(
+                      "font-semibold text-gray-900 line-clamp-2",
+                      size === "sm"
+                        ? "text-sm"
+                        : size === "lg"
+                          ? "text-lg"
+                          : "text-base"
+                    )}
+                  >
                     {loading ? (
                       <div className="h-5 bg-gray-200 rounded animate-pulse" />
                     ) : (
@@ -255,11 +255,13 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
                   </h3>
                 )}
                 {subtitle && (
-                  <p className={cn(
-                    "text-gray-600 line-clamp-2",
-                    size === "sm" ? "text-xs" : "text-sm",
-                    title && "mt-1"
-                  )}>
+                  <p
+                    className={cn(
+                      "text-gray-600 line-clamp-2",
+                      size === "sm" ? "text-xs" : "text-sm",
+                      title && "mt-1"
+                    )}
+                  >
                     {loading ? (
                       <div className="h-4 bg-gray-200 rounded animate-pulse mt-1" />
                     ) : (
@@ -287,17 +289,13 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
 
           {/* Footer */}
           {footer && (
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              {footer}
-            </div>
+            <div className="mt-4 pt-3 border-t border-gray-100">{footer}</div>
           )}
         </div>
 
         {/* Actions in no-image cards */}
         {!image && actions && (
-          <div className="absolute top-4 right-4">
-            {actions}
-          </div>
+          <div className="absolute top-4 right-4">{actions}</div>
         )}
       </div>
     );
@@ -336,12 +334,12 @@ export const CardGrid: React.FC<CardGridProps> = ({
   children,
   columns = { sm: 1, md: 2, lg: 3, xl: 4 },
   gap = "md",
-  className
+  className,
 }) => {
   const gapClasses = {
     sm: "gap-3",
     md: "gap-4",
-    lg: "gap-6"
+    lg: "gap-6",
   };
 
   const gridClasses = cn(
@@ -354,20 +352,16 @@ export const CardGrid: React.FC<CardGridProps> = ({
     className
   );
 
-  return (
-    <div className={gridClasses}>
-      {children}
-    </div>
-  );
+  return <div className={gridClasses}>{children}</div>;
 };
 
 /**
  * Card Skeleton for loading states
  */
-export const CardSkeleton: React.FC<{ count?: number; variant?: BaseCardProps['variant'] }> = ({
-  count = 1,
-  variant = "default"
-}) => {
+export const CardSkeleton: React.FC<{
+  count?: number;
+  variant?: BaseCardProps["variant"];
+}> = ({ count = 1, variant = "default" }) => {
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (

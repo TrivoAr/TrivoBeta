@@ -5,7 +5,10 @@ import UsuarioGrupo from "@/models/users_grupo";
 import { getServerSession } from "next-auth/next"; // Obtener la sesión
 import { authOptions } from "@/libs/authOptions";
 import Academia from "@/models/academia";
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
 
   try {
@@ -13,10 +16,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json(grupos);
   } catch (error) {
     console.error("Error al obtener grupos:", error);
-    return NextResponse.json({ error: "Error al obtener grupos" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al obtener grupos" },
+      { status: 500 }
+    );
   }
 }
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     // Conectar a la base de datos
     await connectDB();
@@ -55,7 +64,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     // Verificar que el usuario sea dueño de la academia asociada al grupo
     const academiaId = grupo.academia_id.toString();
-    
+
     // Obtener la academia y comprobar si el usuario es el dueño
     const academia = await Academia.findById(academiaId);
     if (!academia) {

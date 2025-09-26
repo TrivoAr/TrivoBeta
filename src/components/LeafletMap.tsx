@@ -12,10 +12,13 @@ export default function LeafletMap({ lat, lng }: { lat: number; lng: number }) {
         iconRetinaUrl:
           "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const { MapContainer, TileLayer, Marker, useMap } = await import("react-leaflet");
+      const { MapContainer, TileLayer, Marker, useMap } = await import(
+        "react-leaflet"
+      );
       setLeafletComponents({ MapContainer, TileLayer, Marker, useMap });
     }
 

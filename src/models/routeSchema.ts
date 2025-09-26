@@ -17,8 +17,12 @@ const routeSchema = new Schema({
   end_latlng: [Number],
 
   createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-  
-  visibility: { type: String, enum: ["public", "group", "private"], default: "public" },
+
+  visibility: {
+    type: String,
+    enum: ["public", "group", "private"],
+    default: "public",
+  },
 
   photos: [String],
   likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
@@ -26,12 +30,12 @@ const routeSchema = new Schema({
     {
       user: { type: Schema.Types.ObjectId, ref: "User" },
       text: String,
-      createdAt: { type: Date, default: Date.now }
-    }
+      createdAt: { type: Date, default: Date.now },
+    },
   ],
 
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 const RouteSchema = models.RouteSchema || model("RouteSchema", routeSchema);
-export default RouteSchema
+export default RouteSchema;

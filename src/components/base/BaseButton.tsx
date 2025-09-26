@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import React, { forwardRef, ReactNode, ButtonHTMLAttributes } from 'react';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import React, { forwardRef, ReactNode, ButtonHTMLAttributes } from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-export interface BaseButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {
+export interface BaseButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "size"> {
   /**
    * Button content
    */
@@ -13,7 +14,15 @@ export interface BaseButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
    * Button variant
    * @default "default"
    */
-  variant?: "default" | "primary" | "secondary" | "danger" | "success" | "warning" | "ghost" | "outline";
+  variant?:
+    | "default"
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "success"
+    | "warning"
+    | "ghost"
+    | "outline";
   /**
    * Button size
    * @default "default"
@@ -97,14 +106,22 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
     ref
   ) => {
     const variants = {
-      default: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
-      primary: "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
-      secondary: "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
-      danger: "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
-      success: "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
-      warning: "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
-      ghost: "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
-      outline: "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500"
+      default:
+        "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+      primary:
+        "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+      secondary:
+        "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+      danger:
+        "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+      success:
+        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+      warning:
+        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+      ghost:
+        "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+      outline:
+        "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
     };
 
     const sizes = {
@@ -112,7 +129,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       sm: "px-3 py-1.5 text-sm",
       default: "px-4 py-2 text-sm",
       lg: "px-6 py-3 text-base",
-      xl: "px-8 py-4 text-lg"
+      xl: "px-8 py-4 text-lg",
     };
 
     const iconSizes = {
@@ -120,7 +137,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       sm: "w-4 h-4",
       default: "w-4 h-4",
       lg: "w-5 h-5",
-      xl: "w-6 h-6"
+      xl: "w-6 h-6",
     };
 
     const defaultSpinner = (
@@ -156,19 +173,21 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {loading && loadingPosition === "left" ? (
           <span className="mr-2">{spinner}</span>
         ) : (
-          leftIcon && <span className={cn("mr-2", iconSizes[size])}>{leftIcon}</span>
+          leftIcon && (
+            <span className={cn("mr-2", iconSizes[size])}>{leftIcon}</span>
+          )
         )}
 
         {/* Button text */}
-        <span>
-          {loading && loadingText ? loadingText : children}
-        </span>
+        <span>{loading && loadingText ? loadingText : children}</span>
 
         {/* Right content */}
         {loading && loadingPosition === "right" ? (
           <span className="ml-2">{spinner}</span>
         ) : (
-          rightIcon && <span className={cn("ml-2", iconSizes[size])}>{rightIcon}</span>
+          rightIcon && (
+            <span className={cn("ml-2", iconSizes[size])}>{rightIcon}</span>
+          )
         )}
       </>
     );
@@ -192,7 +211,8 @@ BaseButton.displayName = "BaseButton";
 /**
  * Link Button - Button that renders as a Next.js Link
  */
-export interface LinkButtonProps extends Omit<BaseButtonProps, 'onClick' | 'type'> {
+export interface LinkButtonProps
+  extends Omit<BaseButtonProps, "onClick" | "type"> {
   /**
    * Next.js href
    */
@@ -232,18 +252,33 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
     const linkTarget = external ? "_blank" : target;
     const linkRel = external ? "noopener noreferrer" : undefined;
 
-    if (external || href.startsWith('http')) {
-      const { variant = "default", size = "default", fullWidth = false, loading = false, disabled, ...restProps } = buttonProps;
+    if (external || href.startsWith("http")) {
+      const {
+        variant = "default",
+        size = "default",
+        fullWidth = false,
+        loading = false,
+        disabled,
+        ...restProps
+      } = buttonProps;
 
       const variants = {
-        default: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
-        primary: "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
-        secondary: "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
-        danger: "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
-        success: "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
-        warning: "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
-        ghost: "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
-        outline: "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500"
+        default:
+          "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+        primary:
+          "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+        secondary:
+          "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+        danger:
+          "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+        success:
+          "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+        warning:
+          "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+        ghost:
+          "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+        outline:
+          "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
       };
 
       const sizes = {
@@ -251,7 +286,7 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
         sm: "px-3 py-1.5 text-sm",
         default: "px-4 py-2 text-sm",
         lg: "px-6 py-3 text-base",
-        xl: "px-8 py-4 text-lg"
+        xl: "px-8 py-4 text-lg",
       };
 
       return (
@@ -277,17 +312,32 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
       );
     }
 
-    const { variant = "default", size = "default", fullWidth = false, loading = false, disabled, ...restProps } = buttonProps;
+    const {
+      variant = "default",
+      size = "default",
+      fullWidth = false,
+      loading = false,
+      disabled,
+      ...restProps
+    } = buttonProps;
 
     const variants = {
-      default: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
-      primary: "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
-      secondary: "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
-      danger: "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
-      success: "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
-      warning: "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
-      ghost: "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
-      outline: "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500"
+      default:
+        "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+      primary:
+        "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+      secondary:
+        "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+      danger:
+        "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+      success:
+        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+      warning:
+        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+      ghost:
+        "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+      outline:
+        "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
     };
 
     const sizes = {
@@ -295,7 +345,7 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
       sm: "px-3 py-1.5 text-sm",
       default: "px-4 py-2 text-sm",
       lg: "px-6 py-3 text-base",
-      xl: "px-8 py-4 text-lg"
+      xl: "px-8 py-4 text-lg",
     };
 
     return (
@@ -326,7 +376,8 @@ LinkButton.displayName = "LinkButton";
 /**
  * Icon Button - Button optimized for icons only
  */
-export interface IconButtonProps extends Omit<BaseButtonProps, 'children' | 'leftIcon' | 'rightIcon'> {
+export interface IconButtonProps
+  extends Omit<BaseButtonProps, "children" | "leftIcon" | "rightIcon"> {
   /**
    * Icon content
    */
@@ -343,22 +394,13 @@ export interface IconButtonProps extends Omit<BaseButtonProps, 'children' | 'lef
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  (
-    {
-      icon,
-      round = false,
-      size = "default",
-      className,
-      ...props
-    },
-    ref
-  ) => {
+  ({ icon, round = false, size = "default", className, ...props }, ref) => {
     const iconSizes = {
       xs: "w-4 h-4",
       sm: "w-5 h-5",
       default: "w-6 h-6",
       lg: "w-7 h-7",
-      xl: "w-8 h-8"
+      xl: "w-8 h-8",
     };
 
     const buttonSizes = {
@@ -366,22 +408,16 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       sm: "p-1.5",
       default: "p-2",
       lg: "p-2.5",
-      xl: "p-3"
+      xl: "p-3",
     };
 
     return (
       <BaseButton
         ref={ref}
-        className={cn(
-          buttonSizes[size],
-          round && "rounded-full",
-          className
-        )}
+        className={cn(buttonSizes[size], round && "rounded-full", className)}
         {...props}
       >
-        <span className={iconSizes[size]}>
-          {icon}
-        </span>
+        <span className={iconSizes[size]}>{icon}</span>
       </BaseButton>
     );
   }
@@ -407,11 +443,11 @@ export interface ButtonGroupProps {
   /**
    * Size for all buttons in the group
    */
-  size?: BaseButtonProps['size'];
+  size?: BaseButtonProps["size"];
   /**
    * Variant for all buttons in the group
    */
-  variant?: BaseButtonProps['variant'];
+  variant?: BaseButtonProps["variant"];
   /**
    * Additional CSS classes
    */
@@ -424,13 +460,17 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
   attached = true,
   size,
   variant,
-  className
+  className,
 }) => {
   const groupClasses = cn(
     "inline-flex",
     orientation === "vertical" ? "flex-col" : "flex-row",
-    attached && orientation === "horizontal" && "[&>*:not(:first-child)]:ml-0 [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none [&>*:not(:first-child)]:rounded-l-none",
-    attached && orientation === "vertical" && "[&>*:not(:first-child)]:mt-0 [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none [&>*:not(:first-child)]:rounded-t-none",
+    attached &&
+      orientation === "horizontal" &&
+      "[&>*:not(:first-child)]:ml-0 [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none [&>*:not(:first-child)]:rounded-l-none",
+    attached &&
+      orientation === "vertical" &&
+      "[&>*:not(:first-child)]:mt-0 [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none [&>*:not(:first-child)]:rounded-t-none",
     className
   );
 
@@ -438,7 +478,7 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
     if (React.isValidElement(child) && child.type === BaseButton) {
       return React.cloneElement(child as React.ReactElement<BaseButtonProps>, {
         size: size || child.props.size,
-        variant: variant || child.props.variant
+        variant: variant || child.props.variant,
       });
     }
     return child;

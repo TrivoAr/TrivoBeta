@@ -30,22 +30,30 @@ export async function GET(
 
     if (!basicSalida) {
       console.log("Salida social no encontrada");
-      return NextResponse.json({ message: "Salida social no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Salida social no encontrada" },
+        { status: 404 }
+      );
     }
 
     console.log("Basic salida found:", basicSalida.nombre);
 
     // Now try with populate step by step
     console.log("Finding salida with creador_id populate...");
-    const salidaWithCreator = await SalidaSocial.findById(id).populate("creador_id");
+    const salidaWithCreator =
+      await SalidaSocial.findById(id).populate("creador_id");
 
     console.log("Salida with creator found:", salidaWithCreator ? "yes" : "no");
 
     // Try sponsors populate separately
     console.log("Finding salida with sponsors populate...");
-    const salidaWithSponsors = await SalidaSocial.findById(id).populate("sponsors");
+    const salidaWithSponsors =
+      await SalidaSocial.findById(id).populate("sponsors");
 
-    console.log("Salida with sponsors found:", salidaWithSponsors ? "yes" : "no");
+    console.log(
+      "Salida with sponsors found:",
+      salidaWithSponsors ? "yes" : "no"
+    );
     console.log("Sponsors data:", salidaWithSponsors?.sponsors);
 
     // Now try both together
@@ -54,7 +62,10 @@ export async function GET(
       .populate("creador_id")
       .populate("sponsors");
 
-    console.log("Salida with both populates found:", salida ? salida.nombre : "not found");
+    console.log(
+      "Salida with both populates found:",
+      salida ? salida.nombre : "not found"
+    );
 
     // Convert to plain object
     const salidaObj = salida.toObject();
@@ -62,11 +73,14 @@ export async function GET(
     // Get profile image
     let imagenUrl;
     try {
-      imagenUrl = await getProfileImage("profile-image.jpg", salida.creador_id._id.toString());
+      imagenUrl = await getProfileImage(
+        "profile-image.jpg",
+        salida.creador_id._id.toString()
+      );
     } catch (error) {
       imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            salida.creador_id.firstname
-          )}&length=1&background=random&color=fff&size=128`;
+        salida.creador_id.firstname
+      )}&length=1&background=random&color=fff&size=128`;
     }
 
     // Update creator info
@@ -81,9 +95,11 @@ export async function GET(
     console.log("Salida social encontrada y preparada:", salidaObj.nombre);
 
     return NextResponse.json(salidaObj, { status: 200 });
-
   } catch (error) {
     console.error("[GET_SALIDA_BY_ID] Error:", error);
-    return NextResponse.json({ message: "Server Error", error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Server Error", error: error.message },
+      { status: 500 }
+    );
   }
 }

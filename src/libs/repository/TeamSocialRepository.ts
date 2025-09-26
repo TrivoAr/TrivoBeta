@@ -1,10 +1,10 @@
-import { BaseRepository, RepositoryOptions } from './BaseRepository';
-import TeamSocial from '@/models/teamSocial';
-import User from '@/models/user';
-import Bares from '@/models/bares';
-import Sponsors from '@/models/sponsors';
-import { Document } from 'mongoose';
-import { ImageService } from '@/libs/services/ImageService';
+import { BaseRepository, RepositoryOptions } from "./BaseRepository";
+import TeamSocial from "@/models/teamSocial";
+import User from "@/models/user";
+import Bares from "@/models/bares";
+import Sponsors from "@/models/sponsors";
+import { Document } from "mongoose";
+import { ImageService } from "@/libs/services/ImageService";
 
 export interface ITeamSocial extends Document {
   _id: string;
@@ -55,7 +55,8 @@ export interface TeamSocialFilters {
   conCupos?: boolean;
 }
 
-export interface PopulatedTeamSocial extends Omit<ITeamSocial, 'creadorId' | 'bar'> {
+export interface PopulatedTeamSocial
+  extends Omit<ITeamSocial, "creadorId" | "bar"> {
   creadorId: {
     _id: string;
     firstname: string;
@@ -73,13 +74,16 @@ export interface PopulatedTeamSocial extends Omit<ITeamSocial, 'creadorId' | 'ba
  */
 export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
   constructor() {
-    super(TeamSocial, 'Team Social');
+    super(TeamSocial, "Team Social");
   }
 
   /**
    * Find a team social event with all populated data and profile images
    */
-  async findWithPopulatedData(id: string, options: RepositoryOptions = {}): Promise<PopulatedTeamSocial> {
+  async findWithPopulatedData(
+    id: string,
+    options: RepositoryOptions = {}
+  ): Promise<PopulatedTeamSocial> {
     if (options.requireConnection !== false) {
       await this.ensureConnection();
     }
@@ -91,12 +95,16 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       console.log("Bares model:", Bares.modelName);
       console.log("Sponsors model:", Sponsors.modelName);
 
-      const team = await this.model.findById(id)
+      const team = await this.model
+        .findById(id)
         .populate("creadorId", "firstname lastname imagen")
         .exec();
 
       if (!team) {
-        throw this.handleError(new Error('Not found'), `buscar ${this.resourceName} por ID`);
+        throw this.handleError(
+          new Error("Not found"),
+          `buscar ${this.resourceName} por ID`
+        );
       }
 
       const teamObj = team.toObject() as any;
@@ -129,8 +137,13 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
           team.creadorId.firstname
         );
       } catch (error) {
-        console.log(`[TeamSocialRepository] Image fetch failed for creator:`, error);
-        creatorImageUrl = ImageService.generateAvatarUrl(team.creadorId.firstname);
+        console.log(
+          `[TeamSocialRepository] Image fetch failed for creator:`,
+          error
+        );
+        creatorImageUrl = ImageService.generateAvatarUrl(
+          team.creadorId.firstname
+        );
       }
 
       // Update creator info with image
@@ -148,7 +161,10 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
 
       return teamObj as PopulatedTeamSocial;
     } catch (error) {
-      throw this.handleError(error, `buscar ${this.resourceName} con datos poblados`);
+      throw this.handleError(
+        error,
+        `buscar ${this.resourceName} con datos poblados`
+      );
     }
   }
 
@@ -173,14 +189,18 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       const query: Record<string, any> = {};
 
       if (filters.deporte) query.deporte = filters.deporte;
-      if (filters.localidad) query.localidad = new RegExp(filters.localidad, 'i');
+      if (filters.localidad)
+        query.localidad = new RegExp(filters.localidad, "i");
       if (filters.provincia) query.provincia = filters.provincia;
       if (filters.dificultad) query.dificultad = filters.dificultad;
       if (filters.fecha) query.fecha = filters.fecha;
       if (filters.creadorId) query.creadorId = filters.creadorId;
 
       // Price filters
-      if (filters.precioMinimo !== undefined || filters.precioMaximo !== undefined) {
+      if (
+        filters.precioMinimo !== undefined ||
+        filters.precioMaximo !== undefined
+      ) {
         query.precio = {};
         if (filters.precioMinimo !== undefined) {
           query.precio.$gte = filters.precioMinimo.toString();
@@ -190,10 +210,14 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
         }
       }
 
-      return await this.findMany(query, {
-        ...options,
-        populate: ['creadorId']
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          ...options,
+          populate: ["creadorId"],
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s con filtros`);
     }
@@ -215,7 +239,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       { creadorId: creatorId },
       {
         sort: { createdAt: -1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -235,7 +259,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       {},
       {
         sort: { fecha: 1, hora: 1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -247,7 +271,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
   async findNearby(
     lat: number,
     lng: number,
-    radiusInKm: number = 50,
+    radiusInKm = 50,
     options: {
       limit?: number;
       skip?: number;
@@ -262,24 +286,28 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       // This is a simplified proximity search
       // For production, consider using MongoDB's geospatial queries
       const latRange = radiusInKm / 111; // Rough conversion: 1 degree ≈ 111 km
-      const lngRange = radiusInKm / (111 * Math.cos(lat * Math.PI / 180));
+      const lngRange = radiusInKm / (111 * Math.cos((lat * Math.PI) / 180));
 
       const query = {
-        'locationCoords.lat': {
+        "locationCoords.lat": {
           $gte: lat - latRange,
-          $lte: lat + latRange
+          $lte: lat + latRange,
         },
-        'locationCoords.lng': {
+        "locationCoords.lng": {
           $gte: lng - lngRange,
-          $lte: lng + lngRange
-        }
+          $lte: lng + lngRange,
+        },
       };
 
-      return await this.findMany(query, {
-        sort: { createdAt: -1 },
-        populate: ['creadorId'],
-        ...options
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          sort: { createdAt: -1 },
+          populate: ["creadorId"],
+          ...options,
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s cercanos`);
     }
@@ -301,24 +329,30 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
 
       const [totalEvents, upcomingEvents, pastEvents] = await Promise.all([
         this.count({ creadorId: creatorId }, repositoryOptions),
-        this.count({
-          creadorId: creatorId,
-          fecha: { $gte: today }
-        }, repositoryOptions),
-        this.count({
-          creadorId: creatorId,
-          fecha: { $lt: today }
-        }, repositoryOptions)
+        this.count(
+          {
+            creadorId: creatorId,
+            fecha: { $gte: today },
+          },
+          repositoryOptions
+        ),
+        this.count(
+          {
+            creadorId: creatorId,
+            fecha: { $lt: today },
+          },
+          repositoryOptions
+        ),
       ]);
 
       return {
         totalEvents,
         upcomingEvents,
-        pastEvents
+        pastEvents,
       };
     } catch (error) {
       throw this.handleError(error, `obtener estadísticas del creador`);
@@ -337,14 +371,15 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
 
     if (imageFile) {
       try {
-        const imageUrl = await ImageService.saveTeamSocialImage(imageFile, event._id);
-        return await this.model.findByIdAndUpdate(
-          event._id,
-          { imagen: imageUrl },
-          { new: true }
-        ).exec() as ITeamSocial;
+        const imageUrl = await ImageService.saveTeamSocialImage(
+          imageFile,
+          event._id
+        );
+        return (await this.model
+          .findByIdAndUpdate(event._id, { imagen: imageUrl }, { new: true })
+          .exec()) as ITeamSocial;
       } catch (error) {
-        console.error('[TeamSocialRepository] Failed to upload image:', error);
+        console.error("[TeamSocialRepository] Failed to upload image:", error);
         // Return event without image rather than failing completely
         return event;
       }
@@ -363,14 +398,14 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
     imageFile?: File,
     repositoryOptions: RepositoryOptions = {}
   ): Promise<ITeamSocial> {
-    let updatedData = { ...eventData };
+    const updatedData = { ...eventData };
 
     if (imageFile) {
       try {
         const imageUrl = await ImageService.saveTeamSocialImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error('[TeamSocialRepository] Failed to upload image:', error);
+        console.error("[TeamSocialRepository] Failed to upload image:", error);
         // Continue with update without new image
       }
     }
@@ -379,7 +414,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
       id,
       updatedData,
       ownerId,
-      'creadorId',
+      "creadorId",
       repositoryOptions
     );
   }

@@ -42,7 +42,7 @@
 //       {/* Logo y título */}
 //       <Image src="/assets/Isologo - Positivo a color.png" alt="Klubo Logo" width={120} height={120} />
 //       <div className="text-center mb-6 mt-6">
-      
+
 //         <h1 className="text-xl font-bold text-black mt-2">Restablecer Contraseña</h1>
 //       </div>
 
@@ -183,9 +183,16 @@ export default function ResetPassword() {
       <Toaster position="top-center" />
 
       {/* Logo y título */}
-      <Image src="/assets/Logo/Trivo T.png" alt="Klubo Logo" width={120} height={120} />
+      <Image
+        src="/assets/Logo/Trivo T.png"
+        alt="Klubo Logo"
+        width={120}
+        height={120}
+      />
       <div className="text-center mb-6 mt-6">
-        <h1 className="text-xl font-bold text-black mt-2">Restablecer Contraseña</h1>
+        <h1 className="text-xl font-bold text-black mt-2">
+          Restablecer Contraseña
+        </h1>
       </div>
 
       {/* Paso 1: solicitar código */}
@@ -211,13 +218,18 @@ export default function ResetPassword() {
             {loading ? "Enviando..." : "Enviar Código"}
           </button>
 
-          {message && <p className="text-center text-sm text-gray-600 mt-4">{message}</p>}
+          {message && (
+            <p className="text-center text-sm text-gray-600 mt-4">{message}</p>
+          )}
         </form>
       )}
 
       {/* Paso 2: ingresar código + nueva contraseña */}
       {step === "reset" && (
-        <form className="w-80 flex flex-col gap-4" onSubmit={handleResetPassword}>
+        <form
+          className="w-80 flex flex-col gap-4"
+          onSubmit={handleResetPassword}
+        >
           <div className="">
             <i className=""></i>
             <input
@@ -258,7 +270,9 @@ export default function ResetPassword() {
             Volver a pedir código
           </button>
 
-          {message && <p className="text-center text-sm text-gray-600 mt-4">{message}</p>}
+          {message && (
+            <p className="text-center text-sm text-gray-600 mt-4">{message}</p>
+          )}
         </form>
       )}
     </div>

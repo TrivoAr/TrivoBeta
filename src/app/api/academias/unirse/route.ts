@@ -19,7 +19,10 @@ export async function POST(req: Request) {
     }
 
     // Validar si los IDs tienen un formato válido
-    if (!mongoose.Types.ObjectId.isValid(academia_id) || !mongoose.Types.ObjectId.isValid(user_id)) {
+    if (
+      !mongoose.Types.ObjectId.isValid(academia_id) ||
+      !mongoose.Types.ObjectId.isValid(user_id)
+    ) {
       return NextResponse.json({ message: "IDs inválidos" }, { status: 400 });
     }
 
@@ -29,7 +32,10 @@ export async function POST(req: Request) {
     // Verificar si la academia existe
     const academia = await Academia.findById(academiaObjectId);
     if (!academia) {
-      return NextResponse.json({ message: "Academia no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Academia no encontrada" },
+        { status: 404 }
+      );
     }
 
     // Verificar si ya existe una solicitud activa para este usuario y academia
@@ -55,7 +61,10 @@ export async function POST(req: Request) {
 
     await nuevaSolicitud.save();
 
-    return NextResponse.json({ message: "Solicitud creada exitosamente" }, { status: 201 });
+    return NextResponse.json(
+      { message: "Solicitud creada exitosamente" },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error al crear la solicitud:", error);
     return NextResponse.json(

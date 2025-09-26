@@ -17,25 +17,31 @@ export async function GET(req: NextRequest) {
   if (!teamSocialId) return new Response("Falta teamSocialId", { status: 400 });
 
   // Buscar miembros por teamsocial_id (no salida_id)
-  const miembros = await MiembroTeamSocial.find({ teamsocial_id: teamSocialId }).populate("usuario_id", "firstname lastname email");
-      console.log("Miembros encontrados:", miembros.length); // LOG 2
-    console.log("Primer miembro:", miembros[0]);
+  const miembros = await MiembroTeamSocial.find({
+    teamsocial_id: teamSocialId,
+  }).populate("usuario_id", "firstname lastname email");
+  console.log("Miembros encontrados:", miembros.length); // LOG 2
+  console.log("Primer miembro:", miembros[0]);
   const miembrosConImagen = await Promise.all(
     miembros.map(async (m) => {
       const usuario = m.usuario_id as any; // mongoose document
       let imagenUrl;
 
       try {
-        imagenUrl = await getProfileImage("profile-image.jpg", usuario._id.toString());
+        imagenUrl = await getProfileImage(
+          "profile-image.jpg",
+          usuario._id.toString()
+        );
       } catch {
         imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            usuario.firstname
-          )}&length=1&background=random&color=fff&size=128`;
+          usuario.firstname
+        )}&length=1&background=random&color=fff&size=128`;
       }
 
       return {
         _id: usuario._id,
-        nombre: `${usuario.firstname} ${usuario.lastname}`.trim() || usuario.email,
+        nombre:
+          `${usuario.firstname} ${usuario.lastname}`.trim() || usuario.email,
         email: usuario.email,
         imagen: imagenUrl,
       };
@@ -44,5 +50,3 @@ export async function GET(req: NextRequest) {
 
   return new Response(JSON.stringify(miembrosConImagen), { status: 200 });
 }
-
-

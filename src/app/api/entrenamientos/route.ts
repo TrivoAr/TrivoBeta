@@ -13,7 +13,9 @@ const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 if (!vapidEmail || !vapidPublicKey || !vapidPrivateKey) {
-  throw new Error("Las claves VAPID no están correctamente configuradas en las variables de entorno.");
+  throw new Error(
+    "Las claves VAPID no están correctamente configuradas en las variables de entorno."
+  );
 }
 
 webPush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey);
@@ -32,7 +34,10 @@ export async function POST(req: Request) {
     const academia = await Academia.findById(grupo?.academia_id);
 
     if (!academia) {
-      return NextResponse.json({ error: "Academia no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Academia no encontrada" },
+        { status: 404 }
+      );
     }
 
     /*if (
@@ -44,14 +49,14 @@ export async function POST(req: Request) {
 
     const fechaAjustada = new Date(fecha);
     fechaAjustada.setDate(fechaAjustada.getDate() + 1);
-    
+
     const entrenamiento = new Entrenamiento({
       alumno_id,
       grupo_id,
       fecha: fechaAjustada,
       descripcion,
       objetivo,
-    });    
+    });
 
     await entrenamiento.save();
 
@@ -76,7 +81,10 @@ export async function POST(req: Request) {
     return NextResponse.json(entrenamiento, { status: 201 });
   } catch (error) {
     console.error("Error al asignar entrenamiento:", error);
-    return NextResponse.json({ error: "Hubo un problema al asignar el entrenamiento" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Hubo un problema al asignar el entrenamiento" },
+      { status: 500 }
+    );
   }
 }
 
@@ -87,10 +95,13 @@ export async function GET(req: Request) {
     const weekStart = url.searchParams.get("weekStart");
 
     if (!userId) {
-      return NextResponse.json({ error: "Se requiere el ID del usuario" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Se requiere el ID del usuario" },
+        { status: 400 }
+      );
     }
 
-    let filter: any = { alumno_id: userId };
+    const filter: any = { alumno_id: userId };
 
     if (weekStart) {
       const startDate = new Date(weekStart);
@@ -105,6 +116,9 @@ export async function GET(req: Request) {
     return NextResponse.json(entrenamientos, { status: 200 });
   } catch (error) {
     console.error("Error al obtener entrenamientos:", error);
-    return NextResponse.json({ error: "Hubo un problema al obtener los entrenamientos" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Hubo un problema al obtener los entrenamientos" },
+      { status: 500 }
+    );
   }
 }

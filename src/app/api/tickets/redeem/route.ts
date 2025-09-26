@@ -28,7 +28,13 @@ export async function POST(req: NextRequest) {
   // Canje atómico: issued -> redeemed
   const updated = await Ticket.findOneAndUpdate(
     { code, status: "issued" },
-    { $set: { status: "redeemed", redeemedAt: new Date(), redeemedBy: staffUserId || null } },
+    {
+      $set: {
+        status: "redeemed",
+        redeemedAt: new Date(),
+        redeemedBy: staffUserId || null,
+      },
+    },
     { new: true }
   );
 
@@ -53,6 +59,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not_issuable" }, { status: 409 });
   }
 
-  return NextResponse.json({ ok: true, redeemedAt: updated.redeemedAt ?? null });
+  return NextResponse.json({
+    ok: true,
+    redeemedAt: updated.redeemedAt ?? null,
+  });
 }
-

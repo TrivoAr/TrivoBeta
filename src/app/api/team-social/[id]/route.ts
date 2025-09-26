@@ -9,9 +9,6 @@ import User from "@/models/user";
 import Bares from "@/models/bares";
 import Sponsors from "@/models/sponsors";
 
-
-
-
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -19,8 +16,10 @@ export async function GET(
   await connectDB();
 
   try {
-    const team = await TeamSocial.findById(params.id)
-      .populate("creadorId", "firstname lastname imagen");
+    const team = await TeamSocial.findById(params.id).populate(
+      "creadorId",
+      "firstname lastname imagen"
+    );
 
     if (!team) {
       return NextResponse.json({ message: "No encontrado" }, { status: 404 });
@@ -50,7 +49,10 @@ export async function GET(
 
     let imagenUrl;
     try {
-      imagenUrl = await getProfileImage("profile-image.jpg", team.creadorId._id.toString());
+      imagenUrl = await getProfileImage(
+        "profile-image.jpg",
+        team.creadorId._id.toString()
+      );
     } catch (error) {
       imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
         team.creadorId.firstname
@@ -69,24 +71,21 @@ export async function GET(
     // Agregar los datos obtenidos por separado
     salidaObj.bar = barData;
     salidaObj.sponsors = sponsorsData;
-      
-      
-      
-      
-      
-      
-      
-      
+
     return NextResponse.json(salidaObj, { status: 200 });
   } catch (error) {
     console.error("Error al buscar TeamSocial:", error);
-    return NextResponse.json({ error: "Error en el servidor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error en el servidor" },
+      { status: 500 }
+    );
   }
 }
 
-
-
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -96,28 +95,38 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const salida = await TeamSocial.findById(params.id);
   if (!salida) {
-    return NextResponse.json({ message: "Salida no encontrada" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Salida no encontrada" },
+      { status: 404 }
+    );
   }
 
   if (salida.creadorId.toString() !== session.user.id) {
-    return NextResponse.json({ message: "No tienes permiso para editar" }, { status: 403 });
+    return NextResponse.json(
+      { message: "No tienes permiso para editar" },
+      { status: 403 }
+    );
   }
 
   const data = await req.json();
 
   try {
-    const actualizada = await TeamSocial.findByIdAndUpdate(params.id, data, { new: true });
+    const actualizada = await TeamSocial.findByIdAndUpdate(params.id, data, {
+      new: true,
+    });
     return NextResponse.json(actualizada, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: "Error al actualizar" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al actualizar" },
+      { status: 500 }
+    );
   }
 }
 
-
-
-
-
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -127,11 +136,17 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   const salida = await TeamSocial.findById(params.id);
   if (!salida) {
-    return NextResponse.json({ message: "Salida no encontrada" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Salida no encontrada" },
+      { status: 404 }
+    );
   }
 
   if (salida.creadorId.toString() !== session.user.id) {
-    return NextResponse.json({ message: "No tienes permiso para eliminar" }, { status: 403 });
+    return NextResponse.json(
+      { message: "No tienes permiso para eliminar" },
+      { status: 403 }
+    );
   }
 
   try {

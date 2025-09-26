@@ -44,7 +44,7 @@ const SalidaSocialSchema = new Schema(
       type: String,
     },
     precio: { type: String },
-    
+
     creador_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -57,51 +57,48 @@ const SalidaSocialSchema = new Schema(
       required: false,
     },
 
-
-     stravaMap: {
+    stravaMap: {
       id: { type: String },
       summary_polyline: { type: String },
       polyline: { type: String },
       resource_state: { type: Number },
     },
 
-
-    cupo:{
+    cupo: {
       type: Number,
       required: true,
     },
 
-    detalles:{
+    detalles: {
       type: String,
     },
-    provincia:{
+    provincia: {
       type: String,
     },
 
-
-    cbu:{
-      type:String,
+    cbu: {
+      type: String,
     },
 
-    alias:{
-      type:String,
+    alias: {
+      type: String,
     },
 
-    profesorId:{
+    profesorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: false,
     },
 
-     shortId: { type: String, unique: true, index: true },
+    shortId: { type: String, unique: true, index: true },
 
-     sponsors: [{
-      type: Schema.Types.ObjectId,
-      ref: "Sponsors",
-      required: false,
-     }]
-
-
+    sponsors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Sponsors",
+        required: false,
+      },
+    ],
   },
   { timestamps: true }
 );

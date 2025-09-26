@@ -15,7 +15,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "No autenticado" }, { status: 401 });
     }
 
-    const academiaExistente = await Academia.findOne({ dueño_id: session.user.id });
+    const academiaExistente = await Academia.findOne({
+      dueño_id: session.user.id,
+    });
     if (academiaExistente) {
       return NextResponse.json(
         { message: "Ya tienes una academia registrada. No puedes crear más." },
@@ -79,18 +81,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
     console.error("Error al crear la academia:", error);
-    return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
-
 
 // Obtener todas las academias o las academias de un usuario específico
 export async function GET(request: Request) {
   try {
-    await connectDB(); 
+    await connectDB();
 
     const session = await getServerSession(authOptions);
-    
+
     // if (!session) {
     //   return NextResponse.json({ message: "No autenticado" }, { status: 401 });
     // }
@@ -102,11 +106,12 @@ export async function GET(request: Request) {
     let academias = [];
 
     if (filterByOwner) {
-
       academias = await Academia.find({ dueño_id: session.user.id });
     } else if (userId) {
       // Buscar academias donde el usuario sea miembro
-      const userAcademias = await UsuarioAcademia.find({ user_id: userId }).populate("academia_id");
+      const userAcademias = await UsuarioAcademia.find({
+        user_id: userId,
+      }).populate("academia_id");
       academias = userAcademias.map((ua) => ua.academia_id); // Extrae la info de la academia
     } else {
       // Obtener todas las academias
@@ -116,6 +121,9 @@ export async function GET(request: Request) {
     return NextResponse.json(academias, { status: 200 });
   } catch (error) {
     console.error("Error al obtener academias:", error);
-    return NextResponse.json({ message: "Error al obtener las academias" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al obtener las academias" },
+      { status: 500 }
+    );
   }
 }

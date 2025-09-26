@@ -20,7 +20,7 @@ const UserSchema = new Schema(
       unique: true,
       required: [true, "Email is required"],
       match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
         "Email is invalid",
       ],
     },
@@ -67,7 +67,7 @@ const UserSchema = new Schema(
       type: String,
     },
 
-    dni:{
+    dni: {
       type: String,
     },
 
@@ -77,7 +77,7 @@ const UserSchema = new Schema(
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
-    resetPasswordAttempts: { type: Number, default: 0 }
+    resetPasswordAttempts: { type: Number, default: 0 },
   },
   {
     timestamps: true,

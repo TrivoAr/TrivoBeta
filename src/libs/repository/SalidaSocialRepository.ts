@@ -1,9 +1,9 @@
-import { BaseRepository, RepositoryOptions } from './BaseRepository';
-import SalidaSocial from '@/models/salidaSocial';
-import User from '@/models/user';
-import Sponsors from '@/models/sponsors';
-import { Document } from 'mongoose';
-import { ImageService } from '@/libs/services/ImageService';
+import { BaseRepository, RepositoryOptions } from "./BaseRepository";
+import SalidaSocial from "@/models/salidaSocial";
+import User from "@/models/user";
+import Sponsors from "@/models/sponsors";
+import { Document } from "mongoose";
+import { ImageService } from "@/libs/services/ImageService";
 
 export interface ISalidaSocial extends Document {
   _id: string;
@@ -56,7 +56,8 @@ export interface SalidaSocialFilters {
   conCupos?: boolean;
 }
 
-export interface PopulatedSalidaSocial extends Omit<ISalidaSocial, 'creador_id' | 'profesorId'> {
+export interface PopulatedSalidaSocial
+  extends Omit<ISalidaSocial, "creador_id" | "profesorId"> {
   creador_id: {
     _id: string;
     firstname: string;
@@ -81,13 +82,16 @@ export interface PopulatedSalidaSocial extends Omit<ISalidaSocial, 'creador_id' 
  */
 export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
   constructor() {
-    super(SalidaSocial, 'Salida Social');
+    super(SalidaSocial, "Salida Social");
   }
 
   /**
    * Find a social event with all populated data and profile images
    */
-  async findWithPopulatedData(id: string, options: RepositoryOptions = {}): Promise<PopulatedSalidaSocial> {
+  async findWithPopulatedData(
+    id: string,
+    options: RepositoryOptions = {}
+  ): Promise<PopulatedSalidaSocial> {
     if (options.requireConnection !== false) {
       await this.ensureConnection();
     }
@@ -99,14 +103,18 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       console.log("Sponsors model:", Sponsors.modelName);
 
       // Find with all populations
-      const salida = await this.model.findById(id)
+      const salida = await this.model
+        .findById(id)
         .populate("creador_id")
         .populate("profesorId")
         .populate("sponsors")
         .exec();
 
       if (!salida) {
-        throw this.handleError(new Error('Not found'), `buscar ${this.resourceName} por ID`);
+        throw this.handleError(
+          new Error("Not found"),
+          `buscar ${this.resourceName} por ID`
+        );
       }
 
       // Convert to plain object
@@ -120,8 +128,13 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
           salida.creador_id.firstname
         );
       } catch (error) {
-        console.log(`[SalidaSocialRepository] Image fetch failed for creator:`, error);
-        creatorImageUrl = ImageService.generateAvatarUrl(salida.creador_id.firstname);
+        console.log(
+          `[SalidaSocialRepository] Image fetch failed for creator:`,
+          error
+        );
+        creatorImageUrl = ImageService.generateAvatarUrl(
+          salida.creador_id.firstname
+        );
       }
 
       // Update creator info with image
@@ -142,8 +155,13 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
             salida.profesorId.firstname
           );
         } catch (error) {
-          console.log(`[SalidaSocialRepository] Image fetch failed for professor:`, error);
-          professorImageUrl = ImageService.generateAvatarUrl(salida.profesorId.firstname);
+          console.log(
+            `[SalidaSocialRepository] Image fetch failed for professor:`,
+            error
+          );
+          professorImageUrl = ImageService.generateAvatarUrl(
+            salida.profesorId.firstname
+          );
         }
 
         salidaObj.profesorId = {
@@ -159,7 +177,10 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
 
       return salidaObj as PopulatedSalidaSocial;
     } catch (error) {
-      throw this.handleError(error, `buscar ${this.resourceName} con datos poblados`);
+      throw this.handleError(
+        error,
+        `buscar ${this.resourceName} con datos poblados`
+      );
     }
   }
 
@@ -184,14 +205,18 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       const query: Record<string, any> = {};
 
       if (filters.deporte) query.deporte = filters.deporte;
-      if (filters.localidad) query.localidad = new RegExp(filters.localidad, 'i');
+      if (filters.localidad)
+        query.localidad = new RegExp(filters.localidad, "i");
       if (filters.provincia) query.provincia = filters.provincia;
       if (filters.dificultad) query.dificultad = filters.dificultad;
       if (filters.fecha) query.fecha = filters.fecha;
       if (filters.creador_id) query.creador_id = filters.creador_id;
 
       // Price filters
-      if (filters.precioMinimo !== undefined || filters.precioMaximo !== undefined) {
+      if (
+        filters.precioMinimo !== undefined ||
+        filters.precioMaximo !== undefined
+      ) {
         query.precio = {};
         if (filters.precioMinimo !== undefined) {
           query.precio.$gte = filters.precioMinimo.toString();
@@ -201,10 +226,14 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
         }
       }
 
-      return await this.findMany(query, {
-        ...options,
-        populate: ['creador_id']
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          ...options,
+          populate: ["creador_id"],
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s con filtros`);
     }
@@ -226,7 +255,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       { creador_id: creatorId },
       {
         sort: { createdAt: -1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -242,13 +271,13 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
     } = {},
     repositoryOptions: RepositoryOptions = {}
   ): Promise<ISalidaSocial[]> {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
     return this.findWithFilters(
       {},
       {
         sort: { fecha: 1, hora: 1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -260,7 +289,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
   async findNearby(
     lat: number,
     lng: number,
-    radiusInKm: number = 50,
+    radiusInKm = 50,
     options: {
       limit?: number;
       skip?: number;
@@ -275,24 +304,28 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       // This is a simplified proximity search
       // For production, consider using MongoDB's geospatial queries
       const latRange = radiusInKm / 111; // Rough conversion: 1 degree ≈ 111 km
-      const lngRange = radiusInKm / (111 * Math.cos(lat * Math.PI / 180));
+      const lngRange = radiusInKm / (111 * Math.cos((lat * Math.PI) / 180));
 
       const query = {
-        'locationCoords.lat': {
+        "locationCoords.lat": {
           $gte: lat - latRange,
-          $lte: lat + latRange
+          $lte: lat + latRange,
         },
-        'locationCoords.lng': {
+        "locationCoords.lng": {
           $gte: lng - lngRange,
-          $lte: lng + lngRange
-        }
+          $lte: lng + lngRange,
+        },
       };
 
-      return await this.findMany(query, {
-        sort: { createdAt: -1 },
-        populate: ['creador_id'],
-        ...options
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          sort: { createdAt: -1 },
+          populate: ["creador_id"],
+          ...options,
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s cercanos`);
     }
@@ -314,24 +347,30 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
 
       const [totalEvents, upcomingEvents, pastEvents] = await Promise.all([
         this.count({ creador_id: creatorId }, repositoryOptions),
-        this.count({
-          creador_id: creatorId,
-          fecha: { $gte: today }
-        }, repositoryOptions),
-        this.count({
-          creador_id: creatorId,
-          fecha: { $lt: today }
-        }, repositoryOptions)
+        this.count(
+          {
+            creador_id: creatorId,
+            fecha: { $gte: today },
+          },
+          repositoryOptions
+        ),
+        this.count(
+          {
+            creador_id: creatorId,
+            fecha: { $lt: today },
+          },
+          repositoryOptions
+        ),
       ]);
 
       return {
         totalEvents,
         upcomingEvents,
-        pastEvents
+        pastEvents,
       };
     } catch (error) {
       throw this.handleError(error, `obtener estadísticas del creador`);
@@ -350,14 +389,18 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
 
     if (imageFile) {
       try {
-        const imageUrl = await ImageService.saveSocialImage(imageFile, event._id);
-        return await this.model.findByIdAndUpdate(
-          event._id,
-          { imagen: imageUrl },
-          { new: true }
-        ).exec() as ISalidaSocial;
+        const imageUrl = await ImageService.saveSocialImage(
+          imageFile,
+          event._id
+        );
+        return (await this.model
+          .findByIdAndUpdate(event._id, { imagen: imageUrl }, { new: true })
+          .exec()) as ISalidaSocial;
       } catch (error) {
-        console.error('[SalidaSocialRepository] Failed to upload image:', error);
+        console.error(
+          "[SalidaSocialRepository] Failed to upload image:",
+          error
+        );
         // Return event without image rather than failing completely
         return event;
       }
@@ -376,14 +419,17 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
     imageFile?: File,
     repositoryOptions: RepositoryOptions = {}
   ): Promise<ISalidaSocial> {
-    let updatedData = { ...eventData };
+    const updatedData = { ...eventData };
 
     if (imageFile) {
       try {
         const imageUrl = await ImageService.saveSocialImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error('[SalidaSocialRepository] Failed to upload image:', error);
+        console.error(
+          "[SalidaSocialRepository] Failed to upload image:",
+          error
+        );
         // Continue with update without new image
       }
     }
@@ -392,7 +438,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       id,
       updatedData,
       ownerId,
-      'creador_id',
+      "creador_id",
       repositoryOptions
     );
   }

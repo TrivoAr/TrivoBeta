@@ -12,7 +12,9 @@ export async function GET(req: NextRequest) {
   if (!session) return new Response("No autorizado", { status: 401 });
 
   // buscar donde el usuario es miembro
-  const membresias = await MiembroTeamSocial.find({ usuario_id: session.user.id });
+  const membresias = await MiembroTeamSocial.find({
+    usuario_id: session.user.id,
+  });
   const teamSocialIds = membresias.map((m) => m.teamsocial_id);
 
   const teams = await TeamSocial.find({ _id: { $in: teamSocialIds } });

@@ -3,18 +3,21 @@
 ## 🎯 **Cambios Implementados**
 
 ### ✅ **1. BaseRepository Pattern**
+
 - Nuevo sistema de repositorios con manejo unificado de errores
 - Operaciones CRUD estandarizadas con verificación de propiedad
 - Abstracción de conexiones a base de datos
 - Manejo consistente de errores con tipos específicos
 
 ### ✅ **2. ImageService Unificado**
+
 - Servicio centralizado para todas las operaciones de imágenes
 - Manejo automático de timeouts y reintentos
 - Generación automática de avatares de fallback
 - Validación de archivos de imagen
 
 ### ✅ **3. Repositorios Específicos**
+
 - `SalidaSocialRepository` - Para eventos sociales
 - `TeamSocialRepository` - Para eventos de equipo
 - `AcademiaRepository` - Para academias
@@ -26,13 +29,17 @@
 ### **API Routes - Antes vs Después**
 
 #### **ANTES (Patrón Antiguo):**
+
 ```typescript
 // ❌ Código antiguo con mucha repetición
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectDB();
 
@@ -42,18 +49,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       .populate("sponsors");
 
     if (!salida) {
-      return NextResponse.json({ message: "Salida no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Salida no encontrada" },
+        { status: 404 }
+      );
     }
 
     // Lógica compleja para manejar imágenes...
     let imagenUrl;
     try {
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Image fetch timeout')), 3000)
+        setTimeout(() => reject(new Error("Image fetch timeout")), 3000)
       );
       imagenUrl = await Promise.race([
         getProfileImage("profile-image.jpg", salida.creador_id._id.toString()),
-        timeoutPromise
+        timeoutPromise,
       ]);
     } catch (error) {
       imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -71,11 +81,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 ```
 
 #### **DESPUÉS (Patrón Nuevo):**
+
 ```typescript
 // ✅ Código nuevo, limpio y reutilizable
 import { SalidaSocialRepository, NotFoundError } from "@/libs/repository";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const repository = new SalidaSocialRepository();
     const salida = await repository.findWithPopulatedData(params.id);
@@ -86,10 +100,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
 
-    return NextResponse.json({
-      message: "Server Error",
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: "Server Error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 ```
@@ -97,9 +114,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 ### **Operaciones CRUD - Antes vs Después**
 
 #### **ANTES (Update con verificación manual):**
+
 ```typescript
 // ❌ Código repetitivo para verificar propiedad
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -109,7 +130,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const salida = await SalidaSocial.findById(params.id);
   if (!salida) {
-    return NextResponse.json({ message: "Salida no encontrada" }, { status: 404 });
+    return NextResponse.json(
+      { message: "Salida no encontrada" },
+      { status: 404 }
+    );
   }
 
   if (salida.creador_id.toString() !== session.user.id) {
@@ -119,18 +143,27 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const data = await req.json();
 
   try {
-    const actualizada = await SalidaSocial.findByIdAndUpdate(params.id, data, { new: true });
+    const actualizada = await SalidaSocial.findByIdAndUpdate(params.id, data, {
+      new: true,
+    });
     return NextResponse.json(actualizada, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: "Error al actualizar" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al actualizar" },
+      { status: 500 }
+    );
   }
 }
 ```
 
 #### **DESPUÉS (Update automático con verificación):**
+
 ```typescript
 // ✅ Una sola línea hace toda la verificación
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -155,7 +188,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ message: error.message }, { status: 403 });
     }
-    return NextResponse.json({ message: "Error al actualizar" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al actualizar" },
+      { status: 500 }
+    );
   }
 }
 ```
@@ -163,6 +199,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 ### **Manejo de Imágenes - Antes vs Después**
 
 #### **ANTES (Funciones separadas):**
+
 ```typescript
 // ❌ Funciones dispersas sin consistencia
 import { saveSocialImage } from "@/app/api/social/saveSocialImage";
@@ -173,6 +210,7 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 ```
 
 #### **DESPUÉS (Servicio unificado):**
+
 ```typescript
 // ✅ Un solo servicio para todo
 import { ImageService } from "@/libs/services/ImageService";
@@ -183,7 +221,10 @@ const teamImageUrl = await ImageService.saveTeamSocialImage(file, teamId);
 const academyImageUrl = await ImageService.saveAcademyImage(file, academyId);
 
 // Obtener imágenes con fallback automático
-const profileImage = await ImageService.getProfileImageWithFallback(userId, userName);
+const profileImage = await ImageService.getProfileImageWithFallback(
+  userId,
+  userName
+);
 
 // Generar avatares
 const avatarUrl = ImageService.generateAvatarUrl("Juan Pérez");
@@ -200,6 +241,7 @@ if (!validation.isValid) {
 ## 📚 **Nuevas APIs Disponibles**
 
 ### **BaseRepository Methods:**
+
 ```typescript
 // Operaciones básicas
 await repository.findById(id, populate);
@@ -218,6 +260,7 @@ await repository.exists(filters);
 ```
 
 ### **SalidaSocialRepository Methods:**
+
 ```typescript
 const repo = new SalidaSocialRepository();
 
@@ -235,6 +278,7 @@ await repo.updateWithImage(id, data, ownerId, imageFile);
 ```
 
 ### **ImageService Methods:**
+
 ```typescript
 // Subida de imágenes
 await ImageService.uploadImage(file, path, fileName, options);
@@ -264,7 +308,7 @@ const teamRepo = RepositoryFactory.getTeamSocialRepository();
 const academyRepo = RepositoryFactory.getAcademiaRepository();
 
 // Por tipo
-const repo = RepositoryFactory.getRepository('social'); // 'team-social' | 'academia'
+const repo = RepositoryFactory.getRepository("social"); // 'team-social' | 'academia'
 ```
 
 ---

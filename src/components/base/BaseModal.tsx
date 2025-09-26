@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, ReactNode, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useRef, ReactNode, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
 
 export interface BaseModalProps {
   /**
@@ -139,7 +139,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   header,
   footer,
   animation = "scale",
-  zIndex = 50
+  zIndex = 50,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -151,75 +151,87 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     default: "max-w-md",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
-    full: "max-w-[95vw] max-h-[95vh]"
+    full: "max-w-[95vw] max-h-[95vh]",
   };
 
   // Animation classes
   const animationClasses = {
     scale: {
       enter: "animate-in zoom-in-95 duration-200",
-      exit: "animate-out zoom-out-95 duration-150"
+      exit: "animate-out zoom-out-95 duration-150",
     },
     slide: {
       enter: "animate-in slide-in-from-bottom-4 duration-200",
-      exit: "animate-out slide-out-to-bottom-4 duration-150"
+      exit: "animate-out slide-out-to-bottom-4 duration-150",
     },
     fade: {
       enter: "animate-in fade-in duration-200",
-      exit: "animate-out fade-out duration-150"
-    }
+      exit: "animate-out fade-out duration-150",
+    },
   };
 
   // Focus trap functionality
-  const getTabbableElements = useCallback((element: HTMLElement): HTMLElement[] => {
-    const tabbableSelectors = [
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'textarea:not([disabled])',
-      'select:not([disabled])',
-      'a[href]',
-      '[tabindex]:not([tabindex="-1"])'
-    ].join(', ');
+  const getTabbableElements = useCallback(
+    (element: HTMLElement): HTMLElement[] => {
+      const tabbableSelectors = [
+        "button:not([disabled])",
+        "input:not([disabled])",
+        "textarea:not([disabled])",
+        "select:not([disabled])",
+        "a[href]",
+        '[tabindex]:not([tabindex="-1"])',
+      ].join(", ");
 
-    return Array.from(element.querySelectorAll(tabbableSelectors));
-  }, []);
+      return Array.from(element.querySelectorAll(tabbableSelectors));
+    },
+    []
+  );
 
-  const handleTabKey = useCallback((e: KeyboardEvent) => {
-    if (!focusTrap || !modalRef.current) return;
+  const handleTabKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (!focusTrap || !modalRef.current) return;
 
-    const tabbableElements = getTabbableElements(modalRef.current);
-    const firstElement = tabbableElements[0];
-    const lastElement = tabbableElements[tabbableElements.length - 1];
+      const tabbableElements = getTabbableElements(modalRef.current);
+      const firstElement = tabbableElements[0];
+      const lastElement = tabbableElements[tabbableElements.length - 1];
 
-    if (e.shiftKey) {
-      if (document.activeElement === firstElement) {
-        e.preventDefault();
-        lastElement?.focus();
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
       }
-    } else {
-      if (document.activeElement === lastElement) {
-        e.preventDefault();
-        firstElement?.focus();
-      }
-    }
-  }, [focusTrap, getTabbableElements]);
+    },
+    [focusTrap, getTabbableElements]
+  );
 
   // Keyboard event handler
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && closeOnEscape) {
-      onClose();
-    }
-    if (e.key === 'Tab') {
-      handleTabKey(e);
-    }
-  }, [closeOnEscape, onClose, handleTabKey]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape" && closeOnEscape) {
+        onClose();
+      }
+      if (e.key === "Tab") {
+        handleTabKey(e);
+      }
+    },
+    [closeOnEscape, onClose, handleTabKey]
+  );
 
   // Backdrop click handler
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    if (closeOnBackdrop && e.target === backdropRef.current) {
-      onClose();
-    }
-  }, [closeOnBackdrop, onClose]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (closeOnBackdrop && e.target === backdropRef.current) {
+        onClose();
+      }
+    },
+    [closeOnBackdrop, onClose]
+  );
 
   // Focus management
   useEffect(() => {
@@ -230,7 +242,9 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       // Set initial focus
       const focusElement = initialFocus
         ? modalRef.current?.querySelector(initialFocus)
-        : modalRef.current?.querySelector('button, input, textarea, select, a[href], [tabindex]:not([tabindex="-1"])');
+        : modalRef.current?.querySelector(
+            'button, input, textarea, select, a[href], [tabindex]:not([tabindex="-1"])'
+          );
 
       if (focusElement) {
         (focusElement as HTMLElement).focus();
@@ -251,7 +265,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 
     if (isOpen) {
       const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
 
       return () => {
         document.body.style.overflow = originalStyle;
@@ -262,9 +276,9 @@ export const BaseModal: React.FC<BaseModalProps> = ({
   // Keyboard event listeners
   useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
       return () => {
-        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener("keydown", handleKeyDown);
       };
     }
   }, [isOpen, handleKeyDown]);
@@ -307,12 +321,18 @@ export const BaseModal: React.FC<BaseModalProps> = ({
               ) : (
                 <>
                   {title && (
-                    <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+                    <h2
+                      id="modal-title"
+                      className="text-lg font-semibold text-gray-900"
+                    >
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p id="modal-description" className="mt-1 text-sm text-gray-600">
+                    <p
+                      id="modal-description"
+                      className="mt-1 text-sm text-gray-600"
+                    >
                       {description}
                     </p>
                   )}
@@ -345,9 +365,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         )}
 
         {/* Content */}
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
 
         {/* Footer */}
         {footer && (
@@ -388,11 +406,12 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "default",
-  loading = false
+  loading = false,
 }) => {
-  const confirmButtonClasses = variant === "danger"
-    ? "bg-red-600 hover:bg-red-700 text-white"
-    : "bg-blue-600 hover:bg-blue-700 text-white";
+  const confirmButtonClasses =
+    variant === "danger"
+      ? "bg-red-600 hover:bg-red-700 text-white"
+      : "bg-blue-600 hover:bg-blue-700 text-white";
 
   return (
     <BaseModal
@@ -442,13 +461,13 @@ export function useModal(initialOpen = false) {
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
-  const toggle = useCallback(() => setIsOpen(prev => !prev), []);
+  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
 
   return {
     isOpen,
     open,
     close,
     toggle,
-    setIsOpen
+    setIsOpen,
   };
 }

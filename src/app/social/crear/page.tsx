@@ -12,7 +12,11 @@ import mapboxgl from "mapbox-gl";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { set } from "mongoose";
-import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import {
+  useProvinces,
+  useLocalitiesByProvince,
+  useLocationFromCoords,
+} from "@/hooks/useArgentinaLocations";
 import { useSponsors } from "@/hooks/useSponsors";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
@@ -61,20 +65,24 @@ export default function CrearSalidaPage() {
     Array<{ display_name: string; lat: string; lon: string }>
   >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Estados para provincia/localidad
   const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [selectedLocality, setSelectedLocality] = useState<string>("");
   const [locationDetecting, setLocationDetecting] = useState(false);
   const [gpsLocationDetected, setGpsLocationDetected] = useState(false);
-  
+
   // Hooks para datos de ubicación
   const { data: provinces } = useProvinces();
   const { data: localities } = useLocalitiesByProvince(selectedProvince);
   const locationFromCoordsQuery = useLocationFromCoords();
-  
+
   // Hook para sponsors
-  const { data: sponsorsData, isLoading: sponsorsLoading, error: sponsorsError } = useSponsors();
+  const {
+    data: sponsorsData,
+    isLoading: sponsorsLoading,
+    error: sponsorsError,
+  } = useSponsors();
   const [ubicacion, setUbicacion] = useState("");
   const [coords, setCoords] = useState<Coords>({
     lat: -26.8333,
@@ -109,12 +117,12 @@ export default function CrearSalidaPage() {
     cbu: "",
     alias: "",
     sponsors: [] as string[],
-    profesorId: ""
+    profesorId: "",
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
-  
+
   // Coordenadas centrales de cada provincia
   const provinceCoords: Record<string, LatLng> = {
     tucuman: { lat: -26.8333, lng: -65.2167 },
@@ -143,17 +151,17 @@ export default function CrearSalidaPage() {
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords }));
-    
+
     // Actualizar mapa y marcador
     if (map.current) {
       map.current.flyTo({
         center: [coords.lng, coords.lat],
         zoom: 15, // Zoom más cercano para ubicaciones específicas
         speed: 1.5,
-        curve: 1.42
+        curve: 1.42,
       });
     }
-    
+
     if (marker.current) {
       marker.current.setLngLat([coords.lng, coords.lat]);
     }
@@ -168,20 +176,20 @@ export default function CrearSalidaPage() {
     setMarkerPos(coords);
     setFormData((prev) => ({ ...prev, coords, ubicacion: item.display_name }));
     setQuery(item.display_name);
-    
+
     // Actualizar mapa y marcador
     if (map.current) {
       map.current.flyTo({
         center: [coords.lng, coords.lat],
         zoom: 15,
         speed: 1.5,
-        curve: 1.42
+        curve: 1.42,
       });
     }
-    
+
     if (marker.current) {
       marker.current.setLngLat([coords.lng, coords.lat]);
-    };
+    }
     setSuggestions([]); // cerrar sugerencias
   };
 
@@ -259,118 +267,145 @@ export default function CrearSalidaPage() {
     }
 
     // Verificar si estamos en HTTPS (requerido para GPS en producción)
-    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
       toast.error("GPS requiere conexión segura (HTTPS)");
       return;
     }
 
     setLocationDetecting(true);
-    
+
     // Mostrar instrucciones más específicas para móviles
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const message = isMobile 
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    const message = isMobile
       ? "📱 Presiona 'Permitir' cuando aparezca la solicitud de ubicación"
       : "🌍 Buscando ubicación... Acepta los permisos cuando aparezcan";
-    
-    toast.loading(message, { 
+
+    toast.loading(message, {
       duration: 6000,
-      id: 'gps-search'
+      id: "gps-search",
     });
-    
+
     // Para dispositivos móviles, mostrar toast adicional con instrucciones
     if (isMobile) {
       setTimeout(() => {
-        toast("💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo", {
-          duration: 4000,
-          icon: "💡"
-        });
+        toast(
+          "💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo",
+          {
+            duration: 4000,
+            icon: "💡",
+          }
+        );
       }, 2000);
     }
-    
+
     // Intentar verificar si los permisos ya están concedidos (solo si está disponible)
     try {
       if (navigator.permissions && navigator.permissions.query) {
-        const permission = await navigator.permissions.query({ name: 'geolocation' });
-        if (permission.state === 'denied') {
+        const permission = await navigator.permissions.query({
+          name: "geolocation",
+        });
+        if (permission.state === "denied") {
           setLocationDetecting(false);
-          toast.dismiss('gps-search');
-          toast.error("🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página", { duration: 8000 });
+          toast.dismiss("gps-search");
+          toast.error(
+            "🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página",
+            { duration: 8000 }
+          );
           return;
         }
       }
     } catch (e) {
       // Ignorar errores de permissions API (no disponible en todos los navegadores)
     }
-    
+
     // Llamar directamente a getCurrentPosition (esto pide permisos automáticamente)
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const coords = {
           lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lng: position.coords.longitude,
         };
 
         try {
           // Detectar provincia y localidad usando TanStack Query
-          const locationData = await locationFromCoordsQuery.mutateAsync(coords);
-          
+          const locationData =
+            await locationFromCoordsQuery.mutateAsync(coords);
+
           // Buscar provincia en nuestros datos
-          const province = provinces?.find(p => 
-            p.name.toLowerCase().includes(locationData.province.toLowerCase()) ||
-            p.id === locationData.province
+          const province = provinces?.find(
+            (p) =>
+              p.name
+                .toLowerCase()
+                .includes(locationData.province.toLowerCase()) ||
+              p.id === locationData.province
           );
 
           if (province) {
             setSelectedProvince(province.id);
-            setFormData(prev => ({ ...prev, provincia: province.name }));
+            setFormData((prev) => ({ ...prev, provincia: province.name }));
 
             // Buscar localidad en esa provincia
-            const locality = province.localities.find(l => 
-              l.name.toLowerCase().includes(locationData.locality.toLowerCase()) ||
-              l.id === locationData.locality
+            const locality = province.localities.find(
+              (l) =>
+                l.name
+                  .toLowerCase()
+                  .includes(locationData.locality.toLowerCase()) ||
+                l.id === locationData.locality
             );
 
             if (locality) {
               setSelectedLocality(locality.id);
-              setFormData(prev => ({ ...prev, localidad: locality.name }));
+              setFormData((prev) => ({ ...prev, localidad: locality.name }));
             } else {
-              setFormData(prev => ({ ...prev, localidad: locationData.locality }));
+              setFormData((prev) => ({
+                ...prev,
+                localidad: locationData.locality,
+              }));
             }
-            
+
             // Centrar mapa en la provincia detectada si no tenemos coordenadas exactas del GPS
             if (!markerPos) {
               const provinceCenter = provinceCoords[province.id] || coords;
               setMarkerPos(provinceCenter);
-              setFormData(prev => ({ ...prev, coords: provinceCenter }));
+              setFormData((prev) => ({ ...prev, coords: provinceCenter }));
             }
           } else {
-            setFormData(prev => ({ 
-              ...prev, 
+            setFormData((prev) => ({
+              ...prev,
               provincia: locationData.province,
-              localidad: locationData.locality 
+              localidad: locationData.locality,
             }));
-            
+
             // Si no encontramos la provincia, al menos usar las coordenadas GPS
             if (!markerPos) {
               setMarkerPos(coords);
-              setFormData(prev => ({ ...prev, coords }));
+              setFormData((prev) => ({ ...prev, coords }));
             }
           }
 
           // Actualizar coordenadas del mapa
           handleCoordsChange(coords);
-          
+
           // Limpiar toast de loading y mostrar success
-          toast.dismiss('gps-search');
-          toast.success(`📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
+          toast.dismiss("gps-search");
+          toast.success(
+            `📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`
+          );
           setGpsLocationDetected(true);
         } catch (error) {
           console.error("Error detectando ubicación:", error);
-          
+
           // Limpiar toast de loading y mostrar error
-          toast.dismiss('gps-search');
+          toast.dismiss("gps-search");
           toast.error("⚠️ Error al detectar ubicación específica");
-          
+
           // Al menos actualizar coordenadas del mapa
           handleCoordsChange(coords);
         } finally {
@@ -380,43 +415,63 @@ export default function CrearSalidaPage() {
       (error) => {
         console.error("Error GPS:", error);
         setLocationDetecting(false);
-        
+
         // Limpiar toast de loading
-        toast.dismiss('gps-search');
-        
+        toast.dismiss("gps-search");
+
         // Mensajes de error más específicos con iconos e instrucciones para móviles
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             if (isMobile) {
-              toast.error("🙅‍♂️ Permisos denegados. Ve a Configuración > Sitios web > Ubicación y permite el acceso", { duration: 8000 });
+              toast.error(
+                "🙅‍♂️ Permisos denegados. Ve a Configuración > Sitios web > Ubicación y permite el acceso",
+                { duration: 8000 }
+              );
               // Mostrar instrucciones adicionales para móviles después de un momento
               setTimeout(() => {
-                toast("💡 En algunos móviles también puedes presionar el icono de candado en la barra de dirección", {
-                  duration: 6000,
-                  icon: "💡"
-                });
+                toast(
+                  "💡 En algunos móviles también puedes presionar el icono de candado en la barra de dirección",
+                  {
+                    duration: 6000,
+                    icon: "💡",
+                  }
+                );
               }, 1000);
             } else {
-              toast.error("🙅‍♂️ Permisos denegados. Habilita ubicación en configuración del navegador", { duration: 6000 });
+              toast.error(
+                "🙅‍♂️ Permisos denegados. Habilita ubicación en configuración del navegador",
+                { duration: 6000 }
+              );
             }
             break;
           case error.POSITION_UNAVAILABLE:
-            toast.error("📱 GPS no disponible. Verifica que esté activado en tu dispositivo", { duration: 5000 });
+            toast.error(
+              "📱 GPS no disponible. Verifica que esté activado en tu dispositivo",
+              { duration: 5000 }
+            );
             break;
           case error.TIMEOUT:
-            toast.error("⏱️ Tiempo agotado. Verifica tu conexión e intenta nuevamente", { duration: 4000 });
+            toast.error(
+              "⏱️ Tiempo agotado. Verifica tu conexión e intenta nuevamente",
+              { duration: 4000 }
+            );
             break;
           default:
-            toast.error("⚠️ Error de GPS. Intenta nuevamente", { duration: 4000 });
+            toast.error("⚠️ Error de GPS. Intenta nuevamente", {
+              duration: 4000,
+            });
             break;
         }
       },
       {
         enableHighAccuracy: false, // Cambiar a false para mejor compatibilidad móvil
         timeout: 20000, // Más tiempo para móviles (20s)
-        maximumAge: 30000 // Cache por 30 segundos (menos agresivo)
+        maximumAge: 30000, // Cache por 30 segundos (menos agresivo)
       }
     );
   };
@@ -437,38 +492,46 @@ export default function CrearSalidaPage() {
       debouncedFetch.cancel();
     };
   }, [debouncedFetch]);
-  
+
   // Actualizar posición del mapa cuando se selecciona una provincia manualmente
   useEffect(() => {
     // Validar que tenemos todo lo necesario y el mapa esté listo
-    if (!selectedProvince || !provinceCoords[selectedProvince] || !map.current) {
+    if (
+      !selectedProvince ||
+      !provinceCoords[selectedProvince] ||
+      !map.current
+    ) {
       return;
     }
 
     try {
       const provinceCenter = provinceCoords[selectedProvince];
-      
+
       // Solo actualizar si el mapa no tiene ya una posición específica del GPS
-      if (!markerPos || (markerPos.lat === defaultCoords.lat && markerPos.lng === defaultCoords.lng)) {
+      if (
+        !markerPos ||
+        (markerPos.lat === defaultCoords.lat &&
+          markerPos.lng === defaultCoords.lng)
+      ) {
         // Validar que el mapa esté completamente cargado
         if (map.current.isStyleLoaded()) {
           // Centrar el mapa en la provincia seleccionada
           map.current.easeTo({
             center: [provinceCenter.lng, provinceCenter.lat],
             zoom: 10, // Zoom apropiado para ver la provincia
-            duration: 1000
+            duration: 1000,
           });
-          
+
           // Actualizar marker position
           setMarkerPos(provinceCenter);
-          
+
           // Mover el marcador si existe
           if (marker.current) {
             marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
           }
-          
+
           // Actualizar formData con las nuevas coordenadas
-          setFormData(prev => ({ ...prev, coords: provinceCenter }));
+          setFormData((prev) => ({ ...prev, coords: provinceCenter }));
         } else {
           // Si el mapa aún no está cargado, esperar y reintentar
           const retryTimeout = setTimeout(() => {
@@ -476,25 +539,28 @@ export default function CrearSalidaPage() {
               map.current.easeTo({
                 center: [provinceCenter.lng, provinceCenter.lat],
                 zoom: 10,
-                duration: 1000
+                duration: 1000,
               });
               setMarkerPos(provinceCenter);
               if (marker.current) {
-                marker.current.setLngLat([provinceCenter.lng, provinceCenter.lat]);
+                marker.current.setLngLat([
+                  provinceCenter.lng,
+                  provinceCenter.lat,
+                ]);
               }
-              setFormData(prev => ({ ...prev, coords: provinceCenter }));
+              setFormData((prev) => ({ ...prev, coords: provinceCenter }));
             }
           }, 1000);
-          
+
           return () => clearTimeout(retryTimeout);
         }
       }
     } catch (error) {
-      console.error('Error actualizando posición del mapa:', error);
+      console.error("Error actualizando posición del mapa:", error);
       // En caso de error, al menos actualizar las coordenadas sin tocar el mapa
       const provinceCenter = provinceCoords[selectedProvince];
       setMarkerPos(provinceCenter);
-      setFormData(prev => ({ ...prev, coords: provinceCenter }));
+      setFormData((prev) => ({ ...prev, coords: provinceCenter }));
     }
   }, [selectedProvince, defaultCoords.lat, defaultCoords.lng]);
 
@@ -648,23 +714,38 @@ export default function CrearSalidaPage() {
           >
             {locationDetecting ? (
               <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                <svg
+                  className="animate-spin h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
                 </svg>
                 Detectando ubicación...
               </>
             ) : (
-              <>
-                📍 Detectar mi ubicación
-              </>
+              <>📍 Detectar mi ubicación</>
             )}
           </button>
-          
+
           {/* Texto explicativo mejorado */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-700">
-              💡 <strong>Tip:</strong> Presiona "Usar mi ubicación" para detectar automáticamente tu provincia, localidad y posición en el mapa.
+              💡 <strong>Tip:</strong> Presiona "Usar mi ubicación" para
+              detectar automáticamente tu provincia, localidad y posición en el
+              mapa.
             </p>
           </div>
         </div>
@@ -684,22 +765,22 @@ export default function CrearSalidaPage() {
               setSelectedProvince(provinceId);
               setSelectedLocality(""); // Reset localidad
               setGpsLocationDetected(false); // Reset GPS indicator si cambian manualmente
-            
-            const province = provinces?.find(p => p.id === provinceId);
-            setFormData(prev => ({ 
-              ...prev, 
-              provincia: province?.name || "",
-              localidad: "" 
-            }));
-          }}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
-        >
-          <option value="">Seleccionar Provincia</option>
-          {provinces?.map(province => (
-            <option key={province.id} value={province.id}>
-              {province.name}
-            </option>
-          ))}
+
+              const province = provinces?.find((p) => p.id === provinceId);
+              setFormData((prev) => ({
+                ...prev,
+                provincia: province?.name || "",
+                localidad: "",
+              }));
+            }}
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
+          >
+            <option value="">Seleccionar Provincia</option>
+            {provinces?.map((province) => (
+              <option key={province.id} value={province.id}>
+                {province.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -711,47 +792,59 @@ export default function CrearSalidaPage() {
             </div>
           )}
           <select
-          name="localidad"
-          value={selectedLocality}
-          onChange={(e) => {
-            const localityId = e.target.value;
-            setSelectedLocality(localityId);
-            setGpsLocationDetected(false); // Reset GPS indicator si cambian manualmente
-            
-            const locality = localities?.find(l => l.id === localityId);
-            setFormData(prev => ({ 
-              ...prev, 
-              localidad: locality?.name || "" 
-            }));
-          }}
-          disabled={!selectedProvince}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground disabled:opacity-50"
-        >
-          <option value="">
-            {!selectedProvince ? "Primero selecciona una provincia" : "Seleccionar Localidad"}
-          </option>
-          {localities?.map(locality => (
-            <option key={locality.id} value={locality.id}>
-              {locality.name}
+            name="localidad"
+            value={selectedLocality}
+            onChange={(e) => {
+              const localityId = e.target.value;
+              setSelectedLocality(localityId);
+              setGpsLocationDetected(false); // Reset GPS indicator si cambian manualmente
+
+              const locality = localities?.find((l) => l.id === localityId);
+              setFormData((prev) => ({
+                ...prev,
+                localidad: locality?.name || "",
+              }));
+            }}
+            disabled={!selectedProvince}
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground disabled:opacity-50"
+          >
+            <option value="">
+              {!selectedProvince
+                ? "Primero selecciona una provincia"
+                : "Seleccionar Localidad"}
             </option>
-          ))}
+            {localities?.map((locality) => (
+              <option key={locality.id} value={locality.id}>
+                {locality.name}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Mostrar ubicación detectada */}
         {formData.provincia && formData.localidad && (
-          <div className={`p-3 border rounded-[15px] ${
-            gpsLocationDetected 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-gray-50 border-gray-200'
-          }`}>
-            <p className={`text-sm ${
-              gpsLocationDetected ? 'text-green-700' : 'text-gray-600'
-            }`}>
+          <div
+            className={`p-3 border rounded-[15px] ${
+              gpsLocationDetected
+                ? "bg-green-50 border-green-200"
+                : "bg-gray-50 border-gray-200"
+            }`}
+          >
+            <p
+              className={`text-sm ${
+                gpsLocationDetected ? "text-green-700" : "text-gray-600"
+              }`}
+            >
               {gpsLocationDetected ? (
-                <>🎯 <strong>Ubicación detectada automáticamente:</strong> {formData.provincia}, {formData.localidad}</>
+                <>
+                  🎯 <strong>Ubicación detectada automáticamente:</strong>{" "}
+                  {formData.provincia}, {formData.localidad}
+                </>
               ) : (
-                <>📍 <strong>Ubicación seleccionada:</strong> {formData.provincia}, {formData.localidad}</>
+                <>
+                  📍 <strong>Ubicación seleccionada:</strong>{" "}
+                  {formData.provincia}, {formData.localidad}
+                </>
               )}
             </p>
           </div>
@@ -864,9 +957,7 @@ export default function CrearSalidaPage() {
       </label> */}
 
       <div className="space-y-2">
-        <label className="block">
-          Descripción{" "}
-        </label>
+        <label className="block">Descripción </label>
 
         <DescriptionEditor
           defaultValue={formData.descripcion}
@@ -876,7 +967,7 @@ export default function CrearSalidaPage() {
           maxChars={2000}
         />
       </div>
-{/* 
+      {/* 
       <label className="block">
         Que incluye la salida?
         <textarea
@@ -1014,24 +1105,26 @@ export default function CrearSalidaPage() {
             ))}
           </ul>
         )}
-        
         {/* Mostrar preview del profesor seleccionado */}
         {formData.profesorId && queryProfesor && (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px] mt-2">
             {(() => {
-              const selectedProfesor = profes.find(p => p._id === formData.profesorId);
+              const selectedProfesor = profes.find(
+                (p) => p._id === formData.profesorId
+              );
               return selectedProfesor ? (
                 <div className="flex items-center gap-3">
                   {selectedProfesor.imagen && (
-                    <img 
-                      src={selectedProfesor.imagen} 
+                    <img
+                      src={selectedProfesor.imagen}
                       alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
                       className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
                     />
                   )}
                   <div>
                     <p className="text-sm font-medium text-blue-800">
-                      👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname} {selectedProfesor.lastname}
+                      👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname}{" "}
+                      {selectedProfesor.lastname}
                     </p>
                     <p className="text-xs text-blue-600">
                       Este profesor aparecerá como instructor de la salida
@@ -1046,10 +1139,8 @@ export default function CrearSalidaPage() {
 
       {/* Selector de Sponsor */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Sponsor (opcional)
-        </label>
-        
+        <label className="block text-sm font-medium">Sponsor (opcional)</label>
+
         {sponsorsLoading ? (
           <div className="w-full px-4 py-4 border shadow-md rounded-[15px] bg-gray-100 text-gray-500 flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -1065,28 +1156,33 @@ export default function CrearSalidaPage() {
               Selecciona uno o más sponsors (opcional):
             </div>
             {sponsorsData?.data?.map((sponsor) => (
-              <label key={sponsor._id} className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer">
+              <label
+                key={sponsor._id}
+                className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer"
+              >
                 <input
                   type="checkbox"
                   checked={formData.sponsors.includes(sponsor._id)}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
-                        sponsors: [...prev.sponsors, sponsor._id]
+                        sponsors: [...prev.sponsors, sponsor._id],
                       }));
                     } else {
-                      setFormData(prev => ({
+                      setFormData((prev) => ({
                         ...prev,
-                        sponsors: prev.sponsors.filter(id => id !== sponsor._id)
+                        sponsors: prev.sponsors.filter(
+                          (id) => id !== sponsor._id
+                        ),
                       }));
                     }
                   }}
                   className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
                 />
                 {sponsor.imagen && (
-                  <img 
-                    src={sponsor.imagen} 
+                  <img
+                    src={sponsor.imagen}
                     alt={sponsor.name}
                     className="w-8 h-8 object-cover rounded"
                   />
@@ -1096,7 +1192,7 @@ export default function CrearSalidaPage() {
             ))}
           </div>
         )}
-        
+
         {/* Mostrar preview de sponsors seleccionados */}
         {formData.sponsors.length > 0 && sponsorsData?.data && (
           <div className="p-3 bg-orange-50 border border-orange-200 rounded-[15px]">
@@ -1104,18 +1200,22 @@ export default function CrearSalidaPage() {
               🎯 Sponsors seleccionados ({formData.sponsors.length}):
             </p>
             <div className="space-y-2">
-              {formData.sponsors.map(sponsorId => {
-                const sponsor = sponsorsData.data.find(s => s._id === sponsorId);
+              {formData.sponsors.map((sponsorId) => {
+                const sponsor = sponsorsData.data.find(
+                  (s) => s._id === sponsorId
+                );
                 return sponsor ? (
                   <div key={sponsor._id} className="flex items-center gap-2">
                     {sponsor.imagen && (
-                      <img 
-                        src={sponsor.imagen} 
+                      <img
+                        src={sponsor.imagen}
                         alt={sponsor.name}
                         className="w-6 h-6 object-cover rounded"
                       />
                     )}
-                    <span className="text-sm text-orange-700">{sponsor.name}</span>
+                    <span className="text-sm text-orange-700">
+                      {sponsor.name}
+                    </span>
                   </div>
                 ) : null;
               })}

@@ -97,7 +97,6 @@
 //   return NextResponse.json({ error: "forbidden" }, { status: 403 });
 // }
 
-
 //   // 3) Canje atómico: sólo si sigue "issued"
 //   const updated = await Ticket.findOneAndUpdate(
 //     { code, status: "issued" },
@@ -215,11 +214,20 @@ export async function POST(req: Request) {
   // 4) Canje atómico
   const updated = await Ticket.findOneAndUpdate(
     { code, status: "issued" },
-    { $set: { status: "redeemed", redeemedAt: new Date(), redeemedBy: staffUserId } },
+    {
+      $set: {
+        status: "redeemed",
+        redeemedAt: new Date(),
+        redeemedBy: staffUserId,
+      },
+    },
     { new: true }
   )
     .select("redeemedAt status")
-    .lean<{ redeemedAt?: Date | null; status: "issued" | "redeemed" | "invalid" }>();
+    .lean<{
+      redeemedAt?: Date | null;
+      status: "issued" | "redeemed" | "invalid";
+    }>();
 
   if (updated) {
     return NextResponse.json({
@@ -231,7 +239,10 @@ export async function POST(req: Request) {
   // 5) Revisar qué pasó si no se actualizó
   const existing = await Ticket.findOne({ code })
     .select("status redeemedAt")
-    .lean<{ status: "issued" | "redeemed" | "invalid"; redeemedAt?: Date | null }>();
+    .lean<{
+      status: "issued" | "redeemed" | "invalid";
+      redeemedAt?: Date | null;
+    }>();
 
   if (!existing) {
     return NextResponse.json({ error: "invalid_code" }, { status: 404 });

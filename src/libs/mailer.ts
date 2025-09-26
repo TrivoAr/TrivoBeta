@@ -9,10 +9,12 @@ export async function sendPaymentStatusEmail(to: string, estado: string) {
 
   if (estado === "aprobado") {
     subject = "✅ Tu pago fue aprobado";
-    body = "¡Felicitaciones! Tu pago fue aprobado. Ya tienes tu lugar asegurado.";
+    body =
+      "¡Felicitaciones! Tu pago fue aprobado. Ya tienes tu lugar asegurado.";
   } else if (estado === "rechazado") {
     subject = "❌ Tu pago fue rechazado";
-    body = "Lo sentimos, tu pago fue rechazado. Intenta nuevamente con otro medio.";
+    body =
+      "Lo sentimos, tu pago fue rechazado. Intenta nuevamente con otro medio.";
   } else {
     subject = "ℹ️ Estado de tu pago actualizado";
     body = `El estado de tu pago ahora es: ${estado}.`;

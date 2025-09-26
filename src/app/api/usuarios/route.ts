@@ -24,9 +24,11 @@ export async function GET(req: Request) {
         $or: [
           { firstname: searchRegex },
           { lastname: searchRegex },
-          { email: searchRegex }
-        ]
-      }).select("firstname lastname email rol").limit(20);
+          { email: searchRegex },
+        ],
+      })
+        .select("firstname lastname email rol")
+        .limit(20);
     } else {
       usuarios = await User.find()
         .select("firstname lastname email rol")

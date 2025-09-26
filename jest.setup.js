@@ -1,16 +1,16 @@
-import '@testing-library/jest-dom'
+import "@testing-library/jest-dom";
 
-global.fetch = jest.fn()
+global.fetch = jest.fn();
 
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
-}))
+}));
 
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -20,6 +20,6 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-})
+});
 
-process.env.TZ = 'America/Argentina/Tucuman'
+process.env.TZ = "America/Argentina/Tucuman";

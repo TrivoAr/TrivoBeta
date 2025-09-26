@@ -1,5 +1,5 @@
-import { Model, Document } from 'mongoose';
-import { connectDB } from '@/libs/mongodb';
+import { Model, Document } from "mongoose";
+import { connectDB } from "@/libs/mongodb";
 
 export interface RepositoryOptions {
   requireConnection?: boolean;
@@ -11,22 +11,26 @@ export interface BaseRepositoryError extends Error {
 }
 
 export class NotFoundError extends Error implements BaseRepositoryError {
-  code = 'NOT_FOUND';
+  code = "NOT_FOUND";
   statusCode = 404;
 
   constructor(resource: string, id?: string) {
-    super(id ? `${resource} con ID ${id} no encontrado` : `${resource} no encontrado`);
-    this.name = 'NotFoundError';
+    super(
+      id
+        ? `${resource} con ID ${id} no encontrado`
+        : `${resource} no encontrado`
+    );
+    this.name = "NotFoundError";
   }
 }
 
 export class UnauthorizedError extends Error implements BaseRepositoryError {
-  code = 'UNAUTHORIZED';
+  code = "UNAUTHORIZED";
   statusCode = 403;
 
-  constructor(action = 'realizar esta acción') {
+  constructor(action = "realizar esta acción") {
     super(`No tienes permiso para ${action}`);
-    this.name = 'UnauthorizedError';
+    this.name = "UnauthorizedError";
   }
 }
 
@@ -63,7 +67,7 @@ export abstract class BaseRepository<T extends Document> {
 
       if (populate) {
         if (Array.isArray(populate)) {
-          populate.forEach(field => query = query.populate(field) as any);
+          populate.forEach((field) => (query = query.populate(field) as any));
         } else {
           query = query.populate(populate) as any;
         }
@@ -98,7 +102,7 @@ export abstract class BaseRepository<T extends Document> {
   async findByIdWithOwnerCheck(
     id: string,
     ownerId: string,
-    ownerField = 'creador_id',
+    ownerField = "creador_id",
     options: RepositoryOptions = {}
   ): Promise<T> {
     const document = await this.findByIdOrThrow(id, undefined, options);
@@ -134,15 +138,17 @@ export abstract class BaseRepository<T extends Document> {
     id: string,
     data: Partial<T>,
     ownerId: string,
-    ownerField = 'creador_id',
+    ownerField = "creador_id",
     options: RepositoryOptions = {}
   ): Promise<T> {
     await this.findByIdWithOwnerCheck(id, ownerId, ownerField, options);
 
     try {
-      const updated = await this.model.findByIdAndUpdate(id, data, {
-        new: true
-      }).exec();
+      const updated = await this.model
+        .findByIdAndUpdate(id, data, {
+          new: true,
+        })
+        .exec();
 
       if (!updated) {
         throw new NotFoundError(this.resourceName, id);
@@ -150,7 +156,10 @@ export abstract class BaseRepository<T extends Document> {
 
       return updated;
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof UnauthorizedError
+      ) {
         throw error;
       }
       throw this.handleError(error, `actualizar ${this.resourceName}`);
@@ -163,7 +172,7 @@ export abstract class BaseRepository<T extends Document> {
   async deleteWithOwnerCheck(
     id: string,
     ownerId: string,
-    ownerField = 'creador_id',
+    ownerField = "creador_id",
     options: RepositoryOptions = {}
   ): Promise<T> {
     await this.findByIdWithOwnerCheck(id, ownerId, ownerField, options);
@@ -177,7 +186,10 @@ export abstract class BaseRepository<T extends Document> {
 
       return deleted;
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof UnauthorizedError
+      ) {
         throw error;
       }
       throw this.handleError(error, `eliminar ${this.resourceName}`);
@@ -210,7 +222,9 @@ export abstract class BaseRepository<T extends Document> {
 
       if (options.populate) {
         if (Array.isArray(options.populate)) {
-          options.populate.forEach(field => query = query.populate(field) as any);
+          options.populate.forEach(
+            (field) => (query = query.populate(field) as any)
+          );
         } else {
           query = query.populate(options.populate) as any;
         }
@@ -255,7 +269,10 @@ export abstract class BaseRepository<T extends Document> {
       const document = await this.model.exists(filters).exec();
       return !!document;
     } catch (error) {
-      throw this.handleError(error, `verificar existencia de ${this.resourceName}`);
+      throw this.handleError(
+        error,
+        `verificar existencia de ${this.resourceName}`
+      );
     }
   }
 
@@ -263,7 +280,10 @@ export abstract class BaseRepository<T extends Document> {
    * Handle and standardize errors
    */
   protected handleError(error: any, operation: string): BaseRepositoryError {
-    console.error(`[${this.resourceName.toUpperCase()}_REPOSITORY] Error al ${operation}:`, error);
+    console.error(
+      `[${this.resourceName.toUpperCase()}_REPOSITORY] Error al ${operation}:`,
+      error
+    );
 
     if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
       return error;
@@ -271,23 +291,29 @@ export abstract class BaseRepository<T extends Document> {
 
     // MongoDB duplicate key error
     if (error.code === 11000) {
-      const duplicateError = new Error('Ya existe un registro con estos datos') as BaseRepositoryError;
-      duplicateError.code = 'DUPLICATE_KEY';
+      const duplicateError = new Error(
+        "Ya existe un registro con estos datos"
+      ) as BaseRepositoryError;
+      duplicateError.code = "DUPLICATE_KEY";
       duplicateError.statusCode = 409;
       return duplicateError;
     }
 
     // MongoDB validation error
-    if (error.name === 'ValidationError') {
-      const validationError = new Error('Datos inválidos proporcionados') as BaseRepositoryError;
-      validationError.code = 'VALIDATION_ERROR';
+    if (error.name === "ValidationError") {
+      const validationError = new Error(
+        "Datos inválidos proporcionados"
+      ) as BaseRepositoryError;
+      validationError.code = "VALIDATION_ERROR";
       validationError.statusCode = 400;
       return validationError;
     }
 
     // Generic server error
-    const serverError = new Error(`Error interno al ${operation}`) as BaseRepositoryError;
-    serverError.code = 'INTERNAL_SERVER_ERROR';
+    const serverError = new Error(
+      `Error interno al ${operation}`
+    ) as BaseRepositoryError;
+    serverError.code = "INTERNAL_SERVER_ERROR";
     serverError.statusCode = 500;
     return serverError;
   }

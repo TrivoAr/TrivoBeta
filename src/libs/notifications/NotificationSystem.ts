@@ -1,16 +1,26 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { observabilitySystem } from '../performance/ObservabilitySystem';
+import React from "react";
+import { observabilitySystem } from "../performance/ObservabilitySystem";
 
 /**
  * Notification Types
  */
-export type NotificationType = 'info' | 'success' | 'warning' | 'error' | 'system';
+export type NotificationType =
+  | "info"
+  | "success"
+  | "warning"
+  | "error"
+  | "system";
 
-export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
+export type NotificationPriority = "low" | "medium" | "high" | "critical";
 
-export type NotificationChannel = 'in-app' | 'push' | 'email' | 'sms' | 'webhook';
+export type NotificationChannel =
+  | "in-app"
+  | "push"
+  | "email"
+  | "sms"
+  | "webhook";
 
 /**
  * Notification Definition
@@ -43,8 +53,8 @@ export interface Notification {
 export interface NotificationAction {
   id: string;
   label: string;
-  type: 'button' | 'link';
-  variant?: 'primary' | 'secondary' | 'danger';
+  type: "button" | "link";
+  variant?: "primary" | "secondary" | "danger";
   url?: string;
   handler?: () => void | Promise<void>;
 }
@@ -90,7 +100,8 @@ export class NotificationSystem {
   private eventSource: EventSource | null = null;
   private webSocket: WebSocket | null = null;
   private serviceWorker: ServiceWorkerRegistration | null = null;
-  private listeners: Map<string, Set<(event: RealtimeEvent) => void>> = new Map();
+  private listeners: Map<string, Set<(event: RealtimeEvent) => void>> =
+    new Map();
   private notificationQueue: Notification[] = [];
   private isOnline = true;
   private config: NotificationSystemConfig;
@@ -101,10 +112,10 @@ export class NotificationSystem {
       defaultTTL: 24 * 60 * 60 * 1000, // 24 hours
       enablePush: true,
       enableRealtime: true,
-      realtimeUrl: '/api/realtime',
-      pushEndpoint: '/api/push/subscribe',
+      realtimeUrl: "/api/realtime",
+      pushEndpoint: "/api/push/subscribe",
       vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-      ...config
+      ...config,
     };
 
     this.initializeEventListeners();
@@ -116,7 +127,7 @@ export class NotificationSystem {
    * Send notification
    */
   async sendNotification(
-    notification: Omit<Notification, 'id' | 'timestamp' | 'metadata'>
+    notification: Omit<Notification, "id" | "timestamp" | "metadata">
   ): Promise<string> {
     const id = this.generateId();
     const fullNotification: Notification = {
@@ -128,8 +139,8 @@ export class NotificationSystem {
         dismissed: false,
         clicked: false,
         expiresAt: Date.now() + this.config.defaultTTL,
-        ...notification.data?.metadata
-      }
+        ...notification.data?.metadata,
+      },
     };
 
     // Store notification
@@ -139,19 +150,19 @@ export class NotificationSystem {
     await this.processNotificationChannels(fullNotification);
 
     // Emit to listeners
-    this.emit('notification:created', fullNotification);
+    this.emit("notification:created", fullNotification);
 
     // Record metrics
-    observabilitySystem.incrementCounter('notifications_sent', 1, {
+    observabilitySystem.incrementCounter("notifications_sent", 1, {
       type: notification.type,
-      priority: notification.priority
+      priority: notification.priority,
     });
 
-    observabilitySystem.recordEvent('notification_sent', 'info', {
+    observabilitySystem.recordEvent("notification_sent", "info", {
       notificationId: id,
       type: notification.type,
       priority: notification.priority,
-      channels: notification.channels
+      channels: notification.channels,
     });
 
     // Cleanup old notifications
@@ -165,7 +176,7 @@ export class NotificationSystem {
    */
   async sendToUser(
     userId: string,
-    notification: Omit<Notification, 'id' | 'timestamp' | 'metadata' | 'userId'>
+    notification: Omit<Notification, "id" | "timestamp" | "metadata" | "userId">
   ): Promise<string> {
     const subscription = this.subscriptions.get(userId);
     if (!subscription) {
@@ -174,17 +185,17 @@ export class NotificationSystem {
 
     // Filter by user preferences
     if (!this.shouldSendToUser(notification, subscription)) {
-      observabilitySystem.recordEvent('notification_filtered', 'info', {
+      observabilitySystem.recordEvent("notification_filtered", "info", {
         userId,
-        reason: 'user_preferences'
+        reason: "user_preferences",
       });
-      return '';
+      return "";
     }
 
     return this.sendNotification({
       ...notification,
       userId,
-      channels: subscription.channels
+      channels: subscription.channels,
     });
   }
 
@@ -192,24 +203,30 @@ export class NotificationSystem {
    * Send bulk notifications
    */
   async sendBulk(
-    notifications: Array<Omit<Notification, 'id' | 'timestamp' | 'metadata'>>
+    notifications: Array<Omit<Notification, "id" | "timestamp" | "metadata">>
   ): Promise<string[]> {
     const results = await Promise.allSettled(
-      notifications.map(notification => this.sendNotification(notification))
+      notifications.map((notification) => this.sendNotification(notification))
     );
 
     const successfulIds = results
-      .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
-      .map(result => result.value);
+      .filter(
+        (result): result is PromiseFulfilledResult<string> =>
+          result.status === "fulfilled"
+      )
+      .map((result) => result.value);
 
     const errors = results
-      .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-      .map(result => result.reason);
+      .filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === "rejected"
+      )
+      .map((result) => result.reason);
 
     if (errors.length > 0) {
-      observabilitySystem.recordEvent('bulk_notification_errors', 'error', {
+      observabilitySystem.recordEvent("bulk_notification_errors", "error", {
         errorCount: errors.length,
-        totalCount: notifications.length
+        totalCount: notifications.length,
       });
     }
 
@@ -223,13 +240,13 @@ export class NotificationSystem {
     this.subscriptions.set(subscription.userId, subscription);
 
     // Setup push notifications if enabled
-    if (subscription.channels.includes('push') && this.config.enablePush) {
+    if (subscription.channels.includes("push") && this.config.enablePush) {
       await this.setupPushSubscription(subscription);
     }
 
-    observabilitySystem.recordEvent('user_subscribed', 'info', {
+    observabilitySystem.recordEvent("user_subscribed", "info", {
       userId: subscription.userId,
-      channels: subscription.channels
+      channels: subscription.channels,
     });
   }
 
@@ -242,11 +259,11 @@ export class NotificationSystem {
       this.subscriptions.delete(userId);
 
       // Remove push subscription
-      if (subscription.channels.includes('push')) {
+      if (subscription.channels.includes("push")) {
         await this.removePushSubscription(userId);
       }
 
-      observabilitySystem.recordEvent('user_unsubscribed', 'info', { userId });
+      observabilitySystem.recordEvent("user_unsubscribed", "info", { userId });
     }
   }
 
@@ -258,11 +275,11 @@ export class NotificationSystem {
     if (!notification) return false;
 
     notification.metadata.read = true;
-    this.emit('notification:read', notification);
+    this.emit("notification:read", notification);
 
-    observabilitySystem.recordEvent('notification_read', 'info', {
+    observabilitySystem.recordEvent("notification_read", "info", {
       notificationId,
-      type: notification.type
+      type: notification.type,
     });
 
     return true;
@@ -276,11 +293,11 @@ export class NotificationSystem {
     if (!notification) return false;
 
     notification.metadata.dismissed = true;
-    this.emit('notification:dismissed', notification);
+    this.emit("notification:dismissed", notification);
 
-    observabilitySystem.recordEvent('notification_dismissed', 'info', {
+    observabilitySystem.recordEvent("notification_dismissed", "info", {
       notificationId,
-      type: notification.type
+      type: notification.type,
     });
 
     return true;
@@ -289,11 +306,14 @@ export class NotificationSystem {
   /**
    * Execute notification action
    */
-  async executeAction(notificationId: string, actionId: string): Promise<boolean> {
+  async executeAction(
+    notificationId: string,
+    actionId: string
+  ): Promise<boolean> {
     const notification = this.notifications.get(notificationId);
     if (!notification) return false;
 
-    const action = notification.actions?.find(a => a.id === actionId);
+    const action = notification.actions?.find((a) => a.id === actionId);
     if (!action) return false;
 
     try {
@@ -304,20 +324,20 @@ export class NotificationSystem {
       }
 
       notification.metadata.clicked = true;
-      this.emit('notification:action', { notification, action });
+      this.emit("notification:action", { notification, action });
 
-      observabilitySystem.recordEvent('notification_action_executed', 'info', {
+      observabilitySystem.recordEvent("notification_action_executed", "info", {
         notificationId,
         actionId,
-        actionType: action.type
+        actionType: action.type,
       });
 
       return true;
     } catch (error) {
-      observabilitySystem.recordEvent('notification_action_error', 'error', {
+      observabilitySystem.recordEvent("notification_action_error", "error", {
         notificationId,
         actionId,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
       return false;
     }
@@ -339,20 +359,24 @@ export class NotificationSystem {
 
     // Filter by user
     if (userId) {
-      notifications = notifications.filter(n => n.userId === userId);
+      notifications = notifications.filter((n) => n.userId === userId);
     }
 
     // Apply filters
     if (filters.type) {
-      notifications = notifications.filter(n => n.type === filters.type);
+      notifications = notifications.filter((n) => n.type === filters.type);
     }
 
     if (filters.read !== undefined) {
-      notifications = notifications.filter(n => n.metadata.read === filters.read);
+      notifications = notifications.filter(
+        (n) => n.metadata.read === filters.read
+      );
     }
 
     if (filters.dismissed !== undefined) {
-      notifications = notifications.filter(n => n.metadata.dismissed === filters.dismissed);
+      notifications = notifications.filter(
+        (n) => n.metadata.dismissed === filters.dismissed
+      );
     }
 
     // Sort by timestamp (newest first)
@@ -370,7 +394,8 @@ export class NotificationSystem {
    * Get unread count for user
    */
   getUnreadCount(userId: string): number {
-    return this.getNotifications(userId, { read: false, dismissed: false }).length;
+    return this.getNotifications(userId, { read: false, dismissed: false })
+      .length;
   }
 
   /**
@@ -378,13 +403,13 @@ export class NotificationSystem {
    */
   clearAll(userId: string): void {
     const userNotifications = this.getNotifications(userId);
-    userNotifications.forEach(notification => {
+    userNotifications.forEach((notification) => {
       this.notifications.delete(notification.id);
     });
 
-    observabilitySystem.recordEvent('notifications_cleared', 'info', {
+    observabilitySystem.recordEvent("notifications_cleared", "info", {
       userId,
-      count: userNotifications.length
+      count: userNotifications.length,
     });
   }
 
@@ -411,16 +436,16 @@ export class NotificationSystem {
     const event: RealtimeEvent = {
       type: eventType,
       payload,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     const callbacks = this.listeners.get(eventType);
     if (callbacks) {
-      callbacks.forEach(callback => {
+      callbacks.forEach((callback) => {
         try {
           callback(event);
         } catch (error) {
-          console.error('Event listener error:', error);
+          console.error("Event listener error:", error);
         }
       });
     }
@@ -429,28 +454,30 @@ export class NotificationSystem {
   /**
    * Process notification through channels
    */
-  private async processNotificationChannels(notification: Notification): Promise<void> {
-    const promises = notification.channels.map(async channel => {
+  private async processNotificationChannels(
+    notification: Notification
+  ): Promise<void> {
+    const promises = notification.channels.map(async (channel) => {
       try {
         switch (channel) {
-          case 'in-app':
+          case "in-app":
             await this.sendInAppNotification(notification);
             break;
-          case 'push':
+          case "push":
             await this.sendPushNotification(notification);
             break;
-          case 'email':
+          case "email":
             await this.sendEmailNotification(notification);
             break;
-          case 'webhook':
+          case "webhook":
             await this.sendWebhookNotification(notification);
             break;
         }
       } catch (error) {
-        observabilitySystem.recordEvent('notification_channel_error', 'error', {
+        observabilitySystem.recordEvent("notification_channel_error", "error", {
           notificationId: notification.id,
           channel,
-          error: (error as Error).message
+          error: (error as Error).message,
         });
       }
     });
@@ -461,9 +488,11 @@ export class NotificationSystem {
   /**
    * Send in-app notification
    */
-  private async sendInAppNotification(notification: Notification): Promise<void> {
+  private async sendInAppNotification(
+    notification: Notification
+  ): Promise<void> {
     // Emit to real-time listeners
-    this.emit('in-app:notification', notification);
+    this.emit("in-app:notification", notification);
 
     // If offline, queue for later
     if (!this.isOnline) {
@@ -474,49 +503,55 @@ export class NotificationSystem {
   /**
    * Send push notification
    */
-  private async sendPushNotification(notification: Notification): Promise<void> {
+  private async sendPushNotification(
+    notification: Notification
+  ): Promise<void> {
     if (!this.serviceWorker) return;
 
     try {
       await this.serviceWorker.showNotification(notification.title, {
         body: notification.message,
-        icon: '/icons/notification-icon.png',
-        badge: '/icons/notification-badge.png',
+        icon: "/icons/notification-icon.png",
+        badge: "/icons/notification-badge.png",
         tag: notification.id,
         data: notification.data,
-        actions: notification.actions?.map(action => ({
+        actions: notification.actions?.map((action) => ({
           action: action.id,
-          title: action.label
+          title: action.label,
         })),
-        requireInteraction: notification.priority === 'critical'
+        requireInteraction: notification.priority === "critical",
       });
     } catch (error) {
-      console.error('Push notification error:', error);
+      console.error("Push notification error:", error);
     }
   }
 
   /**
    * Send email notification
    */
-  private async sendEmailNotification(notification: Notification): Promise<void> {
+  private async sendEmailNotification(
+    notification: Notification
+  ): Promise<void> {
     if (!notification.userId) return;
 
-    await fetch('/api/notifications/email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch("/api/notifications/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         userId: notification.userId,
         subject: notification.title,
         body: notification.message,
-        data: notification.data
-      })
+        data: notification.data,
+      }),
     });
   }
 
   /**
    * Send webhook notification
    */
-  private async sendWebhookNotification(notification: Notification): Promise<void> {
+  private async sendWebhookNotification(
+    notification: Notification
+  ): Promise<void> {
     const subscription = notification.userId
       ? this.subscriptions.get(notification.userId)
       : null;
@@ -525,9 +560,9 @@ export class NotificationSystem {
     if (!webhookUrl) return;
 
     await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(notification)
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(notification),
     });
   }
 
@@ -535,7 +570,10 @@ export class NotificationSystem {
    * Check if notification should be sent to user
    */
   private shouldSendToUser(
-    notification: Omit<Notification, 'id' | 'timestamp' | 'metadata' | 'userId'>,
+    notification: Omit<
+      Notification,
+      "id" | "timestamp" | "metadata" | "userId"
+    >,
     subscription: NotificationSubscription
   ): boolean {
     // Check type preference
@@ -545,7 +583,10 @@ export class NotificationSystem {
 
     // Check priority
     const priorityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
-    if (priorityOrder[notification.priority] < priorityOrder[subscription.preferences.minPriority]) {
+    if (
+      priorityOrder[notification.priority] <
+      priorityOrder[subscription.preferences.minPriority]
+    ) {
       return false;
     }
 
@@ -558,18 +599,18 @@ export class NotificationSystem {
     // Check quiet hours
     if (subscription.preferences.quietHours) {
       const now = new Date();
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
       const { start, end } = subscription.preferences.quietHours;
 
       if (start <= end) {
         // Same day range
         if (currentTime >= start && currentTime <= end) {
-          return notification.priority === 'critical';
+          return notification.priority === "critical";
         }
       } else {
         // Overnight range
         if (currentTime >= start || currentTime <= end) {
-          return notification.priority === 'critical';
+          return notification.priority === "critical";
         }
       }
     }
@@ -580,26 +621,30 @@ export class NotificationSystem {
   /**
    * Setup push subscription
    */
-  private async setupPushSubscription(subscription: NotificationSubscription): Promise<void> {
+  private async setupPushSubscription(
+    subscription: NotificationSubscription
+  ): Promise<void> {
     if (!this.serviceWorker || !this.config.vapidPublicKey) return;
 
     try {
       const pushSubscription = await this.serviceWorker.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(this.config.vapidPublicKey)
+        applicationServerKey: this.urlBase64ToUint8Array(
+          this.config.vapidPublicKey
+        ),
       });
 
       // Send subscription to server
       await fetch(this.config.pushEndpoint!, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: subscription.userId,
-          subscription: pushSubscription
-        })
+          subscription: pushSubscription,
+        }),
       });
     } catch (error) {
-      console.error('Push subscription setup error:', error);
+      console.error("Push subscription setup error:", error);
     }
   }
 
@@ -608,7 +653,7 @@ export class NotificationSystem {
    */
   private async removePushSubscription(userId: string): Promise<void> {
     await fetch(`${this.config.pushEndpoint}/${userId}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
@@ -616,24 +661,24 @@ export class NotificationSystem {
    * Initialize event listeners
    */
   private initializeEventListeners(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Online/offline detection
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.isOnline = true;
       this.processQueuedNotifications();
     });
 
-    window.addEventListener('offline', () => {
+    window.addEventListener("offline", () => {
       this.isOnline = false;
     });
 
     // Page visibility for pausing/resuming
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.emit('app:focused', {});
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        this.emit("app:focused", {});
       } else {
-        this.emit('app:blurred', {});
+        this.emit("app:blurred", {});
       }
     });
   }
@@ -642,20 +687,21 @@ export class NotificationSystem {
    * Initialize service worker
    */
   private async initializeServiceWorker(): Promise<void> {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator))
+      return;
 
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.register("/sw.js");
       this.serviceWorker = registration;
 
       // Handle notification clicks
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'NOTIFICATION_CLICK') {
-          this.emit('notification:click', event.data.notification);
+      navigator.serviceWorker.addEventListener("message", (event) => {
+        if (event.data.type === "NOTIFICATION_CLICK") {
+          this.emit("notification:click", event.data.notification);
         }
       });
     } catch (error) {
-      console.error('Service worker registration failed:', error);
+      console.error("Service worker registration failed:", error);
     }
   }
 
@@ -663,7 +709,7 @@ export class NotificationSystem {
    * Initialize real-time connection
    */
   private initializeRealtime(): void {
-    if (!this.config.enableRealtime || typeof window === 'undefined') return;
+    if (!this.config.enableRealtime || typeof window === "undefined") return;
 
     // Try WebSocket first, fallback to EventSource
     this.connectWebSocket() || this.connectEventSource();
@@ -676,15 +722,15 @@ export class NotificationSystem {
     if (!window.WebSocket) return false;
 
     try {
-      const wsUrl = this.config.realtimeUrl!.replace('http', 'ws');
+      const wsUrl = this.config.realtimeUrl!.replace("http", "ws");
       this.webSocket = new WebSocket(wsUrl);
 
       this.webSocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          this.emit('realtime:message', data);
+          this.emit("realtime:message", data);
         } catch (error) {
-          console.error('WebSocket message parse error:', error);
+          console.error("WebSocket message parse error:", error);
         }
       };
 
@@ -694,7 +740,7 @@ export class NotificationSystem {
 
       return true;
     } catch (error) {
-      console.error('WebSocket connection error:', error);
+      console.error("WebSocket connection error:", error);
       return false;
     }
   }
@@ -711,9 +757,9 @@ export class NotificationSystem {
       this.eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          this.emit('realtime:message', data);
+          this.emit("realtime:message", data);
         } catch (error) {
-          console.error('EventSource message parse error:', error);
+          console.error("EventSource message parse error:", error);
         }
       };
 
@@ -723,7 +769,7 @@ export class NotificationSystem {
 
       return true;
     } catch (error) {
-      console.error('EventSource connection error:', error);
+      console.error("EventSource connection error:", error);
       return false;
     }
   }
@@ -735,7 +781,7 @@ export class NotificationSystem {
     const queue = [...this.notificationQueue];
     this.notificationQueue = [];
 
-    queue.forEach(notification => {
+    queue.forEach((notification) => {
       this.sendInAppNotification(notification);
     });
   }
@@ -748,15 +794,19 @@ export class NotificationSystem {
     const toDelete: string[] = [];
 
     for (const [id, notification] of Array.from(this.notifications.entries())) {
-      if (notification.metadata.expiresAt && notification.metadata.expiresAt < now) {
+      if (
+        notification.metadata.expiresAt &&
+        notification.metadata.expiresAt < now
+      ) {
         toDelete.push(id);
       }
     }
 
     // Keep only the most recent notifications if we exceed max
     if (this.notifications.size > this.config.maxNotifications) {
-      const sortedNotifications = Array.from(this.notifications.entries())
-        .sort((a, b) => b[1].timestamp - a[1].timestamp);
+      const sortedNotifications = Array.from(this.notifications.entries()).sort(
+        (a, b) => b[1].timestamp - a[1].timestamp
+      );
 
       const toKeep = sortedNotifications.slice(0, this.config.maxNotifications);
       this.notifications.clear();
@@ -764,7 +814,7 @@ export class NotificationSystem {
         this.notifications.set(id, notification);
       });
     } else {
-      toDelete.forEach(id => this.notifications.delete(id));
+      toDelete.forEach((id) => this.notifications.delete(id));
     }
   }
 
@@ -779,10 +829,10 @@ export class NotificationSystem {
    * Convert VAPID key
    */
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -823,20 +873,20 @@ export function useNotifications(userId?: string) {
     const updateNotifications = () => {
       const userNotifications = notificationSystem.getNotifications(userId);
       setNotifications(userNotifications);
-      setUnreadCount(notificationSystem.getUnreadCount(userId || ''));
+      setUnreadCount(notificationSystem.getUnreadCount(userId || ""));
     };
 
     updateNotifications();
 
     // Subscribe to notification events
     const unsubscribers = [
-      notificationSystem.on('notification:created', updateNotifications),
-      notificationSystem.on('notification:read', updateNotifications),
-      notificationSystem.on('notification:dismissed', updateNotifications)
+      notificationSystem.on("notification:created", updateNotifications),
+      notificationSystem.on("notification:read", updateNotifications),
+      notificationSystem.on("notification:dismissed", updateNotifications),
     ];
 
     return () => {
-      unsubscribers.forEach(unsub => unsub());
+      unsubscribers.forEach((unsub) => unsub());
     };
   }, [userId]);
 
@@ -848,8 +898,8 @@ export function useNotifications(userId?: string) {
     markAsRead: notificationSystem.markAsRead.bind(notificationSystem),
     dismiss: notificationSystem.dismiss.bind(notificationSystem),
     executeAction: notificationSystem.executeAction.bind(notificationSystem),
-    clearAll: () => notificationSystem.clearAll(userId || ''),
+    clearAll: () => notificationSystem.clearAll(userId || ""),
     subscribe: notificationSystem.subscribe.bind(notificationSystem),
-    on: notificationSystem.on.bind(notificationSystem)
+    on: notificationSystem.on.bind(notificationSystem),
   };
 }

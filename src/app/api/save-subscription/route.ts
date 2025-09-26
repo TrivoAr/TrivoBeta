@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import Subscription from "@/models/subscription";
-import { getServerSession } from "next-auth/next"; 
-import { authOptions } from "../../../libs/authOptions"; 
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../../libs/authOptions";
 import webPush from "web-push";
 import { connectDB } from "@/libs/mongodb";
 
 // Configura las claves VAPID para usar con web-push
 webPush.setVapidDetails(
-  process.env.VAPID_EMAIL!, 
-  process.env.VAPID_PUBLIC_KEY!, 
+  process.env.VAPID_EMAIL!,
+  process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
 
@@ -16,13 +16,16 @@ export async function POST(req: Request) {
   try {
     // Conectar a la base de datos
     await connectDB();
-    
+
     // Obtener la sesión del usuario
     const session = await getServerSession(authOptions); // Usar getServerSession con las opciones de autenticación
 
     // Verificar si la sesión existe y si el user_id está presente
     if (!session || !session.user?.id) {
-      return NextResponse.json({ error: "User ID is missing or not authenticated" }, { status: 400 });
+      return NextResponse.json(
+        { error: "User ID is missing or not authenticated" },
+        { status: 400 }
+      );
     }
 
     // Obtener la suscripción desde el request
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
     // Verificar si ya existe una suscripción para este usuario y endpoint
     const existingSubscription = await Subscription.findOne({
       user_id: session.user.id,
-      endpoint: subscription.endpoint
+      endpoint: subscription.endpoint,
     });
 
     if (!existingSubscription) {
@@ -57,9 +60,20 @@ export async function POST(req: Request) {
     // Enviar la notificación push de confirmación
     await webPush.sendNotification(subscription, payload);
 
-    return NextResponse.json({ message: "Suscripción guardada y notificación de confirmación enviada" }, { status: 200 });
+    return NextResponse.json(
+      {
+        message: "Suscripción guardada y notificación de confirmación enviada",
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error al guardar la suscripción o enviar la notificación:", error);
-    return NextResponse.json({ error: "Error al guardar la suscripción o enviar la notificación" }, { status: 500 });
+    console.error(
+      "Error al guardar la suscripción o enviar la notificación:",
+      error
+    );
+    return NextResponse.json(
+      { error: "Error al guardar la suscripción o enviar la notificación" },
+      { status: 500 }
+    );
   }
 }

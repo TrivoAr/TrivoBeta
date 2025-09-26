@@ -7,7 +7,8 @@ import { connectDB } from "@/libs/mongodb";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
   const dbUser = await User.findById(session.user.id);
@@ -17,12 +18,15 @@ export async function GET() {
 
   const res = await fetch("https://www.strava.com/api/v3/athlete", {
     headers: {
-      Authorization: `Bearer ${dbUser.strava.accessToken}`
-    }
+      Authorization: `Bearer ${dbUser.strava.accessToken}`,
+    },
   });
 
   if (!res.ok) {
-    return NextResponse.json({ error: "Error fetching from Strava" }, { status: res.status });
+    return NextResponse.json(
+      { error: "Error fetching from Strava" },
+      { status: res.status }
+    );
   }
 
   const athlete = await res.json();
@@ -35,6 +39,6 @@ export async function GET() {
     ciudad: athlete.city,
     pais: athlete.country,
     createdAt: athlete.created_at,
-    peso: athlete.weight
+    peso: athlete.weight,
   });
 }

@@ -38,7 +38,8 @@ async function testAPIDirectly() {
     console.log("📊 Raw sponsors field:", salida.sponsors);
 
     console.log("🔍 Step 2: Testing populate sponsors only...");
-    const salidaWithSponsors = await SalidaSocial.findById(id).populate("sponsors");
+    const salidaWithSponsors =
+      await SalidaSocial.findById(id).populate("sponsors");
 
     if (!salidaWithSponsors) {
       console.log("❌ Salida with sponsors not found");

@@ -13,26 +13,34 @@ export async function POST(req: Request) {
     return NextResponse.json(nuevoGrupo, { status: 201 });
   } catch (error) {
     console.error("Error al crear grupo:", error);
-    return NextResponse.json({ error: "Error al crear el grupo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al crear el grupo" },
+      { status: 500 }
+    );
   }
 }
 
 // Obtener todos los grupos
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const academiaId = searchParams.get('academiaId'); // Obtener el ID de la academia
+  const academiaId = searchParams.get("academiaId"); // Obtener el ID de la academia
 
   if (!academiaId) {
-    return NextResponse.json({ error: "Academia ID no proporcionado" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Academia ID no proporcionado" },
+      { status: 400 }
+    );
   }
 
   try {
-   
     const grupos = await Grupo.find({ academia_id: academiaId });
     return NextResponse.json({ grupos }, { status: 200 });
   } catch (error) {
     console.error("Error al obtener los grupos:", error);
-    return NextResponse.json({ error: "Error al obtener los grupos" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al obtener los grupos" },
+      { status: 500 }
+    );
   }
 }
 
@@ -50,7 +58,10 @@ export async function PATCH(req: Request) {
 
     const grupo = await Grupo.findById(id);
     if (!grupo) {
-      return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Grupo no encontrado" },
+        { status: 404 }
+      );
     }
 
     // Validar permisos: dueño de la academia o profesor asignado
@@ -59,22 +70,30 @@ export async function PATCH(req: Request) {
       academia.dueño_id.toString() !== session.user.id &&
       grupo.profesor_id?.toString() !== session.user.id
     ) {
-      return NextResponse.json({ error: "No tienes permisos para editar este grupo" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No tienes permisos para editar este grupo" },
+        { status: 403 }
+      );
     }
 
     // Actualizar el grupo
-    const grupoActualizado = await Grupo.findByIdAndUpdate(id, body, { new: true });
+    const grupoActualizado = await Grupo.findByIdAndUpdate(id, body, {
+      new: true,
+    });
     return NextResponse.json(grupoActualizado, { status: 200 });
   } catch (error) {
     console.error("Error al editar grupo:", error);
-    return NextResponse.json({ error: "Error al editar el grupo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al editar el grupo" },
+      { status: 500 }
+    );
   }
 }
 
 // Eliminar un grupo
 export async function DELETE(req: Request) {
   try {
-    const session = await getServerSession(authOptions); 
+    const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -84,7 +103,10 @@ export async function DELETE(req: Request) {
 
     const grupo = await Grupo.findById(id);
     if (!grupo) {
-      return NextResponse.json({ error: "Grupo no encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Grupo no encontrado" },
+        { status: 404 }
+      );
     }
 
     // Validar permisos: dueño de la academia o profesor asignado
@@ -93,14 +115,23 @@ export async function DELETE(req: Request) {
       academia.dueño_id.toString() !== session.user.id &&
       grupo.profesor_id?.toString() !== session.user.id
     ) {
-      return NextResponse.json({ error: "No tienes permisos para eliminar este grupo" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No tienes permisos para eliminar este grupo" },
+        { status: 403 }
+      );
     }
 
     // Eliminar el grupo
     await Grupo.findByIdAndDelete(id);
-    return NextResponse.json({ message: "Grupo eliminado con éxito" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Grupo eliminado con éxito" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error al eliminar grupo:", error);
-    return NextResponse.json({ error: "Error al eliminar el grupo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al eliminar el grupo" },
+      { status: 500 }
+    );
   }
 }

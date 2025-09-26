@@ -1,7 +1,14 @@
 // API Handler presets with AuthorizationManager integration
 
-import { createApiHandler, ApiHandlerConfig, UserRole, Resource, Permission, ApiContext } from './ApiHandler.standalone';
-import { NextRequest } from 'next/server';
+import {
+  createApiHandler,
+  ApiHandlerConfig,
+  UserRole,
+  Resource,
+  Permission,
+  ApiContext,
+} from "./ApiHandler.standalone";
+import { NextRequest } from "next/server";
 
 /**
  * Create auth handler that uses AuthorizationManager
@@ -9,7 +16,9 @@ import { NextRequest } from 'next/server';
 const createAuthHandler = () => {
   return async () => {
     // Dynamic import to avoid circular dependencies
-    const { AuthorizationManager } = await import('@/libs/auth/AuthorizationManager');
+    const { AuthorizationManager } = await import(
+      "@/libs/auth/AuthorizationManager"
+    );
     return await AuthorizationManager.requireAuth();
   };
 };
@@ -19,20 +28,22 @@ const createAuthHandler = () => {
  */
 const createAuthorizeHandler = () => {
   return async (
-    user: NonNullable<ApiContext['user']>,
+    user: NonNullable<ApiContext["user"]>,
     resource: Resource,
     permission: Permission,
     resourceOwnerId?: string
   ): Promise<boolean> => {
     try {
       // Dynamic import to avoid circular dependencies
-      const { AuthorizationManager } = await import('@/libs/auth/AuthorizationManager');
+      const { AuthorizationManager } = await import(
+        "@/libs/auth/AuthorizationManager"
+      );
 
       const context = {
         user,
         resource,
         permission,
-        resourceOwnerId
+        resourceOwnerId,
       };
 
       return AuthorizationManager.authorize(context);
@@ -49,45 +60,65 @@ export const ApiHandlerPresets = {
   /**
    * Public API handler (no authentication required)
    */
-  public: (config: Omit<ApiHandlerConfig, 'requireAuth' | 'authHandler' | 'authorizeHandler'> = {}) =>
+  public: (
+    config: Omit<
+      ApiHandlerConfig,
+      "requireAuth" | "authHandler" | "authorizeHandler"
+    > = {}
+  ) =>
     createApiHandler({
       ...config,
-      requireAuth: false
+      requireAuth: false,
     }),
 
   /**
    * Authenticated API handler (requires login)
    */
-  authenticated: (config: Omit<ApiHandlerConfig, 'requireAuth' | 'authHandler' | 'authorizeHandler'> = {}) =>
+  authenticated: (
+    config: Omit<
+      ApiHandlerConfig,
+      "requireAuth" | "authHandler" | "authorizeHandler"
+    > = {}
+  ) =>
     createApiHandler({
       ...config,
       requireAuth: true,
       authHandler: createAuthHandler(),
-      authorizeHandler: createAuthorizeHandler()
+      authorizeHandler: createAuthorizeHandler(),
     }),
 
   /**
    * Admin-only API handler
    */
-  adminOnly: (config: Omit<ApiHandlerConfig, 'requireAuth' | 'requiredRoles' | 'authHandler' | 'authorizeHandler'> = {}) =>
+  adminOnly: (
+    config: Omit<
+      ApiHandlerConfig,
+      "requireAuth" | "requiredRoles" | "authHandler" | "authorizeHandler"
+    > = {}
+  ) =>
     createApiHandler({
       ...config,
       requireAuth: true,
-      requiredRoles: ['admin'],
+      requiredRoles: ["admin"],
       authHandler: createAuthHandler(),
-      authorizeHandler: createAuthorizeHandler()
+      authorizeHandler: createAuthorizeHandler(),
     }),
 
   /**
    * Trainer or admin API handler
    */
-  trainerOrAdmin: (config: Omit<ApiHandlerConfig, 'requireAuth' | 'requiredRoles' | 'authHandler' | 'authorizeHandler'> = {}) =>
+  trainerOrAdmin: (
+    config: Omit<
+      ApiHandlerConfig,
+      "requireAuth" | "requiredRoles" | "authHandler" | "authorizeHandler"
+    > = {}
+  ) =>
     createApiHandler({
       ...config,
       requireAuth: true,
-      requiredRoles: ['admin', 'trainer'],
+      requiredRoles: ["admin", "trainer"],
       authHandler: createAuthHandler(),
-      authorizeHandler: createAuthorizeHandler()
+      authorizeHandler: createAuthorizeHandler(),
     }),
 
   /**
@@ -96,8 +127,14 @@ export const ApiHandlerPresets = {
   ownerOrAdmin: (
     resource: Resource,
     permission: Permission,
-    getResourceOwnerId: (req: NextRequest, context: ApiContext) => Promise<string | undefined>,
-    config: Omit<ApiHandlerConfig, 'requireAuth' | 'requiredPermission' | 'authHandler' | 'authorizeHandler'> = {}
+    getResourceOwnerId: (
+      req: NextRequest,
+      context: ApiContext
+    ) => Promise<string | undefined>,
+    config: Omit<
+      ApiHandlerConfig,
+      "requireAuth" | "requiredPermission" | "authHandler" | "authorizeHandler"
+    > = {}
   ) =>
     createApiHandler({
       ...config,
@@ -105,9 +142,9 @@ export const ApiHandlerPresets = {
       requiredPermission: {
         resource,
         permission,
-        getResourceOwnerId
+        getResourceOwnerId,
       },
       authHandler: createAuthHandler(),
-      authorizeHandler: createAuthorizeHandler()
-    })
+      authorizeHandler: createAuthorizeHandler(),
+    }),
 } as const;

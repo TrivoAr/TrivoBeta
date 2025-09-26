@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
-import { saveAllBarImages, saveBarLogo, saveBarCarouselImages } from "../saveBarImages";
+import {
+  saveAllBarImages,
+  saveBarLogo,
+  saveBarCarouselImages,
+} from "../saveBarImages";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,15 +22,12 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
 
-    const logoFile = formData.get('logo') as File;
-    const barId = formData.get('barId') as string;
-    const uploadType = formData.get('type') as string; // 'all', 'logo', 'carousel'
+    const logoFile = formData.get("logo") as File;
+    const barId = formData.get("barId") as string;
+    const uploadType = formData.get("type") as string; // 'all', 'logo', 'carousel'
 
-    if (!logoFile && uploadType !== 'carousel') {
-      return NextResponse.json(
-        { error: "Logo es requerido" },
-        { status: 400 }
-      );
+    if (!logoFile && uploadType !== "carousel") {
+      return NextResponse.json({ error: "Logo es requerido" }, { status: 400 });
     }
 
     // Obtener archivos del carrusel
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     let result;
 
     switch (uploadType) {
-      case 'logo':
+      case "logo":
         if (!logoFile) {
           return NextResponse.json(
             { error: "Logo es requerido para upload tipo 'logo'" },
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
         result = { logo: logoUrl };
         break;
 
-      case 'carousel':
+      case "carousel":
         if (carouselFiles.length === 0) {
           return NextResponse.json(
             { error: "Al menos una imagen del carrusel es requerida" },
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
         result = { imagenesCarrusel: carouselUrls };
         break;
 
-      case 'all':
+      case "all":
       default:
         if (!logoFile || carouselFiles.length === 0) {
           return NextResponse.json(
@@ -78,7 +79,6 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(result, { status: 200 });
-
   } catch (error) {
     console.error("[UPLOAD_BAR_IMAGES_ERROR]", error);
     return NextResponse.json(

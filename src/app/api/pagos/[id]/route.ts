@@ -124,7 +124,10 @@ export async function PATCH(
               { estado: "aprobado" },
               { new: true }
             );
-            console.log("✅ Estado del miembro actualizado a aprobado:", pago.miembro_id);
+            console.log(
+              "✅ Estado del miembro actualizado a aprobado:",
+              pago.miembro_id
+            );
           }
 
           // 1) buscar o crear ticket (idempotente)

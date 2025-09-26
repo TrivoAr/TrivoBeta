@@ -17,6 +17,7 @@ import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { isNightEvent } from "@/lib/theme";
+import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
 
 interface PageProps {
   params: {
@@ -72,7 +73,7 @@ interface EventData {
     _id: string;
     name: string;
     imagen?: string;
-  }>
+  }>;
 
   shortId: string;
   detalles: string;
@@ -95,7 +96,6 @@ interface Miembro {
   };
   dni: string;
 }
-
 
 export default function EventPage({ params }: PageProps) {
   const { data: session } = useSession();
@@ -178,18 +178,18 @@ export default function EventPage({ params }: PageProps) {
   const joinFreeMutation = useMutation({
     mutationFn: async () => {
       // Primero crear el pago para eventos gratuitos
-      const pagoRes = await fetch('/api/pagos', {
-        method: 'POST',
+      const pagoRes = await fetch("/api/pagos", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           salidaId: params.id,
           userId: session?.user?.id,
-          comprobanteUrl: 'EVENTO_GRATUITO', // Marcador para eventos gratuitos
+          comprobanteUrl: "EVENTO_GRATUITO", // Marcador para eventos gratuitos
         }),
       });
-      
+
       if (!pagoRes.ok) throw new Error("No se pudo crear el registro de pago");
       const pagoData = await pagoRes.json();
       const pago = pagoData.pago;
@@ -210,10 +210,15 @@ export default function EventPage({ params }: PageProps) {
     },
     onSuccess: () => {
       // Invalidate both queries that might need updating
-      queryClient.invalidateQueries({ queryKey: ["unido", params.id, session?.user?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["unido", params.id, session?.user?.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
       // Optimistically update the status to show immediate feedback
-      queryClient.setQueryData(["unido", params.id, session?.user?.id], "pendiente");
+      queryClient.setQueryData(
+        ["unido", params.id, session?.user?.id],
+        "pendiente"
+      );
       toast.success("Solicitud enviada. Espera la aprobación del organizador.");
     },
     onError: (error: any) => {
@@ -359,9 +364,13 @@ export default function EventPage({ params }: PageProps) {
   const isNight = isNightEvent(eventForNightCheck);
 
   return (
-    <main className={`min-h-screen text-foreground w-[390px] mx-auto ${
-      isNight ? 'theme-bg-primary' : 'bg-background'
-    }`} data-theme={isNight ? 'night' : undefined}>
+    <main
+      className={`min-h-screen w-[390px] mx-auto transition-colors ${
+        isNight ? "theme-text-primary" : "text-foreground bg-background"
+      }`}
+      style={isNight ? { backgroundColor: "#2d3748" } : {}}
+      data-theme={isNight ? "night" : undefined}
+    >
       <div className="relative w-full h-[176px] ">
         <div
           style={{
@@ -466,12 +475,18 @@ export default function EventPage({ params }: PageProps) {
         </button>
       </div>
       <div className="px-4 py-2">
-        <h1 className={`text-xl font-semibold text-center ${
-          isNight ? 'theme-text-primary' : 'text-foreground'
-        }`}>{event.nombre}</h1>
-        <div className={`text-sm flex flex-col w-full gap-1 justify-center items-center ${
-          isNight ? 'theme-text-secondary' : 'text-[#808488]'
-        }`}>
+        <h1
+          className={`text-xl font-semibold text-center ${
+            isNight ? "theme-text-primary" : "text-foreground"
+          }`}
+        >
+          {event.nombre}
+        </h1>
+        <div
+          className={`text-sm flex flex-col w-full gap-1 justify-center items-center ${
+            isNight ? "theme-text-secondary" : "text-[#808488]"
+          }`}
+        >
           <div className="flex items-center justify-center">
             <svg
               height="13px"
@@ -483,11 +498,11 @@ export default function EventPage({ params }: PageProps) {
               fill="#FF3D00"
               stroke="#FF3D00"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
               <g
                 id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               ></g>
               <g id="SVGRepo_iconCarrier">
                 {" "}
@@ -520,9 +535,11 @@ export default function EventPage({ params }: PageProps) {
               />
             </div>
 
-            <span className={`text-sm pr-[20px] font-light ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>
+            <span
+              className={`text-sm pr-[20px] font-light ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
               Organizado por {event.creador_id.firstname}{" "}
               {event.creador_id.lastname}
             </span>
@@ -532,136 +549,56 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[80%] flex flex-col items-center gap-3">
-            <div className="text-sm flex items-center w-full font-light gap-1">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                width={20}
-                height={20}
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <path
-                    d="M15 7C16.1046 7 17 6.10457 17 5C17 3.89543 16.1046 3 15 3C13.8954 3 13 3.89543 13 5C13 6.10457 13.8954 7 15 7Z"
-                    stroke="#000000"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>{" "}
-                  <path
-                    d="M12.6133 8.26691L9.30505 12.4021L13.4403 16.5374L11.3727 21.0861"
-                    stroke="#000000"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>{" "}
-                  <path
-                    d="M6.4104 9.5075L9.79728 6.19931L12.6132 8.26692L15.508 11.5752H19.2297"
-                    stroke="#000000"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>{" "}
-                  <path
-                    d="M8.89152 15.7103L7.65095 16.5374H4.34277"
-                    stroke="#000000"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>{" "}
-                </g>
-              </svg>
+            <div
+              className={`text-sm flex items-center w-full font-light gap-1 ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              <Activity
+                size={20}
+                style={{
+                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
+                }}
+              />
               {event.deporte}
             </div>
-            <div className={`text-sm flex items-center w-full font-light gap-1 ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                width={20}
-                height={20}
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <rect width="24" height="24" fill="white"></rect>{" "}
-                  <path
-                    d="M18 9C18 13.7462 14.2456 18.4924 12.6765 20.2688C12.3109 20.6827 11.6891 20.6827 11.3235 20.2688C9.75444 18.4924 6 13.7462 6 9C6 7 7.5 3 12 3C16.5 3 18 7 18 9Z"
-                    stroke="#000000"
-                    stroke-linejoin="round"
-                  ></path>{" "}
-                  <circle
-                    cx="12"
-                    cy="9"
-                    r="2"
-                    stroke="#000000"
-                    stroke-linejoin="round"
-                  ></circle>{" "}
-                </g>
-              </svg>
+            <div
+              className={`text-sm flex items-center w-full font-light gap-1 ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              <MapPin
+                size={20}
+                style={{
+                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
+                }}
+              />
               {event.localidad}
             </div>
-            <div className={`text-sm flex items-center w-full font-light gap-1 ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>
-              <svg
-                viewBox="0 0 64 64"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                stroke="#000000"
-                height={18}
-                width={18}
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  <circle cx="32" cy="32" r="24"></circle>
-                  <polyline points="40 44 32 32 32 16"></polyline>
-                </g>
-              </svg>
+            <div
+              className={`text-sm flex items-center w-full font-light gap-1 ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              <Clock
+                size={18}
+                style={{
+                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
+                }}
+              />
               {event.duracion} de duración de la salida
             </div>
-            <div className={`text-sm flex items-center w-full font-light gap-1 capitalize ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>
-              <svg
-                fill="#000000"
-                viewBox="0 0 32 32"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                height={18}
-                width={18}
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <title>signal</title>{" "}
-                  <path d="M2 25.25c-0.414 0-0.75 0.336-0.75 0.75v0 4c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-4c-0-0.414-0.336-0.75-0.75-0.75v0zM8.968 19.25c-0.414 0-0.75 0.336-0.75 0.75v0 10c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-10c-0-0.414-0.336-0.75-0.75-0.75v0zM16 13.25c-0.414 0-0.75 0.336-0.75 0.75v0 16c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-16c-0-0.414-0.336-0.75-0.75-0.75v0zM30 1.25c-0.414 0-0.75 0.336-0.75 0.75v0 28c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-28c-0-0.414-0.336-0.75-0.75-0.75v0zM23 7.249c-0.414 0-0.75 0.336-0.75 0.75v0 22.001c0 0.414 0.336 0.75 0.75 0.75s0.75-0.336 0.75-0.75v0-22.001c-0-0.414-0.336-0.75-0.75-0.75v0z"></path>{" "}
-                </g>
-              </svg>
+            <div
+              className={`text-sm flex items-center w-full font-light gap-1 capitalize ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              <BarChart3
+                size={18}
+                style={{
+                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
+                }}
+              />
               {event.dificultad}
             </div>
           </div>
@@ -677,13 +614,19 @@ export default function EventPage({ params }: PageProps) {
         <div className="w-full flex flex-col items-center mt-6">
           <div className="w-[90%]">
             <p className="mb-2">
-              <span className={`text-lg font-normal ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>Punto de encuentro</span>
+              <span
+                className={`text-lg font-normal ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
+                Punto de encuentro
+              </span>
               <br />
-              <span className={`text-sm mb-2 font-extralight ${
-                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
-              }`}>
+              <span
+                className={`text-sm mb-2 font-extralight ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}
+              >
                 {event.ubicacion}
               </span>
             </p>
@@ -706,9 +649,11 @@ export default function EventPage({ params }: PageProps) {
                 </div>
               </div>
             ) : (
-              <p className={`text-sm ${
-                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
-              }`}>
+              <p
+                className={`text-sm ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}
+              >
                 No hay coordenadas disponibles.
               </p>
             )}
@@ -721,9 +666,13 @@ export default function EventPage({ params }: PageProps) {
             {" "}
             <div className="mt-10 w-full flex flex-col items-center">
               <div className="flex flex-col w-[90%] gap-2">
-                <span className={`text-lg font-normal ${
-                  isNight ? 'theme-text-primary' : 'text-foreground'
-                }`}>Recorrido</span>
+                <span
+                  className={`text-lg font-normal ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}
+                >
+                  Recorrido
+                </span>
                 <div
                   className="w-full h-64 rounded-xl overflow-hidden cursor-pointer relative"
                   style={{ width: "100%", height: "300px" }}
@@ -744,14 +693,18 @@ export default function EventPage({ params }: PageProps) {
               <div className="w-[90%] border-b borderb-[#808488] mt-10"></div>
             </div>
             <div className="w-full flex flex-col items-center mt-6">
-              <div className={`text-lg font-normal mb-1 w-[90%] ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>
+              <div
+                className={`text-lg font-normal mb-1 w-[90%] ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
                 ¿Que incluye la inscripción?
               </div>
-              <div className={`w-[90%] font-extralight text-justify break-words ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>
+              <div
+                className={`w-[90%] font-extralight text-justify break-words ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
                 {event.detalles}
               </div>
               <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
@@ -776,14 +729,18 @@ export default function EventPage({ params }: PageProps) {
                   }}
                 ></div>
                 <div className="flex flex-col items-center">
-                  <h2 className={`text-xl font-normal ${
-                    isNight ? 'theme-text-primary' : 'text-foreground'
-                  }`}>
+                  <h2
+                    className={`text-xl font-normal ${
+                      isNight ? "theme-text-primary" : "text-foreground"
+                    }`}
+                  >
                     {event.profesorId?.firstname} {event.profesorId?.lastname}
                   </h2>
-                  <p className={`text-sm font-light mb-1 ${
-                    isNight ? 'theme-text-secondary' : 'text-muted-foreground'
-                  }`}>
+                  <p
+                    className={`text-sm font-light mb-1 ${
+                      isNight ? "theme-text-secondary" : "text-muted-foreground"
+                    }`}
+                  >
                     Profesor
                   </p>
                   <a
@@ -796,9 +753,11 @@ export default function EventPage({ params }: PageProps) {
                   </a>
                 </div>
               </div>
-              <div className={`w-[90%] font-extralight text-justify ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>
+              <div
+                className={`w-[90%] font-extralight text-justify ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
                 {event.profesorId.bio}
               </div>
             </div>
@@ -808,9 +767,13 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="flex flex-col items-center mt-8">
           <div className="w-[90%]">
-            <h2 className={`text-lg font-normal mb-1 ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>Grupo de Whatsapp</h2>
+            <h2
+              className={`text-lg font-normal mb-1 ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              Grupo de Whatsapp
+            </h2>
             {event.whatsappLink && (
               <div className="flex justify-center mt-2">
                 <a
@@ -829,9 +792,13 @@ export default function EventPage({ params }: PageProps) {
 
         <div className="flex w-full justify-center items-center mt-6">
           <div className="w-[90%]">
-            <p className={`text-lg font-normal mb-1 ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>Participantes</p>
+            <p
+              className={`text-lg font-normal mb-1 ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              Participantes
+            </p>
             <div className="flex space-x-2 mt-1 flex-wrap gap-2 justify-center items-center">
               {miembros.length > 0 ? (
                 <>
@@ -860,32 +827,39 @@ export default function EventPage({ params }: PageProps) {
                   )}
                 </>
               ) : (
-                <span className={isNight ? 'theme-text-secondary' : 'text-muted-foreground'}>
+                <span
+                  className={
+                    isNight ? "theme-text-secondary" : "text-muted-foreground"
+                  }
+                >
                   Nadie se ha unido aún
                 </span>
               )}
             </div>
             <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
           </div>
-          
         </div>
 
         {/* Sección de Sponsors */}
         {event.sponsors && event.sponsors.length > 0 && (
           <div className="flex flex-col items-center mt-8">
             <div className="w-[90%]">
-              <h2 className={`text-lg font-normal mb-3 text-center ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>
-                {event.sponsors.length === 1 ? 'Sponsor oficial' : 'Sponsors oficiales'}
+              <h2
+                className={`text-lg font-normal mb-3 text-center ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
+                {event.sponsors.length === 1
+                  ? "Sponsor oficial"
+                  : "Sponsors oficiales"}
               </h2>
-              
+
               {event.sponsors.length === 1 ? (
                 // Vista para un solo sponsor (más prominente)
                 <div className="flex justify-center">
                   {event.sponsors[0].imagen && (
-                    <img 
-                      src={event.sponsors[0].imagen} 
+                    <img
+                      src={event.sponsors[0].imagen}
                       alt={event.sponsors[0].name}
                       className="w-24 h-24 object-cover rounded-full border shadow-sm"
                     />
@@ -895,17 +869,22 @@ export default function EventPage({ params }: PageProps) {
                 // Vista para múltiples sponsors (grid)
                 <div className="grid grid-cols-2 gap-4">
                   {event.sponsors.map((sponsor, index) => (
-                    <div key={sponsor._id} className="bg-card p-3 rounded-[15px] shadow-md border flex flex-col items-center gap-2">
+                    <div
+                      key={sponsor._id}
+                      className="bg-card p-3 rounded-[15px] shadow-md border flex flex-col items-center gap-2"
+                    >
                       {sponsor.imagen && (
-                        <img 
-                          src={sponsor.imagen} 
+                        <img
+                          src={sponsor.imagen}
                           alt={sponsor.name}
                           className="w-16 h-16 object-cover rounded-lg border shadow-sm"
                         />
                       )}
-                      <span className={`text-sm font-medium text-center ${
-                        isNight ? 'theme-text-primary' : 'text-gray-800'
-                      }`}>
+                      <span
+                        className={`text-sm font-medium text-center ${
+                          isNight ? "theme-text-primary" : "text-gray-800"
+                        }`}
+                      >
                         {sponsor.name}
                       </span>
                     </div>
@@ -916,30 +895,33 @@ export default function EventPage({ params }: PageProps) {
             <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
           </div>
         )}
-        
 
         <div
           className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50
     ${session ? "bottom-[80px]" : "bottom-[1px]"}`}
         >
-          <div className={`shadow-md h-[120px] border flex justify-between items-center ${
-            isNight
-              ? 'theme-bg-secondary border-gray-600'
-              : 'bg-card border-border'
-          }`}>
+          <div
+            className={`shadow-md h-[120px] border flex justify-between items-center ${
+              isNight
+                ? "theme-bg-secondary border-gray-600"
+                : "bg-card border-border"
+            }`}
+          >
             <div className="w-[50%] flex flex-col pl-4">
-              <p className={`font-semibold text-xl underline ${
-                isNight ? 'theme-text-primary' : 'text-foreground'
-              }`}>
-                {event.precio == 0 || event.precio === "0" ? (
-                  "Gratis"
-                ) : (
-                  `$${Number(event.precio).toLocaleString("es-AR")}`
-                )}
+              <p
+                className={`font-semibold text-xl underline ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}
+              >
+                {event.precio == 0 || event.precio === "0"
+                  ? "Gratis"
+                  : `$${Number(event.precio).toLocaleString("es-AR")}`}
               </p>
-              <p className={`text-xs ${
-                isNight ? 'theme-text-secondary' : 'text-muted-foreground'
-              }`}>
+              <p
+                className={`text-xs ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}
+              >
                 {parseLocalDate(event.fecha)}, {event.hora} hs
               </p>
               <div className="flex w-full justify-between">
@@ -964,8 +946,8 @@ export default function EventPage({ params }: PageProps) {
                   onClick={() => router.push(`/social/editar/${event._id}`)}
                   className={`h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border w-[90px] font-semibold ${
                     isNight
-                      ? 'theme-bg-primary border-gray-600 theme-text-primary'
-                      : 'bg-card border-border text-foreground'
+                      ? "theme-bg-primary border-gray-600 theme-text-primary"
+                      : "bg-card border-border text-foreground"
                   }`}
                 >
                   Editar

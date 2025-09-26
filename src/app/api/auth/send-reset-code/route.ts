@@ -42,9 +42,8 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user";
 import crypto from "crypto";
-import {sendEmail} from "@/libs/sendEmail";
+import { sendEmail } from "@/libs/sendEmail";
 import { resetPasswordTemplate } from "@/libs/resetPasswordTemplate";
-
 
 export const runtime = "nodejs";
 
@@ -56,8 +55,11 @@ export async function POST(req: Request) {
   await connectDB();
   try {
     const { email } = await req.json();
-    const normEmail = String(email || "").trim().toLowerCase();
-    if (!normEmail) return NextResponse.json({ message: "Email requerido" }, { status: 400 });
+    const normEmail = String(email || "")
+      .trim()
+      .toLowerCase();
+    if (!normEmail)
+      return NextResponse.json({ message: "Email requerido" }, { status: 400 });
 
     // case-insensitive
     const user = await User.findOne({
@@ -66,7 +68,10 @@ export async function POST(req: Request) {
 
     // siempre 200 (anti user-enum)
     if (!user) {
-      return NextResponse.json({ ok: true, message: "Si el email existe, enviaremos un código." }, { status: 200 });
+      return NextResponse.json(
+        { ok: true, message: "Si el email existe, enviaremos un código." },
+        { status: 200 }
+      );
     }
 
     // ⚠️ Elegí 15 o 60 y sé consistente. Acá uso 15 para matchear el template.
@@ -75,7 +80,9 @@ export async function POST(req: Request) {
     const resetCode = crypto.randomInt(100000, 999999).toString();
     const hashed = crypto.createHash("sha256").update(resetCode).digest("hex");
     user.resetPasswordToken = hashed;
-    user.resetPasswordExpire = new Date(Date.now() + EXPIRE_MINUTES * 60 * 1000);
+    user.resetPasswordExpire = new Date(
+      Date.now() + EXPIRE_MINUTES * 60 * 1000
+    );
     await user.save();
 
     // Enviar el email (NO el hash)
@@ -89,16 +96,31 @@ export async function POST(req: Request) {
       console.error("Fallo al enviar email:", err);
 
       // DEV: devolver el código si activás debug (no lo hagas en prod)
-      if (process.env.NODE_ENV !== "production" || process.env.DEBUG_RESET_CODE === "1") {
-        return NextResponse.json({ ok: true, debugCode: resetCode, message: "Código generado (DEV)" }, { status: 200 });
+      if (
+        process.env.NODE_ENV !== "production" ||
+        process.env.DEBUG_RESET_CODE === "1"
+      ) {
+        return NextResponse.json(
+          { ok: true, debugCode: resetCode, message: "Código generado (DEV)" },
+          { status: 200 }
+        );
       }
       // En prod, respuesta genérica:
-      return NextResponse.json({ ok: true, message: "Si el email existe, enviaremos un código." }, { status: 200 });
+      return NextResponse.json(
+        { ok: true, message: "Si el email existe, enviaremos un código." },
+        { status: 200 }
+      );
     }
 
-    return NextResponse.json({ ok: true, message: "Código enviado si el email existe." }, { status: 200 });
+    return NextResponse.json(
+      { ok: true, message: "Código enviado si el email existe." },
+      { status: 200 }
+    );
   } catch (e) {
     console.error("send-reset-code error:", e);
-    return NextResponse.json({ message: "Error en el servidor" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error en el servidor" },
+      { status: 500 }
+    );
   }
 }

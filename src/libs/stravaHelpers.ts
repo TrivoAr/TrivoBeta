@@ -105,7 +105,6 @@ export async function getStravaRoutes(userId: string) {
   return res.json();
 }
 
-
 export async function getStravaActivities(userId: string) {
   await connectDB();
 
@@ -115,9 +114,12 @@ export async function getStravaActivities(userId: string) {
   const accessToken = await refreshStravaToken(user);
 
   // traer actividades recientes
-  const res = await fetch("https://www.strava.com/api/v3/athlete/activities?per_page=10", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const res = await fetch(
+    "https://www.strava.com/api/v3/athlete/activities?per_page=10",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
 
   if (!res.ok) {
     throw new Error(`Error al obtener actividades: ${res.statusText}`);
@@ -128,12 +130,13 @@ export async function getStravaActivities(userId: string) {
   // enriquecer cada actividad con su polyline detallado
   const detailed = await Promise.all(
     activities.map(async (a: any) => {
-      const detailRes = await fetch(`https://www.strava.com/api/v3/activities/${a.id}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const detailRes = await fetch(
+        `https://www.strava.com/api/v3/activities/${a.id}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
 
-
-      
       const detail = await detailRes.json();
 
       return {
@@ -151,4 +154,3 @@ export async function getStravaActivities(userId: string) {
 
   return detailed;
 }
-

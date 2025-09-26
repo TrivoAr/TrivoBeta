@@ -9,18 +9,24 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
   const { salidaId } = await req.json();
 
   const user = await User.findOne({ email: session.user?.email });
-  if (!user) return NextResponse.json({ message: "Usuario no encontrado" }, { status: 404 });
+  if (!user)
+    return NextResponse.json(
+      { message: "Usuario no encontrado" },
+      { status: 404 }
+    );
 
-  const miembroSalidas = await MiembroSalida.find({ usuario_id: user._id })
-    .populate('salida_id');
+  const miembroSalidas = await MiembroSalida.find({
+    usuario_id: user._id,
+  }).populate("salida_id");
 
   const salidas = miembroSalidas.map((miembro) => ({
-    salida: miembro.salida_id,  // contiene el objeto de la salida
+    salida: miembro.salida_id, // contiene el objeto de la salida
     rol: miembro.rol,
     fecha_union: miembro.fecha_union,
   }));
@@ -30,21 +36,31 @@ export async function POST(req: NextRequest) {
     salida_id: salidaId,
   });
 
-  return NextResponse.json({ unido: !!miembro, pendiente: !!miembro && !miembro.aprobado  });
+  return NextResponse.json({
+    unido: !!miembro,
+    pendiente: !!miembro && !miembro.aprobado,
+  });
 }
 
 export async function GET() {
   await connectDB();
 
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
   try {
     // Traemos TODAS las salidas a las que está unido el user
     const user = await User.findOne({ email: session.user?.email });
-    if (!user) return NextResponse.json({ message: "Usuario no encontrado" }, { status: 404 });
+    if (!user)
+      return NextResponse.json(
+        { message: "Usuario no encontrado" },
+        { status: 404 }
+      );
 
-    const miembros = await MiembroSalida.find({ usuario_id: user._id }).populate("salida_id");
+    const miembros = await MiembroSalida.find({
+      usuario_id: user._id,
+    }).populate("salida_id");
 
     const salidas = miembros
       .map((miembro) => miembro.salida_id)
@@ -53,6 +69,9 @@ export async function GET() {
     return NextResponse.json({ salidas });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ message: "Error al obtener salidas" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al obtener salidas" },
+      { status: 500 }
+    );
   }
 }

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import Subscription from "@/models/subscription";
-import { getServerSession } from "next-auth/next"; 
-import { authOptions } from "../../../libs/authOptions"; 
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../../libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 
 export async function POST(req: Request) {
   try {
     // Conectar a la base de datos
     await connectDB();
-    
+
     // Obtener la sesión del usuario
     const session = await getServerSession(authOptions);
 
@@ -22,16 +22,21 @@ export async function POST(req: Request) {
       user_id: session.user.id,
     });
 
-    return NextResponse.json({ 
-      subscribed: !!existingSubscription,
-      count: existingSubscription ? 1 : 0
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        subscribed: !!existingSubscription,
+        count: existingSubscription ? 1 : 0,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error verificando suscripción:", error);
-    return NextResponse.json({ 
-      error: "Error verificando suscripción",
-      subscribed: false 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Error verificando suscripción",
+        subscribed: false,
+      },
+      { status: 500 }
+    );
   }
 }

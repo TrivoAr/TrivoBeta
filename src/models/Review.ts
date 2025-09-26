@@ -34,10 +34,16 @@ const ReviewSchema = new Schema(
 // Validación personalizada: debe haber profesor o academia, pero no ambos
 ReviewSchema.pre("save", function (next) {
   if (!this.profesor && !this.academia) {
-    return next(new Error("Debe incluir una referencia a un profesor o academia."));
+    return next(
+      new Error("Debe incluir una referencia a un profesor o academia.")
+    );
   }
   if (this.profesor && this.academia) {
-    return next(new Error("No puede incluir reseña a profesor y academia al mismo tiempo."));
+    return next(
+      new Error(
+        "No puede incluir reseña a profesor y academia al mismo tiempo."
+      )
+    );
   }
   next();
 });

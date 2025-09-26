@@ -3,9 +3,6 @@
 import { useCallback, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
-
-
-
 type QrScannerProps = {
   onDecode: (decodedText: string) => void;
   onError?: (err: any) => void;
@@ -13,17 +10,9 @@ type QrScannerProps = {
   scanDelay?: number;
 };
 
-
-
-
-const QrScanner = dynamic(
-  () => import("@/components/QrScannerShim"),
-  { ssr: false }
-) as unknown as React.ComponentType<QrScannerProps>;
-
-
-
-
+const QrScanner = dynamic(() => import("@/components/QrScannerShim"), {
+  ssr: false,
+}) as unknown as React.ComponentType<QrScannerProps>;
 
 function extractCodeFromText(text: string) {
   try {
@@ -55,7 +44,9 @@ export default function StaffScanPage() {
 
     try {
       // 1) verificar
-      const verRes = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+      const verRes = await fetch(`/api/tickets/verify/${code}`, {
+        cache: "no-store",
+      });
       const verData = await verRes.json();
 
       if (verRes.status === 404) {
@@ -94,7 +85,9 @@ export default function StaffScanPage() {
           setStatusMsg("⚠️ Error al canjear.");
         }
       } else {
-        setStatusMsg(data?.alreadyRedeemed ? "⚠️ Ya estaba canjeado." : "✅ Canje OK");
+        setStatusMsg(
+          data?.alreadyRedeemed ? "⚠️ Ya estaba canjeado." : "✅ Canje OK"
+        );
         if ("vibrate" in navigator) (navigator as any).vibrate?.(100);
       }
     } catch {
@@ -105,7 +98,12 @@ export default function StaffScanPage() {
   }, []);
 
   // Wrapper sin async para que el tipo de prop sea correcto
-  const onDecode = useCallback((txt: string) => { void onDecodeAsync(txt); }, [onDecodeAsync]);
+  const onDecode = useCallback(
+    (txt: string) => {
+      void onDecodeAsync(txt);
+    },
+    [onDecodeAsync]
+  );
 
   const onError = useCallback((err: any) => {
     setStatusMsg("⚠️ Error de cámara o permisos.");
@@ -127,7 +125,9 @@ export default function StaffScanPage() {
       <div className="rounded-xl border p-4 space-y-2">
         <p className="text-sm text-slate-500">Último código detectado:</p>
         <p className="font-mono">{lastCode || "-"}</p>
-        <p className={`text-sm ${busy ? "text-blue-600" : "text-slate-700"}`}>{statusMsg}</p>
+        <p className={`text-sm ${busy ? "text-blue-600" : "text-slate-700"}`}>
+          {statusMsg}
+        </p>
       </div>
     </main>
   );

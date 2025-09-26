@@ -2,9 +2,8 @@ import React, { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
-
-import 'mapbox-gl/dist/mapbox-gl.css';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
@@ -18,8 +17,8 @@ interface Props {
   onChange: (coords: LatLng) => void;
   onRouteChange?: (coords: LatLng[]) => void;
   style?: string;
-  editable?: boolean;  
-  showControls?: boolean; 
+  editable?: boolean;
+  showControls?: boolean;
 }
 
 export default function MapComponent({
@@ -153,4 +152,3 @@ export default function MapComponent({
     </div>
   );
 }
-

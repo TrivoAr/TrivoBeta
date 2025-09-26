@@ -12,7 +12,11 @@ type Entrenamiento = {
   estado: string;
 };
 
-export default function EntrenamientosUsuario({ params }: { params: { id: string } }) {
+export default function EntrenamientosUsuario({
+  params,
+}: {
+  params: { id: string };
+}) {
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +25,9 @@ export default function EntrenamientosUsuario({ params }: { params: { id: string
   useEffect(() => {
     const fetchEntrenamientos = async () => {
       try {
-        const response = await axios.get(`/api/entrenamientos?user=${params.id}`);
+        const response = await axios.get(
+          `/api/entrenamientos?user=${params.id}`
+        );
         setEntrenamientos(response.data);
       } catch (error) {
         setError("Error al cargar los entrenamientos.");
@@ -57,20 +63,28 @@ export default function EntrenamientosUsuario({ params }: { params: { id: string
         {entrenamientos.length > 0 ? (
           <ul className="space-y-2">
             {entrenamientos.map((entrenamiento) => (
-              <li key={entrenamiento._id} className="p-3 border rounded-lg shadow-sm">
+              <li
+                key={entrenamiento._id}
+                className="p-3 border rounded-lg shadow-sm"
+              >
                 <p className="text-sm text-gray-500">
                   {new Date(entrenamiento.fecha).toLocaleDateString()}
                 </p>
                 <p className="font-bold">{entrenamiento.objetivo}</p>
                 <p>{entrenamiento.descripcion}</p>
-                <p className="font-semibold">Estado: {traducirEstado(entrenamiento.estado)}</p>
+                <p className="font-semibold">
+                  Estado: {traducirEstado(entrenamiento.estado)}
+                </p>
               </li>
             ))}
           </ul>
         ) : (
           <p>No hay entrenamientos registrados.</p>
         )}
-        <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-gray-300 rounded">
+        <button
+          onClick={() => router.back()}
+          className="mt-4 px-4 py-2 bg-gray-300 rounded"
+        >
           Volver
         </button>
       </div>

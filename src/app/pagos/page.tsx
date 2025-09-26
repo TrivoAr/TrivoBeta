@@ -1,7 +1,7 @@
-"use client";  
+"use client";
 
 import { useEffect, useState } from "react";
-import MercadoPagoimagen from "../../../public/assets/MercadoPago.png";  // Asegúrate de que la imagen esté en la ruta correcta
+import MercadoPagoimagen from "../../../public/assets/MercadoPago.png"; // Asegúrate de que la imagen esté en la ruta correcta
 
 const Mp = () => {
   const [grupoId, setGrupoId] = useState<string | null>(null);
@@ -41,14 +41,20 @@ const Mp = () => {
           duenoId, // Enviar el duenoId al backend
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error en el backend:", errorData.error, errorData.details);
-        alert(`Hubo un problema al procesar el pago: ${errorData.error}\nDetalles: ${errorData.details}`);
+        console.error(
+          "Error en el backend:",
+          errorData.error,
+          errorData.details
+        );
+        alert(
+          `Hubo un problema al procesar el pago: ${errorData.error}\nDetalles: ${errorData.details}`
+        );
         return;
       }
-  
+
       const data = await response.json();
       if (data.init_point) {
         window.location.href = data.init_point;
@@ -60,18 +66,16 @@ const Mp = () => {
       alert(`Hubo un problema al procesar el pago. Detalles: ${error.message}`);
     }
   };
-  
-  
-  
 
-  if (!grupoId || !nombreGrupo || !monto || !fecha) return <div>Cargando...</div>;
+  if (!grupoId || !nombreGrupo || !monto || !fecha)
+    return <div>Cargando...</div>;
 
   return (
     <div className="flex justify-center min-h-screen">
       <div className="w-[389px] p-4 shadow-md bg-[#F4F4F4] overflow-y-auto">
         <div className="pb-2">
           <h1 className="text-center h-[22px] text-centerfont-medium text-[20px] ">
-           Detalles del pago
+            Detalles del pago
           </h1>
         </div>
         <div className="w-[339px] h-[350px] bg-[#E5E5E5] rounded-xl">
@@ -115,7 +119,7 @@ const Mp = () => {
                 Visa 4052
               </span>
             </div>
-               */ }
+               */}
             <div className="w-full flex justify-between items-start pt-2">
               <span className="font-normal text-[10px] text-[#333333]">
                 Transacción Nº
@@ -124,10 +128,12 @@ const Mp = () => {
                 #123456789
               </span>
             </div>
-            
 
             <div className="flex justify-center mt-4 w-[100%]">
-              <button onClick={handlePagar} className="w-[80%] h-[40px] bg-[#C2C9D2] rounded-xl">
+              <button
+                onClick={handlePagar}
+                className="w-[80%] h-[40px] bg-[#C2C9D2] rounded-xl"
+              >
                 Pagar
               </button>
             </div>
@@ -143,9 +149,12 @@ const Mp = () => {
                 className="w-[100px] h-[26px]"
               />
             </div>
-              {/* Mensaje de advertencia */}
-              <div className="w-full p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 text-sm mt-4">
-              <p>⚠️ Recuerda esperar a que Mercado Pago te redirija de vuelta a la aplicación para confirmar tu pago.</p>
+            {/* Mensaje de advertencia */}
+            <div className="w-full p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 text-sm mt-4">
+              <p>
+                ⚠️ Recuerda esperar a que Mercado Pago te redirija de vuelta a
+                la aplicación para confirmar tu pago.
+              </p>
             </div>
           </div>
         </div>

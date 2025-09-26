@@ -18,16 +18,16 @@ export async function GET() {
       {
         success: true,
         data: sponsors,
-        count: sponsors.length
+        count: sponsors.length,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error obteniendo sponsors:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Error interno del servidor" 
+        error: "Error interno del servidor",
       },
       { status: 500 }
     );
@@ -43,9 +43,9 @@ export async function POST(req: Request) {
 
     if (!name) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "El nombre es requerido" 
+          error: "El nombre es requerido",
         },
         { status: 400 }
       );
@@ -55,9 +55,9 @@ export async function POST(req: Request) {
     const existingSponsor = await Sponsors.findOne({ name });
     if (existingSponsor) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "Ya existe un sponsor con ese nombre" 
+          error: "Ya existe un sponsor con ese nombre",
         },
         { status: 409 }
       );
@@ -65,23 +65,23 @@ export async function POST(req: Request) {
 
     const sponsor = await Sponsors.create({
       name,
-      imagen: imagen || null
+      imagen: imagen || null,
     });
 
     return NextResponse.json(
       {
         success: true,
         data: sponsor,
-        message: "Sponsor creado exitosamente"
+        message: "Sponsor creado exitosamente",
       },
       { status: 201 }
     );
   } catch (error) {
     console.error("Error creando sponsor:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Error interno del servidor" 
+        error: "Error interno del servidor",
       },
       { status: 500 }
     );

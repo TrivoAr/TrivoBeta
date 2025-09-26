@@ -30,7 +30,11 @@ export default function DescriptionEditor({
 
   const remaining = maxChars - internal.length;
   const counterClass =
-    remaining < 0 ? "text-red-400" : remaining < 80 ? "text-yellow-400" : "text-gray-400";
+    remaining < 0
+      ? "text-red-400"
+      : remaining < 80
+        ? "text-yellow-400"
+        : "text-gray-400";
 
   const placeholder = useMemo(
     () =>
@@ -70,7 +74,9 @@ export default function DescriptionEditor({
       />
 
       <div className="flex items-center justify-between text-xs">
-        <p className="text-gray-400">**, *, #, -, listas, tablas, links y checklists (GFM).</p>
+        <p className="text-gray-400">
+          **, *, #, -, listas, tablas, links y checklists (GFM).
+        </p>
         <p className={counterClass}>{remaining} caracteres</p>
       </div>
 
@@ -79,7 +85,10 @@ export default function DescriptionEditor({
           Previsualización
         </div>
         <article className="p-3 prose prose-neutral dark:prose-invert max-w-none leading-relaxed">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeSanitize]}
+          >
             {internal || placeholder}
           </ReactMarkdown>
         </article>

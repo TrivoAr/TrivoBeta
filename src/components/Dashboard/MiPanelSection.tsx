@@ -36,22 +36,27 @@ interface SalidaSocial {
 const fetchMisAcademias = async (userId: string): Promise<Academia[]> => {
   const response = await fetch(`/api/academias?owner=true`);
   if (!response.ok) throw new Error("Error al obtener academias");
-  
+
   const data = await response.json();
-  const filteredData = Array.isArray(data) ? data.filter((academia: Academia) => 
-    academia._id && academia.nombre_academia
-  ) : [];
+  const filteredData = Array.isArray(data)
+    ? data.filter(
+        (academia: Academia) => academia._id && academia.nombre_academia
+      )
+    : [];
 
   // Obtener imágenes de Firebase para cada academia
   const academiasConImagenes = await Promise.all(
     filteredData.map(async (academia: Academia) => {
       try {
-        const imagenUrl = await getAcademyImage("profile-image.jpg", academia._id);
+        const imagenUrl = await getAcademyImage(
+          "profile-image.jpg",
+          academia._id
+        );
         return { ...academia, imagenUrl };
       } catch (error) {
         return {
           ...academia,
-          imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C76C01&color=fff&size=310x115`
+          imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C76C01&color=fff&size=310x115`,
         };
       }
     })
@@ -60,14 +65,16 @@ const fetchMisAcademias = async (userId: string): Promise<Academia[]> => {
   return academiasConImagenes;
 };
 
-const fetchMisSalidasSociales = async (userId: string): Promise<SalidaSocial[]> => {
+const fetchMisSalidasSociales = async (
+  userId: string
+): Promise<SalidaSocial[]> => {
   const response = await fetch(`/api/social`);
   if (!response.ok) throw new Error("Error al obtener salidas sociales");
 
   const rawData = await response.json();
-  const data = Array.isArray(rawData) ? rawData.filter((salida: SalidaSocial) => 
-    salida.creador_id === userId
-  ) : [];
+  const data = Array.isArray(rawData)
+    ? rawData.filter((salida: SalidaSocial) => salida.creador_id === userId)
+    : [];
 
   // Obtener imágenes para cada salida
   const salidasConImagenes = await Promise.all(
@@ -78,7 +85,7 @@ const fetchMisSalidasSociales = async (userId: string): Promise<SalidaSocial[]> 
       } catch (error) {
         return {
           ...salida,
-          imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C76C01&color=fff&size=310x115`
+          imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C76C01&color=fff&size=310x115`,
         };
       }
     })
@@ -96,18 +103,18 @@ export const MiPanelSection: React.FC = () => {
 
   const loadMiPanelData = async () => {
     if (!session?.user?.id) return;
-    
+
     setIsLoading(true);
     try {
       const [academiasData, salidasData] = await Promise.all([
         fetchMisAcademias(session.user.id),
-        fetchMisSalidasSociales(session.user.id)
+        fetchMisSalidasSociales(session.user.id),
       ]);
-      
+
       setAcademias(academiasData);
       setSalidasSociales(salidasData);
     } catch (error) {
-      console.error('Error loading mi panel data:', error);
+      console.error("Error loading mi panel data:", error);
       toast.error("Error al cargar datos del panel");
     } finally {
       setIsLoading(false);
@@ -126,7 +133,7 @@ export const MiPanelSection: React.FC = () => {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Error al eliminar academia");
-      
+
       toast.success("Academia eliminada correctamente");
       await loadMiPanelData(); // Reload data
     } catch (error) {
@@ -140,7 +147,7 @@ export const MiPanelSection: React.FC = () => {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Error al eliminar salida social");
-      
+
       toast.success("Salida social eliminada correctamente");
       await loadMiPanelData(); // Reload data
     } catch (error) {
@@ -149,12 +156,14 @@ export const MiPanelSection: React.FC = () => {
   };
 
   const handleDeleteAcademia = (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar esta academia?")) return;
+    if (!confirm("¿Estás seguro de que quieres eliminar esta academia?"))
+      return;
     deleteAcademia(id);
   };
 
   const handleDeleteSalidaSocial = (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar esta salida social?")) return;
+    if (!confirm("¿Estás seguro de que quieres eliminar esta salida social?"))
+      return;
     deleteSalidaSocial(id);
   };
 
@@ -179,14 +188,14 @@ export const MiPanelSection: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">Mis Academias</h3>
-          <button 
+          <button
             onClick={() => router.push("/academias/crear")}
             className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
           >
             + Nueva
           </button>
         </div>
-        
+
         {academias.length > 0 ? (
           academias.map((academia) => (
             <DashboardCard
@@ -202,7 +211,9 @@ export const MiPanelSection: React.FC = () => {
               showActions={true}
               onEdit={() => router.push(`/academias/${academia._id}/editar`)}
               onDelete={() => handleDeleteAcademia(academia._id)}
-              onViewMembers={() => router.push(`/academias/${academia._id}/miembros`)}
+              onViewMembers={() =>
+                router.push(`/academias/${academia._id}/miembros`)
+              }
             />
           ))
         ) : (
@@ -215,8 +226,10 @@ export const MiPanelSection: React.FC = () => {
       {/* Sección: Mis Salidas Sociales */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Mis Salidas Sociales</h3>
-          <button 
+          <h3 className="text-lg font-semibold text-gray-800">
+            Mis Salidas Sociales
+          </h3>
+          <button
             onClick={() => router.push("/social/crear")}
             className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
           >
@@ -236,12 +249,18 @@ export const MiPanelSection: React.FC = () => {
               localidad={salida.localidad}
               date={dayjs(salida.fecha).format("DD/MM/YYYY")}
               time={salida.hora}
+              fecha={salida.fecha}
+              hora={salida.hora}
               price={salida.precio}
               type="salida"
               showActions={true}
+              isOwner={true}
               onEdit={() => router.push(`/social/editar/${salida._id}`)}
               onDelete={() => handleDeleteSalidaSocial(salida._id)}
-              onViewMembers={() => router.push(`/social/miembros/${salida._id}`)}
+              onViewMembers={() =>
+                router.push(`/social/miembros/${salida._id}`)
+              }
+              onScanQR={() => router.push(`/social/${salida._id}/scan`)}
             />
           ))
         ) : (
@@ -250,7 +269,6 @@ export const MiPanelSection: React.FC = () => {
           </div>
         )}
       </div>
-
     </div>
   );
 };

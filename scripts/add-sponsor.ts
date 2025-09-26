@@ -22,7 +22,7 @@ async function saveSponsorImage(imageBuffer: Buffer, sponsorId: string) {
   try {
     const fileName = "sponsor-image.jpg";
     const fileRef = ref(storage, `sponsors/${sponsorId}/${fileName}`);
-    
+
     const snapshot = await uploadBytes(fileRef, imageBuffer);
     const downloadUrl = await getDownloadURL(snapshot.ref);
     return downloadUrl;
@@ -36,39 +36,41 @@ async function addSponsor(sponsorName: string, imagePath: string) {
   try {
     console.log("🔄 Conectando a la base de datos...");
     await connectDB();
-    
+
     console.log("🔄 Creando sponsor...");
     const sponsor = await Sponsors.create({
-      name: sponsorName
+      name: sponsorName,
     });
-    
+
     console.log("✅ Sponsor creado con ID:", sponsor._id);
-    
+
     console.log("🔄 Subiendo imagen...");
-    
+
     // Verificar que el archivo existe
     if (!fs.existsSync(imagePath)) {
       throw new Error(`El archivo no existe: ${imagePath}`);
     }
-    
+
     // Leer la imagen
     const imageBuffer = fs.readFileSync(imagePath);
     console.log("📁 Imagen leída:", imageBuffer.length, "bytes");
-    
+
     // Subir a Firebase
-    const imageUrl = await saveSponsorImage(imageBuffer, sponsor._id.toString());
-    
+    const imageUrl = await saveSponsorImage(
+      imageBuffer,
+      sponsor._id.toString()
+    );
+
     // Actualizar el sponsor con la URL
     sponsor.imagen = imageUrl;
     await sponsor.save();
-    
+
     console.log("🎉 ¡Sponsor creado exitosamente!");
     console.log("ID:", sponsor._id);
     console.log("Nombre:", sponsor.name);
     console.log("Imagen:", sponsor.imagen);
-    
+
     return sponsor;
-    
   } catch (error) {
     console.error("❌ Error:", error);
     throw error;

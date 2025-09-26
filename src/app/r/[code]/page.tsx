@@ -143,7 +143,7 @@
 //       {/* Header */}
 //       <header className="px-4 pb-3 pt-5">
 //         <StatusChip />
-        
+
 //         <h1 className="mt-2 text-[22px] font-semibold tracking-tight text-slate-900">
 //           {isIssued && "Entrada válida"}
 //           {isRedeemed && "Entrada ya canjeada"}
@@ -238,7 +238,9 @@ export default function TicketPage({ params }: { params: { code: string } }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+        const res = await fetch(`/api/tickets/verify/${code}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         setState({ loading: false, ...data });
       } catch {
@@ -261,7 +263,9 @@ export default function TicketPage({ params }: { params: { code: string } }) {
 
       if (!res.ok) {
         if (data?.error === "already_redeemed") {
-          setMsg(`⚠️ Ya estaba canjeada ${data.redeemedAt ? `(${new Date(data.redeemedAt).toLocaleString()})` : ""}`);
+          setMsg(
+            `⚠️ Ya estaba canjeada ${data.redeemedAt ? `(${new Date(data.redeemedAt).toLocaleString()})` : ""}`
+          );
         } else if (data?.error === "forbidden") {
           setMsg("🚫 No autorizado para canjear");
         } else if (data?.error === "invalid_code") {
@@ -274,7 +278,9 @@ export default function TicketPage({ params }: { params: { code: string } }) {
       }
 
       // refrescar estado
-      const res2 = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+      const res2 = await fetch(`/api/tickets/verify/${code}`, {
+        cache: "no-store",
+      });
       setState({ loading: false, ...(await res2.json()) });
     } finally {
       setRedeeming(false);
@@ -287,10 +293,22 @@ export default function TicketPage({ params }: { params: { code: string } }) {
 
   function StatusChip() {
     if (isIssued)
-      return <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Válida</span>;
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" /> Válida
+        </span>
+      );
     if (isRedeemed)
-      return <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700"><span className="h-2 w-2 rounded-full bg-rose-500" /> Ya canjeada</span>;
-    return <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700"><span className="h-2 w-2 rounded-full bg-slate-500" /> Inválida</span>;
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
+          <span className="h-2 w-2 rounded-full bg-rose-500" /> Ya canjeada
+        </span>
+      );
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">
+        <span className="h-2 w-2 rounded-full bg-slate-500" /> Inválida
+      </span>
+    );
   }
 
   return (
@@ -309,7 +327,8 @@ export default function TicketPage({ params }: { params: { code: string } }) {
         </h1>
         <p className="mt-1 text-sm text-slate-600">
           {isIssued && "Mostrá esta pantalla al staff para canjear."}
-          {isRedeemed && `Canjeada el ${state.redeemedAt ? new Date(state.redeemedAt).toLocaleString() : "-"}`}
+          {isRedeemed &&
+            `Canjeada el ${state.redeemedAt ? new Date(state.redeemedAt).toLocaleString() : "-"}`}
           {isInvalid && "El código no es válido o ya venció."}
         </p>
       </header>
@@ -327,7 +346,9 @@ export default function TicketPage({ params }: { params: { code: string } }) {
           onClick={handleRedeem}
           disabled={redeeming || !isIssued}
           className={`h-12 w-full rounded-xl text-[15px] font-medium shadow-sm transition ${
-            isIssued ? "bg-slate-900 text-white hover:bg-slate-800" : "bg-slate-200 text-slate-500"
+            isIssued
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "bg-slate-200 text-slate-500"
           }`}
         >
           {redeeming ? "Canjeando…" : "Canjear entrada"}

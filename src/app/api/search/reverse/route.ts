@@ -48,8 +48,8 @@
 // app/api/search/reverse/route.ts
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const lat = searchParams.get('lat');
-  const lon = searchParams.get('lon');
+  const lat = searchParams.get("lat");
+  const lon = searchParams.get("lon");
 
   if (!lat || !lon) {
     return new Response(JSON.stringify({ display_name: "" }), {

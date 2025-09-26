@@ -3,7 +3,6 @@ import { FormEvent, useState } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { text } from "stream/consumers";
 import { saveAcademyImage } from "@/app/api/academias/saveAcademyImage";
 
 function CrearAcademia() {
@@ -12,12 +11,6 @@ function CrearAcademia() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [text, setText] = useState("");
-  const maxChars = 60;
-
-  const handleChange = (event) => {
-    setText(event.target.value);
-  };
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -110,7 +103,7 @@ function CrearAcademia() {
   return (
     <div className="w-[390px] flex flex-col items-center gap-5">
       <Toaster position="top-center" /> {/* Para mostrar los toasts */}
-      <h2 className="text-center font-bold text-2xl mt-4 bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] bg-clip-text text-transparent">
+      <h2 className="text-center font-bold text-2xl mt-4 seasonal-gradient bg-clip-text text-transparent">
         Crear <span className="text-black">Grupo</span>
       </h2>
       <form
@@ -208,7 +201,7 @@ function CrearAcademia() {
             name="descripcion"
             className="form-input peer"
             placeholder=" "
-            maxLength={maxChars}
+            maxLength={60}
           ></textarea>
           
           <label className="form-label">Descripción</label>
@@ -218,7 +211,7 @@ function CrearAcademia() {
           Descripción
           <textarea
             name="descripcion"
-            maxLength={maxChars}
+            maxLength={60}
             placeholder="Somos una grupo de..."
             className="w-full px-3 py-4 border rounded-[15px] shadow-md"
           />
@@ -293,14 +286,23 @@ function CrearAcademia() {
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
           />
         </label> */}
-        
+
         <div className="flex flex-col  items-center gap-3">
           {/* <button className="w-full py-2 rounded-md text-white  bg-gradient-to-r from-[#C76C01] to-[#FFBD6E] font-bold">
             Crear Academia
           </button> */}
 
-            <button
-            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+          <button
+            className="text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: "var(--theme-accent-primary)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor =
+                "var(--theme-accent-secondary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor =
+                "var(--theme-accent-primary)";
+            }}
             disabled={isSubmitting}
           >
             {isSubmitting ? "Creando academia" : "Crear academia"}

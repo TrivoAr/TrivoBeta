@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { LRUCache } from 'lru-cache';
+import { LRUCache } from "lru-cache";
 
 /**
  * Cache Strategy Types
  */
 export type CacheStrategy =
-  | 'memory'
-  | 'memory-lru'
-  | 'session-storage'
-  | 'local-storage'
-  | 'indexed-db';
+  | "memory"
+  | "memory-lru"
+  | "session-storage"
+  | "local-storage"
+  | "indexed-db";
 
 export type CacheInvalidationStrategy =
-  | 'ttl'
-  | 'tags'
-  | 'dependency'
-  | 'manual';
+  | "ttl"
+  | "tags"
+  | "dependency"
+  | "manual";
 
 /**
  * Cache Entry Interface
@@ -73,16 +73,16 @@ export class CacheManager {
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.config = {
-      strategy: 'memory-lru',
+      strategy: "memory-lru",
       defaultTtl: 5 * 60 * 1000, // 5 minutes
       maxEntries: 1000,
       cleanupInterval: 60 * 1000, // 1 minute
       enableMetrics: true,
       serialization: {
         enabled: true,
-        compress: false
+        compress: false,
       },
-      ...config
+      ...config,
     };
 
     this.metrics = {
@@ -93,7 +93,7 @@ export class CacheManager {
       evictions: 0,
       hitRate: 0,
       memoryUsage: 0,
-      lastAccess: Date.now()
+      lastAccess: Date.now(),
     };
 
     this.strategies = new Map();
@@ -106,16 +106,19 @@ export class CacheManager {
    */
   private initializeStrategies(): void {
     // Memory LRU Cache
-    this.strategies.set('memory-lru', new LRUCacheStorage(this.config));
+    this.strategies.set("memory-lru", new LRUCacheStorage(this.config));
 
     // Simple Memory Cache
-    this.strategies.set('memory', new MemoryCacheStorage(this.config));
+    this.strategies.set("memory", new MemoryCacheStorage(this.config));
 
     // Browser Storage
-    if (typeof window !== 'undefined') {
-      this.strategies.set('session-storage', new SessionStorageCache(this.config));
-      this.strategies.set('local-storage', new LocalStorageCache(this.config));
-      this.strategies.set('indexed-db', new IndexedDBCache(this.config));
+    if (typeof window !== "undefined") {
+      this.strategies.set(
+        "session-storage",
+        new SessionStorageCache(this.config)
+      );
+      this.strategies.set("local-storage", new LocalStorageCache(this.config));
+      this.strategies.set("indexed-db", new IndexedDBCache(this.config));
     }
   }
 
@@ -127,14 +130,14 @@ export class CacheManager {
     const entry = await storage.get(key);
 
     if (!entry) {
-      this.updateMetrics('miss');
+      this.updateMetrics("miss");
       return null;
     }
 
     // Check TTL
     if (this.isExpired(entry)) {
       await this.delete(key, strategy);
-      this.updateMetrics('miss');
+      this.updateMetrics("miss");
       return null;
     }
 
@@ -142,7 +145,7 @@ export class CacheManager {
     entry.metadata = { ...entry.metadata, lastAccess: Date.now() };
     await storage.set(key, entry);
 
-    this.updateMetrics('hit');
+    this.updateMetrics("hit");
     return entry.data;
   }
 
@@ -165,7 +168,7 @@ export class CacheManager {
       tags = [],
       dependencies = [],
       strategy,
-      metadata = {}
+      metadata = {},
     } = options;
 
     const entry: CacheEntry<T> = {
@@ -177,8 +180,8 @@ export class CacheManager {
       version: 1,
       metadata: {
         ...metadata,
-        lastAccess: Date.now()
-      }
+        lastAccess: Date.now(),
+      },
     };
 
     const storage = this.getStorage(strategy);
@@ -190,7 +193,7 @@ export class CacheManager {
     // Update dependency graph
     this.updateDependencyGraph(key, dependencies);
 
-    this.updateMetrics('set');
+    this.updateMetrics("set");
   }
 
   /**
@@ -202,7 +205,7 @@ export class CacheManager {
 
     if (result) {
       this.cleanupIndices(key);
-      this.updateMetrics('delete');
+      this.updateMetrics("delete");
     }
 
     return result;
@@ -217,11 +220,11 @@ export class CacheManager {
     for (const tag of tags) {
       const taggedKeys = this.tagIndex.get(tag);
       if (taggedKeys) {
-        taggedKeys.forEach(key => keysToInvalidate.add(key));
+        taggedKeys.forEach((key) => keysToInvalidate.add(key));
       }
     }
 
-    const deletePromises = Array.from(keysToInvalidate).map(key =>
+    const deletePromises = Array.from(keysToInvalidate).map((key) =>
       this.delete(key)
     );
 
@@ -237,11 +240,11 @@ export class CacheManager {
     for (const dependency of dependencies) {
       const dependentKeys = this.dependencyGraph.get(dependency);
       if (dependentKeys) {
-        dependentKeys.forEach(key => keysToInvalidate.add(key));
+        dependentKeys.forEach((key) => keysToInvalidate.add(key));
       }
     }
 
-    const deletePromises = Array.from(keysToInvalidate).map(key =>
+    const deletePromises = Array.from(keysToInvalidate).map((key) =>
       this.delete(key)
     );
 
@@ -256,8 +259,8 @@ export class CacheManager {
       const storage = this.getStorage(strategy);
       await storage.clear();
     } else {
-      const clearPromises = Array.from(this.strategies.values()).map(storage =>
-        storage.clear()
+      const clearPromises = Array.from(this.strategies.values()).map(
+        (storage) => storage.clear()
       );
       await Promise.all(clearPromises);
     }
@@ -271,13 +274,14 @@ export class CacheManager {
    * Get cache metrics
    */
   getMetrics(): CacheMetrics {
-    const hitRate = this.metrics.hits + this.metrics.misses > 0
-      ? this.metrics.hits / (this.metrics.hits + this.metrics.misses)
-      : 0;
+    const hitRate =
+      this.metrics.hits + this.metrics.misses > 0
+        ? this.metrics.hits / (this.metrics.hits + this.metrics.misses)
+        : 0;
 
     return {
       ...this.metrics,
-      hitRate: Math.round(hitRate * 100) / 100
+      hitRate: Math.round(hitRate * 100) / 100,
     };
   }
 
@@ -293,11 +297,11 @@ export class CacheManager {
       dependencies?: string[];
     }>
   ): Promise<void> {
-    const setPromises = entries.map(entry =>
+    const setPromises = entries.map((entry) =>
       this.set(entry.key, entry.data, {
         ttl: entry.ttl,
         tags: entry.tags,
-        dependencies: entry.dependencies
+        dependencies: entry.dependencies,
       })
     );
 
@@ -408,12 +412,18 @@ export class CacheManager {
   /**
    * Update metrics
    */
-  private updateMetrics(type: 'hit' | 'miss' | 'set' | 'delete'): void {
+  private updateMetrics(type: "hit" | "miss" | "set" | "delete"): void {
     if (!this.config.enableMetrics) return;
 
-    this.metrics[type === 'hit' ? 'hits' :
-                  type === 'miss' ? 'misses' :
-                  type === 'set' ? 'sets' : 'deletes']++;
+    this.metrics[
+      type === "hit"
+        ? "hits"
+        : type === "miss"
+          ? "misses"
+          : type === "set"
+            ? "sets"
+            : "deletes"
+    ]++;
     this.metrics.lastAccess = Date.now();
   }
 
@@ -429,7 +439,7 @@ export class CacheManager {
       evictions: 0,
       hitRate: 0,
       memoryUsage: 0,
-      lastAccess: Date.now()
+      lastAccess: Date.now(),
     };
   }
 
@@ -475,7 +485,7 @@ class LRUCacheStorage implements CacheStorage {
       ttl: config.defaultTtl,
       allowStale: false,
       updateAgeOnGet: true,
-      updateAgeOnHas: true
+      updateAgeOnHas: true,
     });
   }
 
@@ -569,10 +579,10 @@ class SessionStorageCache implements CacheStorage {
 
   async clear(): Promise<void> {
     try {
-      const keys = Object.keys(sessionStorage).filter(key =>
-        key.startsWith('cache:')
+      const keys = Object.keys(sessionStorage).filter((key) =>
+        key.startsWith("cache:")
       );
-      keys.forEach(key => sessionStorage.removeItem(key));
+      keys.forEach((key) => sessionStorage.removeItem(key));
     } catch {
       // Storage not available
     }
@@ -613,10 +623,10 @@ class LocalStorageCache implements CacheStorage {
 
   async clear(): Promise<void> {
     try {
-      const keys = Object.keys(localStorage).filter(key =>
-        key.startsWith('cache:')
+      const keys = Object.keys(localStorage).filter((key) =>
+        key.startsWith("cache:")
       );
-      keys.forEach(key => localStorage.removeItem(key));
+      keys.forEach((key) => localStorage.removeItem(key));
     } catch {
       // Storage not available
     }
@@ -628,8 +638,8 @@ class LocalStorageCache implements CacheStorage {
  */
 class IndexedDBCache implements CacheStorage {
   private db: IDBDatabase | null = null;
-  private dbName = 'axios-cache';
-  private storeName = 'cache-entries';
+  private dbName = "axios-cache";
+  private storeName = "cache-entries";
 
   constructor(private config: CacheConfig) {
     this.initDB();
@@ -658,7 +668,7 @@ class IndexedDBCache implements CacheStorage {
     if (!this.db) await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const transaction = this.db!.transaction([this.storeName], "readonly");
       const store = transaction.objectStore(this.storeName);
       const request = store.get(key);
 
@@ -671,7 +681,7 @@ class IndexedDBCache implements CacheStorage {
     if (!this.db) await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const transaction = this.db!.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
       const request = store.put(entry, key);
 
@@ -684,7 +694,7 @@ class IndexedDBCache implements CacheStorage {
     if (!this.db) await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const transaction = this.db!.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
       const request = store.delete(key);
 
@@ -697,7 +707,7 @@ class IndexedDBCache implements CacheStorage {
     if (!this.db) await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const transaction = this.db!.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
       const request = store.clear();
 
@@ -711,11 +721,11 @@ class IndexedDBCache implements CacheStorage {
  * Global Cache Manager Instance
  */
 export const cacheManager = new CacheManager({
-  strategy: 'memory-lru',
+  strategy: "memory-lru",
   defaultTtl: 5 * 60 * 1000, // 5 minutes
   maxEntries: 1000,
   cleanupInterval: 60 * 1000, // 1 minute
-  enableMetrics: true
+  enableMetrics: true,
 });
 
 /**
@@ -727,8 +737,9 @@ export function useCache() {
     set: cacheManager.set.bind(cacheManager),
     delete: cacheManager.delete.bind(cacheManager),
     invalidateByTags: cacheManager.invalidateByTags.bind(cacheManager),
-    invalidateByDependencies: cacheManager.invalidateByDependencies.bind(cacheManager),
+    invalidateByDependencies:
+      cacheManager.invalidateByDependencies.bind(cacheManager),
     clear: cacheManager.clear.bind(cacheManager),
-    metrics: cacheManager.getMetrics.bind(cacheManager)
+    metrics: cacheManager.getMetrics.bind(cacheManager),
   };
 }

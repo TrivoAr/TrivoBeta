@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { FaCalendarAlt, FaUser, FaBullseye } from "react-icons/fa";
-import GrupoVistaSkeleton from '@/components/GrupoVistaSkeleton';
+import GrupoVistaSkeleton from "@/components/GrupoVistaSkeleton";
 
 const DetalleGrupo = () => {
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,10 @@ const DetalleGrupo = () => {
     descripcion:
       "Un grupo ideal diseñado para los recién iniciados en carreras de 5km, con técnicas específicas, apoyo grupal y evaluación continua.",
     eventos: [{ titulo: "Trekking cerro San Javier", fecha: "Sáb 15 Oct" }],
-    objetivos: ["Participar en carreras locales", "Mantener un estilo de vida activo"],
+    objetivos: [
+      "Participar en carreras locales",
+      "Mantener un estilo de vida activo",
+    ],
     profesor: {
       nombre: "Manuel Hernández",
       descripcion:
@@ -66,7 +69,9 @@ const DetalleGrupo = () => {
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-500">Horario</p>
-              <p className="text-base font-bold text-gray-800">{grupo.horario}</p>
+              <p className="text-base font-bold text-gray-800">
+                {grupo.horario}
+              </p>
             </div>
           </div>
 
@@ -79,10 +84,13 @@ const DetalleGrupo = () => {
           {/* Eventos próximos */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 flex items-center">
-              <FaCalendarAlt className="mr-2 text-indigo-500" /> Eventos próximos
+              <FaCalendarAlt className="mr-2 text-indigo-500" /> Eventos
+              próximos
             </h2>
             <div className="mt-2 bg-indigo-100 rounded-lg p-4">
-              <p className="font-medium text-gray-800">{grupo.eventos[0].titulo}</p>
+              <p className="font-medium text-gray-800">
+                {grupo.eventos[0].titulo}
+              </p>
               <p className="text-sm text-gray-600">{grupo.eventos[0].fecha}</p>
             </div>
           </div>
@@ -107,15 +115,21 @@ const DetalleGrupo = () => {
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div className="ml-4">
-                <p className="font-semibold text-gray-800">{grupo.profesor.nombre}</p>
-                <p className="text-sm text-gray-600">{grupo.profesor.descripcion}</p>
+                <p className="font-semibold text-gray-800">
+                  {grupo.profesor.nombre}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {grupo.profesor.descripcion}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Miembros */}
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Miembros del grupo</h2>
+            <h2 className="text-lg font-bold text-gray-800">
+              Miembros del grupo
+            </h2>
             <div className="grid grid-cols-3 gap-3 mt-3">
               {grupo.miembros.map((miembro, index) => (
                 <div
@@ -131,7 +145,9 @@ const DetalleGrupo = () => {
 
         {/* Footer */}
         <div className="bg-gray-100 p-4 flex justify-between items-center">
-          <p className="text-lg font-bold text-gray-800">{grupo.cuota_mensual}</p>
+          <p className="text-lg font-bold text-gray-800">
+            {grupo.cuota_mensual}
+          </p>
           <button className="bg-orange-500 text-white px-4 py-2 rounded-md shadow hover:bg-orange-600">
             Ingresar al grupo
           </button>
@@ -141,4 +157,4 @@ const DetalleGrupo = () => {
   );
 };
 
-export default DetalleGrupo;
+export default DetalleGrupo;

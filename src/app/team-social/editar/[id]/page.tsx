@@ -7,10 +7,13 @@ import { PATCH } from "@/app/api/grupos/route";
 import dynamic from "next/dynamic";
 import toast, { Toaster } from "react-hot-toast";
 import debounce from "lodash.debounce";
-import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import {
+  useProvinces,
+  useLocalitiesByProvince,
+  useLocationFromCoords,
+} from "@/hooks/useArgentinaLocations";
 import { useBares } from "@/hooks/useBares";
 import { useSponsors } from "@/hooks/useSponsors";
-
 
 interface LatLng {
   lat: number;
@@ -25,12 +28,12 @@ export default function EditarTeamSalida({
   const { data: session } = useSession();
   const router = useRouter();
   const [suggestions, setSuggestions] = useState<any[]>([]);
-    const [markerPos, setMarkerPos] = useState<LatLng>({ lat: 0, lng: 0 });
-    const defaultCoords = { lat: -26.8333, lng: -65.2167 };
-    const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
+  const [markerPos, setMarkerPos] = useState<LatLng>({ lat: 0, lng: 0 });
+  const defaultCoords = { lat: -26.8333, lng: -65.2167 };
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-   const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Estados para ubicación
@@ -53,8 +56,8 @@ export default function EditarTeamSalida({
   const sponsors = sponsorsResponse?.data || [];
 
   const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
-      ssr: false,
-    });
+    ssr: false,
+  });
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -77,7 +80,7 @@ export default function EditarTeamSalida({
     locationCoords: { lat: 0, lng: 0 },
   });
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(`/api/team-social/${params.id}`);
@@ -114,7 +117,7 @@ export default function EditarTeamSalida({
 
         // Poblar provincia y localidad si existen
         if (data.provincia && provinces) {
-          const province = provinces.find(p => p.name === data.provincia);
+          const province = provinces.find((p) => p.name === data.provincia);
           if (province) {
             setSelectedProvince(province.id);
           }
@@ -155,7 +158,7 @@ export default function EditarTeamSalida({
     }
   };
 
-    const fetchSuggestions = async (query: string) => {
+  const fetchSuggestions = async (query: string) => {
     if (!query) {
       setSuggestions([]);
       return;
@@ -182,22 +185,21 @@ export default function EditarTeamSalida({
   //   }));
   // };
 
-    const handleCoordsChange = async (coords: LatLng) => {
-  setMarkerPos(coords);
+  const handleCoordsChange = async (coords: LatLng) => {
+    setMarkerPos(coords);
 
-  const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
+    const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
 
-  setFormData((prev) => ({
-    ...prev,
-    ubicacion: direccion || prev.ubicacion,
-    lat: coords.lat,
-    lng: coords.lng,
-    locationCoords: coords,
-  }));
-};
+    setFormData((prev) => ({
+      ...prev,
+      ubicacion: direccion || prev.ubicacion,
+      lat: coords.lat,
+      lng: coords.lng,
+      locationCoords: coords,
+    }));
+  };
 
-
-    const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = (suggestion: any) => {
     const coords = {
       lat: parseFloat(suggestion.lat),
       lng: parseFloat(suggestion.lon),
@@ -228,9 +230,9 @@ export default function EditarTeamSalida({
 
   // Función para manejar selección múltiple de sponsors
   const handleSponsorToggle = (sponsorId: string) => {
-    setSelectedSponsors(prev =>
+    setSelectedSponsors((prev) =>
       prev.includes(sponsorId)
-        ? prev.filter(id => id !== sponsorId)
+        ? prev.filter((id) => id !== sponsorId)
         : [...prev, sponsorId]
     );
   };
@@ -242,30 +244,42 @@ export default function EditarTeamSalida({
       return;
     }
 
-    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
       toast.error("GPS requiere conexión segura (HTTPS)");
       return;
     }
 
     setLocationDetecting(true);
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
     const message = isMobile
       ? "📱 Presiona 'Permitir' cuando aparezca la solicitud de ubicación"
       : "🌍 Buscando ubicación... Acepta los permisos cuando aparezcan";
 
     toast.loading(message, {
       duration: 6000,
-      id: 'gps-search'
+      id: "gps-search",
     });
 
     try {
       if (navigator.permissions && navigator.permissions.query) {
-        const permission = await navigator.permissions.query({ name: 'geolocation' });
-        if (permission.state === 'denied') {
+        const permission = await navigator.permissions.query({
+          name: "geolocation",
+        });
+        if (permission.state === "denied") {
           setLocationDetecting(false);
-          toast.dismiss('gps-search');
-          toast.error("🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página", { duration: 8000 });
+          toast.dismiss("gps-search");
+          toast.error(
+            "🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página",
+            { duration: 8000 }
+          );
           return;
         }
       }
@@ -277,52 +291,56 @@ export default function EditarTeamSalida({
       async (position) => {
         const coords = {
           lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lng: position.coords.longitude,
         };
 
         try {
-          const locationData = await locationFromCoordsQuery.mutateAsync(coords);
+          const locationData =
+            await locationFromCoordsQuery.mutateAsync(coords);
 
-          const province = provinces?.find(p =>
-            p.name.toLowerCase() === locationData.province?.toLowerCase()
+          const province = provinces?.find(
+            (p) => p.name.toLowerCase() === locationData.province?.toLowerCase()
           );
 
           if (province) {
             setSelectedProvince(province.id);
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               provincia: province.name,
             }));
 
             if (locationData.locality) {
               setSelectedLocality(locationData.locality);
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
-                localidad: locationData.locality
+                localidad: locationData.locality,
               }));
             }
           }
 
           setMarkerPos(coords);
-          setFormData(prev => ({ ...prev, locationCoords: coords }));
+          setFormData((prev) => ({ ...prev, locationCoords: coords }));
 
-          toast.dismiss('gps-search');
-          toast.success(`📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
-
+          toast.dismiss("gps-search");
+          toast.success(
+            `📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`
+          );
         } catch (error) {
           console.error("Error detectando ubicación:", error);
-          toast.dismiss('gps-search');
-          toast.error("Error al detectar ubicación específica, pero coordenadas obtenidas");
+          toast.dismiss("gps-search");
+          toast.error(
+            "Error al detectar ubicación específica, pero coordenadas obtenidas"
+          );
 
           setMarkerPos(coords);
-          setFormData(prev => ({ ...prev, locationCoords: coords }));
+          setFormData((prev) => ({ ...prev, locationCoords: coords }));
         }
 
         setLocationDetecting(false);
       },
       (error) => {
         setLocationDetecting(false);
-        toast.dismiss('gps-search');
+        toast.dismiss("gps-search");
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -342,7 +360,7 @@ export default function EditarTeamSalida({
       {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 300000
+        maximumAge: 300000,
       }
     );
   };
@@ -386,67 +404,62 @@ export default function EditarTeamSalida({
   //   router.push("/dashboard");
   // };
 
-
   const handleDelete = async () => {
-  const confirm = window.confirm(
-    "¿Estás seguro que querés eliminar esta salida?"
-  );
-  if (!confirm) return;
+    const confirm = window.confirm(
+      "¿Estás seguro que querés eliminar esta salida?"
+    );
+    if (!confirm) return;
 
-  const toastId = toast.loading("Borrando social team...");
+    const toastId = toast.loading("Borrando social team...");
 
-  try {
-    const response = await fetch(`/api/team-social/${params.id}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`/api/team-social/${params.id}`, {
+        method: "DELETE",
+      });
 
-    if (!response.ok) {
-      throw new Error("Error al eliminar la salida.");
+      if (!response.ok) {
+        throw new Error("Error al eliminar la salida.");
+      }
+
+      toast.success("¡Salida eliminada con éxito!", { id: toastId });
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Error eliminando salida:", error);
+      toast.error("Hubo un problema al eliminar la salida.", { id: toastId });
     }
+  };
 
-    toast.success("¡Salida eliminada con éxito!", { id: toastId });
-    router.push("/dashboard");
-  } catch (error) {
-    console.error("Error eliminando salida:", error);
-    toast.error("Hubo un problema al eliminar la salida.", { id: toastId });
-  }
-};
+  const fetchAddressFromCoords = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name as string;
+    } catch (error) {
+      console.error("Error al obtener dirección inversa:", error);
+      return "";
+    }
+  };
 
+  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
-    
-       const fetchAddressFromCoords = async (lat: number, lon: number) => {
-          try {
-            const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
-            const data = await res.json();
-            return data.display_name as string;
-          } catch (error) {
-            console.error("Error al obtener dirección inversa:", error);
-            return "";
-          }
-        };
-      
-        const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
-      
-        useEffect(() => {
-          if (query.length < 3) {
-            setSuggestions([]);
-            return;
-          }
-          debouncedFetch(query);
-        }, [query, debouncedFetch]);
-      
-        // Cleanup para evitar memory leaks
-        useEffect(() => {
-          return () => {
-            debouncedFetch.cancel();
-          };
-        }, [debouncedFetch]);
+  useEffect(() => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    debouncedFetch(query);
+  }, [query, debouncedFetch]);
 
-  
+  // Cleanup para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [debouncedFetch]);
 
   return (
     <div className="flex flex-col justify-center items-center bg-background">
-      <Toaster position="top-center" /> 
+      <Toaster position="top-center" />
       <button
         onClick={() => router.back()}
         className="text-[#C76C01] self-start bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center ml-5 mt-5"
@@ -483,8 +496,9 @@ export default function EditarTeamSalida({
             value={selectedProvince}
             onChange={(e) => {
               setSelectedProvince(e.target.value);
-              const provinceName = provinces?.find(p => p.id === e.target.value)?.name || "";
-              setFormData(prev => ({ ...prev, provincia: provinceName }));
+              const provinceName =
+                provinces?.find((p) => p.id === e.target.value)?.name || "";
+              setFormData((prev) => ({ ...prev, provincia: provinceName }));
               setSelectedLocality(""); // Reset localidad al cambiar provincia
             }}
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
@@ -502,14 +516,18 @@ export default function EditarTeamSalida({
             value={selectedLocality}
             onChange={(e) => {
               setSelectedLocality(e.target.value);
-              const localityName = localities?.find(l => l.id === e.target.value)?.name || e.target.value;
-              setFormData(prev => ({ ...prev, localidad: localityName }));
+              const localityName =
+                localities?.find((l) => l.id === e.target.value)?.name ||
+                e.target.value;
+              setFormData((prev) => ({ ...prev, localidad: localityName }));
             }}
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
             disabled={!selectedProvince}
           >
             <option value="">
-              {selectedProvince ? "Seleccionar localidad" : "Primero selecciona una provincia"}
+              {selectedProvince
+                ? "Seleccionar localidad"
+                : "Primero selecciona una provincia"}
             </option>
             {localities?.map((locality) => (
               <option key={locality.id} value={locality.id}>
@@ -527,16 +545,29 @@ export default function EditarTeamSalida({
           >
             {locationDetecting ? (
               <>
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                <svg
+                  className="animate-spin h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
                 </svg>
                 Detectando ubicación...
               </>
             ) : (
-              <>
-                📍 Detectar mi ubicación
-              </>
+              <>📍 Detectar mi ubicación</>
             )}
           </button>
 
@@ -654,7 +685,7 @@ export default function EditarTeamSalida({
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           />
 
-              <div className="relative">
+          <div className="relative">
             <input
               type="text"
               name="ubicacion"
@@ -685,7 +716,9 @@ export default function EditarTeamSalida({
 
           {/* Selección de Bar */}
           <div>
-            <label className="block text-sm font-medium mb-2">Bar (opcional)</label>
+            <label className="block text-sm font-medium mb-2">
+              Bar (opcional)
+            </label>
             <select
               value={selectedBar}
               onChange={(e) => setSelectedBar(e.target.value)}
@@ -699,12 +732,16 @@ export default function EditarTeamSalida({
                 </option>
               ))}
             </select>
-            {loadingBares && <p className="text-sm text-gray-500 mt-1">Cargando bares...</p>}
+            {loadingBares && (
+              <p className="text-sm text-gray-500 mt-1">Cargando bares...</p>
+            )}
           </div>
 
           {/* Selección de Sponsors */}
           <div>
-            <label className="block text-sm font-medium mb-2">Sponsors (opcional)</label>
+            <label className="block text-sm font-medium mb-2">
+              Sponsors (opcional)
+            </label>
             {loadingSponsors ? (
               <p className="text-sm text-gray-500">Cargando sponsors...</p>
             ) : (
@@ -728,12 +765,16 @@ export default function EditarTeamSalida({
                           className="w-8 h-8 rounded object-cover"
                         />
                       )}
-                      <span className="text-sm text-gray-700">{sponsor.name}</span>
+                      <span className="text-sm text-gray-700">
+                        {sponsor.name}
+                      </span>
                     </div>
                   </label>
                 ))}
                 {sponsors?.length === 0 && (
-                  <p className="text-sm text-gray-500">No hay sponsors disponibles</p>
+                  <p className="text-sm text-gray-500">
+                    No hay sponsors disponibles
+                  </p>
                 )}
               </div>
             )}
@@ -769,7 +810,7 @@ export default function EditarTeamSalida({
           >
             Guardar cambios
           </button> */}
-            <button
+          <button
             className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
             type="submit"
             disabled={isSubmitting}

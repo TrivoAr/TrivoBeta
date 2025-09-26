@@ -1,5 +1,5 @@
 // api/academias/saveAcademyImage.ts
-import { ImageService } from '@/libs/services/ImageService';
+import { ImageService } from "@/libs/services/ImageService";
 
 /**
  * @deprecated Use ImageService.saveAcademyImage() instead

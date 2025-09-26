@@ -1,9 +1,9 @@
-import { Schema, model, models } from 'mongoose';
+import { Schema, model, models } from "mongoose";
 
 const ThemeDateRangeSchema = new Schema({
   theme: {
     type: String,
-    enum: ['halloween', 'christmas', 'newyear'],
+    enum: ["halloween", "christmas", "newyear"],
     required: true,
   },
   start: {
@@ -20,12 +20,12 @@ const ThemeSchema = new Schema(
   {
     _id: {
       type: String,
-      default: 'global',
+      default: "global",
     },
     activeSeasonalTheme: {
       type: String,
-      enum: ['none', 'halloween', 'christmas', 'newyear'],
-      default: 'none',
+      enum: ["none", "halloween", "christmas", "newyear"],
+      default: "none",
     },
     enabled: {
       type: Boolean,
@@ -36,5 +36,5 @@ const ThemeSchema = new Schema(
   { timestamps: true }
 );
 
-const Theme = models.Theme || model('Theme', ThemeSchema);
+const Theme = models.Theme || model("Theme", ThemeSchema);
 export default Theme;

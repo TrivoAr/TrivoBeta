@@ -22,7 +22,9 @@ export default function GenerateResetCode() {
     setLoading(false);
 
     if (res.ok) {
-      setMessage(`Código enviado: ${data.resetCode}. ¡Compártelo con el usuario!`);
+      setMessage(
+        `Código enviado: ${data.resetCode}. ¡Compártelo con el usuario!`
+      );
       toast.success("Código enviado correctamente.");
     } else {
       setMessage(data.message || "Hubo un error al generar el código.");
@@ -35,10 +37,16 @@ export default function GenerateResetCode() {
       <Toaster position="top-center" />
 
       {/* Logo y título */}
-      <Image  src="/assets/Isologo - Positivo a color.png" alt="Klubo Logo" width={120} height={120}/>
+      <Image
+        src="/assets/Isologo - Positivo a color.png"
+        alt="Klubo Logo"
+        width={120}
+        height={120}
+      />
       <div className="text-center mb-6 mt-6">
-     
-        <h1 className="text-xl font-bold text-black mt-2">Generar Código de Recuperación</h1>
+        <h1 className="text-xl font-bold text-black mt-2">
+          Generar Código de Recuperación
+        </h1>
       </div>
 
       {/* Formulario */}
@@ -66,7 +74,9 @@ export default function GenerateResetCode() {
         </button>
 
         {/* Mensaje de estado */}
-        {message && <p className="text-center text-sm text-gray-600 mt-4">{message}</p>}
+        {message && (
+          <p className="text-center text-sm text-gray-600 mt-4">{message}</p>
+        )}
       </form>
     </div>
   );

@@ -28,8 +28,10 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -48,11 +50,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const review = await Review.findById(id);
 
     if (!review) {
-      return NextResponse.json({ error: "Reseña no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Reseña no encontrada" },
+        { status: 404 }
+      );
     }
 
     if (review.author.toString() !== session.user.id) {
-      return NextResponse.json({ error: "No autorizado para editar esta reseña" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No autorizado para editar esta reseña" },
+        { status: 403 }
+      );
     }
 
     review.rating = rating;
@@ -60,10 +68,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     await review.save();
 
     return NextResponse.json(review, { status: 200 });
-
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-

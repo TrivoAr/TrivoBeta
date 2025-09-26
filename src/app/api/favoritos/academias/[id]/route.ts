@@ -8,14 +8,19 @@ import { authOptions } from "@/libs/authOptions";
 export async function POST(req, { params }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
-    return new Response(JSON.stringify({ message: "No autorizado" }), { status: 401 });
+    return new Response(JSON.stringify({ message: "No autorizado" }), {
+      status: 401,
+    });
   }
 
   const userEmail = session.user.email;
   const academiaId = params.id;
 
   if (!academiaId) {
-    return new Response(JSON.stringify({ message: "ID de academia faltante" }), { status: 400 });
+    return new Response(
+      JSON.stringify({ message: "ID de academia faltante" }),
+      { status: 400 }
+    );
   }
 
   try {
@@ -24,7 +29,10 @@ export async function POST(req, { params }) {
     const user = await User.findOne({ email: userEmail });
 
     if (!user) {
-      return new Response(JSON.stringify({ message: "Usuario no encontrado" }), { status: 404 });
+      return new Response(
+        JSON.stringify({ message: "Usuario no encontrado" }),
+        { status: 404 }
+      );
     }
 
     if (!user.favoritos) {
@@ -46,6 +54,8 @@ export async function POST(req, { params }) {
     return new Response(JSON.stringify({ success: true, favorito }));
   } catch (error) {
     console.error("Error al actualizar favoritos:", error);
-    return new Response(JSON.stringify({ message: "Error del servidor" }), { status: 500 });
+    return new Response(JSON.stringify({ message: "Error del servidor" }), {
+      status: 500,
+    });
   }
 }

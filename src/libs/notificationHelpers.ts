@@ -24,11 +24,16 @@ interface CreateNotificationParams {
 }
 
 // Función para enviar notificación push al usuario
-async function sendPushNotification(userId: string, title: string, body: string, actionUrl?: string) {
+async function sendPushNotification(
+  userId: string,
+  title: string,
+  body: string,
+  actionUrl?: string
+) {
   try {
     // Buscar todas las suscripciones del usuario
     const subscriptions = await Subscription.find({ user_id: userId });
-    
+
     if (subscriptions.length === 0) {
       console.log(`📱 No hay suscripciones push para usuario ${userId}`);
       return;
@@ -37,26 +42,31 @@ async function sendPushNotification(userId: string, title: string, body: string,
     const payload = JSON.stringify({
       title,
       body,
-      url: actionUrl || '/notificaciones',
-      icon: '/icon.png',
-      badge: '/badge.png'
+      url: actionUrl || "/notificaciones",
+      icon: "/icon.png",
+      badge: "/badge.png",
     });
 
     // Enviar a todas las suscripciones del usuario
     const sendPromises = subscriptions.map(async (subscription) => {
       try {
-        await webPush.sendNotification({
-          endpoint: subscription.endpoint,
-          keys: subscription.keys
-        }, payload);
+        await webPush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: subscription.keys,
+          },
+          payload
+        );
         console.log(`📱 Push enviado a usuario ${userId}`);
       } catch (error: any) {
         console.error(`❌ Error enviando push a ${userId}:`, error);
-        
+
         // Si la suscripción es inválida, eliminarla
         if (error.statusCode === 410 || error.statusCode === 404) {
           await Subscription.findByIdAndDelete(subscription._id);
-          console.log(`🗑️ Suscripción inválida eliminada para usuario ${userId}`);
+          console.log(
+            `🗑️ Suscripción inválida eliminada para usuario ${userId}`
+          );
         }
       }
     });
@@ -77,7 +87,7 @@ export async function createNotification({
   teamSocialId,
   actionUrl,
   actionType = "navigate",
-  metadata = {}
+  metadata = {},
 }: CreateNotificationParams) {
   try {
     await connectDB();
@@ -97,11 +107,11 @@ export async function createNotification({
     });
 
     console.log(`✅ Notificación creada: ${type} para usuario ${userId}`);
-    
+
     // Enviar notificación push al dispositivo del usuario
     const pushTitle = getPushTitle(type);
     await sendPushNotification(userId, pushTitle, message, actionUrl);
-    
+
     return notification;
   } catch (error) {
     console.error("❌ Error al crear notificación:", error);
@@ -133,7 +143,12 @@ function getPushTitle(type: string): string {
 
 // Funciones específicas para tipos comunes de notificaciones
 
-export async function notifyMemberApproved(userId: string, fromUserId: string, salidaId: string, salidaNombre: string) {
+export async function notifyMemberApproved(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -144,7 +159,12 @@ export async function notifyMemberApproved(userId: string, fromUserId: string, s
   });
 }
 
-export async function notifyMemberRejected(userId: string, fromUserId: string, salidaId: string, salidaNombre: string) {
+export async function notifyMemberRejected(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -155,7 +175,13 @@ export async function notifyMemberRejected(userId: string, fromUserId: string, s
   });
 }
 
-export async function notifyJoinedEvent(userId: string, fromUserId: string, salidaId: string, userName: string, salidaNombre: string) {
+export async function notifyJoinedEvent(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  userName: string,
+  salidaNombre: string
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -166,7 +192,12 @@ export async function notifyJoinedEvent(userId: string, fromUserId: string, sali
   });
 }
 
-export async function notifyNewSalida(userId: string, fromUserId: string, salidaId: string, salidaNombre: string) {
+export async function notifyNewSalida(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -177,7 +208,11 @@ export async function notifyNewSalida(userId: string, fromUserId: string, salida
   });
 }
 
-export async function notifyPaymentApproved(userId: string, fromUserId: string, paymentInfo: any) {
+export async function notifyPaymentApproved(
+  userId: string,
+  fromUserId: string,
+  paymentInfo: any
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -188,7 +223,13 @@ export async function notifyPaymentApproved(userId: string, fromUserId: string, 
   });
 }
 
-export async function notifyAcademiaRequest(userId: string, fromUserId: string, academiaId: string, academiaNombre: string, userName: string) {
+export async function notifyAcademiaRequest(
+  userId: string,
+  fromUserId: string,
+  academiaId: string,
+  academiaNombre: string,
+  userName: string
+) {
   return createNotification({
     userId,
     fromUserId,
@@ -199,7 +240,13 @@ export async function notifyAcademiaRequest(userId: string, fromUserId: string, 
   });
 }
 
-export async function notifyTeamRequest(userId: string, fromUserId: string, teamSocialId: string, teamNombre: string, userName: string) {
+export async function notifyTeamRequest(
+  userId: string,
+  fromUserId: string,
+  teamSocialId: string,
+  teamNombre: string,
+  userName: string
+) {
   return createNotification({
     userId,
     fromUserId,

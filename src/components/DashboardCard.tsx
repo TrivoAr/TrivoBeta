@@ -20,7 +20,11 @@ type Props = {
   withActions?: boolean; // 🔑 para decidir si mostrar o no los botones
 };
 
-export default function DashboardCard({ event, onDelete, withActions = false }: Props) {
+export default function DashboardCard({
+  event,
+  onDelete,
+  withActions = false,
+}: Props) {
   const router = useRouter();
 
   return (

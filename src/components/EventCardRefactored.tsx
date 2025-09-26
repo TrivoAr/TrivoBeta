@@ -63,7 +63,11 @@ interface EventCardProps {
  * - Cleaner, more maintainable code
  * - Better error handling and loading states
  */
-export default function EventCardRefactored({ event, onJoin, onMap }: EventCardProps) {
+export default function EventCardRefactored({
+  event,
+  onJoin,
+  onMap,
+}: EventCardProps) {
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -75,22 +79,22 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
   const {
     isFavorite,
     isLoading: favoritesLoading,
-    toggleFavorite
-  } = useFavorites('sociales', event._id, {
+    toggleFavorite,
+  } = useFavorites("sociales", event._id, {
     showLoginModal: loginModal.open,
     onFavoriteChange: (isFav, itemId) => {
       console.log(`Event ${itemId} favorite status changed to:`, isFav);
-    }
+    },
   });
 
   // Members management with the new hook
   const {
     memberCount,
     availableSpots,
-    isLoading: membersLoading
-  } = useMembers(event._id, 'social', {
+    isLoading: membersLoading,
+  } = useMembers(event._id, "social", {
     onlyApproved: true,
-    refreshInterval: 30000 // Auto-refresh every 30 seconds
+    refreshInterval: 30000, // Auto-refresh every 30 seconds
   });
 
   /**
@@ -173,7 +177,7 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
   const modalEventData: ModalEvent = {
     id: event._id,
     locationCoords: event.locationCoords || null,
-    stravaMap: event.stravaMap
+    stravaMap: event.stravaMap,
   };
 
   return (
@@ -225,13 +229,17 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
             size="sm"
             variant="ghost"
             className="bg-white/80 hover:bg-white/90"
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
           />
         }
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-2">
-          <h2 className="font-bold text-md leading-snug flex-1 mr-2">{event.title}</h2>
+          <h2 className="font-bold text-md leading-snug flex-1 mr-2">
+            {event.title}
+          </h2>
         </div>
 
         {/* Category and Difficulty */}
@@ -239,8 +247,13 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
           <p className="text-sm text-gray-500 capitalize">
             {event.category} · {event.dificultad}
           </p>
-          <span className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${getSpotsColor()}`}>
-            Cupos: {membersLoading ? '...' : `${availableSpots(event.cupo)}/${event.cupo}`}
+          <span
+            className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${getSpotsColor()}`}
+          >
+            Cupos:{" "}
+            {membersLoading
+              ? "..."
+              : `${availableSpots(event.cupo)}/${event.cupo}`}
           </span>
         </div>
 
@@ -270,7 +283,7 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
             className="flex-1"
             disabled={availableSpots(event.cupo) === 0}
           >
-            {availableSpots(event.cupo) === 0 ? 'Sin Cupos' : 'Unirse'}
+            {availableSpots(event.cupo) === 0 ? "Sin Cupos" : "Unirse"}
           </BaseButton>
 
           <BaseButton
@@ -304,7 +317,11 @@ export default function EventCardRefactored({ event, onJoin, onMap }: EventCardP
 /**
  * Example of how to use the refactored component with loading and error states
  */
-export function EventCardWithStates({ event, loading = false, error }: {
+export function EventCardWithStates({
+  event,
+  loading = false,
+  error,
+}: {
   event?: EventType;
   loading?: boolean;
   error?: string;
@@ -348,11 +365,7 @@ export function EventCardWithStates({ event, loading = false, error }: {
 
   if (!event) {
     return (
-      <BaseCard
-        variant="flat"
-        size="default"
-        className="w-[360px]"
-      >
+      <BaseCard variant="flat" size="default" className="w-[360px]">
         <div className="text-center p-4">
           <p className="text-gray-500">No event data available</p>
         </div>

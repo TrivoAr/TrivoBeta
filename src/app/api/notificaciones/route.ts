@@ -10,7 +10,8 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 export async function GET() {
   await connectDB();
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   try {
     const notificaciones = await Notificacion.find({ userId: session.user.id })
@@ -30,9 +31,15 @@ export async function GET() {
         let imagen = "";
 
         try {
-          imagen = await getProfileImage("profile-image.jpg", user._id.toString());
+          imagen = await getProfileImage(
+            "profile-image.jpg",
+            user._id.toString()
+          );
         } catch (error) {
-          console.warn("Error al obtener imagen, usando avatar fallback:", error);
+          console.warn(
+            "Error al obtener imagen, usando avatar fallback:",
+            error
+          );
           imagen = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             `${user.firstname || "User"}`
           )}&background=random&color=fff&size=128`;
@@ -52,7 +59,9 @@ export async function GET() {
               break;
             case "nuevo_team":
             case "solicitud_team":
-              actionUrl = teamSocial?._id ? `/team-social/${teamSocial._id}` : null;
+              actionUrl = teamSocial?._id
+                ? `/team-social/${teamSocial._id}`
+                : null;
               break;
             case "pago_aprobado":
               actionUrl = `/dashboard`;
@@ -67,7 +76,9 @@ export async function GET() {
           _id: n._id,
           type: n.type,
           message: n.message,
-          mensaje: n.message || `${user.firstname} se unió a ${salida?.nombre || "una salida"}`,
+          mensaje:
+            n.message ||
+            `${user.firstname} se unió a ${salida?.nombre || "una salida"}`,
           read: n.read,
           createdAt: n.createdAt,
           nombre: `${user.firstname} ${user.lastname}`,
@@ -91,6 +102,9 @@ export async function GET() {
     return NextResponse.json(enriched, { status: 200 });
   } catch (error) {
     console.error("❌ Error al obtener notificaciones:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

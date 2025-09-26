@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { ComponentType, ReactNode, useMemo } from 'react';
-import { SessionProvider } from 'next-auth/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppProvider } from '@/context/AppContext';
+import React, { ComponentType, ReactNode, useMemo } from "react";
+import { SessionProvider } from "next-auth/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppProvider } from "@/context/AppContext";
 
 /**
  * Provider configuration interface
@@ -41,7 +41,7 @@ export class ProviderComposer {
    * Add a provider conditionally
    */
   addIf(condition: boolean | (() => boolean), config: ProviderConfig): this {
-    const shouldAdd = typeof condition === 'function' ? condition() : condition;
+    const shouldAdd = typeof condition === "function" ? condition() : condition;
     if (shouldAdd) {
       this.add(config);
     }
@@ -52,7 +52,7 @@ export class ProviderComposer {
    * Remove a provider by component
    */
   remove(component: ComponentType<any>): this {
-    this.providers = this.providers.filter(p => p.component !== component);
+    this.providers = this.providers.filter((p) => p.component !== component);
     return this;
   }
 
@@ -68,7 +68,9 @@ export class ProviderComposer {
    * Sort providers by priority (higher priority = outer wrapper)
    */
   private sortByPriority(): ProviderConfig[] {
-    return [...this.providers].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    return [...this.providers].sort(
+      (a, b) => (b.priority || 0) - (a.priority || 0)
+    );
   }
 
   /**
@@ -114,7 +116,7 @@ export const CommonProviders = {
   session: (session?: any): ProviderConfig => ({
     component: SessionProvider,
     props: { session },
-    priority: 100 // High priority (outer)
+    priority: 100, // High priority (outer)
   }),
 
   /**
@@ -123,17 +125,19 @@ export const CommonProviders = {
   reactQuery: (client?: QueryClient): ProviderConfig => ({
     component: QueryClientProvider,
     props: {
-      client: client || new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes
-            retry: 3,
-            refetchOnWindowFocus: false
-          }
-        }
-      })
+      client:
+        client ||
+        new QueryClient({
+          defaultOptions: {
+            queries: {
+              staleTime: 5 * 60 * 1000, // 5 minutes
+              retry: 3,
+              refetchOnWindowFocus: false,
+            },
+          },
+        }),
     },
-    priority: 90
+    priority: 90,
   }),
 
   /**
@@ -142,7 +146,7 @@ export const CommonProviders = {
   appContext: (initialState?: any): ProviderConfig => ({
     component: AppProvider,
     props: { initialState },
-    priority: 80
+    priority: 80,
   }),
 
   /**
@@ -150,11 +154,11 @@ export const CommonProviders = {
    */
   theme: (theme?: string): ProviderConfig => ({
     component: ({ children }: { children: ReactNode }) => {
-      const themeClass = theme === 'dark' ? 'dark' : '';
+      const themeClass = theme === "dark" ? "dark" : "";
       return <div className={themeClass}>{children}</div>;
     },
     props: {},
-    priority: 70
+    priority: 70,
   }),
 
   /**
@@ -163,7 +167,7 @@ export const CommonProviders = {
   errorBoundary: (): ProviderConfig => ({
     component: ErrorBoundaryProvider,
     props: {},
-    priority: 95
+    priority: 95,
   }),
 
   /**
@@ -172,8 +176,8 @@ export const CommonProviders = {
   loading: (): ProviderConfig => ({
     component: LoadingProvider,
     props: {},
-    priority: 60
-  })
+    priority: 60,
+  }),
 };
 
 /**
@@ -193,7 +197,7 @@ class ErrorBoundaryProvider extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Provider Error Boundary caught an error:', error, errorInfo);
+    console.error("Provider Error Boundary caught an error:", error, errorInfo);
   }
 
   render() {
@@ -220,7 +224,8 @@ class ErrorBoundaryProvider extends React.Component<
               Something went wrong
             </h1>
             <p className="text-gray-600 mb-4">
-              An unexpected error occurred. Please refresh the page or try again later.
+              An unexpected error occurred. Please refresh the page or try again
+              later.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -270,7 +275,10 @@ export class ProviderFactory {
   /**
    * Create a standard app provider composition
    */
-  static createAppProviders(session?: any, queryClient?: QueryClient): ComponentType<{ children: ReactNode }> {
+  static createAppProviders(
+    session?: any,
+    queryClient?: QueryClient
+  ): ComponentType<{ children: ReactNode }> {
     return new ProviderComposer()
       .add(CommonProviders.errorBoundary())
       .add(CommonProviders.session(session))
@@ -284,15 +292,15 @@ export class ProviderFactory {
    * Create a minimal provider composition (for testing)
    */
   static createMinimalProviders(): ComponentType<{ children: ReactNode }> {
-    return new ProviderComposer()
-      .add(CommonProviders.appContext())
-      .build();
+    return new ProviderComposer().add(CommonProviders.appContext()).build();
   }
 
   /**
    * Create a development provider composition with extra tools
    */
-  static createDevProviders(session?: any): ComponentType<{ children: ReactNode }> {
+  static createDevProviders(
+    session?: any
+  ): ComponentType<{ children: ReactNode }> {
     return new ProviderComposer()
       .add(CommonProviders.errorBoundary())
       .add(CommonProviders.loading())
@@ -300,26 +308,23 @@ export class ProviderFactory {
       .add(CommonProviders.reactQuery())
       .add(CommonProviders.appContext())
       .add(CommonProviders.theme())
-      .addIf(
-        process.env.NODE_ENV === 'development',
-        {
-          component: ({ children }: { children: ReactNode }) => {
-            // Development-only provider (React Query Devtools, etc.)
-            return <div data-dev-mode="true">{children}</div>;
-          },
-          priority: 50
-        }
-      )
+      .addIf(process.env.NODE_ENV === "development", {
+        component: ({ children }: { children: ReactNode }) => {
+          // Development-only provider (React Query Devtools, etc.)
+          return <div data-dev-mode="true">{children}</div>;
+        },
+        priority: 50,
+      })
       .build();
   }
 
   /**
    * Create a custom provider composition
    */
-  static createCustomProviders(configs: ProviderConfig[]): ComponentType<{ children: ReactNode }> {
-    return new ProviderComposer()
-      .addMany(configs)
-      .build();
+  static createCustomProviders(
+    configs: ProviderConfig[]
+  ): ComponentType<{ children: ReactNode }> {
+    return new ProviderComposer().addMany(configs).build();
   }
 }
 
@@ -353,14 +358,14 @@ export class ProviderRegistry {
   /**
    * Create a provider composition from registered providers
    */
-  static createFromRegistry(names: string[]): ComponentType<{ children: ReactNode }> {
+  static createFromRegistry(
+    names: string[]
+  ): ComponentType<{ children: ReactNode }> {
     const configs = names
-      .map(name => this.get(name))
+      .map((name) => this.get(name))
       .filter((config): config is ProviderConfig => config !== undefined);
 
-    return new ProviderComposer()
-      .addMany(configs)
-      .build();
+    return new ProviderComposer().addMany(configs).build();
   }
 
   /**
@@ -412,9 +417,9 @@ export function useConditionalProviders(
 }
 
 // Register common providers
-ProviderRegistry.register('session', CommonProviders.session());
-ProviderRegistry.register('reactQuery', CommonProviders.reactQuery());
-ProviderRegistry.register('appContext', CommonProviders.appContext());
-ProviderRegistry.register('theme', CommonProviders.theme());
-ProviderRegistry.register('errorBoundary', CommonProviders.errorBoundary());
-ProviderRegistry.register('loading', CommonProviders.loading());
+ProviderRegistry.register("session", CommonProviders.session());
+ProviderRegistry.register("reactQuery", CommonProviders.reactQuery());
+ProviderRegistry.register("appContext", CommonProviders.appContext());
+ProviderRegistry.register("theme", CommonProviders.theme());
+ProviderRegistry.register("errorBoundary", CommonProviders.errorBoundary());
+ProviderRegistry.register("loading", CommonProviders.loading());

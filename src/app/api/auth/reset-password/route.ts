@@ -88,7 +88,9 @@ export async function POST(req: Request) {
   try {
     const { email, resetCode, newPassword } = await req.json();
 
-    const normEmail = String(email || "").trim().toLowerCase();
+    const normEmail = String(email || "")
+      .trim()
+      .toLowerCase();
     const codeRaw = String(resetCode || "").trim();
     const pwd = String(newPassword || "");
 
@@ -117,13 +119,19 @@ export async function POST(req: Request) {
     }).select("_id resetPasswordExpire email");
 
     if (!user) {
-      return NextResponse.json({ message: "Código inválido o expirado" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Código inválido o expirado" },
+        { status: 400 }
+      );
     }
 
     // 2) Validar expiración robusta
     const expMs = toMs((user as any).resetPasswordExpire);
     if (!expMs || Date.now() >= expMs) {
-      return NextResponse.json({ message: "Código inválido o expirado" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Código inválido o expirado" },
+        { status: 400 }
+      );
     }
 
     // 3) Update atómico (sin save ni hooks)
@@ -138,12 +146,21 @@ export async function POST(req: Request) {
 
     if (!modifiedCount) {
       // Muy raro: no se aplicó el update
-      return NextResponse.json({ message: "No se pudo actualizar la contraseña" }, { status: 500 });
+      return NextResponse.json(
+        { message: "No se pudo actualizar la contraseña" },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ message: "Contraseña restablecida correctamente" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Contraseña restablecida correctamente" },
+      { status: 200 }
+    );
   } catch (e: any) {
     console.error("reset-password error:", e?.message || e);
-    return NextResponse.json({ message: "Error en el servidor" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error en el servidor" },
+      { status: 500 }
+    );
   }
 }

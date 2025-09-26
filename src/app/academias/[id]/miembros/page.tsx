@@ -6,7 +6,7 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { FiX, FiEdit } from "react-icons/fi";
-import AcademiaMiembrosSkeleton from '@/components/AcademiaMiembrosSkeleton';
+import AcademiaMiembrosSkeleton from "@/components/AcademiaMiembrosSkeleton";
 
 const MiembrosPage = ({ params }: { params: { id: string } }) => {
   const router = useRouter();

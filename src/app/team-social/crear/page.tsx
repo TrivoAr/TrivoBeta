@@ -12,7 +12,11 @@ import toast, { Toaster } from "react-hot-toast";
 import mapboxgl from "mapbox-gl";
 import { useBares } from "@/hooks/useBares";
 import { useSponsors } from "@/hooks/useSponsors";
-import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import {
+  useProvinces,
+  useLocalitiesByProvince,
+  useLocationFromCoords,
+} from "@/hooks/useArgentinaLocations";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
 
@@ -123,9 +127,9 @@ export default function CrearTeamPage() {
 
   // Función para manejar selección múltiple de sponsors
   const handleSponsorToggle = (sponsorId: string) => {
-    setSelectedSponsors(prev =>
+    setSelectedSponsors((prev) =>
       prev.includes(sponsorId)
-        ? prev.filter(id => id !== sponsorId)
+        ? prev.filter((id) => id !== sponsorId)
         : [...prev, sponsorId]
     );
   };
@@ -137,39 +141,54 @@ export default function CrearTeamPage() {
       return;
     }
 
-    if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
       toast.error("GPS requiere conexión segura (HTTPS)");
       return;
     }
 
     setLocationDetecting(true);
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
     const message = isMobile
       ? "📱 Presiona 'Permitir' cuando aparezca la solicitud de ubicación"
       : "🌍 Buscando ubicación... Acepta los permisos cuando aparezcan";
 
     toast.loading(message, {
       duration: 6000,
-      id: 'gps-search'
+      id: "gps-search",
     });
 
     if (isMobile) {
       setTimeout(() => {
-        toast("💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo", {
-          duration: 4000,
-          icon: "💡"
-        });
+        toast(
+          "💡 Si no aparece la solicitud, verifica que la ubicación esté activada en tu dispositivo",
+          {
+            duration: 4000,
+            icon: "💡",
+          }
+        );
       }, 2000);
     }
 
     try {
       if (navigator.permissions && navigator.permissions.query) {
-        const permission = await navigator.permissions.query({ name: 'geolocation' });
-        if (permission.state === 'denied') {
+        const permission = await navigator.permissions.query({
+          name: "geolocation",
+        });
+        if (permission.state === "denied") {
           setLocationDetecting(false);
-          toast.dismiss('gps-search');
-          toast.error("🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página", { duration: 8000 });
+          toast.dismiss("gps-search");
+          toast.error(
+            "🚫 Ubicación bloqueada. Permite el acceso en configuración del navegador y recarga la página",
+            { duration: 8000 }
+          );
           return;
         }
       }
@@ -181,51 +200,55 @@ export default function CrearTeamPage() {
       async (position) => {
         const coords = {
           lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lng: position.coords.longitude,
         };
 
         try {
-          const locationData = await locationFromCoordsQuery.mutateAsync(coords);
+          const locationData =
+            await locationFromCoordsQuery.mutateAsync(coords);
 
-          const province = provinces?.find(p =>
-            p.name.toLowerCase() === locationData.province?.toLowerCase()
+          const province = provinces?.find(
+            (p) => p.name.toLowerCase() === locationData.province?.toLowerCase()
           );
 
           if (province) {
             setSelectedProvince(province.id);
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               provincia: province.name,
-              coords: coords
+              coords: coords,
             }));
 
             if (locationData.locality) {
               setSelectedLocality(locationData.locality);
-              setFormData(prev => ({
+              setFormData((prev) => ({
                 ...prev,
-                localidad: locationData.locality
+                localidad: locationData.locality,
               }));
             }
           }
 
           setCoords(coords);
-          setFormData(prev => ({ ...prev, coords }));
+          setFormData((prev) => ({ ...prev, coords }));
 
           if (marker.current && map.current) {
             marker.current.setLngLat([coords.lng, coords.lat]);
             map.current.flyTo({ center: [coords.lng, coords.lat], zoom: 14 });
           }
 
-          toast.dismiss('gps-search');
-          toast.success(`📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`);
-
+          toast.dismiss("gps-search");
+          toast.success(
+            `📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`
+          );
         } catch (error) {
           console.error("Error detectando ubicación:", error);
-          toast.dismiss('gps-search');
-          toast.error("Error al detectar ubicación específica, pero coordenadas obtenidas");
+          toast.dismiss("gps-search");
+          toast.error(
+            "Error al detectar ubicación específica, pero coordenadas obtenidas"
+          );
 
           setCoords(coords);
-          setFormData(prev => ({ ...prev, coords }));
+          setFormData((prev) => ({ ...prev, coords }));
 
           if (marker.current && map.current) {
             marker.current.setLngLat([coords.lng, coords.lat]);
@@ -237,7 +260,7 @@ export default function CrearTeamPage() {
       },
       (error) => {
         setLocationDetecting(false);
-        toast.dismiss('gps-search');
+        toast.dismiss("gps-search");
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -257,7 +280,7 @@ export default function CrearTeamPage() {
       {
         enableHighAccuracy: true,
         timeout: 15000,
-        maximumAge: 300000
+        maximumAge: 300000,
       }
     );
   };
@@ -293,110 +316,114 @@ export default function CrearTeamPage() {
     handleCoordsChange(coords);
   }, []);
 
-
   const setUbicacionBoth = (val: string) => {
-  setUbicacion(val);
-  setFormData(prev => ({ ...prev, ubicacion: val }));
-};
+    setUbicacion(val);
+    setFormData((prev) => ({ ...prev, ubicacion: val }));
+  };
 
   // 🔄 Cambiar coordenadas y buscar dirección
-const handleCoordsChange = async ({ lat, lng }: Coords) => {
-  setCoords({ lat, lng });
-  setFormData(prev => ({ ...prev, coords: { lat, lng } })); // <-- sync
+  const handleCoordsChange = async ({ lat, lng }: Coords) => {
+    setCoords({ lat, lng });
+    setFormData((prev) => ({ ...prev, coords: { lat, lng } })); // <-- sync
 
-  try {
-    const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lng}`);
-    const data = await res.json();
-    if (data.display_name) {
-      setUbicacionBoth(data.display_name); // <-- sync input + formData
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lng}`);
+      const data = await res.json();
+      if (data.display_name) {
+        setUbicacionBoth(data.display_name); // <-- sync input + formData
+      }
+    } catch (err) {
+      console.error("Error reverse geocoding:", err);
     }
-  } catch (err) {
-    console.error("Error reverse geocoding:", err);
-  }
-};
+  };
 
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUbicacionBoth(value); // <-- antes: sólo setUbicacion
 
-const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setUbicacionBoth(value); // <-- antes: sólo setUbicacion
+    debouncedFetchSuggestions(value);
 
-  debouncedFetchSuggestions(value);
-
-  if (value.length < 3) {
-    setSuggestions([]);
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
-    const data = await res.json();
-    setSuggestions(data);
-  } catch (err) {
-    console.error("Error fetching suggestions:", err);
-  }
-};
-
-const handleSuggestionClick = (s: { display_name: string; lat: string; lon: string }) => {
-  const lat = parseFloat(s.lat);
-  const lng = parseFloat(s.lon);
-
-  setUbicacionBoth(s.display_name);
-  setCoords({ lat, lng });
-  setFormData(prev => ({ ...prev, coords: { lat, lng } })); // <-- sync
-
-  marker.current!.setLngLat([lng, lat]);
-  map.current!.flyTo({ center: [lng, lat], zoom: 14 });
-  setSuggestions([]);
-};
-
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-
-  try {
-    if (!formData.ubicacion || !formData.coords) {
-      toast.error("Seleccioná una ubicación en el mapa o desde las sugerencias");
-      setIsSubmitting(false);
+    if (value.length < 3) {
+      setSuggestions([]);
       return;
     }
 
-    let imageUrl = "";
-    if (imagen) {
-      const imageRef = ref(storage, `team-social/${uuidv4()}`);
-      await uploadBytes(imageRef, imagen);
-      imageUrl = await getDownloadURL(imageRef);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
+      const data = await res.json();
+      setSuggestions(data);
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
     }
+  };
 
-    const salidaData = {
-      ...formData,
-      imagen: imageUrl,
-      locationCoords: formData.coords, // ya NO será null
-      bar: selectedBar || null,
-      sponsors: selectedSponsors.length > 0 ? selectedSponsors : [],
-      provincia: formData.provincia,
-      dificultad: formData.dificultad,
-    };
+  const handleSuggestionClick = (s: {
+    display_name: string;
+    lat: string;
+    lon: string;
+  }) => {
+    const lat = parseFloat(s.lat);
+    const lng = parseFloat(s.lon);
 
-    const res = await fetch("/api/team-social", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(salidaData),
-    });
+    setUbicacionBoth(s.display_name);
+    setCoords({ lat, lng });
+    setFormData((prev) => ({ ...prev, coords: { lat, lng } })); // <-- sync
 
-    if (res.ok) {
-      toast.success("Social team creado con éxito");
-      router.push("/home");
-    } else {
+    marker.current!.setLngLat([lng, lat]);
+    map.current!.flyTo({ center: [lng, lat], zoom: 14 });
+    setSuggestions([]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      if (!formData.ubicacion || !formData.coords) {
+        toast.error(
+          "Seleccioná una ubicación en el mapa o desde las sugerencias"
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      let imageUrl = "";
+      if (imagen) {
+        const imageRef = ref(storage, `team-social/${uuidv4()}`);
+        await uploadBytes(imageRef, imagen);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      const salidaData = {
+        ...formData,
+        imagen: imageUrl,
+        locationCoords: formData.coords, // ya NO será null
+        bar: selectedBar || null,
+        sponsors: selectedSponsors.length > 0 ? selectedSponsors : [],
+        provincia: formData.provincia,
+        dificultad: formData.dificultad,
+      };
+
+      const res = await fetch("/api/team-social", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(salidaData),
+      });
+
+      if (res.ok) {
+        toast.success("Social team creado con éxito");
+        router.push("/home");
+      } else {
+        setIsSubmitting(false);
+        const error = await res.json();
+        console.error("Error al crear team social:", error);
+        toast.error("Error al crear salida, datos incompletos");
+      }
+    } catch (err) {
+      console.error("Error inesperado:", err);
       setIsSubmitting(false);
-      const error = await res.json();
-      console.error("Error al crear team social:", error);
-      toast.error("Error al crear salida, datos incompletos");
     }
-  } catch (err) {
-    console.error("Error inesperado:", err);
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const coordsToSave = formData.coords || defaultCoords;
 
@@ -432,8 +459,6 @@ const handleSuggestionClick = (s: { display_name: string; lat: string; lon: stri
 
   const debouncedFetchSuggestions = useDebounce(fetchSuggestions, 300);
 
-
-
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
   useEffect(() => {
@@ -451,28 +476,30 @@ const handleSuggestionClick = (s: { display_name: string; lat: string; lon: stri
     };
   }, [debouncedFetch]);
 
-useEffect(() => {
-  const fetchActivities = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/strava/activities?userId=${session?.user.id}`);
-      const data = await res.json();
+  useEffect(() => {
+    const fetchActivities = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/strava/activities?userId=${session?.user.id}`
+        );
+        const data = await res.json();
 
-      if (data.error) {
-        console.error("Error al traer actividades:", data.error);
-        return;
+        if (data.error) {
+          console.error("Error al traer actividades:", data.error);
+          return;
+        }
+
+        setActivities(data);
+      } catch (err) {
+        console.error("Error cargando actividades:", err);
+      } finally {
+        setLoading(false);
       }
-      
-      setActivities(data);
-    } catch (err) {
-      console.error("Error cargando actividades:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  if (session?.user.id) fetchActivities();
-}, [session?.user.id]);
+    if (session?.user.id) fetchActivities();
+  }, [session?.user.id]);
   return (
     <form
       onSubmit={handleSubmit}
@@ -498,8 +525,9 @@ useEffect(() => {
           value={selectedProvince}
           onChange={(e) => {
             setSelectedProvince(e.target.value);
-            const provinceName = provinces?.find(p => p.id === e.target.value)?.name || "";
-            setFormData(prev => ({ ...prev, provincia: provinceName }));
+            const provinceName =
+              provinces?.find((p) => p.id === e.target.value)?.name || "";
+            setFormData((prev) => ({ ...prev, provincia: provinceName }));
             setSelectedLocality(""); // Reset localidad al cambiar provincia
           }}
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
@@ -520,14 +548,18 @@ useEffect(() => {
           value={selectedLocality}
           onChange={(e) => {
             setSelectedLocality(e.target.value);
-            const localityName = localities?.find(l => l.id === e.target.value)?.name || e.target.value;
-            setFormData(prev => ({ ...prev, localidad: localityName }));
+            const localityName =
+              localities?.find((l) => l.id === e.target.value)?.name ||
+              e.target.value;
+            setFormData((prev) => ({ ...prev, localidad: localityName }));
           }}
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-foreground"
           disabled={!selectedProvince}
         >
           <option value="">
-            {selectedProvince ? "Seleccionar localidad" : "Primero selecciona una provincia"}
+            {selectedProvince
+              ? "Seleccionar localidad"
+              : "Primero selecciona una provincia"}
           </option>
           {localities?.map((locality) => (
             <option key={locality.id} value={locality.id}>
@@ -546,16 +578,29 @@ useEffect(() => {
       >
         {locationDetecting ? (
           <>
-            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            <svg
+              className="animate-spin h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
             </svg>
             Detectando ubicación...
           </>
         ) : (
-          <>
-            📍 Detectar mi ubicación
-          </>
+          <>📍 Detectar mi ubicación</>
         )}
       </button>
 
@@ -770,33 +815,33 @@ useEffect(() => {
       </label> */}
 
       <div className="flex flex-col gap-2">
-      <div className="relative">
-        <input
-          type="text"
-          value={ubicacion}
-          onChange={handleInputChange}
-          placeholder="Buscar ubicación..."
-          className="w-full p-2 border border-gray-300 rounded"
+        <div className="relative">
+          <input
+            type="text"
+            value={ubicacion}
+            onChange={handleInputChange}
+            placeholder="Buscar ubicación..."
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+          {suggestions.length > 0 && (
+            <ul className="absolute bg-card shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
+              {suggestions.map((s, idx) => (
+                <li
+                  key={idx}
+                  className="p-2 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSuggestionClick(s)}
+                >
+                  {s.display_name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div
+          ref={mapContainer}
+          className="w-full h-[400px] border border-gray-300 rounded"
         />
-        {suggestions.length > 0 && (
-          <ul className="absolute bg-card shadow-md w-full rounded mt-1 max-h-48 overflow-auto z-10">
-            {suggestions.map((s, idx) => (
-              <li
-                key={idx}
-                className="p-2 cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSuggestionClick(s)}
-              >
-                {s.display_name}
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
-      <div
-        ref={mapContainer}
-        className="w-full h-[400px] border border-gray-300 rounded"
-      />
-    </div>
 
       {/* Selección de Bar */}
       <label className="block">
@@ -814,7 +859,9 @@ useEffect(() => {
             </option>
           ))}
         </select>
-        {loadingBares && <p className="text-sm text-gray-500 mt-1">Cargando bares...</p>}
+        {loadingBares && (
+          <p className="text-sm text-gray-500 mt-1">Cargando bares...</p>
+        )}
       </label>
 
       {/* Selección de Sponsors */}
@@ -848,7 +895,9 @@ useEffect(() => {
               </label>
             ))}
             {sponsors?.length === 0 && (
-              <p className="text-sm text-gray-500">No hay sponsors disponibles</p>
+              <p className="text-sm text-gray-500">
+                No hay sponsors disponibles
+              </p>
             )}
           </div>
         )}

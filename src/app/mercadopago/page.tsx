@@ -9,7 +9,9 @@ const Mp = () => {
   const [accessToken, setAccessToken] = useState("");
   const [tokenActual, setTokenActual] = useState("");
   const [hasCredentials, setHasCredentials] = useState(false); // Estado para saber si ya tiene credenciales
-  const [selectedLocalidad, setSelectedLocalidad] = useState("San Miguel de Tucuman");
+  const [selectedLocalidad, setSelectedLocalidad] = useState(
+    "San Miguel de Tucuman"
+  );
   useEffect(() => {
     if (session?.user?.id) {
       fetchToken(session.user.id);
@@ -57,13 +59,15 @@ const Mp = () => {
 
   return (
     <>
-        <TopContainer
-  selectedLocalidad={selectedLocalidad}
-  setSelectedLocalidad={setSelectedLocalidad}
-/>
+      <TopContainer
+        selectedLocalidad={selectedLocalidad}
+        setSelectedLocalidad={setSelectedLocalidad}
+      />
 
       <div>
-        <h1 className="font-bold mt-5 pl-2 text-lg">Credenciales Mercado Pago</h1>
+        <h1 className="font-bold mt-5 pl-2 text-lg">
+          Credenciales Mercado Pago
+        </h1>
 
         {hasCredentials ? (
           <p className="text-green-600 font-medium pl-2 mt-2">
@@ -75,7 +79,10 @@ const Mp = () => {
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center gap-6"
+        >
           <p className="font-light text-sm pl-2 mt-2 self-start">
             Token Actual: {tokenActual || "No disponible"}
           </p>
@@ -118,12 +125,11 @@ const Mp = () => {
           </div>
 
           <p className="font-light text-sm pl-2 self-start text-[#bcbcbc]">
-            Habilita a los checkout de Mercado Pago para recibir pagos reales en la app
+            Habilita a los checkout de Mercado Pago para recibir pagos reales en
+            la app
           </p>
 
-          <button
-            className="w-[95%] bg-[#FF9A3D] h-[40px] rounded-md mt-10 text-[#333] text-sm font-medium hover:bg-[#e88a35] transition-colors"
-          >
+          <button className="w-[95%] bg-[#FF9A3D] h-[40px] rounded-md mt-10 text-[#333] text-sm font-medium hover:bg-[#e88a35] transition-colors">
             Guardar
           </button>
         </form>

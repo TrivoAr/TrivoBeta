@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import React, { useState, useCallback } from "react";
+import { useFormContext, Controller } from "react-hook-form";
 
 /**
  * Interfaces para DateTimePicker
@@ -11,7 +11,7 @@ export interface DateTimePickerProps {
   label?: string;
   required?: boolean;
   className?: string;
-  type?: 'date' | 'time' | 'datetime-local';
+  type?: "date" | "time" | "datetime-local";
   min?: string;
   max?: string;
   step?: number;
@@ -37,10 +37,10 @@ export const DateTimeUtils = {
    */
   formatForInput: (date: Date): string => {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   },
@@ -50,8 +50,8 @@ export const DateTimeUtils = {
    */
   formatDateOnly: (date: Date): string => {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   },
@@ -60,8 +60,8 @@ export const DateTimeUtils = {
    * Formatear solo hora
    */
   formatTimeOnly: (date: Date): string => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
 
     return `${hours}:${minutes}`;
   },
@@ -69,18 +69,18 @@ export const DateTimeUtils = {
   /**
    * Obtener fecha/hora actual según el tipo
    */
-  getCurrentValue: (type: 'date' | 'time' | 'datetime-local'): string => {
+  getCurrentValue: (type: "date" | "time" | "datetime-local"): string => {
     const now = new Date();
 
     switch (type) {
-      case 'date':
+      case "date":
         return DateTimeUtils.formatDateOnly(now);
-      case 'time':
+      case "time":
         return DateTimeUtils.formatTimeOnly(now);
-      case 'datetime-local':
+      case "datetime-local":
         return DateTimeUtils.formatForInput(now);
       default:
-        return '';
+        return "";
     }
   },
 
@@ -95,57 +95,64 @@ export const DateTimeUtils = {
   /**
    * Formatear fecha para mostrar al usuario
    */
-  formatDisplayDate: (dateString: string, type: 'date' | 'time' | 'datetime-local'): string => {
-    if (!dateString || !DateTimeUtils.isValidDate(dateString)) return '';
+  formatDisplayDate: (
+    dateString: string,
+    type: "date" | "time" | "datetime-local"
+  ): string => {
+    if (!dateString || !DateTimeUtils.isValidDate(dateString)) return "";
 
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {};
 
     switch (type) {
-      case 'date':
-        options.year = 'numeric';
-        options.month = 'long';
-        options.day = 'numeric';
+      case "date":
+        options.year = "numeric";
+        options.month = "long";
+        options.day = "numeric";
         break;
-      case 'time':
-        options.hour = '2-digit';
-        options.minute = '2-digit';
+      case "time":
+        options.hour = "2-digit";
+        options.minute = "2-digit";
         break;
-      case 'datetime-local':
-        options.year = 'numeric';
-        options.month = 'short';
-        options.day = 'numeric';
-        options.hour = '2-digit';
-        options.minute = '2-digit';
+      case "datetime-local":
+        options.year = "numeric";
+        options.month = "short";
+        options.day = "numeric";
+        options.hour = "2-digit";
+        options.minute = "2-digit";
         break;
     }
 
-    return date.toLocaleString('es-AR', options);
+    return date.toLocaleString("es-AR", options);
   },
 
   /**
    * Redondear a intervalos de tiempo
    */
   roundToInterval: (dateString: string, intervalMinutes: number): string => {
-    if (!dateString || !DateTimeUtils.isValidDate(dateString)) return dateString;
+    if (!dateString || !DateTimeUtils.isValidDate(dateString))
+      return dateString;
 
     const date = new Date(dateString);
     const minutes = date.getMinutes();
-    const roundedMinutes = Math.round(minutes / intervalMinutes) * intervalMinutes;
+    const roundedMinutes =
+      Math.round(minutes / intervalMinutes) * intervalMinutes;
 
     date.setMinutes(roundedMinutes);
     date.setSeconds(0);
     date.setMilliseconds(0);
 
     return DateTimeUtils.formatForInput(date);
-  }
+  },
 };
 
 /**
  * Hook para gestión de DateTime
  */
-export const useDateTime = (type: 'date' | 'time' | 'datetime-local' = 'datetime-local') => {
-  const [value, setValue] = useState<string>('');
+export const useDateTime = (
+  type: "date" | "time" | "datetime-local" = "datetime-local"
+) => {
+  const [value, setValue] = useState<string>("");
 
   const setCurrentDateTime = useCallback(() => {
     const current = DateTimeUtils.getCurrentValue(type);
@@ -162,12 +169,15 @@ export const useDateTime = (type: 'date' | 'time' | 'datetime-local' = 'datetime
   }, []);
 
   const clearDateTime = useCallback(() => {
-    setValue('');
+    setValue("");
   }, []);
 
-  const formatDisplay = useCallback((dateString?: string) => {
-    return DateTimeUtils.formatDisplayDate(dateString || value, type);
-  }, [value, type]);
+  const formatDisplay = useCallback(
+    (dateString?: string) => {
+      return DateTimeUtils.formatDisplayDate(dateString || value, type);
+    },
+    [value, type]
+  );
 
   return {
     value,
@@ -176,7 +186,7 @@ export const useDateTime = (type: 'date' | 'time' | 'datetime-local' = 'datetime
     setCustomDateTime,
     clearDateTime,
     formatDisplay,
-    isValid: DateTimeUtils.isValidDate(value)
+    isValid: DateTimeUtils.isValidDate(value),
   };
 };
 
@@ -186,7 +196,7 @@ export const useDateTime = (type: 'date' | 'time' | 'datetime-local' = 'datetime
 export const DateTimePicker: React.FC<DateTimePickerProps> = ({
   name,
   label,
-  type = 'datetime-local',
+  type = "datetime-local",
   validation,
   className,
   placeholder,
@@ -196,7 +206,12 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
   onChange,
   ...inputProps
 }) => {
-  const { control, formState: { errors }, setValue, watch } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useFormContext();
   const currentValue = watch(name);
   const error = errors[name];
 
@@ -205,7 +220,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     let newValue = DateTimeUtils.getCurrentValue(type);
 
     // Aplicar intervalo si está configurado
-    if (timeInterval && type !== 'date') {
+    if (timeInterval && type !== "date") {
       newValue = DateTimeUtils.roundToInterval(newValue, timeInterval);
     }
 
@@ -215,21 +230,19 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
   // Limpiar valor
   const clearValue = useCallback(() => {
-    setValue(name, '');
-    onChange?.('');
+    setValue(name, "");
+    onChange?.("");
   }, [setValue, name, onChange]);
 
   return (
-    <div className={`datetime-picker ${className || ''}`}>
+    <div className={`datetime-picker ${className || ""}`}>
       {label && (
         <label
           htmlFor={name}
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           {label}
-          {validation?.required && (
-            <span className="text-red-500 ml-1">*</span>
-          )}
+          {validation?.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -251,7 +264,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 let value = e.target.value;
 
                 // Aplicar intervalo si está configurado
-                if (timeInterval && value && type !== 'date') {
+                if (timeInterval && value && type !== "date") {
                   value = DateTimeUtils.roundToInterval(value, timeInterval);
                 }
 
@@ -259,25 +272,38 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 onChange?.(value);
               }}
               className={`w-full px-3 py-2 pr-20 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                error ? 'border-red-500' : 'border-gray-300'
+                error ? "border-red-500" : "border-gray-300"
               }`}
             />
 
             {/* Botones de acción */}
             <div className="absolute right-2 top-2 flex space-x-1">
-              {((type === 'datetime-local' || type === 'time') && showCurrentTimeButton) ||
-               (type === 'date' && showTodayButton) && (
-                <button
-                  type="button"
-                  onClick={setCurrentValue}
-                  className="p-1 text-gray-400 hover:text-blue-600"
-                  title={type === 'date' ? 'Usar fecha actual' : 'Usar hora actual'}
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              )}
+              {((type === "datetime-local" || type === "time") &&
+                showCurrentTimeButton) ||
+                (type === "date" && showTodayButton && (
+                  <button
+                    type="button"
+                    onClick={setCurrentValue}
+                    className="p-1 text-gray-400 hover:text-blue-600"
+                    title={
+                      type === "date" ? "Usar fecha actual" : "Usar hora actual"
+                    }
+                  >
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </button>
+                ))}
 
               {field.value && (
                 <button
@@ -286,8 +312,18 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
                   className="p-1 text-gray-400 hover:text-red-500"
                   title="Limpiar"
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               )}
@@ -305,7 +341,8 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
       {error && (
         <p className="mt-1 text-sm text-red-600" role="alert">
-          {(typeof error === 'string' ? error : (error as any)?.message) || 'Fecha/hora requerida'}
+          {(typeof error === "string" ? error : (error as any)?.message) ||
+            "Fecha/hora requerida"}
         </p>
       )}
     </div>
@@ -321,7 +358,7 @@ export interface DateRangePickerProps {
   label?: string;
   required?: boolean;
   className?: string;
-  type?: 'date' | 'datetime-local';
+  type?: "date" | "datetime-local";
   validation?: {
     required?: string | boolean;
     validate?: (startValue: string, endValue: string) => boolean | string;
@@ -333,54 +370,62 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   startName,
   endName,
   label,
-  type = 'date',
+  type = "date",
   validation,
   className,
-  onChange
+  onChange,
 }) => {
-  const { watch, formState: { errors }, trigger } = useFormContext();
+  const {
+    watch,
+    formState: { errors },
+    trigger,
+  } = useFormContext();
   const startValue = watch(startName);
   const endValue = watch(endName);
   const startError = errors[startName];
   const endError = errors[endName];
 
   // Validación personalizada para rango
-  const validateRange = useCallback((start: string, end: string) => {
-    if (!start || !end) return true;
+  const validateRange = useCallback(
+    (start: string, end: string) => {
+      if (!start || !end) return true;
 
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+      const startDate = new Date(start);
+      const endDate = new Date(end);
 
-    if (startDate > endDate) {
-      return 'La fecha de inicio no puede ser posterior a la fecha de fin';
-    }
+      if (startDate > endDate) {
+        return "La fecha de inicio no puede ser posterior a la fecha de fin";
+      }
 
-    if (validation?.validate) {
-      return validation.validate(start, end);
-    }
+      if (validation?.validate) {
+        return validation.validate(start, end);
+      }
 
-    return true;
-  }, [validation]);
+      return true;
+    },
+    [validation]
+  );
 
-  const handleChange = useCallback((field: 'start' | 'end', value: string) => {
-    // Trigger validation on both fields
-    setTimeout(() => {
-      trigger([startName, endName]);
-      onChange?.(
-        field === 'start' ? value : startValue,
-        field === 'end' ? value : endValue
-      );
-    }, 0);
-  }, [trigger, startName, endName, onChange, startValue, endValue]);
+  const handleChange = useCallback(
+    (field: "start" | "end", value: string) => {
+      // Trigger validation on both fields
+      setTimeout(() => {
+        trigger([startName, endName]);
+        onChange?.(
+          field === "start" ? value : startValue,
+          field === "end" ? value : endValue
+        );
+      }, 0);
+    },
+    [trigger, startName, endName, onChange, startValue, endValue]
+  );
 
   return (
-    <div className={`date-range-picker ${className || ''}`}>
+    <div className={`date-range-picker ${className || ""}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}
-          {validation?.required && (
-            <span className="text-red-500 ml-1">*</span>
-          )}
+          {validation?.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -391,9 +436,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           type={type}
           validation={{
             ...validation,
-            validate: (value) => validateRange(value, endValue)
+            validate: (value) => validateRange(value, endValue),
           }}
-          onChange={(value) => handleChange('start', value)}
+          onChange={(value) => handleChange("start", value)}
         />
 
         <DateTimePicker
@@ -402,17 +447,28 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           type={type}
           validation={{
             ...validation,
-            validate: (value) => validateRange(startValue, value)
+            validate: (value) => validateRange(startValue, value),
           }}
-          onChange={(value) => handleChange('end', value)}
+          onChange={(value) => handleChange("end", value)}
         />
       </div>
 
-      {(startError || endError) && ((typeof startError === 'string' ? startError : (startError as any)?.message) || (typeof endError === 'string' ? endError : (endError as any)?.message)) && (
-        <p className="mt-1 text-sm text-red-600" role="alert">
-          {(typeof startError === 'string' ? startError : (startError as any)?.message) || (typeof endError === 'string' ? endError : (endError as any)?.message)}
-        </p>
-      )}
+      {(startError || endError) &&
+        ((typeof startError === "string"
+          ? startError
+          : (startError as any)?.message) ||
+          (typeof endError === "string"
+            ? endError
+            : (endError as any)?.message)) && (
+          <p className="mt-1 text-sm text-red-600" role="alert">
+            {(typeof startError === "string"
+              ? startError
+              : (startError as any)?.message) ||
+              (typeof endError === "string"
+                ? endError
+                : (endError as any)?.message)}
+          </p>
+        )}
     </div>
   );
 };

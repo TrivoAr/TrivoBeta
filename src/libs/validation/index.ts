@@ -41,15 +41,15 @@ export const ValidationRules = {
   /**
    * Required field validation
    */
-  required: (message = 'Este campo es requerido'): ValidationRule => ({
+  required: (message = "Este campo es requerido"): ValidationRule => ({
     validate: (value) => {
       if (value === null || value === undefined) return false;
-      if (typeof value === 'string') return value.trim().length > 0;
+      if (typeof value === "string") return value.trim().length > 0;
       if (Array.isArray(value)) return value.length > 0;
       return true;
     },
     message,
-    required: true
+    required: true,
   }),
 
   /**
@@ -60,7 +60,7 @@ export const ValidationRules = {
       if (!value) return true; // Skip if empty (use required rule for required fields)
       return value.length >= min;
     },
-    message: message || `Debe tener al menos ${min} caracteres`
+    message: message || `Debe tener al menos ${min} caracteres`,
   }),
 
   /**
@@ -71,38 +71,40 @@ export const ValidationRules = {
       if (!value) return true;
       return value.length <= max;
     },
-    message: message || `Debe tener máximo ${max} caracteres`
+    message: message || `Debe tener máximo ${max} caracteres`,
   }),
 
   /**
    * Email validation
    */
-  email: (message = 'Debe ser un email válido'): ValidationRule => ({
+  email: (message = "Debe ser un email válido"): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(value);
     },
-    message
+    message,
   }),
 
   /**
    * Phone number validation (Argentina format)
    */
-  phone: (message = 'Debe ser un número de teléfono válido'): ValidationRule => ({
+  phone: (
+    message = "Debe ser un número de teléfono válido"
+  ): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       // Argentina phone formats: +54 11 1234-5678, 011 1234-5678, 11 1234-5678
       const phoneRegex = /^(\+54\s?)?(\d{2,4})\s?\d{4}-?\d{4}$/;
-      return phoneRegex.test(value.replace(/\s/g, ''));
+      return phoneRegex.test(value.replace(/\s/g, ""));
     },
-    message
+    message,
   }),
 
   /**
    * URL validation
    */
-  url: (message = 'Debe ser una URL válida'): ValidationRule => ({
+  url: (message = "Debe ser una URL válida"): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       try {
@@ -112,18 +114,18 @@ export const ValidationRules = {
         return false;
       }
     },
-    message
+    message,
   }),
 
   /**
    * Number validation
    */
-  number: (message = 'Debe ser un número válido'): ValidationRule => ({
+  number: (message = "Debe ser un número válido"): ValidationRule => ({
     validate: (value: string | number) => {
-      if (value === '' || value === null || value === undefined) return true;
+      if (value === "" || value === null || value === undefined) return true;
       return !isNaN(Number(value));
     },
-    message
+    message,
   }),
 
   /**
@@ -131,10 +133,10 @@ export const ValidationRules = {
    */
   min: (min: number, message?: string): ValidationRule => ({
     validate: (value: string | number) => {
-      if (value === '' || value === null || value === undefined) return true;
+      if (value === "" || value === null || value === undefined) return true;
       return Number(value) >= min;
     },
-    message: message || `Debe ser mayor o igual a ${min}`
+    message: message || `Debe ser mayor o igual a ${min}`,
   }),
 
   /**
@@ -142,29 +144,32 @@ export const ValidationRules = {
    */
   max: (max: number, message?: string): ValidationRule => ({
     validate: (value: string | number) => {
-      if (value === '' || value === null || value === undefined) return true;
+      if (value === "" || value === null || value === undefined) return true;
       return Number(value) <= max;
     },
-    message: message || `Debe ser menor o igual a ${max}`
+    message: message || `Debe ser menor o igual a ${max}`,
   }),
 
   /**
    * Pattern validation
    */
-  pattern: (regex: RegExp, message = 'Formato inválido'): ValidationRule => ({
+  pattern: (regex: RegExp, message = "Formato inválido"): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       return regex.test(value);
     },
-    message
+    message,
   }),
 
   /**
    * Custom validation
    */
-  custom: (validationFn: (value: any, data?: Record<string, any>) => boolean, message: string): ValidationRule => ({
+  custom: (
+    validationFn: (value: any, data?: Record<string, any>) => boolean,
+    message: string
+  ): ValidationRule => ({
     validate: validationFn,
-    message
+    message,
   }),
 
   /**
@@ -175,32 +180,32 @@ export const ValidationRules = {
       if (!data) return true;
       return value === data[fieldName];
     },
-    message: message || `Debe coincidir con ${fieldName}`
+    message: message || `Debe coincidir con ${fieldName}`,
   }),
 
   /**
    * Date validation
    */
-  date: (message = 'Debe ser una fecha válida'): ValidationRule => ({
+  date: (message = "Debe ser una fecha válida"): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       const date = new Date(value);
       return !isNaN(date.getTime());
     },
-    message
+    message,
   }),
 
   /**
    * Future date validation
    */
-  futureDate: (message = 'Debe ser una fecha futura'): ValidationRule => ({
+  futureDate: (message = "Debe ser una fecha futura"): ValidationRule => ({
     validate: (value: string) => {
       if (!value) return true;
       const date = new Date(value);
       const now = new Date();
       return date > now;
     },
-    message
+    message,
   }),
 
   /**
@@ -212,7 +217,7 @@ export const ValidationRules = {
       const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
       return file.size <= maxSizeInBytes;
     },
-    message: message || `El archivo debe ser menor a ${maxSizeInMB}MB`
+    message: message || `El archivo debe ser menor a ${maxSizeInMB}MB`,
   }),
 
   /**
@@ -223,14 +228,20 @@ export const ValidationRules = {
       if (!file) return true;
       return allowedTypes.includes(file.type);
     },
-    message: message || `Tipo de archivo no permitido. Tipos permitidos: ${allowedTypes.join(', ')}`
-  })
+    message:
+      message ||
+      `Tipo de archivo no permitido. Tipos permitidos: ${allowedTypes.join(", ")}`,
+  }),
 };
 
 /**
  * Validate a single field
  */
-export function validateField(value: any, rules: ValidationRule[], data?: Record<string, any>): ValidationResult {
+export function validateField(
+  value: any,
+  rules: ValidationRule[],
+  data?: Record<string, any>
+): ValidationResult {
   const errors: string[] = [];
 
   for (const rule of rules) {
@@ -242,14 +253,17 @@ export function validateField(value: any, rules: ValidationRule[], data?: Record
   return {
     isValid: errors.length === 0,
     errors,
-    firstError: errors[0]
+    firstError: errors[0],
   };
 }
 
 /**
  * Validate an entire form
  */
-export function validateForm(formData: Record<string, any>, validation: FormValidation): {
+export function validateForm(
+  formData: Record<string, any>,
+  validation: FormValidation
+): {
   isValid: boolean;
   errors: Record<string, ValidationResult>;
   firstError?: string;
@@ -275,7 +289,7 @@ export function validateForm(formData: Record<string, any>, validation: FormVali
   return {
     isValid,
     errors,
-    firstError
+    firstError,
   };
 }
 
@@ -291,24 +305,21 @@ export const ValidationSchemas = {
       rules: [
         ValidationRules.required(),
         ValidationRules.minLength(2),
-        ValidationRules.maxLength(50)
+        ValidationRules.maxLength(50),
       ],
-      value: ''
+      value: "",
     },
     lastname: {
       rules: [
         ValidationRules.required(),
         ValidationRules.minLength(2),
-        ValidationRules.maxLength(50)
+        ValidationRules.maxLength(50),
       ],
-      value: ''
+      value: "",
     },
     email: {
-      rules: [
-        ValidationRules.required(),
-        ValidationRules.email()
-      ],
-      value: ''
+      rules: [ValidationRules.required(), ValidationRules.email()],
+      value: "",
     },
     password: {
       rules: [
@@ -316,18 +327,18 @@ export const ValidationSchemas = {
         ValidationRules.minLength(8),
         ValidationRules.pattern(
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-          'Debe contener al menos una minúscula, una mayúscula y un número'
-        )
+          "Debe contener al menos una minúscula, una mayúscula y un número"
+        ),
       ],
-      value: ''
+      value: "",
     },
     confirmPassword: {
       rules: [
         ValidationRules.required(),
-        ValidationRules.matchField('password', 'Las contraseñas no coinciden')
+        ValidationRules.matchField("password", "Las contraseñas no coinciden"),
       ],
-      value: ''
-    }
+      value: "",
+    },
   },
 
   /**
@@ -336,59 +347,54 @@ export const ValidationSchemas = {
   eventCreation: {
     nombre: {
       rules: [
-        ValidationRules.required('El nombre del evento es requerido'),
+        ValidationRules.required("El nombre del evento es requerido"),
         ValidationRules.minLength(3),
-        ValidationRules.maxLength(100)
+        ValidationRules.maxLength(100),
       ],
-      value: ''
+      value: "",
     },
     descripcion: {
-      rules: [
-        ValidationRules.maxLength(500)
-      ],
-      value: ''
+      rules: [ValidationRules.maxLength(500)],
+      value: "",
     },
     fecha: {
       rules: [
-        ValidationRules.required('La fecha es requerida'),
+        ValidationRules.required("La fecha es requerida"),
         ValidationRules.date(),
-        ValidationRules.futureDate()
+        ValidationRules.futureDate(),
       ],
-      value: ''
+      value: "",
     },
     hora: {
       rules: [
-        ValidationRules.required('La hora es requerida'),
+        ValidationRules.required("La hora es requerida"),
         ValidationRules.pattern(
           /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-          'Formato de hora inválido (HH:MM)'
-        )
+          "Formato de hora inválido (HH:MM)"
+        ),
       ],
-      value: ''
+      value: "",
     },
     ubicacion: {
       rules: [
-        ValidationRules.required('La ubicación es requerida'),
-        ValidationRules.minLength(5)
+        ValidationRules.required("La ubicación es requerida"),
+        ValidationRules.minLength(5),
       ],
-      value: ''
+      value: "",
     },
     cupo: {
       rules: [
-        ValidationRules.required('El cupo es requerido'),
+        ValidationRules.required("El cupo es requerido"),
         ValidationRules.number(),
         ValidationRules.min(1),
-        ValidationRules.max(1000)
+        ValidationRules.max(1000),
       ],
-      value: ''
+      value: "",
     },
     precio: {
-      rules: [
-        ValidationRules.number(),
-        ValidationRules.min(0)
-      ],
-      value: ''
-    }
+      rules: [ValidationRules.number(), ValidationRules.min(0)],
+      value: "",
+    },
   },
 
   /**
@@ -397,48 +403,36 @@ export const ValidationSchemas = {
   academyCreation: {
     nombre_academia: {
       rules: [
-        ValidationRules.required('El nombre de la academia es requerido'),
+        ValidationRules.required("El nombre de la academia es requerido"),
         ValidationRules.minLength(3),
-        ValidationRules.maxLength(100)
+        ValidationRules.maxLength(100),
       ],
-      value: ''
+      value: "",
     },
     tipo_disciplina: {
-      rules: [
-        ValidationRules.required('El tipo de disciplina es requerido')
-      ],
-      value: ''
+      rules: [ValidationRules.required("El tipo de disciplina es requerido")],
+      value: "",
     },
     pais: {
-      rules: [
-        ValidationRules.required('El país es requerido')
-      ],
-      value: ''
+      rules: [ValidationRules.required("El país es requerido")],
+      value: "",
     },
     provincia: {
-      rules: [
-        ValidationRules.required('La provincia es requerida')
-      ],
-      value: ''
+      rules: [ValidationRules.required("La provincia es requerida")],
+      value: "",
     },
     localidad: {
-      rules: [
-        ValidationRules.required('La localidad es requerida')
-      ],
-      value: ''
+      rules: [ValidationRules.required("La localidad es requerida")],
+      value: "",
     },
     descripcion: {
-      rules: [
-        ValidationRules.maxLength(500)
-      ],
-      value: ''
+      rules: [ValidationRules.maxLength(500)],
+      value: "",
     },
     telefono: {
-      rules: [
-        ValidationRules.phone()
-      ],
-      value: ''
-    }
+      rules: [ValidationRules.phone()],
+      value: "",
+    },
   },
 
   /**
@@ -449,40 +443,33 @@ export const ValidationSchemas = {
       rules: [
         ValidationRules.required(),
         ValidationRules.minLength(2),
-        ValidationRules.maxLength(50)
+        ValidationRules.maxLength(50),
       ],
-      value: ''
+      value: "",
     },
     lastname: {
       rules: [
         ValidationRules.required(),
         ValidationRules.minLength(2),
-        ValidationRules.maxLength(50)
+        ValidationRules.maxLength(50),
       ],
-      value: ''
+      value: "",
     },
     bio: {
-      rules: [
-        ValidationRules.maxLength(300)
-      ],
-      value: ''
+      rules: [ValidationRules.maxLength(300)],
+      value: "",
     },
     telnumber: {
-      rules: [
-        ValidationRules.phone()
-      ],
-      value: ''
+      rules: [ValidationRules.phone()],
+      value: "",
     },
     instagram: {
       rules: [
-        ValidationRules.pattern(
-          /^@?[\w.-]+$/,
-          'Usuario de Instagram inválido'
-        )
+        ValidationRules.pattern(/^@?[\w.-]+$/, "Usuario de Instagram inválido"),
       ],
-      value: ''
-    }
-  }
+      value: "",
+    },
+  },
 };
 
 /**
@@ -496,7 +483,7 @@ export function createValidationSchema(
   for (const [fieldName, rules] of Object.entries(fields)) {
     schema[fieldName] = {
       rules,
-      value: ''
+      value: "",
     };
   }
 
@@ -510,52 +497,42 @@ export const FieldValidations = {
   name: () => [
     ValidationRules.required(),
     ValidationRules.minLength(2),
-    ValidationRules.maxLength(50)
+    ValidationRules.maxLength(50),
   ],
 
-  email: () => [
-    ValidationRules.required(),
-    ValidationRules.email()
-  ],
+  email: () => [ValidationRules.required(), ValidationRules.email()],
 
-  password: () => [
-    ValidationRules.required(),
-    ValidationRules.minLength(8)
-  ],
+  password: () => [ValidationRules.required(), ValidationRules.minLength(8)],
 
-  phone: () => [
-    ValidationRules.phone()
-  ],
+  phone: () => [ValidationRules.phone()],
 
-  url: () => [
-    ValidationRules.url()
-  ],
+  url: () => [ValidationRules.url()],
 
   eventDate: () => [
     ValidationRules.required(),
     ValidationRules.date(),
-    ValidationRules.futureDate()
+    ValidationRules.futureDate(),
   ],
 
   eventTime: () => [
     ValidationRules.required(),
     ValidationRules.pattern(
       /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
-      'Formato de hora inválido (HH:MM)'
-    )
+      "Formato de hora inválido (HH:MM)"
+    ),
   ],
 
   positiveNumber: (max?: number) => [
     ValidationRules.number(),
     ValidationRules.min(0),
-    ...(max ? [ValidationRules.max(max)] : [])
+    ...(max ? [ValidationRules.max(max)] : []),
   ],
 
   imageFile: () => [
     ValidationRules.fileType(
-      ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-      'Solo se permiten imágenes (JPG, PNG, WebP)'
+      ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+      "Solo se permiten imágenes (JPG, PNG, WebP)"
     ),
-    ValidationRules.fileSize(5, 'La imagen debe ser menor a 5MB')
-  ]
+    ValidationRules.fileSize(5, "La imagen debe ser menor a 5MB"),
+  ],
 };
