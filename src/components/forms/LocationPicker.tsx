@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import React, { useState, useCallback, useEffect } from "react";
+import { useFormContext, Controller } from "react-hook-form";
 
 /**
  * Interfaces para LocationPicker
@@ -40,7 +40,7 @@ export const useGeolocation = () => {
 
   const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setError('La geolocalización no está soportada en este navegador');
+      setError("La geolocalización no está soportada en este navegador");
       return;
     }
 
@@ -53,16 +53,16 @@ export const useGeolocation = () => {
         setLoading(false);
       },
       (error) => {
-        let errorMessage = 'Error al obtener la ubicación';
+        let errorMessage = "Error al obtener la ubicación";
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Permiso de ubicación denegado';
+            errorMessage = "Permiso de ubicación denegado";
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Ubicación no disponible';
+            errorMessage = "Ubicación no disponible";
             break;
           case error.TIMEOUT:
-            errorMessage = 'Tiempo de espera agotado';
+            errorMessage = "Tiempo de espera agotado";
             break;
         }
         setError(errorMessage);
@@ -71,7 +71,7 @@ export const useGeolocation = () => {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000 // 5 minutos
+        maximumAge: 300000, // 5 minutos
       }
     );
   }, []);
@@ -86,36 +86,42 @@ export const useReverseGeocode = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reverseGeocode = useCallback(async (lat: number, lng: number): Promise<LocationData | null> => {
-    setLoading(true);
-    setError(null);
+  const reverseGeocode = useCallback(
+    async (lat: number, lng: number): Promise<LocationData | null> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`/api/search/reverse?lat=${lat}&lng=${lng}`);
+      try {
+        const response = await fetch(
+          `/api/search/reverse?lat=${lat}&lng=${lng}`
+        );
 
-      if (!response.ok) {
-        throw new Error('Error en geocodificación reversa');
+        if (!response.ok) {
+          throw new Error("Error en geocodificación reversa");
+        }
+
+        const data = await response.json();
+
+        const locationData: LocationData = {
+          coordinates: [lng, lat],
+          address: data.address,
+          city: data.city,
+          country: data.country,
+          formatted: data.formatted || `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+        };
+
+        setLoading(false);
+        return locationData;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Error desconocido";
+        setError(errorMessage);
+        setLoading(false);
+        return null;
       }
-
-      const data = await response.json();
-
-      const locationData: LocationData = {
-        coordinates: [lng, lat],
-        address: data.address,
-        city: data.city,
-        country: data.country,
-        formatted: data.formatted || `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-      };
-
-      setLoading(false);
-      return locationData;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(errorMessage);
-      setLoading(false);
-      return null;
-    }
-  }, []);
+    },
+    []
+  );
 
   return { reverseGeocode, loading, error };
 };
@@ -131,15 +137,24 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   placeholder = "Buscar ubicación o usar GPS...",
   onLocationChange,
   enableGPS = true,
-  defaultLocation
+  defaultLocation,
 }) => {
-  const { control, formState: { errors }, setValue, watch } = useFormContext();
-  const [searchTerm, setSearchTerm] = useState('');
+  const {
+    control,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useFormContext();
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<LocationData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  const { location: gpsLocation, loading: gpsLoading, getCurrentLocation } = useGeolocation();
+  const {
+    location: gpsLocation,
+    loading: gpsLoading,
+    getCurrentLocation,
+  } = useGeolocation();
   const { reverseGeocode, loading: reverseLoading } = useReverseGeocode();
 
   const currentValue = watch(name);
@@ -154,14 +169,16 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
     setIsSearching(true);
     try {
-      const response = await fetch(`/api/search/places?q=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `/api/search/places?q=${encodeURIComponent(query)}`
+      );
 
       if (response.ok) {
         const results = await response.json();
         setSearchResults(results.slice(0, 5)); // Máximo 5 resultados
       }
     } catch (error) {
-      console.error('Error searching locations:', error);
+      console.error("Error searching locations:", error);
     } finally {
       setIsSearching(false);
     }
@@ -191,7 +208,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         if (locationData) {
           setValue(name, locationData);
           onLocationChange?.(locationData);
-          setSearchTerm(locationData.formatted || '');
+          setSearchTerm(locationData.formatted || "");
           setShowResults(false);
         }
       });
@@ -199,34 +216,35 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, [gpsLocation, reverseGeocode, setValue, name, onLocationChange]);
 
   // Seleccionar ubicación
-  const selectLocation = useCallback((location: LocationData) => {
-    setValue(name, location);
-    onLocationChange?.(location);
-    setSearchTerm(location.formatted || location.address || '');
-    setShowResults(false);
-    setSearchResults([]);
-  }, [setValue, name, onLocationChange]);
+  const selectLocation = useCallback(
+    (location: LocationData) => {
+      setValue(name, location);
+      onLocationChange?.(location);
+      setSearchTerm(location.formatted || location.address || "");
+      setShowResults(false);
+      setSearchResults([]);
+    },
+    [setValue, name, onLocationChange]
+  );
 
   // Limpiar ubicación
   const clearLocation = useCallback(() => {
     setValue(name, null);
     onLocationChange?.(null);
-    setSearchTerm('');
+    setSearchTerm("");
     setSearchResults([]);
     setShowResults(false);
   }, [setValue, name, onLocationChange]);
 
   return (
-    <div className={`location-picker ${className || ''}`}>
+    <div className={`location-picker ${className || ""}`}>
       {label && (
         <label
           htmlFor={name}
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           {label}
-          {validation?.required && (
-            <span className="text-red-500 ml-1">*</span>
-          )}
+          {validation?.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -249,7 +267,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 onFocus={() => setShowResults(true)}
                 placeholder={placeholder}
                 className={`w-full px-3 py-2 pr-20 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  error ? 'border-red-500' : 'border-gray-300'
+                  error ? "border-red-500" : "border-gray-300"
                 }`}
               />
 
@@ -266,9 +284,24 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                     {gpsLoading || reverseLoading ? (
                       <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
                     ) : (
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
                       </svg>
                     )}
                   </button>
@@ -281,8 +314,18 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                     className="p-1 text-gray-400 hover:text-red-500"
                     title="Limpiar ubicación"
                   >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 )}
@@ -326,7 +369,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                   📍 {field.value.formatted || field.value.address}
                 </div>
                 <div className="text-xs text-blue-700 mt-1">
-                  Coordenadas: {field.value.coordinates[1].toFixed(6)}, {field.value.coordinates[0].toFixed(6)}
+                  Coordenadas: {field.value.coordinates[1].toFixed(6)},{" "}
+                  {field.value.coordinates[0].toFixed(6)}
                 </div>
               </div>
             )}
@@ -336,7 +380,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
       {error && (
         <p className="mt-1 text-sm text-red-600" role="alert">
-          {(typeof error === 'string' ? error : (error as any)?.message) || 'Ubicación requerida'}
+          {(typeof error === "string" ? error : (error as any)?.message) ||
+            "Ubicación requerida"}
         </p>
       )}
     </div>
@@ -347,16 +392,21 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
  * Hook para gestionar LocationPicker de forma externa
  */
 export const useLocationPicker = (initialLocation?: LocationData) => {
-  const [location, setLocation] = useState<LocationData | null>(initialLocation || null);
+  const [location, setLocation] = useState<LocationData | null>(
+    initialLocation || null
+  );
   const { reverseGeocode } = useReverseGeocode();
 
-  const setCoordinates = useCallback(async (lat: number, lng: number) => {
-    const locationData = await reverseGeocode(lat, lng);
-    if (locationData) {
-      setLocation(locationData);
-    }
-    return locationData;
-  }, [reverseGeocode]);
+  const setCoordinates = useCallback(
+    async (lat: number, lng: number) => {
+      const locationData = await reverseGeocode(lat, lng);
+      if (locationData) {
+        setLocation(locationData);
+      }
+      return locationData;
+    },
+    [reverseGeocode]
+  );
 
   const clearLocation = useCallback(() => {
     setLocation(null);
@@ -366,6 +416,6 @@ export const useLocationPicker = (initialLocation?: LocationData) => {
     location,
     setLocation,
     setCoordinates,
-    clearLocation
+    clearLocation,
   };
 };

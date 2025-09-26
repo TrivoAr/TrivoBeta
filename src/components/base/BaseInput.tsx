@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import React, { forwardRef, ReactNode, InputHTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import React, { forwardRef, ReactNode, InputHTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 
-export interface BaseInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface BaseInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   /**
    * Input label
    */
@@ -111,20 +112,22 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
     ref
   ) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
-    const hasValue = value !== undefined && value !== null && value !== '';
+    const hasValue = value !== undefined && value !== null && value !== "";
 
     // Size classes
     const sizeClasses = {
       sm: "px-3 py-1.5 text-sm",
       default: "px-3 py-2 text-sm",
-      lg: "px-4 py-3 text-base"
+      lg: "px-4 py-3 text-base",
     };
 
     // Variant classes
     const variantClasses = {
-      default: "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
-      filled: "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
-      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500"
+      default:
+        "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
+      filled:
+        "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
+      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500",
     };
 
     // Error state classes
@@ -133,9 +136,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
       : "";
 
     // Floating label classes
-    const floatingLabelClasses = floatingLabel
-      ? "relative pt-6 pb-2"
-      : "";
+    const floatingLabelClasses = floatingLabel ? "relative pt-6 pb-2" : "";
 
     const inputClasses = cn(
       // Base styles
@@ -160,16 +161,16 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
     const iconSizeClasses = {
       sm: "w-4 h-4",
       default: "w-5 h-5",
-      lg: "w-6 h-6"
+      lg: "w-6 h-6",
     };
 
     const iconPositionClasses = {
       sm: "top-2",
       default: "top-2.5",
-      lg: "top-3.5"
+      lg: "top-3.5",
     };
 
-    const characterCount = typeof value === 'string' ? value.length : 0;
+    const characterCount = typeof value === "string" ? value.length : 0;
 
     return (
       <div className={cn("w-full", containerClassName)}>
@@ -191,11 +192,13 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
         <div className="relative">
           {/* Left Icon */}
           {leftIcon && (
-            <div className={cn(
-              "absolute left-3 pointer-events-none text-gray-400",
-              iconSizeClasses[size],
-              floatingLabel ? "top-6" : iconPositionClasses[size]
-            )}>
+            <div
+              className={cn(
+                "absolute left-3 pointer-events-none text-gray-400",
+                iconSizeClasses[size],
+                floatingLabel ? "top-6" : iconPositionClasses[size]
+              )}
+            >
               {leftIcon}
             </div>
           )}
@@ -209,8 +212,11 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
             maxLength={maxLength}
             aria-invalid={!!error}
             aria-describedby={
-              error ? `${inputId}-error` :
-              helperText ? `${inputId}-helper` : undefined
+              error
+                ? `${inputId}-error`
+                : helperText
+                  ? `${inputId}-helper`
+                  : undefined
             }
             {...props}
           />
@@ -234,15 +240,19 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
           )}
 
           {/* Right Icon / Loading / Character Count */}
-          <div className={cn(
-            "absolute right-3 flex items-center space-x-2",
-            floatingLabel ? "top-6" : iconPositionClasses[size]
-          )}>
+          <div
+            className={cn(
+              "absolute right-3 flex items-center space-x-2",
+              floatingLabel ? "top-6" : iconPositionClasses[size]
+            )}
+          >
             {loading && (
-              <div className={cn(
-                "border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin",
-                iconSizeClasses[size]
-              )} />
+              <div
+                className={cn(
+                  "border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin",
+                  iconSizeClasses[size]
+                )}
+              />
             )}
 
             {rightIcon && !loading && (
@@ -268,14 +278,16 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
           </div>
 
           {showCharacterCount && maxLength && (
-            <p className={cn(
-              "text-xs ml-2 flex-shrink-0",
-              characterCount > maxLength * 0.9
-                ? "text-red-500"
-                : characterCount > maxLength * 0.7
-                  ? "text-yellow-600"
-                  : "text-gray-400"
-            )}>
+            <p
+              className={cn(
+                "text-xs ml-2 flex-shrink-0",
+                characterCount > maxLength * 0.9
+                  ? "text-red-500"
+                  : characterCount > maxLength * 0.7
+                    ? "text-yellow-600"
+                    : "text-gray-400"
+              )}
+            >
               {characterCount}/{maxLength}
             </p>
           )}
@@ -290,7 +302,8 @@ BaseInput.displayName = "BaseInput";
 /**
  * Search Input - Specialized input for search functionality
  */
-export interface SearchInputProps extends Omit<BaseInputProps, 'leftIcon' | 'type'> {
+export interface SearchInputProps
+  extends Omit<BaseInputProps, "leftIcon" | "type"> {
   /**
    * Search handler
    */
@@ -325,7 +338,9 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     },
     ref
   ) => {
-    const [searchValue, setSearchValue] = React.useState(typeof value === 'string' ? value : '');
+    const [searchValue, setSearchValue] = React.useState(
+      typeof value === "string" ? value : ""
+    );
     const timeoutRef = React.useRef<NodeJS.Timeout>();
 
     // Debounced search
@@ -354,33 +369,54 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     };
 
     const handleClear = () => {
-      setSearchValue('');
+      setSearchValue("");
       onClear?.();
       if (onChange) {
         const event = {
-          target: { value: '' }
+          target: { value: "" },
         } as React.ChangeEvent<HTMLInputElement>;
         onChange(event);
       }
     };
 
     const searchIcon = (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
       </svg>
     );
 
-    const clearIcon = showClearButton && searchValue ? (
-      <button
-        type="button"
-        onClick={handleClear}
-        className="text-gray-400 hover:text-gray-600 transition-colors"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    ) : null;
+    const clearIcon =
+      showClearButton && searchValue ? (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      ) : null;
 
     return (
       <BaseInput
@@ -402,7 +438,8 @@ SearchInput.displayName = "SearchInput";
 /**
  * Textarea component with similar API to BaseInput
  */
-export interface BaseTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
+export interface BaseTextareaProps
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
   label?: string;
   helperText?: string;
   error?: string;
@@ -437,14 +474,15 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
     },
     ref
   ) => {
-    const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+    const textareaId =
+      id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
     // Auto resize functionality
     React.useEffect(() => {
       if (autoResize && textareaRef.current) {
         const textarea = textareaRef.current;
-        textarea.style.height = 'auto';
+        textarea.style.height = "auto";
         textarea.style.height = `${textarea.scrollHeight}px`;
       }
     }, [value, autoResize]);
@@ -455,13 +493,15 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
     const sizeClasses = {
       sm: "px-3 py-1.5 text-sm",
       default: "px-3 py-2 text-sm",
-      lg: "px-4 py-3 text-base"
+      lg: "px-4 py-3 text-base",
     };
 
     const variantClasses = {
-      default: "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
-      filled: "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
-      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500"
+      default:
+        "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
+      filled:
+        "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
+      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500",
     };
 
     const errorClasses = error
@@ -480,7 +520,7 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
       className
     );
 
-    const characterCount = typeof value === 'string' ? value.length : 0;
+    const characterCount = typeof value === "string" ? value.length : 0;
 
     return (
       <div className={cn("w-full", containerClassName)}>
@@ -506,8 +546,11 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
           rows={autoResize ? 1 : rows}
           aria-invalid={!!error}
           aria-describedby={
-            error ? `${textareaId}-error` :
-            helperText ? `${textareaId}-helper` : undefined
+            error
+              ? `${textareaId}-error`
+              : helperText
+                ? `${textareaId}-helper`
+                : undefined
           }
           {...props}
         />
@@ -526,14 +569,16 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
           </div>
 
           {showCharacterCount && maxLength && (
-            <p className={cn(
-              "text-xs ml-2 flex-shrink-0",
-              characterCount > maxLength * 0.9
-                ? "text-red-500"
-                : characterCount > maxLength * 0.7
-                  ? "text-yellow-600"
-                  : "text-gray-400"
-            )}>
+            <p
+              className={cn(
+                "text-xs ml-2 flex-shrink-0",
+                characterCount > maxLength * 0.9
+                  ? "text-red-500"
+                  : characterCount > maxLength * 0.7
+                    ? "text-yellow-600"
+                    : "text-gray-400"
+              )}
+            >
               {characterCount}/{maxLength}
             </p>
           )}

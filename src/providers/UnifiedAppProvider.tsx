@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { ReactNode } from 'react';
-import { SessionProvider } from 'next-auth/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppProvider, AppState } from '@/context/AppContext';
-import { ProviderFactory } from './ProviderComposer';
+import React, { ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppProvider, AppState } from "@/context/AppContext";
+import { ProviderFactory } from "./ProviderComposer";
 
 /**
  * Unified App Provider Configuration
@@ -14,8 +14,8 @@ export interface UnifiedAppProviderProps {
   session?: any;
   queryClient?: QueryClient;
   initialAppState?: Partial<AppState>;
-  theme?: 'light' | 'dark';
-  environment?: 'development' | 'production' | 'test';
+  theme?: "light" | "dark";
+  environment?: "development" | "production" | "test";
 }
 
 /**
@@ -35,15 +35,15 @@ const createDefaultQueryClient = () =>
           return failureCount < 3;
         },
         refetchOnWindowFocus: false,
-        refetchOnReconnect: true
+        refetchOnReconnect: true,
       },
       mutations: {
         retry: 1,
         onError: (error) => {
-          console.error('Mutation error:', error);
-        }
-      }
-    }
+          console.error("Mutation error:", error);
+        },
+      },
+    },
   });
 
 /**
@@ -54,8 +54,8 @@ export function UnifiedAppProvider({
   session,
   queryClient,
   initialAppState,
-  theme = 'light',
-  environment = 'production'
+  theme = "light",
+  environment = "production",
 }: UnifiedAppProviderProps) {
   // Create query client if not provided
   const client = queryClient || createDefaultQueryClient();
@@ -67,19 +67,19 @@ export function UnifiedAppProvider({
       ...initialAppState?.user,
       preferences: {
         theme,
-        language: 'es',
+        language: "es",
         notifications: true,
-        ...initialAppState?.user?.preferences
-      }
-    }
+        ...initialAppState?.user?.preferences,
+      },
+    },
   };
 
   // Environment-specific provider selection
   const AppProviders = React.useMemo(() => {
     switch (environment) {
-      case 'development':
+      case "development":
         return ProviderFactory.createDevProviders(session);
-      case 'test':
+      case "test":
         return ProviderFactory.createMinimalProviders();
       default:
         return ProviderFactory.createAppProviders(session, client);
@@ -93,9 +93,7 @@ export function UnifiedAppProvider({
           <ThemeProvider theme={theme}>
             <GlobalErrorBoundary>
               <NetworkStatusProvider>
-                <NotificationProvider>
-                  {children}
-                </NotificationProvider>
+                <NotificationProvider>{children}</NotificationProvider>
               </NetworkStatusProvider>
             </GlobalErrorBoundary>
           </ThemeProvider>
@@ -110,23 +108,23 @@ export function UnifiedAppProvider({
  */
 function ThemeProvider({
   children,
-  theme
+  theme,
 }: {
   children: ReactNode;
-  theme: 'light' | 'dark'
+  theme: "light" | "dark";
 }) {
   React.useEffect(() => {
     // Apply theme to document root
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove("light", "dark");
     root.classList.add(theme);
 
     // Update meta theme-color
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute(
-        'content',
-        theme === 'dark' ? '#1f2937' : '#ffffff'
+        "content",
+        theme === "dark" ? "#1f2937" : "#ffffff"
       );
     }
   }, [theme]);
@@ -158,8 +156,8 @@ class GlobalErrorBoundary extends React.Component<
     this.setState({ errorInfo });
 
     // Log error to monitoring service in production
-    if (process.env.NODE_ENV === 'production') {
-      console.error('Global Error Boundary:', error, errorInfo);
+    if (process.env.NODE_ENV === "production") {
+      console.error("Global Error Boundary:", error, errorInfo);
       // Here you would send to error tracking service like Sentry
     }
   }
@@ -189,7 +187,8 @@ class GlobalErrorBoundary extends React.Component<
               ¡Oops! Algo salió mal
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Ocurrió un error inesperado. Por favor, recarga la página o intenta más tarde.
+              Ocurrió un error inesperado. Por favor, recarga la página o
+              intenta más tarde.
             </p>
             <div className="space-y-3">
               <button
@@ -205,7 +204,7 @@ class GlobalErrorBoundary extends React.Component<
                 Ir Atrás
               </button>
             </div>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {process.env.NODE_ENV === "development" && this.state.error && (
               <details className="mt-6 text-left">
                 <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
                   Detalles del Error (Dev)
@@ -243,15 +242,15 @@ function NetworkStatusProvider({ children }: { children: ReactNode }) {
       setShowOfflineNotice(true);
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Set initial state
     setIsOnline(navigator.onLine);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -261,7 +260,8 @@ function NetworkStatusProvider({ children }: { children: ReactNode }) {
       {showOfflineNotice && (
         <div className="fixed top-0 left-0 right-0 bg-red-600 text-white text-center py-2 px-4 z-50">
           <p className="text-sm">
-            Sin conexión a internet. Algunas funciones pueden no estar disponibles.
+            Sin conexión a internet. Algunas funciones pueden no estar
+            disponibles.
           </p>
         </div>
       )}
@@ -273,19 +273,21 @@ function NetworkStatusProvider({ children }: { children: ReactNode }) {
  * Notification Provider for handling app-wide notifications
  */
 function NotificationProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = React.useState<Array<{
-    id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-    message: string;
-    timestamp: number;
-  }>>([]);
+  const [notifications, setNotifications] = React.useState<
+    Array<{
+      id: string;
+      type: "success" | "error" | "warning" | "info";
+      message: string;
+      timestamp: number;
+    }>
+  >([]);
 
   // Auto-remove notifications after 5 seconds
   React.useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setNotifications(prev =>
-        prev.filter(notification => now - notification.timestamp < 5000)
+      setNotifications((prev) =>
+        prev.filter((notification) => now - notification.timestamp < 5000)
       );
     }, 1000);
 
@@ -293,7 +295,7 @@ function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeNotification = React.useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
   return (
@@ -301,7 +303,7 @@ function NotificationProvider({ children }: { children: ReactNode }) {
       {children}
       {notifications.length > 0 && (
         <div className="fixed top-4 right-4 space-y-2 z-50">
-          {notifications.map(notification => (
+          {notifications.map((notification) => (
             <NotificationItem
               key={notification.id}
               notification={notification}
@@ -319,11 +321,11 @@ function NotificationProvider({ children }: { children: ReactNode }) {
  */
 function NotificationItem({
   notification,
-  onRemove
+  onRemove,
 }: {
   notification: {
     id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
+    type: "success" | "error" | "warning" | "info";
     message: string;
   };
   onRemove: (id: string) => void;
@@ -341,17 +343,17 @@ function NotificationItem({
   }, [notification.id, onRemove]);
 
   const bgColors = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500',
-    info: 'bg-blue-500'
+    success: "bg-green-500",
+    error: "bg-red-500",
+    warning: "bg-yellow-500",
+    info: "bg-blue-500",
   };
 
   const icons = {
-    success: '✓',
-    error: '✕',
-    warning: '⚠',
-    info: 'ℹ'
+    success: "✓",
+    error: "✕",
+    warning: "⚠",
+    info: "ℹ",
   };
 
   return (
@@ -359,16 +361,14 @@ function NotificationItem({
       className={`
         ${bgColors[notification.type]} text-white px-4 py-3 rounded-lg shadow-lg
         transform transition-all duration-300 max-w-sm
-        ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+        ${isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
       `}
     >
       <div className="flex items-center">
         <span className="text-lg mr-2" aria-hidden="true">
           {icons[notification.type]}
         </span>
-        <p className="text-sm font-medium flex-1">
-          {notification.message}
-        </p>
+        <p className="text-sm font-medium flex-1">{notification.message}</p>
         <button
           onClick={() => onRemove(notification.id)}
           className="ml-2 text-white hover:text-gray-200 transition-colors"
@@ -395,7 +395,7 @@ export function useUnifiedApp() {
   // For now, we'll return a placeholder
   return {
     isOnline: navigator.onLine,
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
   };
 }
 

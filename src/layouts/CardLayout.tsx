@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { BaseCard } from '@/components/base/BaseCard';
+import React from "react";
+import { BaseCard } from "@/components/base/BaseCard";
 
 /**
  * Interfaces para CardLayout
@@ -33,21 +33,21 @@ export const CardLayout: React.FC<CardLayoutProps> = ({
   header,
   footer,
   actions,
-  className = '',
-  headerClassName = '',
-  contentClassName = '',
-  footerClassName = '',
+  className = "",
+  headerClassName = "",
+  contentClassName = "",
+  footerClassName = "",
   loading = false,
   skeleton = false,
   onClick,
-  hoverable = false
+  hoverable = false,
 }) => {
   const isClickable = !!onClick;
   const shouldHover = hoverable || isClickable;
 
   return (
     <BaseCard
-      className={`${shouldHover ? 'hover:shadow-md transition-shadow cursor-pointer' : ''} ${className}`}
+      className={`${shouldHover ? "hover:shadow-md transition-shadow cursor-pointer" : ""} ${className}`}
       onClick={onClick}
     >
       {/* Header personalizado o título/subtitle */}
@@ -57,13 +57,17 @@ export const CardLayout: React.FC<CardLayoutProps> = ({
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 {title && (
-                  <h3 className={`text-lg font-semibold text-gray-900 ${loading || skeleton ? 'animate-pulse bg-gray-200 h-6 rounded' : ''}`}>
-                    {loading || skeleton ? '' : title}
+                  <h3
+                    className={`text-lg font-semibold text-gray-900 ${loading || skeleton ? "animate-pulse bg-gray-200 h-6 rounded" : ""}`}
+                  >
+                    {loading || skeleton ? "" : title}
                   </h3>
                 )}
                 {subtitle && (
-                  <p className={`text-sm text-gray-600 mt-1 ${loading || skeleton ? 'animate-pulse bg-gray-200 h-4 rounded mt-2' : ''}`}>
-                    {loading || skeleton ? '' : subtitle}
+                  <p
+                    className={`text-sm text-gray-600 mt-1 ${loading || skeleton ? "animate-pulse bg-gray-200 h-4 rounded mt-2" : ""}`}
+                  >
+                    {loading || skeleton ? "" : subtitle}
                   </p>
                 )}
               </div>
@@ -78,17 +82,17 @@ export const CardLayout: React.FC<CardLayoutProps> = ({
       )}
 
       {/* Contenido principal */}
-      <div className={`card-content ${contentClassName} ${(header || title || subtitle) && (footer || actions) ? 'py-4' : ''}`}>
-        {loading || skeleton ? (
-          <SkeletonContent />
-        ) : (
-          children
-        )}
+      <div
+        className={`card-content ${contentClassName} ${(header || title || subtitle) && (footer || actions) ? "py-4" : ""}`}
+      >
+        {loading || skeleton ? <SkeletonContent /> : children}
       </div>
 
       {/* Footer */}
       {footer && !loading && !skeleton && (
-        <div className={`card-footer border-t border-gray-200 pt-4 ${footerClassName}`}>
+        <div
+          className={`card-footer border-t border-gray-200 pt-4 ${footerClassName}`}
+        >
           {footer}
         </div>
       )}
@@ -144,26 +148,33 @@ export const SocialEventCard: React.FC<SocialEventCardProps> = ({
   onLeave,
   currentUserId,
   showActions = true,
-  className = ''
+  className = "",
 }) => {
-  const isUserJoined = currentUserId && event.miembros?.some(
-    (miembro: any) => miembro.usuario?._id === currentUserId || miembro.usuario === currentUserId
-  );
+  const isUserJoined =
+    currentUserId &&
+    event.miembros?.some(
+      (miembro: any) =>
+        miembro.usuario?._id === currentUserId ||
+        miembro.usuario === currentUserId
+    );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-AR', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("es-AR", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getCreatorName = () => {
-    if (!event.creador) return 'Usuario';
-    return `${event.creador.firstname || ''} ${event.creador.lastname || ''}`.trim() || 'Usuario';
+    if (!event.creador) return "Usuario";
+    return (
+      `${event.creador.firstname || ""} ${event.creador.lastname || ""}`.trim() ||
+      "Usuario"
+    );
   };
 
   const getMembersCount = () => {
@@ -171,9 +182,9 @@ export const SocialEventCard: React.FC<SocialEventCardProps> = ({
   };
 
   const getLocationText = () => {
-    if (!event.ubicacion) return 'Ubicación no especificada';
+    if (!event.ubicacion) return "Ubicación no especificada";
     const { address, city } = event.ubicacion;
-    return address || city || 'Ubicación no especificada';
+    return address || city || "Ubicación no especificada";
   };
 
   return (
@@ -193,9 +204,24 @@ export const SocialEventCard: React.FC<SocialEventCardProps> = ({
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
               </div>
             )}
@@ -269,11 +295,12 @@ export const SocialEventCard: React.FC<SocialEventCardProps> = ({
               Gratis
             </span>
           )}
-          {event.limitePersonas && getMembersCount() >= event.limitePersonas && (
-            <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
-              Completo
-            </span>
-          )}
+          {event.limitePersonas &&
+            getMembersCount() >= event.limitePersonas && (
+              <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                Completo
+              </span>
+            )}
         </div>
       </div>
     </CardLayout>
@@ -305,10 +332,13 @@ export const UserCard: React.FC<UserCardProps> = ({
   showRole = false,
   showEmail = false,
   actions,
-  className = ''
+  className = "",
 }) => {
   const getUserName = () => {
-    return `${user.firstname || ''} ${user.lastname || ''}`.trim() || 'Usuario sin nombre';
+    return (
+      `${user.firstname || ""} ${user.lastname || ""}`.trim() ||
+      "Usuario sin nombre"
+    );
   };
 
   const getUserImage = () => {
@@ -341,9 +371,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               {getUserName()}
             </h3>
             {showEmail && user.email && (
-              <p className="text-sm text-gray-600 truncate">
-                {user.email}
-              </p>
+              <p className="text-sm text-gray-600 truncate">{user.email}</p>
             )}
             {showRole && user.rol && (
               <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full mt-1">
@@ -353,11 +381,7 @@ export const UserCard: React.FC<UserCardProps> = ({
           </div>
 
           {/* Acciones */}
-          {actions && (
-            <div className="flex-shrink-0">
-              {actions}
-            </div>
-          )}
+          {actions && <div className="flex-shrink-0">{actions}</div>}
         </div>
       }
     />
@@ -371,11 +395,11 @@ export interface StatCardProps {
   title: string;
   value: string | number;
   icon?: React.ReactNode;
-  color?: 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'gray';
+  color?: "blue" | "green" | "red" | "yellow" | "purple" | "gray";
   trend?: {
     value: number;
     label?: string;
-    direction: 'up' | 'down' | 'neutral';
+    direction: "up" | "down" | "neutral";
   };
   onClick?: () => void;
   className?: string;
@@ -385,52 +409,74 @@ export const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
   icon,
-  color = 'blue',
+  color = "blue",
   trend,
   onClick,
-  className = ''
+  className = "",
 }) => {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-100',
-    green: 'text-green-600 bg-green-100',
-    red: 'text-red-600 bg-red-100',
-    yellow: 'text-yellow-600 bg-yellow-100',
-    purple: 'text-purple-600 bg-purple-100',
-    gray: 'text-gray-600 bg-gray-100'
+    blue: "text-blue-600 bg-blue-100",
+    green: "text-green-600 bg-green-100",
+    red: "text-red-600 bg-red-100",
+    yellow: "text-yellow-600 bg-yellow-100",
+    purple: "text-purple-600 bg-purple-100",
+    gray: "text-gray-600 bg-gray-100",
   };
 
   const trendIcons = {
     up: (
-      <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      <svg
+        className="h-4 w-4 text-green-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 10l7-7m0 0l7 7m-7-7v18"
+        />
       </svg>
     ),
     down: (
-      <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      <svg
+        className="h-4 w-4 text-red-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+        />
       </svg>
     ),
     neutral: (
-      <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+      <svg
+        className="h-4 w-4 text-gray-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 12h14"
+        />
       </svg>
-    )
+    ),
   };
 
   return (
-    <CardLayout
-      className={className}
-      onClick={onClick}
-      hoverable={!!onClick}
-    >
+    <CardLayout className={className} onClick={onClick} hoverable={!!onClick}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="text-2xl font-bold text-gray-900">
-            {value}
-          </div>
-          <div className="text-sm text-gray-600">
-            {title}
-          </div>
+          <div className="text-2xl font-bold text-gray-900">{value}</div>
+          <div className="text-sm text-gray-600">{title}</div>
           {trend && (
             <div className="flex items-center mt-2 text-xs">
               {trendIcons[trend.direction]}
@@ -442,9 +488,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           )}
         </div>
         {icon && (
-          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-            {icon}
-          </div>
+          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>{icon}</div>
         )}
       </div>
     </CardLayout>

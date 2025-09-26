@@ -84,7 +84,9 @@ export const authOptions: AuthOptions = {
         let existingUser = await User.findOne({ email: user.email });
 
         if (!existingUser) {
-          const [firstname, ...lastnameParts] = user.name?.trim().split(" ") || ["", ""];
+          const [firstname, ...lastnameParts] = user.name
+            ?.trim()
+            .split(" ") || ["", ""];
           const lastname = lastnameParts.join(" ");
 
           const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -110,12 +112,12 @@ export const authOptions: AuthOptions = {
       if (user) {
         await connectDB();
         const dbUser = await User.findOne({ email: user.email });
-        
+
         if (dbUser) {
           token.user = {
             id: dbUser._id.toString(),
             email: dbUser.email,
-            firstname: dbUser.firstname, 
+            firstname: dbUser.firstname,
             lastname: dbUser.lastname,
             rol: dbUser.rol,
             imagen: dbUser.imagen,

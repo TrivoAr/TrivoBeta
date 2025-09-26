@@ -49,7 +49,11 @@ type UsuarioCard = {
   };
 };
 
-type SearchResultCardProps = AcademiaCard | SalidaSocialCard | TeamSocialCard | UsuarioCard;
+type SearchResultCardProps =
+  | AcademiaCard
+  | SalidaSocialCard
+  | TeamSocialCard
+  | UsuarioCard;
 
 interface UnifiedSearchResultCardProps {
   type: "academia" | "salida" | "team-social";
@@ -75,10 +79,17 @@ const getDefaultImage = (type: string, disciplina?: string) => {
   };
 
   // Prioridad: disciplina específica > tipo de evento > imagen por defecto
-  return disciplinaImages[disciplina] || typeImages[type] || "/assets/Logo/Trivo T.png";
+  return (
+    disciplinaImages[disciplina] ||
+    typeImages[type] ||
+    "/assets/Logo/Trivo T.png"
+  );
 };
 
-export default function SearchResultCard({ type, data }: UnifiedSearchResultCardProps) {
+export default function SearchResultCard({
+  type,
+  data,
+}: UnifiedSearchResultCardProps) {
   const [imageError, setImageError] = useState(false);
   const [academiaImageUrl, setAcademiaImageUrl] = useState<string | null>(null);
 
@@ -171,7 +182,9 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "academia" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre_academia}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">
+                      {data.nombre_academia}
+                    </h3>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <Tag size={14} />
@@ -187,7 +200,9 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "salida" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">
+                      {data.nombre}
+                    </h3>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <MapPin size={14} />
@@ -207,7 +222,9 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
 
                 {type === "team-social" && (
                   <>
-                    <h3 className="font-bold text-lg mb-2 text-foreground">{data.nombre}</h3>
+                    <h3 className="font-bold text-lg mb-2 text-foreground">
+                      {data.nombre}
+                    </h3>
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground flex items-center gap-2">
                         <MapPin size={14} />
@@ -228,9 +245,5 @@ export default function SearchResultCard({ type, data }: UnifiedSearchResultCard
     );
   };
 
-  return (
-    <Link href={getHref()}>
-      {renderCard()}
-    </Link>
-  );
+  return <Link href={getHref()}>{renderCard()}</Link>;
 }

@@ -17,9 +17,9 @@ export async function GET(
 
     if (!sponsor) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "Sponsor no encontrado" 
+          error: "Sponsor no encontrado",
         },
         { status: 404 }
       );
@@ -28,16 +28,16 @@ export async function GET(
     return NextResponse.json(
       {
         success: true,
-        data: sponsor
+        data: sponsor,
       },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error obteniendo sponsor:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Error interno del servidor" 
+        error: "Error interno del servidor",
       },
       { status: 500 }
     );
@@ -56,9 +56,9 @@ export async function PUT(
 
     if (!name) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "El nombre es requerido" 
+          error: "El nombre es requerido",
         },
         { status: 400 }
       );
@@ -72,9 +72,9 @@ export async function PUT(
 
     if (!sponsor) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "Sponsor no encontrado" 
+          error: "Sponsor no encontrado",
         },
         { status: 404 }
       );
@@ -84,16 +84,16 @@ export async function PUT(
       {
         success: true,
         data: sponsor,
-        message: "Sponsor actualizado exitosamente"
+        message: "Sponsor actualizado exitosamente",
       },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error actualizando sponsor:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Error interno del servidor" 
+        error: "Error interno del servidor",
       },
       { status: 500 }
     );
@@ -112,9 +112,9 @@ export async function DELETE(
 
     if (!sponsor) {
       return NextResponse.json(
-        { 
+        {
           success: false,
-          error: "Sponsor no encontrado" 
+          error: "Sponsor no encontrado",
         },
         { status: 404 }
       );
@@ -123,16 +123,16 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: true,
-        message: "Sponsor eliminado exitosamente"
+        message: "Sponsor eliminado exitosamente",
       },
       { status: 200 }
     );
   } catch (error) {
     console.error("Error eliminando sponsor:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Error interno del servidor" 
+        error: "Error interno del servidor",
       },
       { status: 500 }
     );

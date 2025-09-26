@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 @import "leaflet/dist/leaflet.css";
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "../lib/theme/tokens.css";
-
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -28,7 +27,6 @@ body {
   z-index: 0 !important;
 }
 
-
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -37,7 +35,6 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 
 .form-input {
   width: 100%;
@@ -62,7 +59,6 @@ body {
   color: #ff9a3d;
 }
 
-
 .form-label {
   position: absolute;
   top: 12px;
@@ -73,34 +69,30 @@ body {
   pointer-events: none;
 }
 
-.EventModal{
-   background-color: rgba(111, 111, 111, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+.EventModal {
+  background-color: rgba(111, 111, 111, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.btnFondo{
-   background-color: #ffffff3e;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+.btnFondo {
+  background-color: #ffffff3e;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
-
 
 .relative {
   position: relative;
 }
 
-.portada{
-  background-image: linear-gradient(
-      0deg,
-      rgba(0,0,0,0.5),
-      rgba(0,0,0,0.5))
-
-      ,url(https://cdn-5f4f6e14c1ac180394b738c9.closte.com/wp-content/uploads/2018/03/01-1170x635.jpg);
-         background-size: cover;
-         background-repeat: no-repeat;
-         background-position: center center;
-         height: 100vh;
+.portada {
+  background-image:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url(https://cdn-5f4f6e14c1ac180394b738c9.closte.com/wp-content/uploads/2018/03/01-1170x635.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 100vh;
 }
 
 .scrollbar-hide {
@@ -111,38 +103,27 @@ body {
   display: none; /* Chrome, Safari y Opera */
 }
 
-
-.coverAcademias{
-  background-image: linear-gradient(
-      0deg,
-      rgba(0,0,0,0.5),
-      rgba(0,0,0,0.5))
-
-      ,url(https://i.pinimg.com/736x/fb/03/56/fb035687227a488c48f01fb929401851.jpg);
-         background-size: cover;
-         background-repeat: no-repeat;
-         background-position: center;
-
+.coverAcademias {
+  background-image:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url(https://i.pinimg.com/736x/fb/03/56/fb035687227a488c48f01fb929401851.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-.gruposCard{
-  background-image: linear-gradient(
-    0deg,
-    rgba(0,0,0,0.5),
-    rgba(0,0,0,0.5))
-
-    ,url(https://www.miguiadeturismo.ar/cdn/contenidos/75_visitar-parque-9-de-julio_foto1.png);
-       background-size: cover;
-       background-repeat: no-repeat;
-       background-position: center center;
-
+.gruposCard {
+  background-image:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url(https://www.miguiadeturismo.ar/cdn/contenidos/75_visitar-parque-9-de-julio_foto1.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
-.overlay{
-  background-color: rgba(0,0,0,0.7);
+.overlay {
+  background-color: rgba(0, 0, 0, 0.7);
 }
-
-
 
 @layer base {
   :root {
@@ -199,8 +180,6 @@ body {
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {

@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import React, { forwardRef } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import React, { forwardRef } from "react";
+import { useFormContext, Controller } from "react-hook-form";
 
 /**
  * Tipos para campos de formulario
  */
 export type FormFieldType =
-  | 'text'
-  | 'email'
-  | 'password'
-  | 'number'
-  | 'textarea'
-  | 'select'
-  | 'checkbox'
-  | 'radio'
-  | 'file'
-  | 'date'
-  | 'time'
-  | 'datetime-local';
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "textarea"
+  | "select"
+  | "checkbox"
+  | "radio"
+  | "file"
+  | "date"
+  | "time"
+  | "datetime-local";
 
 export interface FormFieldOption {
   value: string | number;
@@ -72,78 +72,80 @@ export interface BaseFormFieldProps {
 /**
  * Input base reutilizable
  */
-const BaseInput = forwardRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, any>(
-  ({ type, className, rows, options, multiple, ...props }, ref) => {
-    const baseClasses = "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed";
-    const errorClasses = "border-red-500 focus:ring-red-500 focus:border-red-500";
+const BaseInput = forwardRef<
+  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+  any
+>(({ type, className, rows, options, multiple, ...props }, ref) => {
+  const baseClasses =
+    "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed";
+  const errorClasses = "border-red-500 focus:ring-red-500 focus:border-red-500";
 
-    const finalClassName = `${baseClasses} ${props.error ? errorClasses : ''} ${className || ''}`;
+  const finalClassName = `${baseClasses} ${props.error ? errorClasses : ""} ${className || ""}`;
 
-    switch (type) {
-      case 'textarea':
-        return (
-          <textarea
-            ref={ref as React.Ref<HTMLTextAreaElement>}
-            className={finalClassName}
-            rows={rows || 3}
-            {...props}
-          />
-        );
+  switch (type) {
+    case "textarea":
+      return (
+        <textarea
+          ref={ref as React.Ref<HTMLTextAreaElement>}
+          className={finalClassName}
+          rows={rows || 3}
+          {...props}
+        />
+      );
 
-      case 'select':
-        return (
-          <select
-            ref={ref as React.Ref<HTMLSelectElement>}
-            className={finalClassName}
-            multiple={multiple}
-            {...props}
-          >
-            {options?.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
-                {option.label}
-              </option>
-            ))}
-          </select>
-        );
+    case "select":
+      return (
+        <select
+          ref={ref as React.Ref<HTMLSelectElement>}
+          className={finalClassName}
+          multiple={multiple}
+          {...props}
+        >
+          {options?.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
 
-      case 'checkbox':
-        return (
-          <input
-            ref={ref as React.Ref<HTMLInputElement>}
-            type="checkbox"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            {...props}
-          />
-        );
+    case "checkbox":
+      return (
+        <input
+          ref={ref as React.Ref<HTMLInputElement>}
+          type="checkbox"
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          {...props}
+        />
+      );
 
-      case 'radio':
-        return (
-          <input
-            ref={ref as React.Ref<HTMLInputElement>}
-            type="radio"
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-            {...props}
-          />
-        );
+    case "radio":
+      return (
+        <input
+          ref={ref as React.Ref<HTMLInputElement>}
+          type="radio"
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+          {...props}
+        />
+      );
 
-      default:
-        return (
-          <input
-            ref={ref as React.Ref<HTMLInputElement>}
-            type={type}
-            className={finalClassName}
-            {...props}
-          />
-        );
-    }
+    default:
+      return (
+        <input
+          ref={ref as React.Ref<HTMLInputElement>}
+          type={type}
+          className={finalClassName}
+          {...props}
+        />
+      );
   }
-);
+});
 
-BaseInput.displayName = 'BaseInput';
+BaseInput.displayName = "BaseInput";
 
 /**
  * Campo de formulario reutilizable con integración React Hook Form
@@ -151,26 +153,27 @@ BaseInput.displayName = 'BaseInput';
 export const BaseFormField: React.FC<BaseFormFieldProps> = ({
   name,
   label,
-  type = 'text',
+  type = "text",
   validation,
   renderCustomInput,
   className,
   ...inputProps
 }) => {
-  const { control, formState: { errors } } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
   const error = errors[name];
 
   return (
-    <div className={`form-field ${className || ''}`}>
+    <div className={`form-field ${className || ""}`}>
       {label && (
         <label
           htmlFor={name}
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           {label}
-          {validation?.required && (
-            <span className="text-red-500 ml-1">*</span>
-          )}
+          {validation?.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -190,7 +193,7 @@ export const BaseFormField: React.FC<BaseFormFieldProps> = ({
               type={type}
               id={name}
               error={fieldState.error}
-              aria-invalid={fieldState.error ? 'true' : 'false'}
+              aria-invalid={fieldState.error ? "true" : "false"}
               aria-describedby={fieldState.error ? `${name}-error` : undefined}
             />
           );
@@ -203,7 +206,8 @@ export const BaseFormField: React.FC<BaseFormFieldProps> = ({
           className="mt-1 text-sm text-red-600"
           role="alert"
         >
-          {(typeof error === 'string' ? error : (error as any)?.message) || 'Campo requerido'}
+          {(typeof error === "string" ? error : (error as any)?.message) ||
+            "Campo requerido"}
         </p>
       )}
     </div>
@@ -219,7 +223,7 @@ export interface RadioGroupProps {
   options: FormFieldOption[];
   required?: boolean;
   className?: string;
-  validation?: BaseFormFieldProps['validation'];
+  validation?: BaseFormFieldProps["validation"];
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -227,13 +231,16 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   label,
   options,
   validation,
-  className
+  className,
 }) => {
-  const { control, formState: { errors } } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
   const error = errors[name];
 
   return (
-    <div className={`form-field ${className || ''}`}>
+    <div className={`form-field ${className || ""}`}>
       {label && (
         <fieldset>
           <legend className="block text-sm font-medium text-gray-700 mb-2">
@@ -276,7 +283,8 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 
       {error && (
         <p className="mt-1 text-sm text-red-600" role="alert">
-          {(typeof error === 'string' ? error : (error as any)?.message) || 'Selección requerida'}
+          {(typeof error === "string" ? error : (error as any)?.message) ||
+            "Selección requerida"}
         </p>
       )}
     </div>
@@ -293,7 +301,7 @@ export interface FileFieldProps {
   multiple?: boolean;
   required?: boolean;
   className?: string;
-  validation?: BaseFormFieldProps['validation'];
+  validation?: BaseFormFieldProps["validation"];
   onFileChange?: (files: File[]) => void;
   showPreview?: boolean;
   maxSize?: number; // En MB
@@ -308,14 +316,19 @@ export const FileField: React.FC<FileFieldProps> = ({
   className,
   onFileChange,
   showPreview = false,
-  maxSize
+  maxSize,
 }) => {
-  const { control, formState: { errors } } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
   const error = errors[name];
 
   const validateFile = (files: File[]) => {
     if (maxSize) {
-      const oversizedFiles = files.filter(file => file.size > maxSize * 1024 * 1024);
+      const oversizedFiles = files.filter(
+        (file) => file.size > maxSize * 1024 * 1024
+      );
       if (oversizedFiles.length > 0) {
         return `Archivo(s) muy grande(s). Máximo ${maxSize}MB`;
       }
@@ -324,16 +337,14 @@ export const FileField: React.FC<FileFieldProps> = ({
   };
 
   return (
-    <div className={`form-field ${className || ''}`}>
+    <div className={`form-field ${className || ""}`}>
       {label && (
         <label
           htmlFor={name}
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           {label}
-          {validation?.required && (
-            <span className="text-red-500 ml-1">*</span>
-          )}
+          {validation?.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
@@ -348,8 +359,10 @@ export const FileField: React.FC<FileFieldProps> = ({
               const customResult = validation.validate(value);
               if (customResult !== true) return customResult;
             }
-            return validateFile(files.filter((f): f is File => f instanceof File));
-          }
+            return validateFile(
+              files.filter((f): f is File => f instanceof File)
+            );
+          },
         }}
         render={({ field: { onChange, value, ...field } }) => (
           <div>
@@ -390,7 +403,8 @@ export const FileField: React.FC<FileFieldProps> = ({
 
       {error && (
         <p className="mt-1 text-sm text-red-600" role="alert">
-          {(typeof error === 'string' ? error : (error as any)?.message) || 'Archivo requerido'}
+          {(typeof error === "string" ? error : (error as any)?.message) ||
+            "Archivo requerido"}
         </p>
       )}
     </div>

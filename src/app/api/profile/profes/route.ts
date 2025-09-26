@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     await connectDB();
 
     // Buscar todos los usuarios cuyo rol sea 'profe'
-    const profesores = await User.find({ rol: "profe" })
+    const profesores = await User.find({ rol: "profe" });
 
     if (!profesores || profesores.length === 0) {
       return NextResponse.json(

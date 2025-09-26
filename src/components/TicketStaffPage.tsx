@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-export default function TicketStaffPage({ params }: { params: { code: string } }) {
+export default function TicketStaffPage({
+  params,
+}: {
+  params: { code: string };
+}) {
   const { code } = params;
   const [state, setState] = useState<any>({ loading: true });
   const [redeeming, setRedeeming] = useState(false);
@@ -10,7 +14,9 @@ export default function TicketStaffPage({ params }: { params: { code: string } }
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+      const res = await fetch(`/api/tickets/verify/${code}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       setState({ loading: false, ...data });
     })();
@@ -33,7 +39,9 @@ export default function TicketStaffPage({ params }: { params: { code: string } }
       setMsg("✅ Canjeado correctamente");
     }
 
-    const res2 = await fetch(`/api/tickets/verify/${code}`, { cache: "no-store" });
+    const res2 = await fetch(`/api/tickets/verify/${code}`, {
+      cache: "no-store",
+    });
     setState({ loading: false, ...(await res2.json()) });
   }
 
@@ -43,7 +51,9 @@ export default function TicketStaffPage({ params }: { params: { code: string } }
   return (
     <main className="mx-auto max-w-[420px] min-h-dvh bg-neutral-50 flex flex-col">
       <header className="p-6">
-        <h2 className="text-sm font-medium text-slate-500">Control de acceso</h2>
+        <h2 className="text-sm font-medium text-slate-500">
+          Control de acceso
+        </h2>
         {state.salidaNombre && (
           <h1 className="mt-1 text-lg font-bold text-slate-900">
             {state.salidaNombre}
@@ -53,7 +63,9 @@ export default function TicketStaffPage({ params }: { params: { code: string } }
           {isIssued && "Entrada lista para canjear."}
           {isRedeemed &&
             `Ya fue canjeada el ${
-              state.redeemedAt ? new Date(state.redeemedAt).toLocaleString() : "-"
+              state.redeemedAt
+                ? new Date(state.redeemedAt).toLocaleString()
+                : "-"
             }`}
           {!isIssued && !isRedeemed && "El código es inválido o vencido."}
         </p>

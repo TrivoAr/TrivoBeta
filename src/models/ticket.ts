@@ -17,20 +17,38 @@
 
 // export type TicketDoc = InferSchemaType<typeof TicketSchema>;
 // export default models.Ticket || model("Ticket", TicketSchema);
-import mongoose, { Schema, InferSchemaType, models, model } from "mongoose";
+import { Schema, InferSchemaType, models, model } from "mongoose";
 
-const TicketSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  salidaId: { type: Schema.Types.ObjectId, ref: "SalidaSocial", required: true, index: true }, // 🔑
-  paymentRef: { type: String, index: true },
-  code: { type: String, required: true, unique: true, index: true },
-  status: { type: String, enum: ["issued", "redeemed", "invalid"], default: "issued", index: true },
-  issuedAt: { type: Date, default: Date.now },
-  redeemedAt: { type: Date },
-  redeemedBy: { type: Schema.Types.ObjectId, ref: "User" },
-  emailSentAt: { type: Date },
-  expiresAt: { type: Date }
-}, { timestamps: true });
+const TicketSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    salidaId: {
+      type: Schema.Types.ObjectId,
+      ref: "SalidaSocial",
+      required: true,
+      index: true,
+    }, // 🔑
+    paymentRef: { type: String, index: true },
+    code: { type: String, required: true, unique: true, index: true },
+    status: {
+      type: String,
+      enum: ["issued", "redeemed", "invalid"],
+      default: "issued",
+      index: true,
+    },
+    issuedAt: { type: Date, default: Date.now },
+    redeemedAt: { type: Date },
+    redeemedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    emailSentAt: { type: Date },
+    expiresAt: { type: Date },
+  },
+  { timestamps: true }
+);
 
 TicketSchema.index({ userId: 1, salidaId: 1 }, { unique: true });
 

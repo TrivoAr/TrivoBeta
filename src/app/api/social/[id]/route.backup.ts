@@ -49,7 +49,10 @@ export async function GET(
     console.log("Salida found:", salida ? salida.nombre : "not found");
     if (!salida) {
       console.log("Salida social no encontrada");
-      return NextResponse.json({ message: "Salida social no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Salida social no encontrada" },
+        { status: 404 }
+      );
     }
 
     // Convierte el documento a objeto plano
@@ -57,11 +60,14 @@ export async function GET(
 
     let imagenUrl;
     try {
-      imagenUrl = await getProfileImage("profile-image.jpg", salida.creador_id._id.toString());
+      imagenUrl = await getProfileImage(
+        "profile-image.jpg",
+        salida.creador_id._id.toString()
+      );
     } catch (error) {
       imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            salida.creador_id.firstname
-          )}&length=1&background=random&color=fff&size=128`;
+        salida.creador_id.firstname
+      )}&length=1&background=random&color=fff&size=128`;
     }
 
     // Reemplaza el creador_id con el objeto que quieres devolver
@@ -77,18 +83,11 @@ export async function GET(
 
     // Ahora sí, devuelves la respuesta correctamente
     return NextResponse.json(salidaObj, { status: 200 });
-
   } catch (error) {
     console.error("[GET_SALIDA_BY_ID]", error);
     return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }
-
-
-
-
-
-
 
 export async function PATCH(
   req: NextRequest,

@@ -1,36 +1,40 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next"; 
-import { authOptions } from "../../../libs/authOptions"; 
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../../libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import mongoose from "mongoose";
 
 // Modelo para tokens FCM
-const FCMTokenSchema = new mongoose.Schema({
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "User",
+const FCMTokenSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    token: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    device_info: {
+      userAgent: String,
+      platform: String,
+    },
   },
-  token: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  device_info: {
-    userAgent: String,
-    platform: String,
-  },
-}, {
-  timestamps: true
-});
+  {
+    timestamps: true,
+  }
+);
 
-const FCMToken = mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
+const FCMToken =
+  mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
 
 export async function POST(req: Request) {
   try {
     // Conectar a la base de datos
     await connectDB();
-    
+
     // Obtener la sesión del usuario
     const session = await getServerSession(authOptions);
 
@@ -44,16 +48,21 @@ export async function POST(req: Request) {
       user_id: session.user.id,
     });
 
-    return NextResponse.json({ 
-      subscribed: !!existingToken,
-      tokenCount: existingToken ? 1 : 0
-    }, { status: 200 });
-
+    return NextResponse.json(
+      {
+        subscribed: !!existingToken,
+        tokenCount: existingToken ? 1 : 0,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error verificando suscripción FCM:", error);
-    return NextResponse.json({ 
-      error: "Error verificando suscripción FCM",
-      subscribed: false 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Error verificando suscripción FCM",
+        subscribed: false,
+      },
+      { status: 500 }
+    );
   }
 }

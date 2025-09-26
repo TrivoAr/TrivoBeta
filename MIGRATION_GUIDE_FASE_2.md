@@ -3,6 +3,7 @@
 ## 🎯 **Cambios Implementados**
 
 ### ✅ **1. Hooks Personalizados Reutilizables**
+
 - `useFavorites` - Gestión completa de favoritos con autenticación
 - `useMembers` - Manejo de miembros de eventos con tiempo real
 - `useAsyncState` - Estado asíncrono genérico con manejo de errores
@@ -10,6 +11,7 @@
 - `useModal` - Estado de modales simplificado
 
 ### ✅ **2. Componentes Base Reutilizables**
+
 - `BaseCard` - Cards flexibles con múltiples variantes
 - `BaseModal` - Modales accesibles con focus trap
 - `BaseButton` - Botones con estados de carga y variantes
@@ -17,12 +19,14 @@
 - `BaseTextarea` - Área de texto con auto-resize
 
 ### ✅ **3. Sistema de Validación Unificado**
+
 - Reglas de validación reutilizables
 - Esquemas predefinidos para formularios comunes
 - Integración automática con `useForm`
 - Validación en tiempo real
 
 ### ✅ **4. Patrones de Composición**
+
 - Componentes completamente composables
 - Props interfaces consistentes
 - Patrones de diseño reutilizables
@@ -34,6 +38,7 @@
 ### **EventCard Component**
 
 #### **ANTES (280 líneas de código repetitivo):**
+
 ```tsx
 // ❌ Código con mucha lógica duplicada
 export default function EventCard({ event }: EventCardProps) {
@@ -76,7 +81,8 @@ export default function EventCard({ event }: EventCardProps) {
       try {
         const data = await fetchMiembros(event._id);
         const miembrosAprobados = data.filter(
-          (m: Miembro) => m.estado === "aprobado" || m.pago_id?.estado === "aprobado"
+          (m: Miembro) =>
+            m.estado === "aprobado" || m.pago_id?.estado === "aprobado"
         );
         setMiembros(miembrosAprobados);
       } catch (err) {
@@ -97,6 +103,7 @@ export default function EventCard({ event }: EventCardProps) {
 ```
 
 #### **DESPUÉS (80 líneas, lógica reutilizable):**
+
 ```tsx
 // ✅ Código limpio usando hooks y componentes base
 export default function EventCardRefactored({ event }: EventCardProps) {
@@ -108,24 +115,24 @@ export default function EventCardRefactored({ event }: EventCardProps) {
   const eventModal = useModal();
 
   // Favoritos con hook personalizado (toda la lógica encapsulada)
-  const { isFavorite, isLoading: favoritesLoading, toggleFavorite } = useFavorites(
-    'sociales',
-    event._id,
-    {
-      showLoginModal: loginModal.open,
-      onFavoriteChange: (isFav) => console.log('Favorite changed:', isFav)
-    }
-  );
+  const {
+    isFavorite,
+    isLoading: favoritesLoading,
+    toggleFavorite,
+  } = useFavorites("sociales", event._id, {
+    showLoginModal: loginModal.open,
+    onFavoriteChange: (isFav) => console.log("Favorite changed:", isFav),
+  });
 
   // Miembros con hook personalizado (auto-refresh incluido)
-  const { memberCount, availableSpots, isLoading: membersLoading } = useMembers(
-    event._id,
-    'social',
-    {
-      onlyApproved: true,
-      refreshInterval: 30000 // Auto-refresh cada 30 segundos
-    }
-  );
+  const {
+    memberCount,
+    availableSpots,
+    isLoading: membersLoading,
+  } = useMembers(event._id, "social", {
+    onlyApproved: true,
+    refreshInterval: 30000, // Auto-refresh cada 30 segundos
+  });
 
   return (
     <BaseCard
@@ -156,43 +163,45 @@ export default function EventCardRefactored({ event }: EventCardProps) {
 ### **1. Hooks Personalizados**
 
 #### **useFavorites Hook:**
+
 ```tsx
 const {
-  isFavorite,           // Estado actual
-  isLoading,           // Estado de carga
-  error,               // Error si existe
-  toggleFavorite,      // Función para alternar
-  refreshFavoriteStatus // Refrescar estado
+  isFavorite, // Estado actual
+  isLoading, // Estado de carga
+  error, // Error si existe
+  toggleFavorite, // Función para alternar
+  refreshFavoriteStatus, // Refrescar estado
 } = useFavorites(
-  'sociales',          // Tipo: 'sociales' | 'academias' | 'teamsocial'
-  eventId,             // ID del elemento
+  "sociales", // Tipo: 'sociales' | 'academias' | 'teamsocial'
+  eventId, // ID del elemento
   {
     showLoginModal: () => setShowLogin(true),
     onFavoriteChange: (isFav, itemId) => {
-      analytics.track('favorite_toggled', { itemId, isFavorite: isFav });
-    }
+      analytics.track("favorite_toggled", { itemId, isFavorite: isFav });
+    },
   }
 );
 ```
 
 #### **useMembers Hook:**
+
 ```tsx
 const {
-  members,             // Lista de miembros
-  approvedMembers,     // Solo miembros aprobados
-  pendingMembers,      // Miembros pendientes
-  isLoading,           // Estado de carga
-  memberCount,         // Cantidad total
-  availableSpots,      // Función para calcular cupos disponibles
-  refetch              // Refrescar datos
+  members, // Lista de miembros
+  approvedMembers, // Solo miembros aprobados
+  pendingMembers, // Miembros pendientes
+  isLoading, // Estado de carga
+  memberCount, // Cantidad total
+  availableSpots, // Función para calcular cupos disponibles
+  refetch, // Refrescar datos
 } = useMembers(
   eventId,
-  'social',            // 'social' | 'team-social'
+  "social", // 'social' | 'team-social'
   {
     onlyApproved: true,
-    refreshInterval: 30000,  // Auto-refresh cada 30s
+    refreshInterval: 30000, // Auto-refresh cada 30s
     onError: (error) => toast.error(error),
-    onMemberUpdate: (members) => analytics.track('members_updated')
+    onMemberUpdate: (members) => analytics.track("members_updated"),
   }
 );
 
@@ -201,52 +210,54 @@ const spots = availableSpots(totalSpots); // Calcula cupos disponibles
 ```
 
 #### **useAsyncState Hook:**
+
 ```tsx
 const {
-  data,                // Datos actuales
-  loading,             // Estado de carga
-  error,               // Error si existe
-  execute,             // Ejecutar operación async
-  setData,             // Establecer datos manualmente
-  reset,               // Resetear estado
-  hasData,             // Boolean si hay datos
-  hasError             // Boolean si hay error
+  data, // Datos actuales
+  loading, // Estado de carga
+  error, // Error si existe
+  execute, // Ejecutar operación async
+  setData, // Establecer datos manualmente
+  reset, // Resetear estado
+  hasData, // Boolean si hay datos
+  hasError, // Boolean si hay error
 } = useAsyncState<EventType[]>({
   onSuccess: (data) => toast.success(`Loaded ${data.length} events`),
-  onError: (error) => toast.error(error)
+  onError: (error) => toast.error(error),
 });
 
 // Uso
 const loadEvents = async () => {
   await execute(async () => {
-    const response = await fetch('/api/events');
-    if (!response.ok) throw new Error('Failed to load events');
+    const response = await fetch("/api/events");
+    if (!response.ok) throw new Error("Failed to load events");
     return response.json();
   });
 };
 ```
 
 #### **useForm Hook:**
+
 ```tsx
 const form = useForm({
-  initialValues: { name: '', email: '', message: '' },
+  initialValues: { name: "", email: "", message: "" },
   validation: ValidationSchemas.contactForm,
   onSubmit: async (values, helpers) => {
     try {
       await submitContactForm(values);
-      toast.success('Message sent!');
+      toast.success("Message sent!");
       helpers.resetForm();
     } catch (error) {
-      helpers.setFieldError('email', 'This email is already registered');
+      helpers.setFieldError("email", "This email is already registered");
     }
-  }
+  },
 });
 
 // Uso en JSX
 <form onSubmit={form.handleSubmit}>
-  <BaseInput {...form.getFieldProps('name')} label="Name" />
-  <BaseInput {...form.getFieldProps('email')} label="Email" type="email" />
-  <BaseTextarea {...form.getFieldProps('message')} label="Message" />
+  <BaseInput {...form.getFieldProps("name")} label="Name" />
+  <BaseInput {...form.getFieldProps("email")} label="Email" type="email" />
+  <BaseTextarea {...form.getFieldProps("message")} label="Message" />
 
   <BaseButton
     type="submit"
@@ -255,22 +266,23 @@ const form = useForm({
   >
     Send Message
   </BaseButton>
-</form>
+</form>;
 ```
 
 ### **2. Componentes Base**
 
 #### **BaseCard Component:**
+
 ```tsx
 <BaseCard
   image="/event-image.jpg"
   imageAlt="Event Image"
   title="Event Title"
   subtitle="Event description"
-  variant="elevated"          // "default" | "bordered" | "elevated" | "flat"
-  size="default"              // "sm" | "default" | "lg"
+  variant="elevated" // "default" | "bordered" | "elevated" | "flat"
+  size="default" // "sm" | "default" | "lg"
   clickable
-  onClick={() => router.push('/event/123')}
+  onClick={() => router.push("/event/123")}
   badge={<Badge>New</Badge>}
   actions={
     <IconButton
@@ -291,6 +303,7 @@ const form = useForm({
 ```
 
 #### **BaseButton Component:**
+
 ```tsx
 // Botón básico
 <BaseButton variant="primary" size="lg" onClick={handleSubmit}>
@@ -326,6 +339,7 @@ const form = useForm({
 ```
 
 #### **BaseInput Component:**
+
 ```tsx
 // Input básico
 <BaseInput
@@ -363,6 +377,7 @@ const form = useForm({
 ```
 
 #### **BaseModal Component:**
+
 ```tsx
 // Modal básico
 <BaseModal
@@ -402,57 +417,57 @@ const form = useForm({
 ### **3. Sistema de Validación**
 
 #### **Reglas de Validación Predefinidas:**
+
 ```tsx
-import { ValidationRules, ValidationSchemas, FieldValidations } from '@/libs/validation';
+import {
+  ValidationRules,
+  ValidationSchemas,
+  FieldValidations,
+} from "@/libs/validation";
 
 // Reglas individuales
 const nameValidation = [
   ValidationRules.required(),
   ValidationRules.minLength(2),
-  ValidationRules.maxLength(50)
+  ValidationRules.maxLength(50),
 ];
 
-const emailValidation = [
-  ValidationRules.required(),
-  ValidationRules.email()
-];
+const emailValidation = [ValidationRules.required(), ValidationRules.email()];
 
 const passwordValidation = [
   ValidationRules.required(),
   ValidationRules.minLength(8),
   ValidationRules.pattern(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-    'Debe contener al menos una minúscula, una mayúscula y un número'
-  )
+    "Debe contener al menos una minúscula, una mayúscula y un número"
+  ),
 ];
 
 // Esquemas predefinidos
 const userForm = useForm({
-  initialValues: { firstname: '', lastname: '', email: '', password: '' },
-  validation: ValidationSchemas.userRegistration
+  initialValues: { firstname: "", lastname: "", email: "", password: "" },
+  validation: ValidationSchemas.userRegistration,
 });
 
 const eventForm = useForm({
-  initialValues: { nombre: '', fecha: '', hora: '', ubicacion: '', cupo: '' },
-  validation: ValidationSchemas.eventCreation
+  initialValues: { nombre: "", fecha: "", hora: "", ubicacion: "", cupo: "" },
+  validation: ValidationSchemas.eventCreation,
 });
 ```
 
 #### **Validaciones Personalizadas:**
+
 ```tsx
 // Validación personalizada
-const customValidation = ValidationRules.custom(
-  (value, formData) => {
-    // Validar que la fecha de fin sea posterior a la de inicio
-    return new Date(value) > new Date(formData.startDate);
-  },
-  'La fecha de fin debe ser posterior a la de inicio'
-);
+const customValidation = ValidationRules.custom((value, formData) => {
+  // Validar que la fecha de fin sea posterior a la de inicio
+  return new Date(value) > new Date(formData.startDate);
+}, "La fecha de fin debe ser posterior a la de inicio");
 
 // Validación de archivo de imagen
 const imageValidation = [
-  ValidationRules.fileType(['image/jpeg', 'image/png'], 'Solo JPG y PNG'),
-  ValidationRules.fileSize(5, 'Máximo 5MB')
+  ValidationRules.fileType(["image/jpeg", "image/png"], "Solo JPG y PNG"),
+  ValidationRules.fileSize(5, "Máximo 5MB"),
 ];
 ```
 
@@ -461,6 +476,7 @@ const imageValidation = [
 ## 🔄 **Guía de Migración Paso a Paso**
 
 ### **Paso 1: Identificar Patrones Repetitivos**
+
 ```bash
 # Buscar componentes que usan lógica similar
 grep -r "useState.*favorito" src/components/
@@ -469,6 +485,7 @@ grep -r "axios.post.*favoritos" src/components/
 ```
 
 ### **Paso 2: Migrar Estado a Hooks**
+
 ```tsx
 // ❌ Antes
 const [esFavorito, setEsFavorito] = useState(false);
@@ -482,10 +499,14 @@ useEffect(() => {
 }, [eventId]);
 
 // ✅ Después
-const { isFavorite, isLoading, toggleFavorite } = useFavorites('sociales', eventId);
+const { isFavorite, isLoading, toggleFavorite } = useFavorites(
+  "sociales",
+  eventId
+);
 ```
 
 ### **Paso 3: Reemplazar UI con Componentes Base**
+
 ```tsx
 // ❌ Antes
 <div className="rounded-2xl overflow-hidden shadow-md bg-white w-[360px]">
@@ -519,9 +540,10 @@ const { isFavorite, isLoading, toggleFavorite } = useFavorites('sociales', event
 ```
 
 ### **Paso 4: Migrar Formularios**
+
 ```tsx
 // ❌ Antes
-const [formData, setFormData] = useState({ name: '', email: '' });
+const [formData, setFormData] = useState({ name: "", email: "" });
 const [errors, setErrors] = useState({});
 const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -531,8 +553,8 @@ const handleSubmit = async (e) => {
 
   // Validación manual
   const newErrors = {};
-  if (!formData.name) newErrors.name = 'Name is required';
-  if (!formData.email) newErrors.email = 'Email is required';
+  if (!formData.name) newErrors.name = "Name is required";
+  if (!formData.email) newErrors.email = "Email is required";
 
   if (Object.keys(newErrors).length > 0) {
     setErrors(newErrors);
@@ -551,14 +573,17 @@ const handleSubmit = async (e) => {
 
 // ✅ Después
 const form = useForm({
-  initialValues: { name: '', email: '' },
+  initialValues: { name: "", email: "" },
   validation: {
-    name: { rules: [ValidationRules.required()], value: '' },
-    email: { rules: [ValidationRules.required(), ValidationRules.email()], value: '' }
+    name: { rules: [ValidationRules.required()], value: "" },
+    email: {
+      rules: [ValidationRules.required(), ValidationRules.email()],
+      value: "",
+    },
   },
   onSubmit: async (values) => {
     await submitForm(values);
-  }
+  },
 });
 ```
 
@@ -567,16 +592,19 @@ const form = useForm({
 ## 📊 **Beneficios Medidos**
 
 ### **Reducción de Código:**
+
 - **EventCard**: 280 líneas → 80 líneas (**71% reducción**)
 - **Lógica de favoritos**: Reutilizable en todos los componentes
 - **Manejo de estado**: Consistente y predecible
 
 ### **Mejoras en Mantenibilidad:**
+
 - **Lógica centralizada**: Bugs se arreglan una vez para todos los componentes
 - **Testing más fácil**: Hooks aislados y testeable independientemente
 - **Consistencia UI**: Todos los componentes usan la misma base
 
 ### **Nuevas Funcionalidades Automáticas:**
+
 - **Auto-refresh** en listas de miembros
 - **Estados de carga** en todas las interacciones
 - **Manejo de errores** unificado
@@ -595,6 +623,7 @@ Con la Fase 2 completada, puedes:
 4. **Mantener consistencia** en toda la aplicación
 
 ### **Componentes Prioritarios para Migrar:**
+
 1. `Dashboard/DashboardCard.tsx` → Usar `BaseCard`
 2. `Modals/LoginModal.tsx` → Usar `BaseModal`
 3. Formularios de creación → Usar `useForm` + `BaseInput`

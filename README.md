@@ -73,5 +73,3 @@ Este proyecto está bajo la licencia MIT. Puedes ver más detalles en el archivo
 ---
 
 ¡Gracias por contribuir a Klubo MVP!
-
-

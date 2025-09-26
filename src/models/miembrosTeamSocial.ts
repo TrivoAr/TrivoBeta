@@ -26,5 +26,7 @@ const MiembroTeamSocialSchema = new Schema(
 );
 
 // 👇 este nombre tiene que ser el correcto
-const MiembroTeamSocial = models.MiembroTeamSocial || model("MiembroTeamSocial", MiembroTeamSocialSchema);
+const MiembroTeamSocial =
+  models.MiembroTeamSocial ||
+  model("MiembroTeamSocial", MiembroTeamSocialSchema);
 export default MiembroTeamSocial;

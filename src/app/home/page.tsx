@@ -33,13 +33,13 @@ type EventType = {
     lng: number;
   };
   teacher: string;
-    dificultad?: string;
-  stravaMap?:{
-        id:  string,
-        summary_polyline: string,
-        polyline: string,
-        resource_state: number,
-  }
+  dificultad?: string;
+  stravaMap?: {
+    id: string;
+    summary_polyline: string;
+    polyline: string;
+    resource_state: number;
+  };
   cupo: number;
 };
 
@@ -223,14 +223,6 @@ export default function Home() {
     return eventDate >= today;
   });
 
- 
-
-
-
-
-
-
-
   return (
     <>
       <Toaster position="top-center" />
@@ -240,26 +232,29 @@ export default function Home() {
           setSelectedLocalidad={setSelectedLocalidad}
         />
 
-      <section className="flex flex-col gap-3">
-        <h1 className="text-xl font-medium">Proximas salidas</h1>
+        <section className="flex flex-col gap-3">
+          <h1 className="text-xl font-medium">Proximas salidas</h1>
 
-
-        {futureEvents.length > 0 ? (futureEvents.map((event) => (
-          <EventCard
-            key={event._id}
-            event={event}
-            onJoin={(e) => console.log("Unido a:", e.title)}
-            onMap={(coords) =>
-              console.log("Abrir mapa en:", coords.lat, coords.lng)
-            }
-          />
-        ))) : (<EmptyState title ="Sin salidas disponibles"
-  description= "Una vez que carguemos salidas, las vas a ver acá." imageSrc="/assets/icons/emptyTrekking.png"></EmptyState>) }
-
-
-
-      </section>
-      <div className="pb-[200px]"></div>
+          {futureEvents.length > 0 ? (
+            futureEvents.map((event) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                onJoin={(e) => console.log("Unido a:", e.title)}
+                onMap={(coords) =>
+                  console.log("Abrir mapa en:", coords.lat, coords.lng)
+                }
+              />
+            ))
+          ) : (
+            <EmptyState
+              title="Sin salidas disponibles"
+              description="Una vez que carguemos salidas, las vas a ver acá."
+              imageSrc="/assets/icons/emptyTrekking.png"
+            ></EmptyState>
+          )}
+        </section>
+        <div className="pb-[200px]"></div>
 
         <EventModal
           isOpen={isModalOpen}

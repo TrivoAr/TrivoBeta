@@ -3,9 +3,9 @@
   --theme-bg-secondary: hsl(var(--card));
   --theme-text-primary: hsl(var(--foreground));
   --theme-text-secondary: hsl(var(--muted-foreground));
-  --theme-accent-primary: #ea580c;
-  --theme-accent-secondary: #f97316;
-  --theme-glow: 0 0 20px rgba(249, 115, 22, 0.1);
+  --theme-accent-primary: #c95100;
+  --theme-accent-secondary: #b8470f;
+  --theme-glow: 0 0 20px rgba(201, 81, 0, 0.1);
 }
 
 [data-theme="night"] {
@@ -14,7 +14,7 @@
   --theme-text-primary: #e2e8f0;
   --theme-text-secondary: #94a3b8;
   --theme-accent-primary: #069494;
-  --theme-accent-secondary: #01796F;
+  --theme-accent-secondary: #01796f;
   --theme-glow: 0 0 20px rgba(6, 148, 148, 0.2);
 }
 
@@ -86,13 +86,21 @@
 
 .night-badge {
   @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full;
-  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent-primary),
+    var(--theme-accent-secondary)
+  );
   color: white;
   box-shadow: var(--theme-glow);
 }
 
 .seasonal-gradient {
-  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--theme-accent-primary),
+    var(--theme-accent-secondary)
+  );
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -110,16 +118,32 @@
 }
 
 @keyframes night-pulse {
-  0% { box-shadow: var(--theme-glow); }
-  100% { box-shadow: 0 0 30px rgba(6, 148, 148, 0.4); }
+  0% {
+    box-shadow: var(--theme-glow);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(6, 148, 148, 0.4);
+  }
 }
 
 @keyframes halloween-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 @keyframes sparkle {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.9; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
 }

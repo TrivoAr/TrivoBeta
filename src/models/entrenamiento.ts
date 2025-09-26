@@ -28,7 +28,7 @@ const EntrenamientoSchema = new Schema(
     estado: {
       type: String,
       required: true,
-      default: "gris"
+      default: "gris",
     },
   },
   {
@@ -36,5 +36,6 @@ const EntrenamientoSchema = new Schema(
   }
 );
 
-const Entrenamiento = models.Entrenamiento || model("Entrenamiento", EntrenamientoSchema);
+const Entrenamiento =
+  models.Entrenamiento || model("Entrenamiento", EntrenamientoSchema);
 export default Entrenamiento;

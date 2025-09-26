@@ -1,12 +1,26 @@
 // Server-side middleware utilities
 
-import { NextRequest } from 'next/server';
-import { ZodSchema } from 'zod';
+import { NextRequest } from "next/server";
+import { ZodSchema } from "zod";
 // Type imports
-type UserRole = 'admin' | 'trainer' | 'user' | 'alumno';
-type Resource = 'social-events' | 'team-events' | 'academias' | 'users' | 'payments' | 'sponsors' | 'members';
-type Permission = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'approve' | 'export';
-import { ApiContext } from './ApiHandler.standalone';
+type UserRole = "admin" | "trainer" | "user" | "alumno";
+type Resource =
+  | "social-events"
+  | "team-events"
+  | "academias"
+  | "users"
+  | "payments"
+  | "sponsors"
+  | "members";
+type Permission =
+  | "create"
+  | "read"
+  | "update"
+  | "delete"
+  | "manage"
+  | "approve"
+  | "export";
+import { ApiContext } from "./ApiHandler.standalone";
 
 /**
  * Middleware function type
@@ -52,7 +66,9 @@ export const Middlewares = {
   requireAuth: (): Middleware => {
     return async (req, context, next) => {
       // Dynamic import to avoid circular dependencies
-      const { AuthorizationManager } = await import('@/libs/auth/AuthorizationManager');
+      const { AuthorizationManager } = await import(
+        "@/libs/auth/AuthorizationManager"
+      );
       const { session, user } = await AuthorizationManager.requireAuth();
       context.session = session;
       context.user = user;
@@ -66,11 +82,13 @@ export const Middlewares = {
   requireRole: (roles: UserRole[]): Middleware => {
     return async (req, context, next) => {
       if (!context.user) {
-        throw new Error('Authentication required');
+        throw new Error("Authentication required");
       }
 
       if (!roles.includes(context.user.role)) {
-        throw new Error(`Access denied. Required roles: ${roles.join(', ')}. User role: ${context.user.role}`);
+        throw new Error(
+          `Access denied. Required roles: ${roles.join(", ")}. User role: ${context.user.role}`
+        );
       }
 
       await next();
@@ -83,11 +101,14 @@ export const Middlewares = {
   requirePermission: (
     resource: Resource,
     permission: Permission,
-    getResourceOwnerId?: (req: NextRequest, context: ApiContext) => Promise<string | undefined>
+    getResourceOwnerId?: (
+      req: NextRequest,
+      context: ApiContext
+    ) => Promise<string | undefined>
   ): Middleware => {
     return async (req, context, next) => {
       if (!context.user) {
-        throw new Error('Authentication required');
+        throw new Error("Authentication required");
       }
 
       let resourceOwnerId: string | undefined;
@@ -96,8 +117,14 @@ export const Middlewares = {
       }
 
       // Dynamic import to avoid circular dependencies
-      const { AuthorizationManager } = await import('@/libs/auth/AuthorizationManager');
-      await AuthorizationManager.requirePermission(resource, permission, resourceOwnerId);
+      const { AuthorizationManager } = await import(
+        "@/libs/auth/AuthorizationManager"
+      );
+      await AuthorizationManager.requirePermission(
+        resource,
+        permission,
+        resourceOwnerId
+      );
       await next();
     };
   },
@@ -107,7 +134,7 @@ export const Middlewares = {
    */
   validateBody: (schema: ZodSchema): Middleware => {
     return async (req, context, next) => {
-      if (['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
+      if (["POST", "PUT", "PATCH"].includes(req.method || "")) {
         try {
           const body = await req.json();
           const validatedBody = schema.parse(body);
@@ -170,13 +197,19 @@ export const Middlewares = {
   /**
    * CORS middleware
    */
-  cors: (options: {
-    origin?: string | string[];
-    methods?: string[];
-    credentials?: boolean;
-  } = {}): Middleware => {
+  cors: (
+    options: {
+      origin?: string | string[];
+      methods?: string[];
+      credentials?: boolean;
+    } = {}
+  ): Middleware => {
     return async (req, context, next) => {
-      const { origin, methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], credentials = true } = options;
+      const {
+        origin,
+        methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials = true,
+      } = options;
 
       // CORS headers are typically handled at the response level
       // This middleware can be used to set CORS-related context
@@ -204,7 +237,9 @@ export const Middlewares = {
 
       const key = keyGenerator
         ? keyGenerator(req)
-        : req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+        : req.headers.get("x-forwarded-for") ||
+          req.headers.get("x-real-ip") ||
+          "unknown";
 
       const now = Date.now();
       const record = store.get(key);
@@ -212,7 +247,7 @@ export const Middlewares = {
       if (!record || now > record.resetTime) {
         store.set(key, { count: 1, resetTime: now + windowMs });
       } else if (record.count >= maxRequests) {
-        throw new Error('Rate limit exceeded');
+        throw new Error("Rate limit exceeded");
       } else {
         record.count++;
       }
@@ -224,22 +259,28 @@ export const Middlewares = {
   /**
    * Logging middleware
    */
-  logging: (options: {
-    logLevel?: 'info' | 'debug' | 'warn' | 'error';
-    includeBody?: boolean;
-    includeHeaders?: boolean;
-  } = {}): Middleware => {
+  logging: (
+    options: {
+      logLevel?: "info" | "debug" | "warn" | "error";
+      includeBody?: boolean;
+      includeHeaders?: boolean;
+    } = {}
+  ): Middleware => {
     return async (req, context, next) => {
-      const { logLevel = 'info', includeBody = false, includeHeaders = false } = options;
+      const {
+        logLevel = "info",
+        includeBody = false,
+        includeHeaders = false,
+      } = options;
       const startTime = Date.now();
 
       const logData: any = {
         method: req.method,
         url: req.url,
-        userAgent: req.headers.get('user-agent'),
-        ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip'),
+        userAgent: req.headers.get("user-agent"),
+        ip: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip"),
         userId: context.user?.id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       if (includeHeaders) {
@@ -250,7 +291,7 @@ export const Middlewares = {
         logData.headers = Object.fromEntries(headersArray);
       }
 
-      if (includeBody && ['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
+      if (includeBody && ["POST", "PUT", "PATCH"].includes(req.method || "")) {
         try {
           const body = await req.clone().json();
           logData.body = body;
@@ -264,7 +305,9 @@ export const Middlewares = {
       try {
         await next();
         const duration = Date.now() - startTime;
-        console.log(`[API ${logLevel.toUpperCase()}] Request completed in ${duration}ms`);
+        console.log(
+          `[API ${logLevel.toUpperCase()}] Request completed in ${duration}ms`
+        );
       } catch (error) {
         const duration = Date.now() - startTime;
         console.error(`[API ERROR] Request failed after ${duration}ms:`, error);
@@ -285,7 +328,7 @@ export const Middlewares = {
 
     return async (req, context, next) => {
       // Only cache GET requests by default
-      if (req.method !== 'GET') {
+      if (req.method !== "GET") {
         await next();
         return;
       }
@@ -299,7 +342,7 @@ export const Middlewares = {
 
       const key = keyGenerator
         ? keyGenerator(req, context)
-        : `${req.method}:${req.url}:${context.user?.id || 'anonymous'}`;
+        : `${req.method}:${req.url}:${context.user?.id || "anonymous"}`;
 
       const now = Date.now();
       const cached = cache.get(key);
@@ -320,11 +363,11 @@ export const Middlewares = {
       if (context.meta?.responseData) {
         cache.set(key, {
           data: context.meta.responseData,
-          expires: now + ttl
+          expires: now + ttl,
         });
       }
     };
-  }
+  },
 } as const;
 
 /**
@@ -334,24 +377,27 @@ export const MiddlewarePresets = {
   /**
    * Standard authenticated API middleware
    */
-  authenticated: () => new MiddlewareComposer()
-    .use(Middlewares.requireAuth())
-    .use(Middlewares.logging()),
+  authenticated: () =>
+    new MiddlewareComposer()
+      .use(Middlewares.requireAuth())
+      .use(Middlewares.logging()),
 
   /**
    * Admin-only middleware
    */
-  adminOnly: () => new MiddlewareComposer()
-    .use(Middlewares.requireAuth())
-    .use(Middlewares.requireRole(['admin']))
-    .use(Middlewares.logging()),
+  adminOnly: () =>
+    new MiddlewareComposer()
+      .use(Middlewares.requireAuth())
+      .use(Middlewares.requireRole(["admin"]))
+      .use(Middlewares.logging()),
 
   /**
    * Public API with rate limiting
    */
-  publicWithRateLimit: (windowMs = 60000, maxRequests = 100) => new MiddlewareComposer()
-    .use(Middlewares.rateLimit({ windowMs, maxRequests }))
-    .use(Middlewares.logging()),
+  publicWithRateLimit: (windowMs = 60000, maxRequests = 100) =>
+    new MiddlewareComposer()
+      .use(Middlewares.rateLimit({ windowMs, maxRequests }))
+      .use(Middlewares.logging()),
 
   /**
    * CRUD operation middleware
@@ -359,25 +405,25 @@ export const MiddlewarePresets = {
   crud: (resource: Resource) => ({
     create: new MiddlewareComposer()
       .use(Middlewares.requireAuth())
-      .use(Middlewares.requirePermission(resource, 'create'))
+      .use(Middlewares.requirePermission(resource, "create"))
       .use(Middlewares.logging()),
 
     read: new MiddlewareComposer()
       .use(Middlewares.requireAuth())
-      .use(Middlewares.requirePermission(resource, 'read'))
+      .use(Middlewares.requirePermission(resource, "read"))
       .use(Middlewares.cache({ ttl: 5 * 60 * 1000 })) // 5 minutes cache
       .use(Middlewares.logging()),
 
     update: new MiddlewareComposer()
       .use(Middlewares.requireAuth())
-      .use(Middlewares.requirePermission(resource, 'update'))
+      .use(Middlewares.requirePermission(resource, "update"))
       .use(Middlewares.logging()),
 
     delete: new MiddlewareComposer()
       .use(Middlewares.requireAuth())
-      .use(Middlewares.requirePermission(resource, 'delete'))
-      .use(Middlewares.logging())
-  })
+      .use(Middlewares.requirePermission(resource, "delete"))
+      .use(Middlewares.logging()),
+  }),
 } as const;
 
 /**
@@ -387,19 +433,22 @@ export const withMiddleware = (
   handler: (req: NextRequest, context: ApiContext) => Promise<any>,
   ...middlewares: Middleware[]
 ) => {
-  return async (req: NextRequest, routeContext?: { params: Record<string, string> }) => {
+  return async (
+    req: NextRequest,
+    routeContext?: { params: Record<string, string> }
+  ) => {
     const context: ApiContext = {
-      params: routeContext?.params || {}
+      params: routeContext?.params || {},
     };
 
     const composer = new MiddlewareComposer();
-    middlewares.forEach(middleware => composer.use(middleware));
+    middlewares.forEach((middleware) => composer.use(middleware));
 
     try {
       await composer.execute(req, context);
       return await handler(req, context);
     } catch (error) {
-      console.error('Middleware execution failed:', error);
+      console.error("Middleware execution failed:", error);
       throw error;
     }
   };

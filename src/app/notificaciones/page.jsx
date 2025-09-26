@@ -11,105 +11,108 @@ const NotificacionesPage = () => {
   const [loading, setLoading] = useState(true);
   const [estimatedCount, setEstimatedCount] = useState(3); // Estimado inicial
 
-useEffect(() => {
-  const fetchNotificaciones = async () => {
-    try {
-      // Primero hacer una llamada rápida para obtener conteos aproximados
-      const quickCount = async () => {
-        try {
-          const [notiRes, solRes] = await Promise.all([
-            axios.get("/api/notificaciones"),
-            axios.get("/api/academias/solicitudes"),
-          ]);
-          
-          const notificaciones = notiRes.data || [];
-          const solicitudes = solRes.data?.filter(s => s.estado === "pendiente") || [];
-          
-          // Filtrar por los últimos 3 días para estimado
-          const tresDiasAtras = new Date();
-          tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
-          
-          const recentNotifications = notificaciones.filter(n => {
-            const fecha = new Date(n.createdAt);
-            return fecha >= tresDiasAtras;
-          });
-          
-          const totalEstimated = recentNotifications.length + solicitudes.length;
-          setEstimatedCount(Math.max(totalEstimated, 2)); // Mínimo 2 skeletons
-          
-          return { notificaciones, solicitudes: solRes.data || [] };
-        } catch (error) {
-          setEstimatedCount(3); // Fallback
-          throw error;
-        }
-      };
+  useEffect(() => {
+    const fetchNotificaciones = async () => {
+      try {
+        // Primero hacer una llamada rápida para obtener conteos aproximados
+        const quickCount = async () => {
+          try {
+            const [notiRes, solRes] = await Promise.all([
+              axios.get("/api/notificaciones"),
+              axios.get("/api/academias/solicitudes"),
+            ]);
 
-      const { notificaciones, solicitudes: solicitudesData } = await quickCount();
+            const notificaciones = notiRes.data || [];
+            const solicitudes =
+              solRes.data?.filter((s) => s.estado === "pendiente") || [];
 
-      const [notiRes, solRes] = await Promise.all([
-        Promise.resolve({ data: notificaciones }),
-        Promise.resolve({ data: solicitudesData }),
-      ]);
+            // Filtrar por los últimos 3 días para estimado
+            const tresDiasAtras = new Date();
+            tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
 
-      const notificacionesNormales = notiRes.data.map((n) => ({
-        ...n,
-        tipo: "notificacion",
-      }));
+            const recentNotifications = notificaciones.filter((n) => {
+              const fecha = new Date(n.createdAt);
+              return fecha >= tresDiasAtras;
+            });
 
-      const solicitudes = solRes.data
-        .filter((s) => s.estado === "pendiente")
-        .map((s) => ({
-          _id: s._id,
-          userId: s.user_id, // Asegúrate de que esto sea correcto
-          tipo: "solicitud",
-          nombre: s.nombre,
-          mensaje: "quiere unirse a tu academia",
-          imagen: s.imagen,
-          createdAt: s.createdAt, // ✅ Usá la real si ya viene del backend
-          read: false,
-          solicitud: s,
+            const totalEstimated =
+              recentNotifications.length + solicitudes.length;
+            setEstimatedCount(Math.max(totalEstimated, 2)); // Mínimo 2 skeletons
+
+            return { notificaciones, solicitudes: solRes.data || [] };
+          } catch (error) {
+            setEstimatedCount(3); // Fallback
+            throw error;
+          }
+        };
+
+        const { notificaciones, solicitudes: solicitudesData } =
+          await quickCount();
+
+        const [notiRes, solRes] = await Promise.all([
+          Promise.resolve({ data: notificaciones }),
+          Promise.resolve({ data: solicitudesData }),
+        ]);
+
+        const notificacionesNormales = notiRes.data.map((n) => ({
+          ...n,
+          tipo: "notificacion",
         }));
 
-      // ✅ Combinar y ordenar por fecha descendente
-      const todas = [...notificacionesNormales, ...solicitudes].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+        const solicitudes = solRes.data
+          .filter((s) => s.estado === "pendiente")
+          .map((s) => ({
+            _id: s._id,
+            userId: s.user_id, // Asegúrate de que esto sea correcto
+            tipo: "solicitud",
+            nombre: s.nombre,
+            mensaje: "quiere unirse a tu academia",
+            imagen: s.imagen,
+            createdAt: s.createdAt, // ✅ Usá la real si ya viene del backend
+            read: false,
+            solicitud: s,
+          }));
 
-      // Filtrar notificaciones de los últimos 3 días
-      const tresDiasAtras = new Date();
-      tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
-      
-      const notificacionesRecientes = [];
-      const notificacionesAntiguas = [];
-      
-      todas.forEach(notificacion => {
-        const fechaNotificacion = new Date(notificacion.createdAt);
-        if (fechaNotificacion >= tresDiasAtras) {
-          notificacionesRecientes.push(notificacion);
-        } else if (!notificacion.read && notificacion.tipo === "notificacion") {
-          // Solo marcar como leídas las notificaciones normales, no las solicitudes
-          notificacionesAntiguas.push(notificacion._id);
+        // ✅ Combinar y ordenar por fecha descendente
+        const todas = [...notificacionesNormales, ...solicitudes].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+        // Filtrar notificaciones de los últimos 3 días
+        const tresDiasAtras = new Date();
+        tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
+
+        const notificacionesRecientes = [];
+        const notificacionesAntiguas = [];
+
+        todas.forEach((notificacion) => {
+          const fechaNotificacion = new Date(notificacion.createdAt);
+          if (fechaNotificacion >= tresDiasAtras) {
+            notificacionesRecientes.push(notificacion);
+          } else if (
+            !notificacion.read &&
+            notificacion.tipo === "notificacion"
+          ) {
+            // Solo marcar como leídas las notificaciones normales, no las solicitudes
+            notificacionesAntiguas.push(notificacion._id);
+          }
+        });
+
+        // Marcar como leídas las notificaciones antiguas en segundo plano
+        if (notificacionesAntiguas.length > 0) {
+          markMultipleAsRead(notificacionesAntiguas);
         }
-      });
 
-      // Marcar como leídas las notificaciones antiguas en segundo plano
-      if (notificacionesAntiguas.length > 0) {
-        markMultipleAsRead(notificacionesAntiguas);
+        setNotificaciones(notificacionesRecientes);
+      } catch (err) {
+        console.error("Error al cargar notificaciones o solicitudes", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setNotificaciones(notificacionesRecientes);
-    } catch (err) {
-      console.error("Error al cargar notificaciones o solicitudes", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchNotificaciones();
-}, []);
-
-
-
+    fetchNotificaciones();
+  }, []);
 
   const markAsRead = async (id) => {
     try {
@@ -117,9 +120,11 @@ useEffect(() => {
       setNotificaciones((prev) =>
         prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
-      
+
       // Emitir evento para que otros componentes se actualicen
-      window.dispatchEvent(new CustomEvent('notificationMarkedAsRead', { detail: { id } }));
+      window.dispatchEvent(
+        new CustomEvent("notificationMarkedAsRead", { detail: { id } })
+      );
     } catch (error) {
       console.error("Error marcando como leída", error);
     }
@@ -129,11 +134,14 @@ useEffect(() => {
     try {
       // Marcar múltiples notificaciones como leídas en paralelo
       await Promise.all(
-        ids.map(id => axios.post(`/api/notificaciones/${id}/markAsRead`))
+        ids.map((id) => axios.post(`/api/notificaciones/${id}/markAsRead`))
       );
       console.log(`${ids.length} notificaciones antiguas marcadas como leídas`);
     } catch (error) {
-      console.error("Error marcando notificaciones antiguas como leídas", error);
+      console.error(
+        "Error marcando notificaciones antiguas como leídas",
+        error
+      );
     }
   };
 
@@ -169,7 +177,10 @@ useEffect(() => {
 
   return (
     <div className="bg-background min-h-screen text-foreground px-4 py-6 w-[390px] mx-auto">
-      <h1 className="text-xl font-semibold mb-5 mt-2 text-foreground" id="notifications-title">
+      <h1
+        className="text-xl font-semibold mb-5 mt-2 text-foreground"
+        id="notifications-title"
+      >
         Notificaciones
       </h1>
 
@@ -206,8 +217,12 @@ useEffect(() => {
               />
             </svg>
           </div>
-          <p className="text-lg font-medium text-foreground">No tenés notificaciones recientes</p>
-          <p className="text-sm mt-2 text-muted-foreground">Solo mostramos notificaciones de los últimos 3 días</p>
+          <p className="text-lg font-medium text-foreground">
+            No tenés notificaciones recientes
+          </p>
+          <p className="text-sm mt-2 text-muted-foreground">
+            Solo mostramos notificaciones de los últimos 3 días
+          </p>
         </div>
       ) : (
         <div

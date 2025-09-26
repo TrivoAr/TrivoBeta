@@ -1,37 +1,37 @@
 // No directive needed for server-side utilities
 
-import { Session } from 'next-auth';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/libs/authOptions';
+import { Session } from "next-auth";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/libs/authOptions";
 
 /**
  * User roles in the system
  */
-export type UserRole = 'admin' | 'trainer' | 'user' | 'alumno';
+export type UserRole = "admin" | "trainer" | "user" | "alumno";
 
 /**
  * Permission types for different resources
  */
 export type Permission =
-  | 'create'
-  | 'read'
-  | 'update'
-  | 'delete'
-  | 'manage'
-  | 'approve'
-  | 'export';
+  | "create"
+  | "read"
+  | "update"
+  | "delete"
+  | "manage"
+  | "approve"
+  | "export";
 
 /**
  * Resource types in the system
  */
 export type Resource =
-  | 'social-events'
-  | 'team-events'
-  | 'academias'
-  | 'users'
-  | 'payments'
-  | 'sponsors'
-  | 'members';
+  | "social-events"
+  | "team-events"
+  | "academias"
+  | "users"
+  | "payments"
+  | "sponsors"
+  | "members";
 
 /**
  * Authorization context for permission checks
@@ -54,10 +54,10 @@ export interface AuthContext {
 export class AuthorizationError extends Error {
   constructor(
     message: string,
-    public code: 'UNAUTHORIZED' | 'FORBIDDEN' | 'INVALID_SESSION' = 'FORBIDDEN'
+    public code: "UNAUTHORIZED" | "FORBIDDEN" | "INVALID_SESSION" = "FORBIDDEN"
   ) {
     super(message);
-    this.name = 'AuthorizationError';
+    this.name = "AuthorizationError";
   }
 }
 
@@ -66,41 +66,65 @@ export class AuthorizationError extends Error {
  */
 const PERMISSIONS_MATRIX: Record<UserRole, Record<Resource, Permission[]>> = {
   admin: {
-    'social-events': ['create', 'read', 'update', 'delete', 'manage', 'approve', 'export'],
-    'team-events': ['create', 'read', 'update', 'delete', 'manage', 'approve', 'export'],
-    'academias': ['create', 'read', 'update', 'delete', 'manage', 'approve', 'export'],
-    'users': ['create', 'read', 'update', 'delete', 'manage'],
-    'payments': ['read', 'update', 'approve', 'export'],
-    'sponsors': ['create', 'read', 'update', 'delete', 'manage'],
-    'members': ['read', 'update', 'delete', 'manage', 'approve']
+    "social-events": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "manage",
+      "approve",
+      "export",
+    ],
+    "team-events": [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "manage",
+      "approve",
+      "export",
+    ],
+    academias: [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "manage",
+      "approve",
+      "export",
+    ],
+    users: ["create", "read", "update", "delete", "manage"],
+    payments: ["read", "update", "approve", "export"],
+    sponsors: ["create", "read", "update", "delete", "manage"],
+    members: ["read", "update", "delete", "manage", "approve"],
   },
   trainer: {
-    'social-events': ['create', 'read', 'update', 'delete'],
-    'team-events': ['create', 'read', 'update', 'delete'],
-    'academias': ['create', 'read', 'update'],
-    'users': ['read'],
-    'payments': ['read', 'approve'],
-    'sponsors': ['read'],
-    'members': ['read', 'update', 'approve']
+    "social-events": ["create", "read", "update", "delete"],
+    "team-events": ["create", "read", "update", "delete"],
+    academias: ["create", "read", "update"],
+    users: ["read"],
+    payments: ["read", "approve"],
+    sponsors: ["read"],
+    members: ["read", "update", "approve"],
   },
   user: {
-    'social-events': ['read'],
-    'team-events': ['read'],
-    'academias': ['read'],
-    'users': ['read'],
-    'payments': ['read'],
-    'sponsors': ['read'],
-    'members': ['read']
+    "social-events": ["read"],
+    "team-events": ["read"],
+    academias: ["read"],
+    users: ["read"],
+    payments: ["read"],
+    sponsors: ["read"],
+    members: ["read"],
   },
   alumno: {
-    'social-events': ['read'],
-    'team-events': ['read'],
-    'academias': ['read'],
-    'users': ['read'],
-    'payments': ['read'],
-    'sponsors': ['read'],
-    'members': ['read']
-  }
+    "social-events": ["read"],
+    "team-events": ["read"],
+    academias: ["read"],
+    users: ["read"],
+    payments: ["read"],
+    sponsors: ["read"],
+    members: ["read"],
+  },
 };
 
 /**
@@ -116,7 +140,9 @@ export class AuthorizationManager {
     permission: Permission
   ): boolean {
     const rolePermissions = PERMISSIONS_MATRIX[userRole]?.[resource] || [];
-    return rolePermissions.includes(permission) || rolePermissions.includes('manage');
+    return (
+      rolePermissions.includes(permission) || rolePermissions.includes("manage")
+    );
   }
 
   /**
@@ -128,7 +154,7 @@ export class AuthorizationManager {
     permission: Permission
   ): boolean {
     if (userId === resourceOwnerId) {
-      return ['read', 'update', 'delete'].includes(permission);
+      return ["read", "update", "delete"].includes(permission);
     }
     return false;
   }
@@ -140,7 +166,11 @@ export class AuthorizationManager {
     const { user, resource, permission, resourceOwnerId } = context;
 
     // Check role-based permissions
-    const hasRolePermission = this.hasPermission(user.role, resource, permission);
+    const hasRolePermission = this.hasPermission(
+      user.role,
+      resource,
+      permission
+    );
 
     // Check ownership permissions if applicable
     const hasOwnershipPermission = resourceOwnerId
@@ -157,7 +187,7 @@ export class AuthorizationManager {
     if (!this.authorize(context)) {
       throw new AuthorizationError(
         `User ${context.user.id} does not have permission ${context.permission} for ${context.resource}`,
-        'FORBIDDEN'
+        "FORBIDDEN"
       );
     }
   }
@@ -169,10 +199,7 @@ export class AuthorizationManager {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      throw new AuthorizationError(
-        'No valid session found',
-        'UNAUTHORIZED'
-      );
+      throw new AuthorizationError("No valid session found", "UNAUTHORIZED");
     }
 
     return session;
@@ -181,25 +208,28 @@ export class AuthorizationManager {
   /**
    * Get user context from session
    */
-  static getUserContext(session: Session): AuthContext['user'] {
+  static getUserContext(session: Session): AuthContext["user"] {
     if (!session.user?.id) {
       throw new AuthorizationError(
-        'Invalid session: missing user data',
-        'INVALID_SESSION'
+        "Invalid session: missing user data",
+        "INVALID_SESSION"
       );
     }
 
     return {
       id: session.user.id,
-      role: (session.user.rol as UserRole) || 'user',
-      email: session.user.email || undefined
+      role: (session.user.rol as UserRole) || "user",
+      email: session.user.email || undefined,
     };
   }
 
   /**
    * Middleware helper for route protection
    */
-  static async requireAuth(): Promise<{ session: Session; user: AuthContext['user'] }> {
+  static async requireAuth(): Promise<{
+    session: Session;
+    user: AuthContext["user"];
+  }> {
     const session = await this.getValidatedSession();
     const user = this.getUserContext(session);
 
@@ -209,13 +239,15 @@ export class AuthorizationManager {
   /**
    * Middleware helper for role-based protection
    */
-  static async requireRole(allowedRoles: UserRole[]): Promise<{ session: Session; user: AuthContext['user'] }> {
+  static async requireRole(
+    allowedRoles: UserRole[]
+  ): Promise<{ session: Session; user: AuthContext["user"] }> {
     const { session, user } = await this.requireAuth();
 
     if (!allowedRoles.includes(user.role)) {
       throw new AuthorizationError(
-        `Access denied. Required roles: ${allowedRoles.join(', ')}. User role: ${user.role}`,
-        'FORBIDDEN'
+        `Access denied. Required roles: ${allowedRoles.join(", ")}. User role: ${user.role}`,
+        "FORBIDDEN"
       );
     }
 
@@ -229,14 +261,14 @@ export class AuthorizationManager {
     resource: Resource,
     permission: Permission,
     resourceOwnerId?: string
-  ): Promise<{ session: Session; user: AuthContext['user'] }> {
+  ): Promise<{ session: Session; user: AuthContext["user"] }> {
     const { session, user } = await this.requireAuth();
 
     const context: AuthContext = {
       user,
       resource,
       permission,
-      resourceOwnerId
+      resourceOwnerId,
     };
 
     this.authorizeOrThrow(context);
@@ -263,7 +295,7 @@ export function RequireAuth<T extends any[], R>(
       if (error instanceof AuthorizationError) {
         throw error;
       }
-      throw new AuthorizationError('Authentication failed', 'UNAUTHORIZED');
+      throw new AuthorizationError("Authentication failed", "UNAUTHORIZED");
     }
   };
 
@@ -289,7 +321,7 @@ export function RequireRole(roles: UserRole[]) {
         if (error instanceof AuthorizationError) {
           throw error;
         }
-        throw new AuthorizationError('Role authorization failed', 'FORBIDDEN');
+        throw new AuthorizationError("Role authorization failed", "FORBIDDEN");
       }
     };
 
@@ -316,7 +348,10 @@ export function RequirePermission(resource: Resource, permission: Permission) {
         if (error instanceof AuthorizationError) {
           throw error;
         }
-        throw new AuthorizationError('Permission authorization failed', 'FORBIDDEN');
+        throw new AuthorizationError(
+          "Permission authorization failed",
+          "FORBIDDEN"
+        );
       }
     };
 
@@ -328,21 +363,20 @@ export function RequirePermission(resource: Resource, permission: Permission) {
  * Type guards for better TypeScript support
  */
 export const AuthGuards = {
-  isAdmin: (role: UserRole): boolean => role === 'admin',
-  isTrainer: (role: UserRole): boolean => role === 'trainer',
-  isUser: (role: UserRole): boolean => ['user', 'alumno'].includes(role),
+  isAdmin: (role: UserRole): boolean => role === "admin",
+  isTrainer: (role: UserRole): boolean => role === "trainer",
+  isUser: (role: UserRole): boolean => ["user", "alumno"].includes(role),
 
   canManageEvents: (role: UserRole): boolean =>
-    ['admin', 'trainer'].includes(role),
+    ["admin", "trainer"].includes(role),
 
   canApprovePayments: (role: UserRole): boolean =>
-    ['admin', 'trainer'].includes(role),
+    ["admin", "trainer"].includes(role),
 
-  canManageUsers: (role: UserRole): boolean =>
-    role === 'admin',
+  canManageUsers: (role: UserRole): boolean => role === "admin",
 
   canExportData: (role: UserRole): boolean =>
-    ['admin', 'trainer'].includes(role)
+    ["admin", "trainer"].includes(role),
 } as const;
 
 /**
@@ -356,11 +390,15 @@ export const AuthUtils = {
     userRole: UserRole,
     userId: string,
     resourceOwnerId: string,
-    requiredPermission: Permission = 'read'
+    requiredPermission: Permission = "read"
   ): boolean => {
     return (
       userId === resourceOwnerId ||
-      AuthorizationManager.hasPermission(userRole, 'social-events', requiredPermission)
+      AuthorizationManager.hasPermission(
+        userRole,
+        "social-events",
+        requiredPermission
+      )
     );
   },
 
@@ -379,8 +417,8 @@ export const AuthUtils = {
     resource: Resource,
     permissions: Permission[]
   ): boolean => {
-    return permissions.some(permission =>
+    return permissions.some((permission) =>
       AuthorizationManager.hasPermission(userRole, resource, permission)
     );
-  }
+  },
 } as const;

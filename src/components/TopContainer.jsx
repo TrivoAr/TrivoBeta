@@ -7,7 +7,10 @@ import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import Link from "next/link";
 import axios from "axios";
-import { useLocationDetection, useSavedLocations } from "@/hooks/useGeolocation";
+import {
+  useLocationDetection,
+  useSavedLocations,
+} from "@/hooks/useGeolocation";
 
 const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
@@ -16,20 +19,18 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false); 
+  const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false);
 
- 
-  const { 
-    detectLocation, 
-    isLoading: locationLoading, 
-    error: locationError, 
+  const {
+    detectLocation,
+    isLoading: locationLoading,
+    error: locationError,
     data: locationData,
     isSuccess: locationSuccess,
-    reset: resetLocation 
+    reset: resetLocation,
   } = useLocationDetection();
 
   const { data: savedLocations } = useSavedLocations();
-
 
   const handleLocationRequest = () => {
     setShowLocationModal(true);
@@ -38,7 +39,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const confirmLocationRequest = () => {
     setShowLocationModal(false);
     setHasInteractedWithModal(true);
-    localStorage.setItem('trivo_location_modal_interacted', 'true');
+    localStorage.setItem("trivo_location_modal_interacted", "true");
     resetLocation(); // Limpiar estado anterior
     detectLocation(); // Activar detección
   };
@@ -46,125 +47,131 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const dismissLocationModal = () => {
     setShowLocationModal(false);
     setHasInteractedWithModal(true);
-    localStorage.setItem('trivo_location_modal_interacted', 'true');
+    localStorage.setItem("trivo_location_modal_interacted", "true");
   };
 
   // Cargar estado persistido al montar
   useEffect(() => {
-    const hasInteracted = localStorage.getItem('trivo_location_modal_interacted') === 'true';
+    const hasInteracted =
+      localStorage.getItem("trivo_location_modal_interacted") === "true";
     setHasInteractedWithModal(hasInteracted);
-    
+
     // Cargar ubicación guardada si existe
-    const savedLocation = localStorage.getItem('trivo_detected_location');
+    const savedLocation = localStorage.getItem("trivo_detected_location");
     if (savedLocation && setSelectedLocalidad) {
       setSelectedLocalidad(savedLocation);
     }
   }, [setSelectedLocalidad]);
 
-  
-useEffect(() => {
-  if (locationSuccess && locationData && setSelectedLocalidad) {
-    const detectedCity = locationData.city || "Desconocido";
-    setSelectedLocalidad(detectedCity);
-    
-    // Guardar ubicación detectada en localStorage
-    if (detectedCity !== "Desconocido") {
-      localStorage.setItem('trivo_detected_location', detectedCity);
+  useEffect(() => {
+    if (locationSuccess && locationData && setSelectedLocalidad) {
+      const detectedCity = locationData.city || "Desconocido";
+      setSelectedLocalidad(detectedCity);
+
+      // Guardar ubicación detectada en localStorage
+      if (detectedCity !== "Desconocido") {
+        localStorage.setItem("trivo_detected_location", detectedCity);
+      }
+
+      // Guardar en savedLocations si no está
+      if (
+        detectedCity !== "Desconocido" &&
+        savedLocations &&
+        !savedLocations.some((loc) => loc.city === detectedCity)
+      ) {
+        // Acá deberías llamar a tu API o método de persistencia
+        axios.post("/api/locations", { city: detectedCity }).catch(() => {
+          console.log("No se pudo guardar la ubicación detectada");
+        });
+      }
     }
+  }, [locationSuccess, locationData, setSelectedLocalidad, savedLocations]);
 
-    // Guardar en savedLocations si no está
-    if (
-      detectedCity !== "Desconocido" &&
-      savedLocations &&
-      !savedLocations.some((loc) => loc.city === detectedCity)
-    ) {
-      // Acá deberías llamar a tu API o método de persistencia
-      axios.post("/api/locations", { city: detectedCity }).catch(() => {
-        console.log("No se pudo guardar la ubicación detectada");
-      });
-    }
-  }
-}, [locationSuccess, locationData, setSelectedLocalidad, savedLocations]);
+  useEffect(() => {
+    if (!session?.user) return;
 
+    const fetchData = async () => {
+      try {
+        // Hacer ambas llamadas en paralelo
+        const [notificacionesRes, solicitudesRes] = await Promise.all([
+          axios.get("/api/notificaciones"),
+          axios.get("/api/academias/solicitudes"),
+        ]);
 
+        const notificaciones = notificacionesRes.data || [];
+        const solicitudes = solicitudesRes.data || [];
 
-useEffect(() => {
-  if (!session?.user) return;
+        const noLeidas = notificaciones.filter((n) => !n.read);
+        const pendientes = solicitudes.filter((s) => s.estado === "pendiente");
 
-  const fetchData = async () => {
-    try {
-      // Hacer ambas llamadas en paralelo
-      const [notificacionesRes, solicitudesRes] = await Promise.all([
-        axios.get("/api/notificaciones"),
-        axios.get("/api/academias/solicitudes"),
-      ]);
+        setSolicitudesPendientes(pendientes.length > 0);
 
-      const notificaciones = notificacionesRes.data || [];
-      const solicitudes = solicitudesRes.data || [];
+        // Sumar ambas cantidades de forma unificada
+        setUnreadCount(noLeidas.length + pendientes.length);
+      } catch (error) {
+        // Silently handle notification/request loading errors
+      }
+    };
 
-      const noLeidas = notificaciones.filter((n) => !n.read);
-      const pendientes = solicitudes.filter((s) => s.estado === "pendiente");
-
-      setSolicitudesPendientes(pendientes.length > 0);
-
-      // Sumar ambas cantidades de forma unificada
-      setUnreadCount(noLeidas.length + pendientes.length);
-    } catch (error) {
-      // Silently handle notification/request loading errors
-    }
-  };
-
-  fetchData();
-
-  // Listener para cuando se marca una notificación como leída
-  const handleNotificationUpdate = () => {
     fetchData();
-  };
 
-  window.addEventListener('notificationMarkedAsRead', handleNotificationUpdate);
-  
-  return () => {
-    window.removeEventListener('notificationMarkedAsRead', handleNotificationUpdate);
-  };
-}, [session]);
+    // Listener para cuando se marca una notificación como leída
+    const handleNotificationUpdate = () => {
+      fetchData();
+    };
 
-// Función separada para cargar imagen de perfil
-const loadProfileImage = useCallback(async () => {
-  if (!session?.user?.id) {
-    console.log("No session or user ID available");
-    return;
-  }
-  
-  console.log("Loading profile image for user:", session.user.id);
-  console.log("Session user imagen:", session.user.imagen);
-  
-  try {
-    const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
-    console.log("Firebase image URL:", imageUrl);
-    if (imageUrl) {
-      setProfileImage(imageUrl);
-    } else {
-      // Si no hay imagen de Firebase, usar la del session
+    window.addEventListener(
+      "notificationMarkedAsRead",
+      handleNotificationUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "notificationMarkedAsRead",
+        handleNotificationUpdate
+      );
+    };
+  }, [session]);
+
+  // Función separada para cargar imagen de perfil
+  const loadProfileImage = useCallback(async () => {
+    if (!session?.user?.id) {
+      console.log("No session or user ID available");
+      return;
+    }
+
+    console.log("Loading profile image for user:", session.user.id);
+    console.log("Session user imagen:", session.user.imagen);
+
+    try {
+      const imageUrl = await getProfileImage(
+        "profile-image.jpg",
+        session.user.id
+      );
+      console.log("Firebase image URL:", imageUrl);
+      if (imageUrl) {
+        setProfileImage(imageUrl);
+      } else {
+        // Si no hay imagen de Firebase, usar la del session
+        const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
+        console.log("Using fallback image:", fallbackImage);
+        setProfileImage(fallbackImage);
+      }
+    } catch (error) {
+      console.log("Error cargando imagen de perfil:", error);
+      // Fallback: usar imagen del session o imagen por defecto
       const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
-      console.log("Using fallback image:", fallbackImage);
+      console.log("Using fallback after error:", fallbackImage);
       setProfileImage(fallbackImage);
     }
-  } catch (error) {
-    console.log("Error cargando imagen de perfil:", error);
-    // Fallback: usar imagen del session o imagen por defecto
-    const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
-    console.log("Using fallback after error:", fallbackImage);
-    setProfileImage(fallbackImage);
-  }
-}, [session]);
+  }, [session]);
 
-// useEffect separado para cargar imagen de perfil
-useEffect(() => {
-  if (session?.user) {
-    loadProfileImage();
-  }
-}, [session, loadProfileImage]);
-
+  // useEffect separado para cargar imagen de perfil
+  useEffect(() => {
+    if (session?.user) {
+      loadProfileImage();
+    }
+  }, [session, loadProfileImage]);
 
   if (status === "loading") {
     return <p>Cargando...</p>;
@@ -174,58 +181,65 @@ useEffect(() => {
     router.push("/notificaciones");
   };
 
-
   return (
     <div className="containerTop bg-background h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
       {/* Avatar */}
-      
-
 
       {session?.user ? (
         <Link href="/dashboard/profile">
-        <img
-          className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-          src={profileImage || session?.user?.imagen || "/assets/logo/Trivo T.png"}
-          alt="User Profile"
-          onError={(e) => {
-            e.target.src = "/assets/logo/Trivo T.png";
-          }}
-        />
+          <img
+            className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
+            src={
+              profileImage ||
+              session?.user?.imagen ||
+              "/assets/logo/Trivo T.png"
+            }
+            alt="User Profile"
+            onError={(e) => {
+              e.target.src = "/assets/logo/Trivo T.png";
+            }}
+          />
         </Link>
-        
       ) : (
         <Link href="/login">
-        <div
-          className="h-[48px] w-[48px] rounded-[15px] shadow-md"
-          style={{
-            backgroundImage: `url("/assets/logo/Trivo T.png")`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-          }}
-        />
+          <div
+            className="h-[48px] w-[48px] rounded-[15px] shadow-md"
+            style={{
+              backgroundImage: `url("/assets/logo/Trivo T.png")`,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+            }}
+          />
         </Link>
       )}
-       
 
       <div className="flex flex-col items-center">
         {/* Estado de ubicación */}
         <div className="flex items-center gap-1 mb-1">
           <span className="text-[10px] text-gray-500">
-            {locationSuccess && locationData ? 'Ubicación detectada' : 'Ubicación'}
+            {locationSuccess && locationData
+              ? "Ubicación detectada"
+              : "Ubicación"}
           </span>
           {!locationSuccess && !locationLoading && (
             <button
-              onClick={hasInteractedWithModal ? confirmLocationRequest : handleLocationRequest}
+              onClick={
+                hasInteractedWithModal
+                  ? confirmLocationRequest
+                  : handleLocationRequest
+              }
               className="text-[10px] text-[#C95100] underline hover:text-[#A04400]"
               title="Habilitar ubicación para mejores recomendaciones"
             >
-              {hasInteractedWithModal ? 'Activar' : 'Detectar'}
+              {hasInteractedWithModal ? "Activar" : "Detectar"}
             </button>
           )}
         </div>
 
         {/* Mostrar ubicación actual o opciones guardadas */}
-        {(locationData?.city || (savedLocations && savedLocations.length > 0) || localStorage.getItem('trivo_detected_location')) ? (
+        {locationData?.city ||
+        (savedLocations && savedLocations.length > 0) ||
+        localStorage.getItem("trivo_detected_location") ? (
           <select
             name="localidad"
             value={selectedLocalidad}
@@ -238,20 +252,21 @@ useEffect(() => {
             )}
 
             {/* Ubicación guardada en localStorage (si no está en locationData) */}
-            {!locationData?.city && localStorage.getItem('trivo_detected_location') && (
-              <option value={localStorage.getItem('trivo_detected_location')}>
-                {localStorage.getItem('trivo_detected_location')}
-              </option>
-            )}
+            {!locationData?.city &&
+              localStorage.getItem("trivo_detected_location") && (
+                <option value={localStorage.getItem("trivo_detected_location")}>
+                  {localStorage.getItem("trivo_detected_location")}
+                </option>
+              )}
 
             {/* Ciudades guardadas del usuario */}
-            {savedLocations && savedLocations.length > 0 && 
+            {savedLocations &&
+              savedLocations.length > 0 &&
               savedLocations.map((loc, index) => (
                 <option key={index} value={loc.city}>
                   {loc.city}
                 </option>
-              ))
-            }
+              ))}
           </select>
         ) : (
           <span className="text-[12px] text-gray-400 px-2 py-1">
@@ -293,9 +308,24 @@ useEffect(() => {
           <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-[#C95100]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg
+                  className="w-8 h-8 text-[#C95100]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -305,30 +335,34 @@ useEffect(() => {
                 Para usar Trivo necesitas permitir el acceso a tu ubicación
               </p>
             </div>
-            
+
             <div className="space-y-3 mb-6">
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
                 <p className="text-sm text-gray-700">
-                  <strong>Actividades cercanas:</strong> Encuentra eventos y lugares cerca de ti
+                  <strong>Actividades cercanas:</strong> Encuentra eventos y
+                  lugares cerca de ti
                 </p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
                 <p className="text-sm text-gray-700">
-                  <strong>Recomendaciones precisas:</strong> Contenido relevante para tu zona
+                  <strong>Recomendaciones precisas:</strong> Contenido relevante
+                  para tu zona
                 </p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
                 <p className="text-sm text-gray-700">
-                  <strong>Una sola vez:</strong> Se guarda automáticamente para futuros usos
+                  <strong>Una sola vez:</strong> Se guarda automáticamente para
+                  futuros usos
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-gray-500 mb-6 text-center">
-              Tu ubicación es privada y solo se usa para mejorar tu experiencia en la app
+              Tu ubicación es privada y solo se usa para mejorar tu experiencia
+              en la app
             </p>
 
             <div className="flex gap-3">

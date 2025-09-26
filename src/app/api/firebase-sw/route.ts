@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const firebaseConfig = {
@@ -91,8 +91,8 @@ console.log('🎉 Firebase SW configurado completamente');
 
   return new NextResponse(swContent, {
     headers: {
-      'Content-Type': 'application/javascript',
-      'Service-Worker-Allowed': '/'
+      "Content-Type": "application/javascript",
+      "Service-Worker-Allowed": "/",
     },
   });
 }

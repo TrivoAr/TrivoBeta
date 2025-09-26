@@ -12,11 +12,11 @@ const BaresSchema = new Schema(
     locationCoords: {
       lat: {
         type: Number,
-        required: [true, "Latitude is required"]
+        required: [true, "Latitude is required"],
       },
       lng: {
         type: Number,
-        required: [true, "Longitude is required"]
+        required: [true, "Longitude is required"],
       },
     },
 
@@ -27,10 +27,12 @@ const BaresSchema = new Schema(
     },
 
     // Array de imágenes para el carrusel (fotos del interior, ambiente, etc.)
-    imagenesCarrusel: [{
-      type: String,
-      required: true
-    }],
+    imagenesCarrusel: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
 
     // Información adicional del bar
     direccion: {
@@ -41,8 +43,8 @@ const BaresSchema = new Schema(
     // Estado del bar (activo/inactivo)
     activo: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   {
     timestamps: true,

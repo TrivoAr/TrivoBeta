@@ -69,10 +69,15 @@ type EventCardProps = {
   event: EventType;
   onJoin?: (event: EventType) => void;
   onMap?: (coords: { lat: number; lng: number }) => void;
-  variant?: 'default' | 'night';
+  variant?: "default" | "night";
 };
 
-export default function EventCard({ event, onJoin, onMap, variant }: EventCardProps) {
+export default function EventCard({
+  event,
+  onJoin,
+  onMap,
+  variant,
+}: EventCardProps) {
   const [esFavorito, setEsFavorito] = useState(false);
   const { data: session } = useSession();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -87,10 +92,11 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
     nombre: event.title,
   };
 
-  const isNight = variant === 'night' || isNightEvent(eventForNightCheck);
+  const isNight = variant === "night" || isNightEvent(eventForNightCheck);
 
   const cardClasses = useMemo(() => {
-    const baseClasses = "rounded-2xl overflow-hidden shadow-md w-[360px] transition-all duration-300";
+    const baseClasses =
+      "rounded-2xl overflow-hidden shadow-md w-[360px] transition-all duration-300";
 
     if (isNight) {
       return `${baseClasses} theme-bg-secondary theme-glow night-pulse`;
@@ -178,7 +184,7 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
   }, [event._id]);
 
   return (
-    <div className={cardClasses} data-theme={isNight ? 'night' : undefined}>
+    <div className={cardClasses} data-theme={isNight ? "night" : undefined}>
       {/* Imagen */}
       <div
         className="relative w-full h-[180px]"
@@ -226,9 +232,11 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
         {/* Encabezado */}
         <div className="flex justify-between items-start">
           <div className="flex-1 mr-2">
-            <h2 className={`font-bold text-md leading-snug ${
-              isNight ? 'theme-text-primary' : 'text-foreground'
-            }`}>
+            <h2
+              className={`font-bold text-md leading-snug ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
               {event.title}
             </h2>
             {isNight && (
@@ -238,19 +246,23 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
               </div>
             )}
           </div>
-          <span className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${
-            isNight
-              ? 'theme-accent-bg-primary text-white'
-              : 'text-muted-foreground bg-muted'
-          }`}>
+          <span
+            className={`text-xs px-3 py-1 rounded-full whitespace-nowrap ${
+              isNight
+                ? "theme-accent-bg-primary text-white"
+                : "text-muted-foreground bg-muted"
+            }`}
+          >
             {event.localidad}
           </span>
         </div>
 
         <div className="flex w-full justify-between">
-          <p className={`text-sm capitalize ${
-            isNight ? 'theme-text-secondary' : 'text-muted-foreground'
-          }`}>
+          <p
+            className={`text-sm capitalize ${
+              isNight ? "theme-text-secondary" : "text-muted-foreground"
+            }`}
+          >
             {event.category} · {event.dificultad}
           </p>
           <p
@@ -267,18 +279,21 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
         </div>
 
         {/* Fecha y hora */}
-        <p className={`text-sm flex items-center gap-1 ${
-          isNight ? 'theme-text-primary' : 'text-foreground'
-        }`}>
+        <p
+          className={`text-sm flex items-center gap-1 ${
+            isNight ? "theme-text-primary" : "text-foreground"
+          }`}
+        >
           <Clock size={16} />
           {parseLocalDate(event.date)} {event.time} hs
         </p>
 
         {/* Precio */}
         {event.price && (
-          <p className={`text-sm font-semibold flex items-center gap-1 ${
-            isNight ? 'theme-accent-primary' : 'text-orange-600'
-          }`}>
+          <p
+            className="text-sm font-semibold flex items-center gap-1"
+            style={{ color: "var(--theme-accent-primary)" }}
+          >
             <Tag size={16} />{" "}
             {event.price === "0"
               ? "Gratis"
@@ -292,18 +307,45 @@ export default function EventCard({ event, onJoin, onMap, variant }: EventCardPr
             onClick={() => router.push(`/social/${event._id}`)}
             className={`text-white rounded-[20px] h-[40px] transition-all ${
               isNight
-                ? (event.stravaMap?.id ? 'w-[50%] seasonal-gradient hover:opacity-90' : 'w-[90%] mx-auto seasonal-gradient hover:opacity-90')
-                : 'w-[50%] bg-[#C95100] hover:bg-[#b8470f]'
+                ? event.stravaMap?.id
+                  ? "w-[50%] seasonal-gradient hover:opacity-90"
+                  : "w-[90%] mx-auto seasonal-gradient hover:opacity-90"
+                : event.stravaMap?.id
+                  ? "w-[50%]"
+                  : "w-[90%] mx-auto"
             }`}
+            style={
+              isNight
+                ? {}
+                : {
+                    backgroundColor: "var(--theme-accent-primary)",
+                  }
+            }
+            onMouseEnter={
+              isNight
+                ? undefined
+                : (e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--theme-accent-secondary)";
+                  }
+            }
+            onMouseLeave={
+              isNight
+                ? undefined
+                : (e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--theme-accent-primary)";
+                  }
+            }
           >
-            {isNight ? 'Viví la experiencia nocturna' : 'Unirse'}
+            {isNight ? "Viví la experiencia nocturna" : "Unirse"}
           </button>
-          {(event.stravaMap?.id && event.stravaMap?.summary_polyline) && (
+          {event.stravaMap?.id && event.stravaMap?.summary_polyline && (
             <button
               className={`flex justify-center items-center gap-2 rounded-[20px] border w-[50%] h-[40px] shadow-sm transition-colors ${
                 isNight
-                  ? 'border-gray-600 theme-bg-primary hover:theme-accent-bg-secondary/20'
-                  : 'border-border bg-background hover:bg-accent'
+                  ? "border-gray-600 theme-bg-primary hover:theme-accent-bg-secondary/20"
+                  : "border-border bg-background hover:bg-accent"
               }`}
               onClick={() => {
                 setSelectedEvent({

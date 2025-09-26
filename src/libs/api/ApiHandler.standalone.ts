@@ -1,22 +1,36 @@
 // Standalone API handler utilities (no external dependencies)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { ZodError, ZodSchema } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { ZodError, ZodSchema } from "zod";
 
 /**
  * User roles in the system
  */
-export type UserRole = 'admin' | 'trainer' | 'user' | 'alumno';
+export type UserRole = "admin" | "trainer" | "user" | "alumno";
 
 /**
  * Permission types for different resources
  */
-export type Permission = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'approve' | 'export';
+export type Permission =
+  | "create"
+  | "read"
+  | "update"
+  | "delete"
+  | "manage"
+  | "approve"
+  | "export";
 
 /**
  * Resource types in the system
  */
-export type Resource = 'social-events' | 'team-events' | 'academias' | 'users' | 'payments' | 'sponsors' | 'members';
+export type Resource =
+  | "social-events"
+  | "team-events"
+  | "academias"
+  | "users"
+  | "payments"
+  | "sponsors"
+  | "members";
 
 /**
  * Standard API response interface
@@ -68,13 +82,16 @@ export type ApiMethodHandler<T = any> = (
 /**
  * Authentication handler type
  */
-export type AuthHandler = () => Promise<{ session: any; user: ApiContext['user'] }>;
+export type AuthHandler = () => Promise<{
+  session: any;
+  user: ApiContext["user"];
+}>;
 
 /**
  * Authorization handler type
  */
 export type AuthorizeHandler = (
-  user: ApiContext['user'],
+  user: ApiContext["user"],
   resource: Resource,
   permission: Permission,
   resourceOwnerId?: string
@@ -89,7 +106,10 @@ export interface ApiHandlerConfig {
   requiredPermission?: {
     resource: Resource;
     permission: Permission;
-    getResourceOwnerId?: (req: NextRequest, context: ApiContext) => Promise<string | undefined>;
+    getResourceOwnerId?: (
+      req: NextRequest,
+      context: ApiContext
+    ) => Promise<string | undefined>;
   };
   validation?: {
     body?: ZodSchema;
@@ -117,25 +137,28 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode: number = 500,
-    public code: string = 'INTERNAL_ERROR',
+    public code: string = "INTERNAL_ERROR",
     public details?: any
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
 export class AuthorizationError extends ApiError {
-  constructor(message: string, code: 'UNAUTHORIZED' | 'FORBIDDEN' = 'FORBIDDEN') {
-    super(message, code === 'UNAUTHORIZED' ? 401 : 403, code);
-    this.name = 'AuthorizationError';
+  constructor(
+    message: string,
+    code: "UNAUTHORIZED" | "FORBIDDEN" = "FORBIDDEN"
+  ) {
+    super(message, code === "UNAUTHORIZED" ? 401 : 403, code);
+    this.name = "AuthorizationError";
   }
 }
 
 export class ValidationError extends ApiError {
   constructor(message: string, details?: any) {
-    super(message, 400, 'VALIDATION_ERROR', details);
-    this.name = 'ValidationError';
+    super(message, 400, "VALIDATION_ERROR", details);
+    this.name = "ValidationError";
   }
 }
 
@@ -189,32 +212,32 @@ export class ApiHandler {
    * Register HTTP method handlers
    */
   get(handler: ApiMethodHandler): this {
-    this.handlers.set('GET', handler);
+    this.handlers.set("GET", handler);
     return this;
   }
 
   post(handler: ApiMethodHandler): this {
-    this.handlers.set('POST', handler);
+    this.handlers.set("POST", handler);
     return this;
   }
 
   put(handler: ApiMethodHandler): this {
-    this.handlers.set('PUT', handler);
+    this.handlers.set("PUT", handler);
     return this;
   }
 
   patch(handler: ApiMethodHandler): this {
-    this.handlers.set('PATCH', handler);
+    this.handlers.set("PATCH", handler);
     return this;
   }
 
   delete(handler: ApiMethodHandler): this {
-    this.handlers.set('DELETE', handler);
+    this.handlers.set("DELETE", handler);
     return this;
   }
 
   options(handler: ApiMethodHandler): this {
-    this.handlers.set('OPTIONS', handler);
+    this.handlers.set("OPTIONS", handler);
     return this;
   }
 
@@ -222,23 +245,26 @@ export class ApiHandler {
    * Build the actual Next.js API route handler
    */
   build() {
-    return async (req: NextRequest, routeContext?: { params: Record<string, string> }) => {
+    return async (
+      req: NextRequest,
+      routeContext?: { params: Record<string, string> }
+    ) => {
       try {
         // Apply CORS headers if configured
         const corsHeaders = this.applyCors(req);
 
         // Handle preflight requests
-        if (req.method === 'OPTIONS') {
+        if (req.method === "OPTIONS") {
           return new NextResponse(null, { status: 200, headers: corsHeaders });
         }
 
         // Check if method is supported
-        const handler = this.handlers.get(req.method || 'GET');
+        const handler = this.handlers.get(req.method || "GET");
         if (!handler) {
           return this.errorResponse(
             `Method ${req.method} not allowed`,
             405,
-            'METHOD_NOT_ALLOWED',
+            "METHOD_NOT_ALLOWED",
             corsHeaders
           );
         }
@@ -248,9 +274,9 @@ export class ApiHandler {
           const allowed = this.checkRateLimit(req);
           if (!allowed) {
             return this.errorResponse(
-              'Rate limit exceeded',
+              "Rate limit exceeded",
               429,
-              'RATE_LIMIT_EXCEEDED',
+              "RATE_LIMIT_EXCEEDED",
               corsHeaders
             );
           }
@@ -258,13 +284,16 @@ export class ApiHandler {
 
         // Build context
         const context: ApiContext = {
-          params: routeContext?.params || {}
+          params: routeContext?.params || {},
         };
 
         // Apply authentication middleware
         if (this.config.requireAuth) {
           if (!this.config.authHandler) {
-            throw new AuthorizationError('Auth handler not configured', 'UNAUTHORIZED');
+            throw new AuthorizationError(
+              "Auth handler not configured",
+              "UNAUTHORIZED"
+            );
           }
 
           const { session, user } = await this.config.authHandler();
@@ -276,9 +305,9 @@ export class ApiHandler {
         if (this.config.requiredRoles && context.user) {
           if (!this.config.requiredRoles.includes(context.user.role)) {
             return this.errorResponse(
-              `Access denied. Required roles: ${this.config.requiredRoles.join(', ')}`,
+              `Access denied. Required roles: ${this.config.requiredRoles.join(", ")}`,
               403,
-              'INSUFFICIENT_ROLE',
+              "INSUFFICIENT_ROLE",
               corsHeaders
             );
           }
@@ -286,7 +315,8 @@ export class ApiHandler {
 
         // Apply permission-based authorization
         if (this.config.requiredPermission && context.user) {
-          const { resource, permission, getResourceOwnerId } = this.config.requiredPermission;
+          const { resource, permission, getResourceOwnerId } =
+            this.config.requiredPermission;
 
           let resourceOwnerId: string | undefined;
           if (getResourceOwnerId) {
@@ -302,7 +332,7 @@ export class ApiHandler {
             );
 
             if (!authorized) {
-              throw new AuthorizationError('Permission denied', 'FORBIDDEN');
+              throw new AuthorizationError("Permission denied", "FORBIDDEN");
             }
           }
         }
@@ -317,9 +347,8 @@ export class ApiHandler {
 
         // Return success response
         return this.successResponse(result, corsHeaders);
-
       } catch (error) {
-        console.error('API Handler Error:', error);
+        console.error("API Handler Error:", error);
         return this.handleError(error, this.applyCors(req));
       }
     };
@@ -332,25 +361,32 @@ export class ApiHandler {
     const headers = new Headers();
 
     if (this.config.cors) {
-      const { origin, methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], credentials = true } = this.config.cors;
+      const {
+        origin,
+        methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials = true,
+      } = this.config.cors;
 
-      const requestOrigin = req.headers.get('origin');
+      const requestOrigin = req.headers.get("origin");
 
       if (origin) {
         if (Array.isArray(origin)) {
-          if (origin.includes(requestOrigin || '')) {
-            headers.set('Access-Control-Allow-Origin', requestOrigin || '');
+          if (origin.includes(requestOrigin || "")) {
+            headers.set("Access-Control-Allow-Origin", requestOrigin || "");
           }
-        } else if (origin === '*' || origin === requestOrigin) {
-          headers.set('Access-Control-Allow-Origin', origin);
+        } else if (origin === "*" || origin === requestOrigin) {
+          headers.set("Access-Control-Allow-Origin", origin);
         }
       }
 
-      headers.set('Access-Control-Allow-Methods', methods.join(', '));
-      headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      headers.set("Access-Control-Allow-Methods", methods.join(", "));
+      headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With"
+      );
 
       if (credentials) {
-        headers.set('Access-Control-Allow-Credentials', 'true');
+        headers.set("Access-Control-Allow-Credentials", "true");
       }
     }
 
@@ -364,9 +400,10 @@ export class ApiHandler {
     if (!this.config.rateLimit) return true;
 
     const { windowMs, maxRequests } = this.config.rateLimit;
-    const clientIp = req.headers.get('x-forwarded-for') ||
-                     req.headers.get('x-real-ip') ||
-                     'unknown';
+    const clientIp =
+      req.headers.get("x-forwarded-for") ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
     return rateLimitStore.check(clientIp, windowMs, maxRequests);
   }
@@ -374,19 +411,25 @@ export class ApiHandler {
   /**
    * Validate request data
    */
-  private async validateRequest(req: NextRequest, context: ApiContext): Promise<any> {
+  private async validateRequest(
+    req: NextRequest,
+    context: ApiContext
+  ): Promise<any> {
     const validatedData: any = {};
 
     // Validate body
-    if (this.config.validation?.body && ['POST', 'PUT', 'PATCH'].includes(req.method || '')) {
+    if (
+      this.config.validation?.body &&
+      ["POST", "PUT", "PATCH"].includes(req.method || "")
+    ) {
       try {
         const body = await req.json();
         validatedData.body = this.config.validation.body.parse(body);
       } catch (error) {
         if (error instanceof ZodError) {
-          throw new ValidationError('Invalid request body', error.errors);
+          throw new ValidationError("Invalid request body", error.errors);
         }
-        throw new ValidationError('Invalid JSON in request body');
+        throw new ValidationError("Invalid JSON in request body");
       }
     }
 
@@ -399,7 +442,9 @@ export class ApiHandler {
 
     // Validate route parameters
     if (this.config.validation?.params) {
-      validatedData.params = this.config.validation.params.parse(context.params);
+      validatedData.params = this.config.validation.params.parse(
+        context.params
+      );
     }
 
     return validatedData;
@@ -411,23 +456,30 @@ export class ApiHandler {
   private handleError(error: unknown, corsHeaders: Headers): NextResponse {
     // API errors
     if (error instanceof ApiError) {
-      return this.errorResponse(error.message, error.statusCode, error.code, corsHeaders, error.details);
+      return this.errorResponse(
+        error.message,
+        error.statusCode,
+        error.code,
+        corsHeaders,
+        error.details
+      );
     }
 
     // Zod validation errors
     if (error instanceof ZodError) {
       return this.errorResponse(
-        'Validation failed',
+        "Validation failed",
         400,
-        'VALIDATION_ERROR',
+        "VALIDATION_ERROR",
         corsHeaders,
         error.errors
       );
     }
 
     // Generic errors
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return this.errorResponse(message, 500, 'INTERNAL_ERROR', corsHeaders);
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    return this.errorResponse(message, 500, "INTERNAL_ERROR", corsHeaders);
   }
 
   /**
@@ -436,12 +488,12 @@ export class ApiHandler {
   private successResponse<T>(data: T, corsHeaders: Headers): NextResponse {
     const response: ApiResponse<T> = {
       success: true,
-      data
+      data,
     };
 
     return NextResponse.json(response, {
       status: 200,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
 
@@ -460,13 +512,13 @@ export class ApiHandler {
       error: {
         message,
         code,
-        details
-      }
+        details,
+      },
     };
 
     return NextResponse.json(response, {
       status,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
 }
@@ -487,8 +539,14 @@ export const ApiUtils = {
    */
   extractPagination: (url: string, defaultLimit = 10, maxLimit = 100) => {
     const searchParams = new URL(url).searchParams;
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(maxLimit, Math.max(1, parseInt(searchParams.get('limit') || defaultLimit.toString())));
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(
+      maxLimit,
+      Math.max(
+        1,
+        parseInt(searchParams.get("limit") || defaultLimit.toString())
+      )
+    );
     const skip = (page - 1) * limit;
 
     return { page, limit, skip };
@@ -512,8 +570,8 @@ export const ApiUtils = {
         page,
         limit,
         total,
-        totalPages
-      }
+        totalPages,
+      },
     };
   },
 
@@ -529,8 +587,8 @@ export const ApiUtils = {
    */
   requireUserId: (context: ApiContext): string => {
     if (!context.user?.id) {
-      throw new AuthorizationError('User ID is required', 'UNAUTHORIZED');
+      throw new AuthorizationError("User ID is required", "UNAUTHORIZED");
     }
     return context.user.id;
-  }
+  },
 } as const;

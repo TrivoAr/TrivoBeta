@@ -4,7 +4,7 @@ const AcademiaSchema = new Schema(
   {
     dueño_id: {
       type: Schema.Types.ObjectId,
-      ref: "User",  // Asumiendo que el dueño es un usuario registrado
+      ref: "User", // Asumiendo que el dueño es un usuario registrado
       required: true,
     },
     nombre_academia: {
@@ -37,11 +37,11 @@ const AcademiaSchema = new Schema(
     imagen: {
       type: String,
     },
-    clase_gratis:{
+    clase_gratis: {
       type: Boolean,
       required: true,
     },
-    precio:{
+    precio: {
       type: String,
     },
   },

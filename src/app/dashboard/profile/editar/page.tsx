@@ -24,39 +24,35 @@ function EditProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-  if (session?.user) {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch("/api/profile");
-        const data = await res.json();
-        if (res.ok) {
-          setFormData({
-            firstname: data.firstname || "", 
-            lastname: data.lastname  || "",
-            email: data.email || "",
-            telnumber: data.telnumber || "",
-            rol: data.role || "",
-            instagram: data.instagram || "",
-            facebook: data.facebook || "",
-            twitter: data.twitter || "",
-            bio: data.bio || "",
-            dni: data.dni || "",
-          });
-          // Cargar imagen
-          const url = await getProfileImage("profile-image.jpg", data._id);
-          setProfileImage(url || data.imagen);
-        } else {
-        }
-      } catch (error) {
-      }
-    };
+    if (session?.user) {
+      const fetchProfile = async () => {
+        try {
+          const res = await fetch("/api/profile");
+          const data = await res.json();
+          if (res.ok) {
+            setFormData({
+              firstname: data.firstname || "",
+              lastname: data.lastname || "",
+              email: data.email || "",
+              telnumber: data.telnumber || "",
+              rol: data.role || "",
+              instagram: data.instagram || "",
+              facebook: data.facebook || "",
+              twitter: data.twitter || "",
+              bio: data.bio || "",
+              dni: data.dni || "",
+            });
+            // Cargar imagen
+            const url = await getProfileImage("profile-image.jpg", data._id);
+            setProfileImage(url || data.imagen);
+          } else {
+          }
+        } catch (error) {}
+      };
 
-    fetchProfile();
-  }
-}, [session]);
-
-
-
+      fetchProfile();
+    }
+  }, [session]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -85,7 +81,7 @@ function EditProfilePage() {
           instagram: formData.instagram,
           facebook: formData.facebook,
           twitter: formData.twitter,
-          bio: formData.bio
+          bio: formData.bio,
         }),
       });
 
@@ -112,7 +108,6 @@ function EditProfilePage() {
     }
   };
 
-
   return (
     <div className="w-[390px] min-h-screen bg-background px-4 pt-6 pb-24 flex flex-col items-center text-foreground">
       <h1 className="text-2xl font-medium  w-full text-left mb-4">
@@ -129,7 +124,7 @@ function EditProfilePage() {
         onChange={handleImageUpload}
         className="mb-4 text-sm"
       />
-        <label className="block">
+      <label className="block">
         Numero de documento (DNI)
         <input
           type="text"
@@ -151,7 +146,7 @@ function EditProfilePage() {
           placeholder="Nombre"
         />
       </label>
-         <label className="block w-full">
+      <label className="block w-full">
         Apeliido
         <input
           type="text"

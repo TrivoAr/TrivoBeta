@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import React, { createContext, useState, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getSeasonalTheme, resolveActiveTheme } from '@/lib/theme';
-import type { ThemeContextValue, ActiveTheme, SeasonalTheme, ThemeFlags } from '@/lib/theme/types';
+import React, { createContext, useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getSeasonalTheme, resolveActiveTheme } from "@/lib/theme";
+import type {
+  ThemeContextValue,
+  ActiveTheme,
+  SeasonalTheme,
+  ThemeFlags,
+} from "@/lib/theme/types";
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 async function fetchThemeFlags(): Promise<ThemeFlags> {
   try {
-    const response = await fetch('/api/themes/global');
+    const response = await fetch("/api/themes/global");
     if (!response.ok) {
-      throw new Error('Failed to fetch theme flags');
+      throw new Error("Failed to fetch theme flags");
     }
     return response.json();
   } catch (error) {
-    const fallback = await import('../../config/themes.json');
+    const fallback = await import("../../config/themes.json");
     return fallback.default as ThemeFlags;
   }
 }
@@ -28,7 +33,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [themeOverride, setThemeOverride] = useState<ActiveTheme | null>(null);
 
   const { data: flags } = useQuery({
-    queryKey: ['theme-flags'],
+    queryKey: ["theme-flags"],
     queryFn: fetchThemeFlags,
     staleTime: 5 * 60 * 1000,
   });
@@ -36,7 +41,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const contextValue = useMemo(() => {
     const now = new Date();
     const currentFlags = flags || {
-      activeSeasonalTheme: 'none' as SeasonalTheme,
+      activeSeasonalTheme: "none" as SeasonalTheme,
       enabled: false,
       dateRanges: [],
     };
@@ -48,7 +53,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return {
       activeTheme,
       seasonalTheme,
-      isNightMode: activeTheme === 'night',
+      isNightMode: activeTheme === "night",
       setThemeOverride,
       themeOverride,
     };
@@ -56,20 +61,19 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     const htmlElement = document.documentElement;
-    const themeDataAttribute = contextValue.activeTheme === 'base'
-      ? null
-      : contextValue.activeTheme;
+    const themeDataAttribute =
+      contextValue.activeTheme === "base" ? null : contextValue.activeTheme;
 
     if (themeDataAttribute) {
-      htmlElement.setAttribute('data-theme', themeDataAttribute);
+      htmlElement.setAttribute("data-theme", themeDataAttribute);
     } else {
-      htmlElement.removeAttribute('data-theme');
+      htmlElement.removeAttribute("data-theme");
     }
 
     return () => {
-      htmlElement.removeAttribute('data-theme');
+      htmlElement.removeAttribute("data-theme");
     };
-  }, [contextValue.activeTheme]);
+  }, [contextValue.activeTheme, flags]);
 
   return (
     <ThemeContext.Provider value={contextValue}>

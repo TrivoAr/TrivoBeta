@@ -3,9 +3,8 @@ import Navbar from "../components/Navbar";
 import { Toaster } from "sonner";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
-import 'mapbox-gl/dist/mapbox-gl.css';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 export const metadata = {
   title: "Trivo app",
@@ -21,7 +20,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <head>
         {/* Google Analytics */}
-        
+
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-2C913CYW7H"
@@ -36,8 +35,6 @@ export default function RootLayout({
             `,
           }}
         />
-   
-
       </head>
       <body className="flex flex-col items-center w-full">
         <Toaster richColors position="top-right" />

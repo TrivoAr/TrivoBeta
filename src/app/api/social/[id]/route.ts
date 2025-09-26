@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
-import { SalidaSocialRepository, NotFoundError, UnauthorizedError } from "@/libs/repository";
+import {
+  SalidaSocialRepository,
+  NotFoundError,
+  UnauthorizedError,
+} from "@/libs/repository";
 import { ImageService } from "@/libs/services/ImageService";
 
 export async function GET(
@@ -19,7 +23,6 @@ export async function GET(
     console.log("Salida social encontrada y preparada:", salida.nombre);
 
     return NextResponse.json(salida, { status: 200 });
-
   } catch (error) {
     console.error("[GET_SALIDA_BY_ID] Error:", error);
 
@@ -27,10 +30,13 @@ export async function GET(
       return NextResponse.json({ message: error.message }, { status: 404 });
     }
 
-    return NextResponse.json({
-      message: "Server Error",
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: "Server Error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -66,10 +72,13 @@ export async function PATCH(
       return NextResponse.json({ message: error.message }, { status: 403 });
     }
 
-    return NextResponse.json({
-      message: "Error al actualizar",
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: "Error al actualizar",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -86,10 +95,7 @@ export async function DELETE(
 
     const repository = new SalidaSocialRepository();
 
-    await repository.deleteWithOwnerCheck(
-      params.id,
-      session.user.id
-    );
+    await repository.deleteWithOwnerCheck(params.id, session.user.id);
 
     return NextResponse.json({ message: "Salida eliminada" }, { status: 200 });
   } catch (error) {
@@ -103,9 +109,12 @@ export async function DELETE(
       return NextResponse.json({ message: error.message }, { status: 403 });
     }
 
-    return NextResponse.json({
-      message: "Error al eliminar",
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        message: "Error al eliminar",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }

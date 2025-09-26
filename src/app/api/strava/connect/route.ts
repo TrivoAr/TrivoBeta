@@ -1,7 +1,8 @@
 // pages/api/strava/connect.ts
 import { NextResponse } from "next/server";
 
-export async function GET() {   // <- IMPORTANTE: debe ser GET
+export async function GET() {
+  // <- IMPORTANTE: debe ser GET
   const clientId = process.env.STRAVA_CLIENT_ID;
   const redirectUri = process.env.STRAVA_REDIRECT_URI;
 

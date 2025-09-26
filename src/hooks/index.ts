@@ -1,15 +1,28 @@
 // Custom hooks exports
-export { useFavorites, useMultipleFavorites } from './useFavorites';
-export type { UseFavoritesOptions, UseFavoritesReturn } from './useFavorites';
+export { useFavorites, useMultipleFavorites } from "./useFavorites";
+export type { UseFavoritesOptions, UseFavoritesReturn } from "./useFavorites";
 
-export { useMembers, useMemberManagement, useMemberStats } from './useMembers';
-export type { Member, UseMembersOptions, UseMembersReturn } from './useMembers';
+export { useMembers, useMemberManagement, useMemberStats } from "./useMembers";
+export type { Member, UseMembersOptions, UseMembersReturn } from "./useMembers";
 
-export { useAsyncState, useAsyncList, useAsyncPagination } from './useAsyncState';
-export type { AsyncState, UseAsyncStateOptions, UseAsyncStateReturn } from './useAsyncState';
+export {
+  useAsyncState,
+  useAsyncList,
+  useAsyncPagination,
+} from "./useAsyncState";
+export type {
+  AsyncState,
+  UseAsyncStateOptions,
+  UseAsyncStateReturn,
+} from "./useAsyncState";
 
-export { useForm } from './useForm';
-export type { FormState, UseFormOptions, FormHelpers, FieldProps } from './useForm';
+export { useForm } from "./useForm";
+export type {
+  FormState,
+  UseFormOptions,
+  FormHelpers,
+  FieldProps,
+} from "./useForm";
 
 // Hook utilities and patterns
 // Commented out due to TypeScript compilation issues
@@ -53,21 +66,24 @@ export const HookConfigurations = {
   /**
    * Standard favorites configuration
    */
-  favorites: (itemType: 'sociales' | 'academias' | 'teamsocial', itemId: string) => ({
+  favorites: (
+    itemType: "sociales" | "academias" | "teamsocial",
+    itemId: string
+  ) => ({
     itemType,
     itemId,
     showLoginModal: undefined, // To be provided by component
-    onFavoriteChange: undefined // To be provided by component
+    onFavoriteChange: undefined, // To be provided by component
   }),
 
   /**
    * Standard members configuration
    */
-  members: (eventId: string, eventType: 'social' | 'team-social') => ({
+  members: (eventId: string, eventType: "social" | "team-social") => ({
     eventId,
     eventType,
     onlyApproved: true,
-    refreshInterval: 30000 // 30 seconds
+    refreshInterval: 30000, // 30 seconds
   }),
 
   /**
@@ -76,7 +92,7 @@ export const HookConfigurations = {
   asyncState: <T>() => ({
     initialData: null as T | null,
     resetErrorOnRequest: true,
-    keepDataOnReload: false
+    keepDataOnReload: false,
   }),
 
   /**
@@ -87,6 +103,6 @@ export const HookConfigurations = {
     validateOnChange: true,
     validateOnBlur: true,
     validateOnMount: false,
-    resetOnSubmit: false
-  })
+    resetOnSubmit: false,
+  }),
 } as const;

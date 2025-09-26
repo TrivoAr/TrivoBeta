@@ -6,13 +6,16 @@ import { Types } from "mongoose";
 
 export const dynamic = "force-dynamic"; // evita SSG/caché para nuevos códigos
 
-export default async function ShortRedirect({ params }: { params: { shortId: string } }) {
+export default async function ShortRedirect({
+  params,
+}: {
+  params: { shortId: string };
+}) {
   await connectDB();
 
-  const ev = await SalidaSocial
-    .findOne({ shortId: params.shortId })
+  const ev = (await SalidaSocial.findOne({ shortId: params.shortId })
     .select("_id")
-    .lean() as { _id: Types.ObjectId } | null;
+    .lean()) as { _id: Types.ObjectId } | null;
 
   if (!ev?._id) {
     redirect("/404");
@@ -21,4 +24,3 @@ export default async function ShortRedirect({ params }: { params: { shortId: str
   const id = ev._id.toString(); // <-- convertir a string
   redirect(`/social/${id}`);
 }
-

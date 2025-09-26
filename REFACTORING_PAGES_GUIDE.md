@@ -21,6 +21,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 ### 1. Sistema de Componentes de Formularios
 
 #### **BaseFormField.tsx**
+
 - **Propósito**: Campo de formulario reutilizable con integración React Hook Form
 - **Características**:
   - Soporte para múltiples tipos de input (text, email, password, textarea, select, checkbox, radio, file, date, time)
@@ -28,6 +29,7 @@ Este documento describe el refactoring realizado para las páginas principales d
   - Renderizado personalizable con `renderCustomInput`
   - Componentes especializados: `RadioGroup`, `FileField`
 - **Uso**:
+
 ```jsx
 <BaseFormField
   name="nombreSalida"
@@ -36,12 +38,13 @@ Este documento describe el refactoring realizado para las páginas principales d
   required
   validation={{
     required: "El nombre es requerido",
-    minLength: { value: 3, message: "Mínimo 3 caracteres" }
+    minLength: { value: 3, message: "Mínimo 3 caracteres" },
   }}
 />
 ```
 
 #### **LocationPicker.tsx**
+
 - **Propósito**: Selector de ubicación con GPS y búsqueda
 - **Características**:
   - Integración con GPS (`useGeolocation`)
@@ -51,6 +54,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 - **Hooks incluidos**: `useGeolocation`, `useReverseGeocode`, `useLocationPicker`
 
 #### **DateTimePicker.tsx**
+
 - **Propósito**: Selector de fecha y hora avanzado
 - **Características**:
   - Soporte para date, time, datetime-local
@@ -60,6 +64,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 - **Utilidades**: `DateTimeUtils` con funciones de formateo y validación
 
 #### **ImageUploader.tsx**
+
 - **Propósito**: Carga de imágenes con preview y validación
 - **Características**:
   - Drag & drop
@@ -72,6 +77,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 ### 2. Custom Hooks para Lógica Común
 
 #### **useGPS.ts**
+
 - **Propósito**: Manejo completo de geolocalización
 - **Hooks**:
   - `useGPS`: Gestión principal de GPS con watching y error handling
@@ -83,6 +89,7 @@ Este documento describe el refactoring realizado para las páginas principales d
   - Integración con Google Maps
 
 #### **useMapbox.ts**
+
 - **Propósito**: Integración completa con Mapbox
 - **Hooks**:
   - `useMapbox`: Gestión principal del mapa
@@ -94,6 +101,7 @@ Este documento describe el refactoring realizado para las páginas principales d
   - Event handling para clicks en mapa
 
 #### **useFormSubmission.ts**
+
 - **Propósito**: Manejo avanzado de envío de formularios
 - **Hooks**:
   - `useFormSubmission`: Hook base para cualquier formulario
@@ -109,6 +117,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 ### 3. Layouts Reutilizables
 
 #### **PageLayout.tsx**
+
 - **Componentes**:
   - `PageLayout`: Layout base para páginas
   - `DashboardLayout`: Layout específico para dashboards con stats
@@ -121,6 +130,7 @@ Este documento describe el refactoring realizado para las páginas principales d
   - Área de acciones en header
 
 #### **CardLayout.tsx**
+
 - **Componentes**:
   - `CardLayout`: Layout base para tarjetas
   - `SocialEventCard`: Tarjeta específica para eventos sociales
@@ -135,16 +145,19 @@ Este documento describe el refactoring realizado para las páginas principales d
 ## 📊 Beneficios del Refactoring
 
 ### Reducción de Código
+
 - **Dashboard**: De 565 líneas a ~200 líneas estimadas (65% reducción)
 - **Crear Evento**: De 1203 líneas a ~300 líneas estimadas (75% reducción)
 - **Código Reutilizable**: +2000 líneas de componentes y hooks reutilizables
 
 ### Mejoras en Mantenibilidad
+
 - **Separación de Responsabilidades**: UI, lógica de negocio, y estado separados
 - **Testing**: Cada hook y componente puede ser testeado independientemente
 - **Consistencia**: Mismos componentes en toda la aplicación
 
 ### Escalabilidad
+
 - **Nuevas Páginas**: Usar layouts y componentes existentes
 - **Nuevas Funcionalidades**: Extender hooks existentes
 - **Nuevos Tipos de Formularios**: Reutilizar BaseFormField y hooks
@@ -152,6 +165,7 @@ Este documento describe el refactoring realizado para las páginas principales d
 ## 🔧 Plan de Implementación
 
 ### Fase 1: Refactoring del Dashboard
+
 ```jsx
 // ANTES (565 líneas)
 export default function Dashboard() {
@@ -176,6 +190,7 @@ export default function Dashboard() {
 ```
 
 ### Fase 2: Refactoring del Formulario de Crear Evento
+
 ```jsx
 // ANTES (1203 líneas)
 export default function CrearSalida() {
@@ -200,6 +215,7 @@ export default function CrearSalida() {
 ```
 
 ### Fase 3: Componentes Específicos
+
 ```jsx
 const CreateEventForm = () => (
   <>
@@ -248,17 +264,20 @@ src/
 ## 💡 Patrones de Uso Recomendados
 
 ### Para Formularios
+
 1. Usar `FormProvider` de React Hook Form
 2. Envolver en `FormLayout` para consistencia
 3. Usar componentes específicos (`BaseFormField`, `LocationPicker`, etc.)
 4. Implementar validaciones con hooks personalizados
 
 ### Para Páginas de Lista
+
 1. Usar `ListLayout` con empty states
 2. Implementar tarjetas con `CardLayout` o componentes específicos
 3. Manejar loading y error states en el layout
 
 ### Para Dashboards
+
 1. Usar `DashboardLayout` con stats configurables
 2. Dividir en secciones/componentes específicos
 3. Usar `StatCard` para métricas importantes
@@ -272,4 +291,4 @@ src/
 
 ---
 
-*Esta guía será actualizada conforme se implementen los refactorings y se identifiquen nuevos patrones.*
+_Esta guía será actualizada conforme se implementen los refactorings y se identifiquen nuevos patrones._

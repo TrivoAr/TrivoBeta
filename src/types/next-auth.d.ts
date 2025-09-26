@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import { DefaultSession, DefaultUser } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -26,10 +26,10 @@ declare module "next-auth" {
         athlete_id: number;
       };
       dni?: string;
-    };
+    } & DefaultSession["user"];
   }
 
-  interface User {
+  interface User extends DefaultUser {
     id: string;
     email: string;
     firstname: string;
@@ -52,9 +52,6 @@ declare module "next-auth" {
       expires_at: number;
       athlete_id: number;
     };
-
     dni?: string;
   }
 }
-
-

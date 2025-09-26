@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 /**
  * Metric Types
  */
-export type MetricType = 'counter' | 'gauge' | 'histogram' | 'timer';
+export type MetricType = "counter" | "gauge" | "histogram" | "timer";
 
 export type MetricValue = number | string | boolean;
 
@@ -30,7 +30,7 @@ export interface PerformanceEntry {
   startTime: number;
   endTime?: number;
   duration?: number;
-  type: 'navigation' | 'api' | 'component' | 'user-action' | 'system';
+  type: "navigation" | "api" | "component" | "user-action" | "system";
   metadata: Record<string, any>;
 }
 
@@ -39,7 +39,7 @@ export interface PerformanceEntry {
  */
 export interface ObservabilityEvent {
   name: string;
-  type: 'info' | 'warn' | 'error' | 'debug' | 'critical';
+  type: "info" | "warn" | "error" | "debug" | "critical";
   timestamp: number;
   userId?: string;
   sessionId?: string;
@@ -57,7 +57,7 @@ export interface ObservabilityEvent {
  */
 export interface HealthCheck {
   name: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   latency?: number;
   message?: string;
   timestamp: number;
@@ -115,24 +115,24 @@ export class ObservabilitySystem {
       sampling: {
         events: 1.0,
         metrics: 1.0,
-        performance: 1.0
+        performance: 1.0,
       },
       retention: {
         events: 24 * 60 * 60 * 1000, // 24 hours
-        metrics: 60 * 60 * 1000,     // 1 hour
-        performance: 30 * 60 * 1000  // 30 minutes
+        metrics: 60 * 60 * 1000, // 1 hour
+        performance: 30 * 60 * 1000, // 30 minutes
       },
       maxEntries: {
         events: 1000,
         metrics: 5000,
-        performance: 1000
+        performance: 1000,
       },
       autoFlush: {
         enabled: true,
         interval: 60 * 1000, // 1 minute
-        batchSize: 100
+        batchSize: 100,
       },
-      ...config
+      ...config,
     };
 
     this.sessionId = this.generateSessionId();
@@ -146,12 +146,12 @@ export class ObservabilitySystem {
   recordMetric(
     name: string,
     value: MetricValue,
-    type: MetricType = 'gauge',
+    type: MetricType = "gauge",
     tags: Record<string, string> = {},
     unit?: string,
     description?: string
   ): void {
-    if (!this.config.enabled || !this.shouldSample('metrics')) return;
+    if (!this.config.enabled || !this.shouldSample("metrics")) return;
 
     const metric: Metric = {
       name,
@@ -160,7 +160,7 @@ export class ObservabilitySystem {
       timestamp: Date.now(),
       tags: { ...tags, sessionId: this.sessionId },
       unit,
-      description
+      description,
     };
 
     if (!this.metrics.has(name)) {
@@ -175,28 +175,40 @@ export class ObservabilitySystem {
       metricList.splice(0, metricList.length - this.config.maxEntries.metrics);
     }
 
-    this.cleanup('metrics');
+    this.cleanup("metrics");
   }
 
   /**
    * Increment a counter metric
    */
-  incrementCounter(name: string, value: number = 1, tags: Record<string, string> = {}): void {
-    this.recordMetric(name, value, 'counter', tags);
+  incrementCounter(
+    name: string,
+    value = 1,
+    tags: Record<string, string> = {}
+  ): void {
+    this.recordMetric(name, value, "counter", tags);
   }
 
   /**
    * Set a gauge metric
    */
-  setGauge(name: string, value: number, tags: Record<string, string> = {}): void {
-    this.recordMetric(name, value, 'gauge', tags);
+  setGauge(
+    name: string,
+    value: number,
+    tags: Record<string, string> = {}
+  ): void {
+    this.recordMetric(name, value, "gauge", tags);
   }
 
   /**
    * Record a histogram metric
    */
-  recordHistogram(name: string, value: number, tags: Record<string, string> = {}): void {
-    this.recordMetric(name, value, 'histogram', tags);
+  recordHistogram(
+    name: string,
+    value: number,
+    tags: Record<string, string> = {}
+  ): void {
+    this.recordMetric(name, value, "histogram", tags);
   }
 
   /**
@@ -215,7 +227,7 @@ export class ObservabilitySystem {
 
     const duration = Date.now() - startTime;
     this.timers.delete(name);
-    this.recordMetric(name, duration, 'timer', tags, 'ms');
+    this.recordMetric(name, duration, "timer", tags, "ms");
 
     return duration;
   }
@@ -225,11 +237,11 @@ export class ObservabilitySystem {
    */
   recordEvent(
     name: string,
-    type: ObservabilityEvent['type'] = 'info',
+    type: ObservabilityEvent["type"] = "info",
     metadata: Record<string, any> = {},
-    context?: ObservabilityEvent['context']
+    context?: ObservabilityEvent["context"]
   ): void {
-    if (!this.config.enabled || !this.shouldSample('events')) return;
+    if (!this.config.enabled || !this.shouldSample("events")) return;
 
     const event: ObservabilityEvent = {
       name,
@@ -238,10 +250,11 @@ export class ObservabilitySystem {
       sessionId: this.sessionId,
       metadata,
       context: {
-        url: typeof window !== 'undefined' ? window.location.href : undefined,
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-        ...context
-      }
+        url: typeof window !== "undefined" ? window.location.href : undefined,
+        userAgent:
+          typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+        ...context,
+      },
     };
 
     this.events.push(event);
@@ -251,7 +264,7 @@ export class ObservabilitySystem {
       this.events.splice(0, this.events.length - this.config.maxEntries.events);
     }
 
-    this.cleanup('events');
+    this.cleanup("events");
   }
 
   /**
@@ -259,12 +272,12 @@ export class ObservabilitySystem {
    */
   recordPerformance(
     name: string,
-    type: PerformanceEntry['type'],
+    type: PerformanceEntry["type"],
     startTime: number,
     endTime?: number,
     metadata: Record<string, any> = {}
   ): void {
-    if (!this.config.enabled || !this.shouldSample('performance')) return;
+    if (!this.config.enabled || !this.shouldSample("performance")) return;
 
     const entry: PerformanceEntry = {
       name,
@@ -272,17 +285,20 @@ export class ObservabilitySystem {
       endTime,
       duration: endTime ? endTime - startTime : undefined,
       type,
-      metadata: { ...metadata, sessionId: this.sessionId }
+      metadata: { ...metadata, sessionId: this.sessionId },
     };
 
     this.performanceEntries.push(entry);
 
     // Enforce max entries
     if (this.performanceEntries.length > this.config.maxEntries.performance) {
-      this.performanceEntries.splice(0, this.performanceEntries.length - this.config.maxEntries.performance);
+      this.performanceEntries.splice(
+        0,
+        this.performanceEntries.length - this.config.maxEntries.performance
+      );
     }
 
-    this.cleanup('performance');
+    this.cleanup("performance");
   }
 
   /**
@@ -297,28 +313,34 @@ export class ObservabilitySystem {
   ): void {
     this.recordPerformance(
       `api_call_${method}_${endpoint}`,
-      'api',
+      "api",
       Date.now() - duration,
       Date.now(),
       {
         endpoint,
         method,
         statusCode,
-        ...metadata
+        ...metadata,
       }
     );
 
     // Also record as metrics
-    this.recordMetric('api_calls_total', 1, 'counter', {
+    this.recordMetric("api_calls_total", 1, "counter", {
       endpoint,
       method,
-      status: statusCode.toString()
+      status: statusCode.toString(),
     });
 
-    this.recordMetric('api_call_duration', duration, 'histogram', {
-      endpoint,
-      method
-    }, 'ms');
+    this.recordMetric(
+      "api_call_duration",
+      duration,
+      "histogram",
+      {
+        endpoint,
+        method,
+      },
+      "ms"
+    );
   }
 
   /**
@@ -331,18 +353,24 @@ export class ObservabilitySystem {
   ): void {
     this.recordPerformance(
       `component_render_${componentName}`,
-      'component',
+      "component",
       Date.now() - renderTime,
       Date.now(),
       {
         componentName,
-        ...metadata
+        ...metadata,
       }
     );
 
-    this.recordMetric('component_render_time', renderTime, 'histogram', {
-      component: componentName
-    }, 'ms');
+    this.recordMetric(
+      "component_render_time",
+      renderTime,
+      "histogram",
+      {
+        component: componentName,
+      },
+      "ms"
+    );
   }
 
   /**
@@ -355,12 +383,12 @@ export class ObservabilitySystem {
   ): void {
     this.recordEvent(
       `user_action_${action}`,
-      'info',
+      "info",
       { action, ...metadata },
       { userId }
     );
 
-    this.incrementCounter('user_actions_total', 1, { action });
+    this.incrementCounter("user_actions_total", 1, { action });
   }
 
   /**
@@ -368,7 +396,7 @@ export class ObservabilitySystem {
    */
   registerHealthCheck(
     name: string,
-    checkFunction: () => Promise<Omit<HealthCheck, 'name' | 'timestamp'>>
+    checkFunction: () => Promise<Omit<HealthCheck, "name" | "timestamp">>
   ): void {
     const runCheck = async () => {
       try {
@@ -380,23 +408,36 @@ export class ObservabilitySystem {
           name,
           timestamp: Date.now(),
           latency,
-          ...result
+          ...result,
         };
 
         this.healthChecks.set(name, healthCheck);
-        this.recordMetric('health_check_latency', latency, 'gauge', { check: name }, 'ms');
-        this.recordMetric('health_check_status', result.status === 'healthy' ? 1 : 0, 'gauge', { check: name });
-
+        this.recordMetric(
+          "health_check_latency",
+          latency,
+          "gauge",
+          { check: name },
+          "ms"
+        );
+        this.recordMetric(
+          "health_check_status",
+          result.status === "healthy" ? 1 : 0,
+          "gauge",
+          { check: name }
+        );
       } catch (error) {
         const healthCheck: HealthCheck = {
           name,
-          status: 'unhealthy',
+          status: "unhealthy",
           message: (error as Error).message,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         this.healthChecks.set(name, healthCheck);
-        this.recordEvent('health_check_failed', 'error', { check: name, error: (error as Error).message });
+        this.recordEvent("health_check_failed", "error", {
+          check: name,
+          error: (error as Error).message,
+        });
       }
     };
 
@@ -418,9 +459,9 @@ export class ObservabilitySystem {
   /**
    * Get events
    */
-  getEvents(type?: ObservabilityEvent['type']): ObservabilityEvent[] {
+  getEvents(type?: ObservabilityEvent["type"]): ObservabilityEvent[] {
     if (type) {
-      return this.events.filter(event => event.type === type);
+      return this.events.filter((event) => event.type === type);
     }
     return this.events;
   }
@@ -428,9 +469,9 @@ export class ObservabilitySystem {
   /**
    * Get performance entries
    */
-  getPerformanceEntries(type?: PerformanceEntry['type']): PerformanceEntry[] {
+  getPerformanceEntries(type?: PerformanceEntry["type"]): PerformanceEntry[] {
     if (type) {
-      return this.performanceEntries.filter(entry => entry.type === type);
+      return this.performanceEntries.filter((entry) => entry.type === type);
     }
     return this.performanceEntries;
   }
@@ -455,16 +496,19 @@ export class ObservabilitySystem {
     };
   } {
     const checks = Array.from(this.healthChecks.values());
-    const healthy = checks.every(check => check.status === 'healthy');
+    const healthy = checks.every((check) => check.status === "healthy");
 
     return {
       healthy,
       checks,
       metrics: {
-        totalMetrics: Array.from(this.metrics.values()).reduce((sum, list) => sum + list.length, 0),
+        totalMetrics: Array.from(this.metrics.values()).reduce(
+          (sum, list) => sum + list.length,
+          0
+        ),
         totalEvents: this.events.length,
-        totalPerformanceEntries: this.performanceEntries.length
-      }
+        totalPerformanceEntries: this.performanceEntries.length,
+      },
     };
   }
 
@@ -485,7 +529,7 @@ export class ObservabilitySystem {
       performance: this.performanceEntries,
       healthChecks: Array.from(this.healthChecks.values()),
       sessionId: this.sessionId,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -511,16 +555,22 @@ export class ObservabilitySystem {
     // In a real implementation, you would send data to your observability backend
     if (this.config.endpoints?.metrics) {
       await this.sendData(this.config.endpoints.metrics, {
-        metrics: Array.from(data.metrics.entries()).flatMap(([name, metrics]) => metrics)
+        metrics: Array.from(data.metrics.entries()).flatMap(
+          ([name, metrics]) => metrics
+        ),
       });
     }
 
     if (this.config.endpoints?.events) {
-      await this.sendData(this.config.endpoints.events, { events: data.events });
+      await this.sendData(this.config.endpoints.events, {
+        events: data.events,
+      });
     }
 
     if (this.config.endpoints?.performance) {
-      await this.sendData(this.config.endpoints.performance, { performance: data.performance });
+      await this.sendData(this.config.endpoints.performance, {
+        performance: data.performance,
+      });
     }
   }
 
@@ -537,7 +587,7 @@ export class ObservabilitySystem {
   /**
    * Check if should sample
    */
-  private shouldSample(type: keyof ObservabilityConfig['sampling']): boolean {
+  private shouldSample(type: keyof ObservabilityConfig["sampling"]): boolean {
     return Math.random() < this.config.sampling[type];
   }
 
@@ -563,46 +613,52 @@ export class ObservabilitySystem {
    * Initialize Performance Observer for browser metrics
    */
   private initializePerformanceObserver(): void {
-    if (typeof window === 'undefined' || !window.PerformanceObserver) return;
+    if (typeof window === "undefined" || !window.PerformanceObserver) return;
 
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           this.recordPerformance(
             entry.name,
-            'navigation',
+            "navigation",
             entry.startTime,
             entry.startTime + entry.duration,
             {
               entryType: entry.entryType,
               transferSize: (entry as any).transferSize,
-              encodedBodySize: (entry as any).encodedBodySize
+              encodedBodySize: (entry as any).encodedBodySize,
             }
           );
         }
       });
 
-      observer.observe({ entryTypes: ['navigation', 'resource', 'measure', 'mark'] });
+      observer.observe({
+        entryTypes: ["navigation", "resource", "measure", "mark"],
+      });
     } catch (error) {
-      console.warn('Performance Observer not supported:', error);
+      console.warn("Performance Observer not supported:", error);
     }
   }
 
   /**
    * Cleanup old entries
    */
-  private cleanup(type: 'events' | 'metrics' | 'performance'): void {
+  private cleanup(type: "events" | "metrics" | "performance"): void {
     const now = Date.now();
     const retention = this.config.retention[type];
 
     switch (type) {
-      case 'events':
-        this.events = this.events.filter(event => now - event.timestamp < retention);
+      case "events":
+        this.events = this.events.filter(
+          (event) => now - event.timestamp < retention
+        );
         break;
 
-      case 'metrics':
+      case "metrics":
         for (const [name, metricList] of Array.from(this.metrics.entries())) {
-          const filteredMetrics = metricList.filter(metric => now - metric.timestamp < retention);
+          const filteredMetrics = metricList.filter(
+            (metric) => now - metric.timestamp < retention
+          );
           if (filteredMetrics.length === 0) {
             this.metrics.delete(name);
           } else {
@@ -611,9 +667,9 @@ export class ObservabilitySystem {
         }
         break;
 
-      case 'performance':
+      case "performance":
         this.performanceEntries = this.performanceEntries.filter(
-          entry => now - entry.startTime < retention
+          (entry) => now - entry.startTime < retention
         );
         break;
     }
@@ -625,9 +681,9 @@ export class ObservabilitySystem {
   private async sendData(endpoint: string, data: any): Promise<void> {
     try {
       await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
     } catch (error) {
       console.warn(`Failed to send observability data to ${endpoint}:`, error);
@@ -642,12 +698,9 @@ export const PerformanceMonitor = {
   /**
    * Monitor function execution time
    */
-  time<T extends (...args: any[]) => any>(
-    fn: T,
-    name?: string
-  ): T {
+  time<T extends (...args: any[]) => any>(fn: T, name?: string): T {
     return ((...args: any[]) => {
-      const functionName = name || fn.name || 'anonymous';
+      const functionName = name || fn.name || "anonymous";
       observabilitySystem.startTimer(functionName);
 
       try {
@@ -663,9 +716,9 @@ export const PerformanceMonitor = {
         }
       } catch (error) {
         observabilitySystem.stopTimer(functionName);
-        observabilitySystem.recordEvent('function_error', 'error', {
+        observabilitySystem.recordEvent("function_error", "error", {
           function: functionName,
-          error: (error as Error).message
+          error: (error as Error).message,
         });
         throw error;
       }
@@ -679,7 +732,8 @@ export const PerformanceMonitor = {
     Component: React.ComponentType<P>,
     name?: string
   ): React.ComponentType<P> {
-    const componentName = name || Component.displayName || Component.name || 'Unknown';
+    const componentName =
+      name || Component.displayName || Component.name || "Unknown";
 
     return (props: P) => {
       const startTime = Date.now();
@@ -691,33 +745,35 @@ export const PerformanceMonitor = {
 
       return React.createElement(Component, props);
     };
-  }
+  },
 };
 
 /**
  * Global observability system instance
  */
 export const observabilitySystem = new ObservabilitySystem({
-  enabled: process.env.NODE_ENV !== 'test',
+  enabled: process.env.NODE_ENV !== "test",
   sampling: {
-    events: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
+    events: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
     metrics: 1.0,
-    performance: process.env.NODE_ENV === 'development' ? 1.0 : 0.5
-  }
+    performance: process.env.NODE_ENV === "development" ? 1.0 : 0.5,
+  },
 });
 
 // Register default health checks
-observabilitySystem.registerHealthCheck('api', async () => {
+observabilitySystem.registerHealthCheck("api", async () => {
   try {
-    const response = await fetch('/api/health');
+    const response = await fetch("/api/health");
     return {
-      status: response.ok ? 'healthy' : 'degraded',
-      message: response.ok ? 'API is responding' : `API returned ${response.status}`
+      status: response.ok ? "healthy" : "degraded",
+      message: response.ok
+        ? "API is responding"
+        : `API returned ${response.status}`,
     };
   } catch {
     return {
-      status: 'unhealthy',
-      message: 'API is not reachable'
+      status: "unhealthy",
+      message: "API is not reachable",
     };
   }
 });
@@ -728,14 +784,17 @@ observabilitySystem.registerHealthCheck('api', async () => {
 export function useObservability() {
   return {
     recordMetric: observabilitySystem.recordMetric.bind(observabilitySystem),
-    incrementCounter: observabilitySystem.incrementCounter.bind(observabilitySystem),
+    incrementCounter:
+      observabilitySystem.incrementCounter.bind(observabilitySystem),
     setGauge: observabilitySystem.setGauge.bind(observabilitySystem),
     recordEvent: observabilitySystem.recordEvent.bind(observabilitySystem),
-    recordUserAction: observabilitySystem.recordUserAction.bind(observabilitySystem),
+    recordUserAction:
+      observabilitySystem.recordUserAction.bind(observabilitySystem),
     startTimer: observabilitySystem.startTimer.bind(observabilitySystem),
     stopTimer: observabilitySystem.stopTimer.bind(observabilitySystem),
     getMetrics: observabilitySystem.getMetrics.bind(observabilitySystem),
     getEvents: observabilitySystem.getEvents.bind(observabilitySystem),
-    getSystemStatus: observabilitySystem.getSystemStatus.bind(observabilitySystem)
+    getSystemStatus:
+      observabilitySystem.getSystemStatus.bind(observabilitySystem),
   };
 }

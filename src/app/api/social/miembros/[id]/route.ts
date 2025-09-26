@@ -7,7 +7,10 @@ import SalidaSocial from "@/models/salidaSocial";
 import Pago from "@/models/pagos";
 import mongoose from "mongoose";
 import { revalidateTag } from "next/cache";
-import { notifyMemberApproved, notifyMemberRejected } from "@/libs/notificationHelpers";
+import {
+  notifyMemberApproved,
+  notifyMemberRejected,
+} from "@/libs/notificationHelpers";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -105,7 +108,7 @@ export async function PATCH(
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
       return jsonErr("No autorizado", 401);
     }
@@ -125,7 +128,7 @@ export async function PATCH(
 
     const salida = (miembroCompleto as any).salida_id;
     const usuario = (miembroCompleto as any).usuario_id;
-    
+
     if (!salida || !usuario) return jsonErr("Datos incompletos", 404);
 
     const cupo = typeof salida.cupo === "number" ? salida.cupo : 0;
@@ -189,9 +192,9 @@ export async function DELETE(
 
     const miembro = await MiembroSalida.findById(params.id)
       .populate("salida_id", "creador_id")
-      .lean<{ 
-        _id: string; 
-        salida_id: string | { _id: string; creador_id: string } 
+      .lean<{
+        _id: string;
+        salida_id: string | { _id: string; creador_id: string };
       }>();
 
     if (!miembro) return jsonErr("Miembro no encontrado", 404);

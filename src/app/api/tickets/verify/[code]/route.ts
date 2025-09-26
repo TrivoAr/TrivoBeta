@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
 import Ticket from "@/models/ticket";
 
-
 // export async function GET(_: Request, { params }: { params: { code: string } }) {
 //   await connectDB();
 
@@ -23,7 +22,6 @@ import Ticket from "@/models/ticket";
 //     redeemedAt: t.redeemedAt ?? null,
 //   });
 // }
-
 
 // type LeanTicket = {
 //   status?: "issued" | "redeemed" | "invalid";
@@ -65,8 +63,6 @@ import Ticket from "@/models/ticket";
 //   }
 // }
 
-
-
 import SalidaSocial from "@/models/salidaSocial"; // 👈 importa el modelo
 
 type TicketWithSalida = {
@@ -76,18 +72,20 @@ type TicketWithSalida = {
   salidaId?: { nombre?: string } | null;
 };
 
-
-export async function GET(_: Request, { params }: { params: { code: string } }) {
+export async function GET(
+  _: Request,
+  { params }: { params: { code: string } }
+) {
   await connectDB();
 
   try {
-    const t = await Ticket.findOne({ code: params.code })
+    const t = (await Ticket.findOne({ code: params.code })
       .populate({
         path: "salidaId",
         model: SalidaSocial, // 👈 usamos directamente el modelo importado
         select: "nombre",
       })
-      .lean() as TicketWithSalida | null;
+      .lean()) as TicketWithSalida | null;
 
     console.log("[VERIFY POPULATED TICKET]", t);
 
@@ -102,14 +100,16 @@ export async function GET(_: Request, { params }: { params: { code: string } }) 
     return NextResponse.json({
       status: t.status ?? "invalid",
       redeemedAt: t.redeemedAt ?? null,
-      salidaNombre: t.salidaId && typeof t.salidaId === "object"
-        ? (t.salidaId as any).nombre
-        : null,
+      salidaNombre:
+        t.salidaId && typeof t.salidaId === "object"
+          ? (t.salidaId as any).nombre
+          : null,
     });
   } catch (err) {
     console.error("[VERIFY ERROR]", err);
-    return NextResponse.json({ status: "invalid", error: "server_error" }, { status: 500 });
+    return NextResponse.json(
+      { status: "invalid", error: "server_error" },
+      { status: 500 }
+    );
   }
 }
-
-

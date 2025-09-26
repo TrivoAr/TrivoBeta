@@ -18,7 +18,9 @@ export default function ScanPage({ params }: { params: { id: string } }) {
       <div className="w-full max-w-xs rounded-lg overflow-hidden shadow-md">
         <Scanner onScan={handleScan} />
       </div>
-      {result && <p className="mt-3 text-sm text-slate-600">Escaneado: {result}</p>}
+      {result && (
+        <p className="mt-3 text-sm text-slate-600">Escaneado: {result}</p>
+      )}
     </main>
   );
 }

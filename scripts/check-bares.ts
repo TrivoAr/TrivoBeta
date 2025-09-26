@@ -21,7 +21,9 @@ async function checkBares() {
 
     if (allBares.length === 0) {
       console.log("\n⚠️ No hay bares en la base de datos");
-      console.log("💡 Ejecuta 'npm run add-bares' para agregar bares de ejemplo");
+      console.log(
+        "💡 Ejecuta 'npm run add-bares' para agregar bares de ejemplo"
+      );
       return;
     }
 
@@ -31,9 +33,11 @@ async function checkBares() {
     activeBares.forEach((bar, index) => {
       console.log(`${index + 1}. ${bar.name}`);
       console.log(`   🆔 ID: ${bar._id}`);
-      console.log(`   📍 Ubicación: ${bar.direccion || 'Sin dirección'}`);
-      console.log(`   🌍 Coordenadas: ${bar.locationCoords.lat}, ${bar.locationCoords.lng}`);
-      console.log(`   🖼️ Logo: ${bar.logo ? '✅' : '❌'}`);
+      console.log(`   📍 Ubicación: ${bar.direccion || "Sin dirección"}`);
+      console.log(
+        `   🌍 Coordenadas: ${bar.locationCoords.lat}, ${bar.locationCoords.lng}`
+      );
+      console.log(`   🖼️ Logo: ${bar.logo ? "✅" : "❌"}`);
       console.log(`   🎠 Carrusel: ${bar.imagenesCarrusel.length} imágenes`);
       console.log(`   📅 Creado: ${bar.createdAt.toLocaleDateString()}`);
       console.log(`   📝 Actualizado: ${bar.updatedAt.toLocaleDateString()}`);
@@ -62,7 +66,11 @@ async function checkBares() {
       if (!bar.imagenesCarrusel || bar.imagenesCarrusel.length === 0) {
         issues.push("Sin imágenes de carrusel");
       }
-      if (!bar.locationCoords || !bar.locationCoords.lat || !bar.locationCoords.lng) {
+      if (
+        !bar.locationCoords ||
+        !bar.locationCoords.lat ||
+        !bar.locationCoords.lng
+      ) {
         issues.push("Coordenadas inválidas");
       }
 
@@ -77,7 +85,6 @@ async function checkBares() {
     }
 
     console.log("\n🎉 Verificación completada!");
-
   } catch (error) {
     console.error("❌ Error al verificar bares:", error);
     throw error;

@@ -20,7 +20,7 @@ export default function SearchFilters({
   options,
   selected,
   onSelect,
-  className = ""
+  className = "",
 }: SearchFiltersProps) {
   return (
     <div className={`space-y-3 ${className}`}>
@@ -32,19 +32,16 @@ export default function SearchFilters({
             onClick={() => onSelect(option.key)}
             className={`
               flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
-              ${selected === option.key
-                ? "bg-[#C95100] text-white shadow-md"
-                : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              ${
+                selected === option.key
+                  ? "bg-[#C95100] text-white shadow-md"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }
             `}
           >
             <div className="flex items-center gap-2">
               {option.icon && (
-                <img
-                  src={option.icon}
-                  alt={option.label}
-                  className="w-4 h-4"
-                />
+                <img src={option.icon} alt={option.label} className="w-4 h-4" />
               )}
               <span>{option.label}</span>
             </div>

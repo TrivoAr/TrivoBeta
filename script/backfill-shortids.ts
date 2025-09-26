@@ -1,11 +1,17 @@
 // scripts/backfill-shortids.ts
-import 'dotenv/config';
-import { connectDB } from '../src/libs/mongodb';
-import SalidaSocial from '../src/models/salidaSocial';
-import { customAlphabet } from 'nanoid';
+import "dotenv/config";
+import { connectDB } from "../src/libs/mongodb";
+import SalidaSocial from "../src/models/salidaSocial";
+import { customAlphabet } from "nanoid";
 
-const nanoid8 = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
-const nanoid12 = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
+const nanoid8 = customAlphabet(
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  8
+);
+const nanoid12 = customAlphabet(
+  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  12
+);
 
 async function generateUniqueShortId() {
   for (let i = 0; i < 6; i++) {
@@ -20,15 +26,10 @@ async function main() {
   await connectDB();
 
   // 1) Documentos sin shortId (null/""/no existe)
-  const missing = await SalidaSocial
-    .find({
-      $or: [
-        { shortId: { $exists: false } },
-        { shortId: null },
-        { shortId: '' },
-      ],
-    })
-    .select('_id')
+  const missing = await SalidaSocial.find({
+    $or: [{ shortId: { $exists: false } }, { shortId: null }, { shortId: "" }],
+  })
+    .select("_id")
     .lean();
 
   const ops: any[] = [];
@@ -45,7 +46,7 @@ async function main() {
   // 2) (Opcional) Resolver duplicados si los hubiera
   const duplicates = await SalidaSocial.aggregate([
     { $match: { shortId: { $ne: null } } },
-    { $group: { _id: '$shortId', ids: { $push: '$_id' }, count: { $sum: 1 } } },
+    { $group: { _id: "$shortId", ids: { $push: "$_id" }, count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
   ]);
 
@@ -63,7 +64,7 @@ async function main() {
     const res = await SalidaSocial.bulkWrite(ops);
     console.log(`Backfill listo. Modificados: ${res.modifiedCount}`);
   } else {
-    console.log('No hay documentos para actualizar.');
+    console.log("No hay documentos para actualizar.");
   }
 
   process.exit(0);

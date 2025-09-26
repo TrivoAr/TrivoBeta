@@ -18,11 +18,11 @@ interface Notification {
 // Hook para obtener todas las notificaciones
 export function useNotifications() {
   return useQuery({
-    queryKey: ['notifications'],
+    queryKey: ["notifications"],
     queryFn: async (): Promise<Notification[]> => {
-      const response = await fetch('/api/notificaciones');
+      const response = await fetch("/api/notificaciones");
       if (!response.ok) {
-        throw new Error('Error al cargar notificaciones');
+        throw new Error("Error al cargar notificaciones");
       }
       return response.json();
     },
@@ -37,25 +37,31 @@ export function useMarkNotificationAsRead() {
 
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      const response = await fetch(`/api/notificaciones/${notificationId}/markAsRead`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/notificaciones/${notificationId}/markAsRead`,
+        {
+          method: "POST",
+        }
+      );
       if (!response.ok) {
-        throw new Error('Error al marcar notificación como leída');
+        throw new Error("Error al marcar notificación como leída");
       }
       return response.json();
     },
     onSuccess: (_, notificationId) => {
       // Actualizar el cache local
-      queryClient.setQueryData(['notifications'], (oldData: Notification[] | undefined) => {
-        if (!oldData) return oldData;
-        
-        return oldData.map(notification =>
-          notification._id === notificationId
-            ? { ...notification, read: true }
-            : notification
-        );
-      });
+      queryClient.setQueryData(
+        ["notifications"],
+        (oldData: Notification[] | undefined) => {
+          if (!oldData) return oldData;
+
+          return oldData.map((notification) =>
+            notification._id === notificationId
+              ? { ...notification, read: true }
+              : notification
+          );
+        }
+      );
     },
   });
 }
@@ -63,15 +69,17 @@ export function useMarkNotificationAsRead() {
 // Hook para obtener el conteo de notificaciones no leídas
 export function useUnreadNotificationsCount() {
   const { data: notifications } = useNotifications();
-  
-  return notifications?.filter(notification => !notification.read).length || 0;
+
+  return (
+    notifications?.filter((notification) => !notification.read).length || 0
+  );
 }
 
 // Hook para invalidar y refrescar notificaciones
 export function useRefreshNotifications() {
   const queryClient = useQueryClient();
-  
+
   return () => {
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 }

@@ -8,10 +8,13 @@ import { v4 as uuidv4 } from "uuid";
  * @param barId - ID del bar (opcional, se genera si no se proporciona)
  * @returns URL de descarga del logo
  */
-export async function saveBarLogo(logoFile: File, barId?: string): Promise<string> {
+export async function saveBarLogo(
+  logoFile: File,
+  barId?: string
+): Promise<string> {
   try {
     const id = barId || uuidv4();
-    const fileExtension = logoFile.name.split('.').pop() || 'jpg';
+    const fileExtension = logoFile.name.split(".").pop() || "jpg";
     const fileName = `logo.${fileExtension}`;
 
     // Referencia en Firebase Storage: bares/{barId}/logo.jpg
@@ -36,23 +39,28 @@ export async function saveBarLogo(logoFile: File, barId?: string): Promise<strin
  * @param barId - ID del bar (opcional, se genera si no se proporciona)
  * @returns Array de URLs de descarga
  */
-export async function saveBarCarouselImages(imageFiles: File[], barId?: string): Promise<string[]> {
+export async function saveBarCarouselImages(
+  imageFiles: File[],
+  barId?: string
+): Promise<string[]> {
   try {
     const id = barId || uuidv4();
     const uploadPromises: Promise<string>[] = [];
 
-    console.log(`[FIREBASE] Subiendo ${imageFiles.length} imágenes del carrusel para bar ${id}...`);
+    console.log(
+      `[FIREBASE] Subiendo ${imageFiles.length} imágenes del carrusel para bar ${id}...`
+    );
 
     imageFiles.forEach((file, index) => {
-      const fileExtension = file.name.split('.').pop() || 'jpg';
+      const fileExtension = file.name.split(".").pop() || "jpg";
       const fileName = `carousel_${index + 1}.${fileExtension}`;
 
       // Referencia en Firebase Storage: bares/{barId}/carousel/carousel_1.jpg
       const imageRef = ref(storage, `bares/${id}/carousel/${fileName}`);
 
       const uploadPromise = uploadBytes(imageRef, file)
-        .then(snapshot => getDownloadURL(snapshot.ref))
-        .then(url => {
+        .then((snapshot) => getDownloadURL(snapshot.ref))
+        .then((url) => {
           console.log(`[FIREBASE] Imagen ${index + 1} subida: ${url}`);
           return url;
         });
@@ -61,7 +69,9 @@ export async function saveBarCarouselImages(imageFiles: File[], barId?: string):
     });
 
     const imageUrls = await Promise.all(uploadPromises);
-    console.log(`[FIREBASE] ${imageUrls.length} imágenes del carrusel subidas exitosamente`);
+    console.log(
+      `[FIREBASE] ${imageUrls.length} imágenes del carrusel subidas exitosamente`
+    );
 
     return imageUrls;
   } catch (error) {
@@ -85,20 +95,24 @@ export async function saveAllBarImages(
   try {
     const id = barId || uuidv4();
 
-    console.log(`[FIREBASE] Iniciando subida de todas las imágenes para bar ${id}...`);
+    console.log(
+      `[FIREBASE] Iniciando subida de todas las imágenes para bar ${id}...`
+    );
 
     // Subir logo y carrusel en paralelo
     const [logoUrl, carouselUrls] = await Promise.all([
       saveBarLogo(logoFile, id),
-      saveBarCarouselImages(carouselFiles, id)
+      saveBarCarouselImages(carouselFiles, id),
     ]);
 
-    console.log(`[FIREBASE] Todas las imágenes subidas exitosamente para bar ${id}`);
+    console.log(
+      `[FIREBASE] Todas las imágenes subidas exitosamente para bar ${id}`
+    );
 
     return {
       logo: logoUrl,
       imagenesCarrusel: carouselUrls,
-      barId: id
+      barId: id,
     };
   } catch (error) {
     console.error("[FIREBASE] Error al subir todas las imágenes:", error);
@@ -119,12 +133,14 @@ export async function deleteBarImages(barId: string): Promise<void> {
     const listResult = await listAll(barFolderRef);
 
     // Eliminar archivos en la carpeta raíz (logo)
-    const deletePromises = listResult.items.map(item => deleteObject(item));
+    const deletePromises = listResult.items.map((item) => deleteObject(item));
 
     // Eliminar archivos en subcarpetas (carousel)
     for (const folder of listResult.prefixes) {
       const folderList = await listAll(folder);
-      deletePromises.push(...folderList.items.map(item => deleteObject(item)));
+      deletePromises.push(
+        ...folderList.items.map((item) => deleteObject(item))
+      );
     }
 
     await Promise.all(deletePromises);
@@ -148,17 +164,21 @@ export async function updateCarouselImage(
   imageIndex: number
 ): Promise<string> {
   try {
-    const fileExtension = newImageFile.name.split('.').pop() || 'jpg';
+    const fileExtension = newImageFile.name.split(".").pop() || "jpg";
     const fileName = `carousel_${imageIndex + 1}.${fileExtension}`;
 
     const imageRef = ref(storage, `bares/${barId}/carousel/${fileName}`);
 
-    console.log(`[FIREBASE] Actualizando imagen ${imageIndex + 1} del carrusel para bar ${barId}...`);
+    console.log(
+      `[FIREBASE] Actualizando imagen ${imageIndex + 1} del carrusel para bar ${barId}...`
+    );
 
     const snapshot = await uploadBytes(imageRef, newImageFile);
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    console.log(`[FIREBASE] Imagen ${imageIndex + 1} actualizada: ${downloadURL}`);
+    console.log(
+      `[FIREBASE] Imagen ${imageIndex + 1} actualizada: ${downloadURL}`
+    );
     return downloadURL;
   } catch (error) {
     console.error("[FIREBASE] Error al actualizar imagen del carrusel:", error);

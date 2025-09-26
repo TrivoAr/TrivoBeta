@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, FormEvent, HtmlHTMLAttributes, useMemo } from "react";
+import {
+  useEffect,
+  useState,
+  FormEvent,
+  HtmlHTMLAttributes,
+  useMemo,
+} from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -55,7 +61,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
         ...response.data.grupo,
         dias: Array.isArray(response.data.grupo.dias)
           ? response.data.grupo.dias
-          : response.data.grupo.dias?.split(",") ?? [],
+          : (response.data.grupo.dias?.split(",") ?? []),
       }));
 
       if (response.data.grupo.locationCoords) {
@@ -64,7 +70,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
         setMarkerPos(defaultCoords);
       }
 
-       toast.success("Datos cargados con éxito", { id: toastId });
+      toast.success("Datos cargados con éxito", { id: toastId });
     } catch (error) {
       console.error("Error al cargar los datos:", error);
       toast.error("Error al cargar los datos del grupo.", { id: toastId });
@@ -107,7 +113,8 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       console.error("Error:", error);
       if (error instanceof AxiosError) {
         setIsSubmitting(false);
-        const errorMessage = error.response?.data?.message || "Error en la solicitud";
+        const errorMessage =
+          error.response?.data?.message || "Error en la solicitud";
         toast.error(errorMessage);
       } else {
         setIsSubmitting(false);
@@ -161,19 +168,18 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
   };
 
   const handleCoordsChange = async (coords: LatLng) => {
-  setMarkerPos(coords);
+    setMarkerPos(coords);
 
-  const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
+    const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
 
-  setFormData((prev) => ({
-    ...prev,
-    ubicacion: direccion || prev.ubicacion,
-    lat: coords.lat,
-    lng: coords.lng,
-    locationCoords: coords,
-  }));
-};
-
+    setFormData((prev) => ({
+      ...prev,
+      ubicacion: direccion || prev.ubicacion,
+      lat: coords.lat,
+      lng: coords.lng,
+      locationCoords: coords,
+    }));
+  };
 
   const handleSuggestionClick = (suggestion: any) => {
     const coords = {
@@ -219,48 +225,54 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
   // };
 
   const handleDelete = () => {
-  toast.custom((t) => (
-  <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col w-[300px] gap-3">
-    <p className="text-sm text-gray-800">
-      ¿Estás seguro de que deseas eliminar este grupo?
-    </p>
-    <div className="flex justify-end gap-2">
-      <button
-        onClick={async () => {
-          toast.dismiss(t.id);
-          const toastId = toast.loading("Eliminando grupo...");
+    toast.custom(
+      (t) => (
+        <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col w-[300px] gap-3">
+          <p className="text-sm text-gray-800">
+            ¿Estás seguro de que deseas eliminar este grupo?
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                const toastId = toast.loading("Eliminando grupo...");
 
-          try {
-            const response = await axios.delete(`/api/grupos/${params.id}/eliminar`);
-            if (response.status === 200) {
-              toast.success("¡Grupo eliminado con éxito!", { id: toastId });
-              router.push("/dashboard");
-            } else {
-              throw new Error("Error al eliminar el grupo");
-            }
-          } catch (error) {
-            toast.error("Error al eliminar el grupo.", { id: toastId });
-          }
-        }}
-        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
-      >
-        Sí, eliminar
-      </button>
-      <button
-        onClick={() => toast.dismiss(t.id)}
-        className="text-gray-600 hover:text-black px-3 py-1 text-sm"
-      >
-        Cancelar
-      </button>
-    </div>
-  </div>
-), {
-  duration: Infinity // 🔒 se mantiene visible hasta que el usuario actúe
-});
-};
+                try {
+                  const response = await axios.delete(
+                    `/api/grupos/${params.id}/eliminar`
+                  );
+                  if (response.status === 200) {
+                    toast.success("¡Grupo eliminado con éxito!", {
+                      id: toastId,
+                    });
+                    router.push("/dashboard");
+                  } else {
+                    throw new Error("Error al eliminar el grupo");
+                  }
+                } catch (error) {
+                  toast.error("Error al eliminar el grupo.", { id: toastId });
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm rounded"
+            >
+              Sí, eliminar
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="text-gray-600 hover:text-black px-3 py-1 text-sm"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, // 🔒 se mantiene visible hasta que el usuario actúe
+      }
+    );
+  };
 
-
-    const fetchSuggestions = (q: string) => {
+  const fetchSuggestions = (q: string) => {
     fetch(`/api/search?q=${encodeURIComponent(q)}`)
       .then((res) => res.json())
       .then((data) => setSuggestions(data))
@@ -270,37 +282,33 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       });
   };
 
+  const fetchAddressFromCoords = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return data.display_name as string;
+    } catch (error) {
+      console.error("Error al obtener dirección inversa:", error);
+      return "";
+    }
+  };
 
+  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
 
-   const fetchAddressFromCoords = async (lat: number, lon: number) => {
-      try {
-        const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
-        const data = await res.json();
-        return data.display_name as string;
-      } catch (error) {
-        console.error("Error al obtener dirección inversa:", error);
-        return "";
-      }
+  useEffect(() => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    debouncedFetch(query);
+  }, [query, debouncedFetch]);
+
+  // Cleanup para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
     };
-  
-    const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
-  
-    useEffect(() => {
-      if (query.length < 3) {
-        setSuggestions([]);
-        return;
-      }
-      debouncedFetch(query);
-    }, [query, debouncedFetch]);
-  
-    // Cleanup para evitar memory leaks
-    useEffect(() => {
-      return () => {
-        debouncedFetch.cancel();
-      };
-    }, [debouncedFetch]);
-
-
+  }, [debouncedFetch]);
 
   return (
     <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9">
@@ -581,36 +589,35 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-
-         <button
-            className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
-            disabled={isSubmitting}
-            type="submit"
-          >
-            {isSubmitting ? "Guardando cambios" : "Guardar cambios"}
-            {isSubmitting && (
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
-            )}
-          </button>
+        <button
+          className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"
+          disabled={isSubmitting}
+          type="submit"
+        >
+          {isSubmitting ? "Guardando cambios" : "Guardar cambios"}
+          {isSubmitting && (
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          )}
+        </button>
 
         <button
           type="button"

@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import Academia from "../../models/academia";
 
@@ -12,7 +12,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   // Verificar que el usuario tenga el rol de "dueño"
   if (session.user.rol !== "dueño de academia") {
-    return res.status(403).json({ message: "No tienes permisos para crear una academia" });
+    return res
+      .status(403)
+      .json({ message: "No tienes permisos para crear una academia" });
   }
 
   if (req.method === "POST") {

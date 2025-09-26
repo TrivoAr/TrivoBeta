@@ -32,65 +32,64 @@ export default function ReseñasPage() {
   const router = useRouter();
   const reviewsPerPage = 5;
   useEffect(() => {
-  const fetchReviews = async () => {
-    try {
-      const res = await axios.get(`/api/reviews/academia/${params.id}`);
-      const allReviews = res.data.reviews as Review[];
+    const fetchReviews = async () => {
+      try {
+        const res = await axios.get(`/api/reviews/academia/${params.id}`);
+        const allReviews = res.data.reviews as Review[];
 
-      // Agregar imagen de perfil a cada autor
-      const reviewsConImagen = await Promise.all(
-        allReviews.map(async (review) => {
-          try {
-            const profileImage = await getProfileImage(
-              "profile-image.jpg",
-              review.author._id
-            );
+        // Agregar imagen de perfil a cada autor
+        const reviewsConImagen = await Promise.all(
+          allReviews.map(async (review) => {
+            try {
+              const profileImage = await getProfileImage(
+                "profile-image.jpg",
+                review.author._id
+              );
 
-            return {
-              ...review,
-              author: {
-                ...review.author,
-                imagen: profileImage,
-              },
-            };
-          } catch (error) {
-            console.error(
-              `Error al obtener la imagen del usuario ${review.author._id}:`,
-              error
-            );
-            return {
-              ...review,
-              author: {
-                ...review.author,
-                imagen:
-                  "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
-              },
-            };
-          }
-        })
-      );
+              return {
+                ...review,
+                author: {
+                  ...review.author,
+                  imagen: profileImage,
+                },
+              };
+            } catch (error) {
+              console.error(
+                `Error al obtener la imagen del usuario ${review.author._id}:`,
+                error
+              );
+              return {
+                ...review,
+                author: {
+                  ...review.author,
+                  imagen:
+                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+                },
+              };
+            }
+          })
+        );
 
-      // Ordenar por fecha descendente
-      const sorted = reviewsConImagen.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+        // Ordenar por fecha descendente
+        const sorted = reviewsConImagen.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
-      setReviews(sorted);
-      setAverageRating(res.data.average);
-      setFilteredReviews(sorted);
-    } catch (error) {
-      console.error("Error al cargar reseñas:", error);
-    } finally {
-      setLoading(false);
+        setReviews(sorted);
+        setAverageRating(res.data.average);
+        setFilteredReviews(sorted);
+      } catch (error) {
+        console.error("Error al cargar reseñas:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchReviews();
     }
-  };
-
-  if (params.id) {
-    fetchReviews();
-  }
-}, [params.id]);
-
+  }, [params.id]);
 
   const handleFilterChange = (rating: number | null) => {
     setSelectedRating(rating);

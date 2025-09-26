@@ -2,7 +2,7 @@
 // import { NextResponse } from "next/server";
 // import { getServerSession } from "next-auth";
 // import Review from "@/models/Review";
-// import { authOptions } from "../../../libs/authOptions"; 
+// import { authOptions } from "../../../libs/authOptions";
 // import User from "@/models/user";
 // import Academia from "@/models/academia";
 // import { connectDB } from "@/libs/mongodb";
@@ -48,7 +48,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import Review from "@/models/Review";
-import { authOptions } from "../../../libs/authOptions"; 
+import { authOptions } from "../../../libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 
 export async function POST(req) {
@@ -66,11 +66,17 @@ export async function POST(req) {
   }
 
   if (!profesorId && !academiaId) {
-    return NextResponse.json({ error: "Debe reseñar un profesor o una academia" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Debe reseñar un profesor o una academia" },
+      { status: 400 }
+    );
   }
 
   if (profesorId && academiaId) {
-    return NextResponse.json({ error: "Solo puede reseñar uno a la vez" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Solo puede reseñar uno a la vez" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -98,13 +104,15 @@ export async function POST(req) {
     });
 
     return NextResponse.json(newReview, { status: 201 });
-
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -123,11 +131,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const review = await Review.findById(id);
 
     if (!review) {
-      return NextResponse.json({ error: "Reseña no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Reseña no encontrada" },
+        { status: 404 }
+      );
     }
 
     if (review.author.toString() !== session.user.id) {
-      return NextResponse.json({ error: "No autorizado para editar esta reseña" }, { status: 403 });
+      return NextResponse.json(
+        { error: "No autorizado para editar esta reseña" },
+        { status: 403 }
+      );
     }
 
     review.rating = rating;
@@ -135,10 +149,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     await review.save();
 
     return NextResponse.json(review, { status: 200 });
-
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-

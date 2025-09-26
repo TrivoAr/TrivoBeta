@@ -33,7 +33,10 @@
       "Bash(npx tsx:*)",
       "Bash(netstat:*)",
       "Read(//c/Users/matia/Downloads/**)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(node:*)",
+      "Read(//c/**)",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []

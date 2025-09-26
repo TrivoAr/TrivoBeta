@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export interface UseFavoritesOptions {
   showLoginModal?: () => void;
@@ -40,7 +40,7 @@ export interface UseFavoritesReturn {
  * ```
  */
 export function useFavorites(
-  itemType: 'sociales' | 'academias' | 'teamsocial',
+  itemType: "sociales" | "academias" | "teamsocial",
   itemId: string,
   options: UseFavoritesOptions = {}
 ): UseFavoritesReturn {
@@ -60,8 +60,8 @@ export function useFavorites(
     try {
       setError(null);
       const response = await fetch(`/api/favoritos/${itemType}/${itemId}`, {
-        method: 'GET',
-        cache: 'no-store'
+        method: "GET",
+        cache: "no-store",
       });
 
       if (response.ok) {
@@ -69,7 +69,7 @@ export function useFavorites(
         setIsFavorite(data.favorito || false);
       }
     } catch (err) {
-      console.warn('[useFavorites] Failed to check favorite status:', err);
+      console.warn("[useFavorites] Failed to check favorite status:", err);
       // Silently fail - favorite check is not critical
     }
   }, [session?.user?.id, itemType, itemId]);
@@ -119,12 +119,19 @@ export function useFavorites(
       const message = "Hubo un error al actualizar favoritos.";
       toast.error(message);
       setError(message);
-      console.error('[useFavorites] Toggle failed:', err);
+      console.error("[useFavorites] Toggle failed:", err);
       return isFavorite; // Return current state on error
     } finally {
       setIsLoading(false);
     }
-  }, [session?.user?.id, itemType, itemId, isFavorite, showLoginModal, onFavoriteChange]);
+  }, [
+    session?.user?.id,
+    itemType,
+    itemId,
+    isFavorite,
+    showLoginModal,
+    onFavoriteChange,
+  ]);
 
   /**
    * Refresh favorite status (useful after login or when needed)
@@ -152,7 +159,7 @@ export function useFavorites(
     error,
     toggleFavorite,
     checkFavorite,
-    refreshFavoriteStatus
+    refreshFavoriteStatus,
   };
 }
 
@@ -161,11 +168,11 @@ export function useFavorites(
  */
 function getItemTypeName(itemType: string): string {
   const typeNames = {
-    'sociales': 'Evento social',
-    'academias': 'Academia',
-    'teamsocial': 'Evento de equipo'
+    sociales: "Evento social",
+    academias: "Academia",
+    teamsocial: "Evento de equipo",
   };
-  return typeNames[itemType as keyof typeof typeNames] || 'Elemento';
+  return typeNames[itemType as keyof typeof typeNames] || "Elemento";
 }
 
 /**
@@ -173,7 +180,7 @@ function getItemTypeName(itemType: string): string {
  * Useful for lists or bulk operations
  */
 export function useMultipleFavorites(
-  itemType: 'sociales' | 'academias' | 'teamsocial',
+  itemType: "sociales" | "academias" | "teamsocial",
   itemIds: string[],
   options: UseFavoritesOptions = {}
 ) {
@@ -202,22 +209,28 @@ export function useMultipleFavorites(
           }
           return { itemId, isFavorite: false };
         } catch (err) {
-          console.warn(`[useMultipleFavorites] Failed to check favorite for ${itemId}:`, err);
+          console.warn(
+            `[useMultipleFavorites] Failed to check favorite for ${itemId}:`,
+            err
+          );
           return { itemId, isFavorite: false };
         }
       });
 
       const results = await Promise.all(promises);
-      const favoritesMap = results.reduce((acc, { itemId, isFavorite }) => {
-        acc[itemId] = isFavorite;
-        return acc;
-      }, {} as Record<string, boolean>);
+      const favoritesMap = results.reduce(
+        (acc, { itemId, isFavorite }) => {
+          acc[itemId] = isFavorite;
+          return acc;
+        },
+        {} as Record<string, boolean>
+      );
 
       setFavorites(favoritesMap);
     } catch (err) {
       const message = "Error al verificar favoritos";
       setError(message);
-      console.error('[useMultipleFavorites] Check failed:', err);
+      console.error("[useMultipleFavorites] Check failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -226,43 +239,48 @@ export function useMultipleFavorites(
   /**
    * Toggle favorite for a specific item
    */
-  const toggleFavorite = useCallback(async (itemId: string): Promise<boolean> => {
-    if (!session?.user?.id) {
-      const message = "Debes iniciar sesión para agregar a favoritos.";
-      toast.error(message);
-      setError(message);
-      options.showLoginModal?.();
-      return false;
-    }
+  const toggleFavorite = useCallback(
+    async (itemId: string): Promise<boolean> => {
+      if (!session?.user?.id) {
+        const message = "Debes iniciar sesión para agregar a favoritos.";
+        toast.error(message);
+        setError(message);
+        options.showLoginModal?.();
+        return false;
+      }
 
-    try {
-      const response = await axios.post(`/api/favoritos/${itemType}/${itemId}`);
-      const data = response.data;
-      const newFavoriteStatus = data.favorito;
+      try {
+        const response = await axios.post(
+          `/api/favoritos/${itemType}/${itemId}`
+        );
+        const data = response.data;
+        const newFavoriteStatus = data.favorito;
 
-      setFavorites(prev => ({
-        ...prev,
-        [itemId]: newFavoriteStatus
-      }));
+        setFavorites((prev) => ({
+          ...prev,
+          [itemId]: newFavoriteStatus,
+        }));
 
-      const itemTypeName = getItemTypeName(itemType);
-      const message = newFavoriteStatus
-        ? `${itemTypeName} agregado a favoritos`
-        : `${itemTypeName} eliminado de favoritos`;
+        const itemTypeName = getItemTypeName(itemType);
+        const message = newFavoriteStatus
+          ? `${itemTypeName} agregado a favoritos`
+          : `${itemTypeName} eliminado de favoritos`;
 
-      toast.success(message);
+        toast.success(message);
 
-      options.onFavoriteChange?.(newFavoriteStatus, itemId);
+        options.onFavoriteChange?.(newFavoriteStatus, itemId);
 
-      return newFavoriteStatus;
-    } catch (err) {
-      const message = "Error al actualizar favoritos";
-      toast.error(message);
-      setError(message);
-      console.error('[useMultipleFavorites] Toggle failed:', err);
-      return favorites[itemId] || false;
-    }
-  }, [session?.user?.id, itemType, favorites, options]);
+        return newFavoriteStatus;
+      } catch (err) {
+        const message = "Error al actualizar favoritos";
+        toast.error(message);
+        setError(message);
+        console.error("[useMultipleFavorites] Toggle failed:", err);
+        return favorites[itemId] || false;
+      }
+    },
+    [session?.user?.id, itemType, favorites, options]
+  );
 
   useEffect(() => {
     checkMultipleFavorites();
@@ -281,6 +299,6 @@ export function useMultipleFavorites(
     error,
     toggleFavorite,
     refreshFavorites: checkMultipleFavorites,
-    isFavorite: (itemId: string) => favorites[itemId] || false
+    isFavorite: (itemId: string) => favorites[itemId] || false,
   };
 }

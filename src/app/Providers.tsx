@@ -11,13 +11,16 @@ interface Props {
 }
 
 export default function Providers({ children }: Props) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000, // 1 minute
-      },
-    },
-  }));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+          },
+        },
+      })
+  );
 
   return (
     <SessionProvider>
@@ -28,9 +31,8 @@ export default function Providers({ children }: Props) {
           enableSystem
           disableTransitionOnChange
         >
-          <CustomThemeProvider>
-            {children}
-          </CustomThemeProvider>
+          <CustomThemeProvider>{children}</CustomThemeProvider>
+          ThemeProvider{" "}
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

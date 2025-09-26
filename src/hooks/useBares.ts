@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface Bar {
   _id: string;
@@ -34,18 +34,19 @@ export function useBares(params?: {
   limit?: number;
 }) {
   return useQuery({
-    queryKey: ['bares', params],
+    queryKey: ["bares", params],
     queryFn: async (): Promise<Bar[]> => {
       const searchParams = new URLSearchParams();
 
-      if (params?.lat) searchParams.append('lat', params.lat.toString());
-      if (params?.lng) searchParams.append('lng', params.lng.toString());
-      if (params?.radius) searchParams.append('radius', params.radius.toString());
-      if (params?.limit) searchParams.append('limit', params.limit.toString());
+      if (params?.lat) searchParams.append("lat", params.lat.toString());
+      if (params?.lng) searchParams.append("lng", params.lng.toString());
+      if (params?.radius)
+        searchParams.append("radius", params.radius.toString());
+      if (params?.limit) searchParams.append("limit", params.limit.toString());
 
       const response = await fetch(`/api/bares?${searchParams}`);
       if (!response.ok) {
-        throw new Error('Error al obtener bares');
+        throw new Error("Error al obtener bares");
       }
       return response.json();
     },
@@ -57,11 +58,11 @@ export function useBares(params?: {
 // Hook para obtener un bar específico
 export function useBar(id: string) {
   return useQuery({
-    queryKey: ['bar', id],
+    queryKey: ["bar", id],
     queryFn: async (): Promise<Bar> => {
       const response = await fetch(`/api/bares/${id}`);
       if (!response.ok) {
-        throw new Error('Error al obtener bar');
+        throw new Error("Error al obtener bar");
       }
       return response.json();
     },
@@ -76,24 +77,24 @@ export function useCreateBar() {
 
   return useMutation({
     mutationFn: async (barData: BarInput): Promise<Bar> => {
-      const response = await fetch('/api/bares', {
-        method: 'POST',
+      const response = await fetch("/api/bares", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(barData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Error al crear bar');
+        throw new Error(error.error || "Error al crear bar");
       }
 
       return response.json();
     },
     onSuccess: () => {
       // Invalidar todas las queries de bares
-      queryClient.invalidateQueries({ queryKey: ['bares'] });
+      queryClient.invalidateQueries({ queryKey: ["bares"] });
     },
   });
 }
@@ -103,26 +104,32 @@ export function useUpdateBar() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<BarInput> }): Promise<Bar> => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<BarInput>;
+    }): Promise<Bar> => {
       const response = await fetch(`/api/bares/${id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Error al actualizar bar');
+        throw new Error(error.error || "Error al actualizar bar");
       }
 
       return response.json();
     },
     onSuccess: (updatedBar) => {
       // Invalidar queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['bares'] });
-      queryClient.invalidateQueries({ queryKey: ['bar', updatedBar._id] });
+      queryClient.invalidateQueries({ queryKey: ["bares"] });
+      queryClient.invalidateQueries({ queryKey: ["bar", updatedBar._id] });
     },
   });
 }
@@ -134,29 +141,29 @@ export function useDeleteBar() {
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
       const response = await fetch(`/api/bares/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Error al eliminar bar');
+        throw new Error(error.error || "Error al eliminar bar");
       }
     },
     onSuccess: () => {
       // Invalidar queries de bares
-      queryClient.invalidateQueries({ queryKey: ['bares'] });
+      queryClient.invalidateQueries({ queryKey: ["bares"] });
     },
   });
 }
 
 // Hook para bares cercanos (usando geolocalización)
-export function useBaresCercanos(radius: number = 10) {
+export function useBaresCercanos(radius = 10) {
   return useQuery({
-    queryKey: ['bares-cercanos', radius],
+    queryKey: ["bares-cercanos", radius],
     queryFn: async (): Promise<Bar[]> => {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-          reject(new Error('Geolocalización no disponible'));
+          reject(new Error("Geolocalización no disponible"));
           return;
         }
 
@@ -169,7 +176,7 @@ export function useBaresCercanos(radius: number = 10) {
               );
 
               if (!response.ok) {
-                throw new Error('Error al obtener bares cercanos');
+                throw new Error("Error al obtener bares cercanos");
               }
 
               const bares = await response.json();
@@ -179,7 +186,7 @@ export function useBaresCercanos(radius: number = 10) {
             }
           },
           (error) => {
-            reject(new Error('Error al obtener ubicación'));
+            reject(new Error("Error al obtener ubicación"));
           },
           {
             enableHighAccuracy: true,

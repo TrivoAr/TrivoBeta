@@ -4,12 +4,17 @@ import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user";
 import TeamSocial from "@/models/teamSocial";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
-    return new Response(JSON.stringify({ message: "No autorizado" }), { status: 401 });
+    return new Response(JSON.stringify({ message: "No autorizado" }), {
+      status: 401,
+    });
   }
 
   const user = await User.findOne({ email: session.user.email });
@@ -22,18 +27,25 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return new Response(JSON.stringify({ favorito: esFavorito }));
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   await connectDB();
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {
-    return new Response(JSON.stringify({ message: "No autorizado" }), { status: 401 });
+    return new Response(JSON.stringify({ message: "No autorizado" }), {
+      status: 401,
+    });
   }
 
   const user = await User.findOne({ email: session.user.email });
 
   if (!user) {
-    return new Response(JSON.stringify({ message: "Usuario no encontrado" }), { status: 404 });
+    return new Response(JSON.stringify({ message: "Usuario no encontrado" }), {
+      status: 404,
+    });
   }
 
   if (!user.favoritos) {
@@ -49,7 +61,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   } else {
     const existeEvento = await TeamSocial.findById(params.id);
     if (!existeEvento) {
-      return new Response(JSON.stringify({ message: "Evento no encontrado" }), { status: 404 });
+      return new Response(JSON.stringify({ message: "Evento no encontrado" }), {
+        status: 404,
+      });
     }
     user.favoritos.teamSocial.push(params.id);
   }

@@ -9,7 +9,7 @@
 
 //   const storage = getStorage();
 //   const fileRef = ref(storage, `comprobantes/${session.user.id}-${Date.now()}-${file.name}`);
-  
+
 //   // Subir archivo
 //   await uploadBytes(fileRef, file);
 //   const url = await getDownloadURL(fileRef);

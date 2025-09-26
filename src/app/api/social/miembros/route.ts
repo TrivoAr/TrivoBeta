@@ -20,42 +20,55 @@ export async function GET(req: NextRequest) {
     Pago;
 
     console.log("[GET_MIEMBROS] DB connected");
-    
+
     const session = await getServerSession(authOptions);
     if (!session) {
       console.log("[GET_MIEMBROS] No session");
-      return new Response(JSON.stringify({ error: "No autorizado" }), { status: 401 });
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
+        status: 401,
+      });
     }
 
     salidaId = req.nextUrl.searchParams.get("salidaId");
     console.log("[GET_MIEMBROS] salidaId:", salidaId);
-    
+
     if (!salidaId) {
-      return new Response(JSON.stringify({ error: "Falta salidaId" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Falta salidaId" }), {
+        status: 400,
+      });
     }
 
     if (!mongoose.isValidObjectId(salidaId)) {
       console.log("[GET_MIEMBROS] Invalid ObjectId:", salidaId);
-      return new Response(JSON.stringify({ error: "salidaId inválido" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "salidaId inválido" }), {
+        status: 400,
+      });
     }
 
     console.log("[GET_MIEMBROS] Querying miembros for salidaId:", salidaId);
 
     // Add timeout for database query in production
-    const queryTimeout = process.env.NODE_ENV === 'production' ? 8000 : 15000;
+    const queryTimeout = process.env.NODE_ENV === "production" ? 8000 : 15000;
 
     // Verify that the salidaId exists in SalidaSocial first
     let salidaExists = false;
     try {
-      const salida = await SalidaSocial.findById(salidaId).select('_id').maxTimeMS(3000);
+      const salida = await SalidaSocial.findById(salidaId)
+        .select("_id")
+        .maxTimeMS(3000);
       salidaExists = !!salida;
       console.log("[GET_MIEMBROS] SalidaSocial exists:", salidaExists);
     } catch (salidaError) {
-      console.log("[GET_MIEMBROS] Error checking salida existence:", salidaError.message);
+      console.log(
+        "[GET_MIEMBROS] Error checking salida existence:",
+        salidaError.message
+      );
     }
 
     if (!salidaExists) {
-      console.log("[GET_MIEMBROS] SalidaSocial not found, returning empty array");
+      console.log(
+        "[GET_MIEMBROS] SalidaSocial not found, returning empty array"
+      );
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -70,12 +83,14 @@ export async function GET(req: NextRequest) {
     const miembros = await dbQueryPromise;
     console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
-
     // Process miembros with additional error handling
     const miembrosResults = await Promise.allSettled(
       miembros.map(async (m, index) => {
         try {
-          console.log(`[GET_MIEMBROS] Processing member ${index + 1}/${miembros.length}:`, m._id);
+          console.log(
+            `[GET_MIEMBROS] Processing member ${index + 1}/${miembros.length}:`,
+            m._id
+          );
 
           const usuario = m.usuario_id;
           const pago = m.pago_id;
@@ -90,25 +105,36 @@ export async function GET(req: NextRequest) {
               telnumber: "",
               imagen: `https://ui-avatars.com/api/?name=U&background=random&color=fff&size=128`,
               dni: "",
-              pago_id: pago ? { _id: pago._id, estado: pago.estado || "" } : null,
+              pago_id: pago
+                ? { _id: pago._id, estado: pago.estado || "" }
+                : null,
             };
           }
 
           let imagenUrl;
           try {
             // More aggressive timeout for production (1.5 seconds)
-            const timeoutDuration = process.env.NODE_ENV === 'production' ? 1500 : 3000;
+            const timeoutDuration =
+              process.env.NODE_ENV === "production" ? 1500 : 3000;
             const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Image fetch timeout')), timeoutDuration)
+              setTimeout(
+                () => reject(new Error("Image fetch timeout")),
+                timeoutDuration
+              )
             );
 
             // Race between image fetch and timeout
             imagenUrl = await Promise.race([
               getProfileImage("profile-image.jpg", usuario._id.toString()),
-              timeoutPromise
+              timeoutPromise,
             ]);
           } catch (imageError) {
-            console.log("[GET_MIEMBROS] Image fetch failed for user:", usuario._id, imageError?.message || "unknown error", "using fallback");
+            console.log(
+              "[GET_MIEMBROS] Image fetch failed for user:",
+              usuario._id,
+              imageError?.message || "unknown error",
+              "using fallback"
+            );
             imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
               usuario.firstname || "U"
             )}&length=1&background=random&color=fff&size=128`;
@@ -117,7 +143,9 @@ export async function GET(req: NextRequest) {
           return {
             _id: m._id,
             usuarioId: usuario._id,
-            nombre: `${usuario.firstname ?? ""} ${usuario.lastname ?? ""}`.trim() || usuario.email,
+            nombre:
+              `${usuario.firstname ?? ""} ${usuario.lastname ?? ""}`.trim() ||
+              usuario.email,
             email: usuario.email,
             telnumber: usuario.telnumber,
             imagen: imagenUrl,
@@ -126,14 +154,15 @@ export async function GET(req: NextRequest) {
           };
         } catch (e) {
           console.error("[GET_MIEMBROS] Error processing member:", m._id, e);
-          return { 
-            _id: m._id, 
+          return {
+            _id: m._id,
             nombre: "Error interno",
             email: "",
             telnumber: "",
-            imagen: "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
+            imagen:
+              "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
             dni: "",
-            pago_id: null
+            pago_id: null,
           };
         }
       })
@@ -142,10 +171,14 @@ export async function GET(req: NextRequest) {
     // Extract successful results and handle failed ones
     const miembrosConImagen = miembrosResults
       .map((result, index) => {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           return result.value;
         } else {
-          console.error("[GET_MIEMBROS] Promise failed for member at index:", index, result.reason);
+          console.error(
+            "[GET_MIEMBROS] Promise failed for member at index:",
+            index,
+            result.reason
+          );
           // Return a safe fallback member
           return {
             _id: miembros[index]?._id || `error_${index}`,
@@ -153,65 +186,75 @@ export async function GET(req: NextRequest) {
             nombre: "Error de carga",
             email: "",
             telnumber: "",
-            imagen: "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
+            imagen:
+              "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
             dni: "",
-            pago_id: miembros[index]?.pago_id ? {
-              _id: miembros[index].pago_id._id,
-              estado: miembros[index].pago_id.estado || "pendiente"
-            } : null
+            pago_id: miembros[index]?.pago_id
+              ? {
+                  _id: miembros[index].pago_id._id,
+                  estado: miembros[index].pago_id.estado || "pendiente",
+                }
+              : null,
           };
         }
       })
       .filter(Boolean); // Remove any null/undefined results
 
-    console.log("[GET_MIEMBROS] Returning", miembrosConImagen.length, "processed members");
+    console.log(
+      "[GET_MIEMBROS] Returning",
+      miembrosConImagen.length,
+      "processed members"
+    );
 
     return new Response(
-      JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+      JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (err) {
     console.error("[GET_MIEMBROS_ERROR]", {
       salidaId,
       environment: process.env.NODE_ENV,
       error: err instanceof Error ? err.message : err,
       stack: err instanceof Error ? err.stack : undefined,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // NEVER return 500 in production - always return valid empty array
     // This prevents the UI from breaking completely
-    if (process.env.NODE_ENV === 'production') {
-      console.log("[GET_MIEMBROS] Production fallback: returning empty array instead of error");
+    if (process.env.NODE_ENV === "production") {
+      console.log(
+        "[GET_MIEMBROS] Production fallback: returning empty array instead of error"
+      );
       return new Response(JSON.stringify([]), {
         status: 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     // Return more specific error information for debugging in development
     const errorMessage = err instanceof Error ? err.message : String(err);
-    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('time') || errorMessage.includes('maxTimeMS');
+    const isTimeout =
+      errorMessage.includes("timeout") ||
+      errorMessage.includes("time") ||
+      errorMessage.includes("maxTimeMS");
 
-    return new Response(JSON.stringify({
-      error: "Error interno en GET /miembros",
-      type: isTimeout ? "timeout" : "database_error",
-      details: errorMessage,
-      timestamp: new Date().toISOString()
-    }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Error interno en GET /miembros",
+        type: isTimeout ? "timeout" : "database_error",
+        details: errorMessage,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
-
-
-
-
-
-
-  
 
 export async function POST(req) {
   await connectDB();

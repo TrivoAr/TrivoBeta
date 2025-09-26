@@ -32,13 +32,11 @@ const NotificacionesPage = () => {
     fetchNotificaciones();
   }, []);
 
-    const markAsRead = async (id) => {
+  const markAsRead = async (id) => {
     try {
       await axios.post(`/api/notificaciones/${id}/markAsRead`);
       setNotificaciones((prev) =>
-        prev.map((n) =>
-          n._id === id ? { ...n, read: true } : n
-        )
+        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
     } catch (error) {
       console.error("Error marcando como leída", error);
@@ -60,7 +58,11 @@ const NotificacionesPage = () => {
       ) : (
         <div className="flex flex-col space-y-3">
           {notificaciones.map((n) => (
-            <NotificationItem key={n._id} notification={n} onMarkAsRead={markAsRead}/>
+            <NotificationItem
+              key={n._id}
+              notification={n}
+              onMarkAsRead={markAsRead}
+            />
           ))}
         </div>
       )}

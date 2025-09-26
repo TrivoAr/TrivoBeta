@@ -11,9 +11,12 @@ import { storage } from "@/libs/firebaseConfig";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
-import { useProvinces, useLocalitiesByProvince, useLocationFromCoords } from "@/hooks/useArgentinaLocations";
+import {
+  useProvinces,
+  useLocalitiesByProvince,
+  useLocationFromCoords,
+} from "@/hooks/useArgentinaLocations";
 import { useSponsors } from "@/hooks/useSponsors";
-
 
 const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
@@ -66,17 +69,22 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     lat: -26.8333,
     lng: -65.2167,
   });
-  
+
   // Estados para provincia/localidad
   const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [selectedLocality, setSelectedLocality] = useState<string>("");
-  
+
   // Hooks para Argentina locations
   const { data: provinces = [], isLoading: provincesLoading } = useProvinces();
-  const { data: localities = [], isLoading: localitiesLoading } = useLocalitiesByProvince(selectedProvince);
-  
+  const { data: localities = [], isLoading: localitiesLoading } =
+    useLocalitiesByProvince(selectedProvince);
+
   // Hook para sponsors
-  const { data: sponsorsData, isLoading: sponsorsLoading, error: sponsorsError } = useSponsors();
+  const {
+    data: sponsorsData,
+    isLoading: sponsorsLoading,
+    error: sponsorsError,
+  } = useSponsors();
 
   // -------- Query salida --------
   const salidaQuery = useQuery({
@@ -96,9 +104,11 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       // Asegurar que sponsors sea un array
       const salidaData = {
         ...salidaQuery.data,
-        sponsors: Array.isArray(salidaQuery.data.sponsors) 
-          ? salidaQuery.data.sponsors.map(s => typeof s === 'string' ? s : s._id)
-          : []
+        sponsors: Array.isArray(salidaQuery.data.sponsors)
+          ? salidaQuery.data.sponsors.map((s) =>
+              typeof s === "string" ? s : s._id
+            )
+          : [],
       };
       setLocalSalida(salidaData);
       if (salidaQuery.data.locationCoords) {
@@ -109,14 +119,15 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
       }
     }
   }, [salidaQuery.data]);
-  
+
   // Mapear localidad existente a provincia/localidad cuando se cargan los datos
   useEffect(() => {
     if (salidaQuery.data?.localidad && provinces.length > 0) {
       // Buscar en qué provincia está esta localidad
       for (const province of provinces) {
-        const locality = province.localities.find(l => 
-          l.name.toLowerCase() === salidaQuery.data.localidad.toLowerCase()
+        const locality = province.localities.find(
+          (l) =>
+            l.name.toLowerCase() === salidaQuery.data.localidad.toLowerCase()
         );
         if (locality) {
           setSelectedProvince(province.id);
@@ -205,7 +216,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     };
 
     if (!payload.profesorId) delete payload.profesorId;
-    if (!payload.sponsors || payload.sponsors.length === 0) delete payload.sponsors;
+    if (!payload.sponsors || payload.sponsors.length === 0)
+      delete payload.sponsors;
 
     updateMutation.mutate(payload);
   };
@@ -225,7 +237,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
     setLocalSalida((prev: any) => ({
       ...prev,
       ubicacion: s.display_name,
-      locationCoords: coords
+      locationCoords: coords,
     }));
     setMarkerPos(coords);
     setSuggestions([]);
@@ -270,14 +282,19 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   return (
     <div className="flex flex-col justify-center items-center bg-background mb-[150px]">
       <Toaster position="top-center" />
-      <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-background">
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-background"
+      >
         <h1 className="text-center font-normal text-2xl mb-4">Editar salida</h1>
 
         {/* Nombre */}
         <input
           name="nombre"
           value={localSalida?.nombre || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, nombre: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({ ...prev, nombre: e.target.value }))
+          }
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
           placeholder="Nombre"
         />
@@ -285,7 +302,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Localidad - Placeholder for province/locality system */}
         <select
           value={localSalida?.localidad || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, localidad: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              localidad: e.target.value,
+            }))
+          }
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Localidad</option>
@@ -298,7 +320,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Deporte */}
         <select
           value={localSalida?.deporte || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, deporte: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              deporte: e.target.value,
+            }))
+          }
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Selecciona un deporte</option>
@@ -311,7 +338,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Duración */}
         <select
           value={localSalida?.duracion || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, duracion: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              duracion: e.target.value,
+            }))
+          }
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Duración</option>
@@ -323,7 +355,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Dificultad */}
         <select
           value={localSalida?.dificultad || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, dificultad: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              dificultad: e.target.value,
+            }))
+          }
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         >
           <option value="">Dificultad</option>
@@ -336,7 +373,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <input
           name="precio"
           value={localSalida?.precio || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, precio: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({ ...prev, precio: e.target.value }))
+          }
           placeholder="Precio"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
@@ -345,7 +384,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <input
           name="alias"
           value={localSalida?.alias || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, alias: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({ ...prev, alias: e.target.value }))
+          }
           placeholder="Alias/CBU"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
@@ -355,7 +396,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           name="cupo"
           type="number"
           value={localSalida?.cupo || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, cupo: Number(e.target.value) }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              cupo: Number(e.target.value),
+            }))
+          }
           placeholder="Cupo"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
@@ -365,13 +411,20 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           <input
             type="date"
             value={localSalida?.fecha?.split("T")[0] || ""}
-            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, fecha: e.target.value }))}
+            onChange={(e) =>
+              setLocalSalida((prev: any) => ({
+                ...prev,
+                fecha: e.target.value,
+              }))
+            }
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
           />
           <input
             type="time"
             value={localSalida?.hora || ""}
-            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, hora: e.target.value }))}
+            onChange={(e) =>
+              setLocalSalida((prev: any) => ({ ...prev, hora: e.target.value }))
+            }
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
           />
         </div>
@@ -379,7 +432,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         {/* Descripción */}
         <DescriptionEditor
           value={localSalida?.descripcion ?? ""}
-          onChange={(val) => setLocalSalida((prev: any) => ({ ...prev, descripcion: val }))}
+          onChange={(val) =>
+            setLocalSalida((prev: any) => ({ ...prev, descripcion: val }))
+          }
           maxChars={2000}
         />
 
@@ -395,7 +450,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <input
           name="telefonoOrganizador"
           value={localSalida?.telefonoOrganizador || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, telefonoOrganizador: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              telefonoOrganizador: e.target.value,
+            }))
+          }
           placeholder="Teléfono organizador"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
@@ -404,7 +464,12 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         <input
           name="whatsappLink"
           value={localSalida?.whatsappLink || ""}
-          onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, whatsappLink: e.target.value }))}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              whatsappLink: e.target.value,
+            }))
+          }
           placeholder="Link de WhatsApp"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
@@ -414,10 +479,15 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           <label className="block text-sm font-medium">
             Profesor (opcional)
           </label>
-          
+
           <select
             value={localSalida?.profesorId || ""}
-            onChange={(e) => setLocalSalida((prev: any) => ({ ...prev, profesorId: e.target.value || undefined }))}
+            onChange={(e) =>
+              setLocalSalida((prev: any) => ({
+                ...prev,
+                profesorId: e.target.value || undefined,
+              }))
+            }
             className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
           >
             <option value="">Sin profesor</option>
@@ -427,24 +497,27 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
               </option>
             ))}
           </select>
-          
+
           {/* Mostrar preview del profesor seleccionado */}
           {localSalida?.profesorId && profesQuery.data && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px]">
               {(() => {
-                const selectedProfesor = profesQuery.data.find(p => p._id === localSalida.profesorId);
+                const selectedProfesor = profesQuery.data.find(
+                  (p) => p._id === localSalida.profesorId
+                );
                 return selectedProfesor ? (
                   <div className="flex items-center gap-3">
                     {selectedProfesor.imagen && (
-                      <img 
-                        src={selectedProfesor.imagen} 
+                      <img
+                        src={selectedProfesor.imagen}
                         alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
                         className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
                       />
                     )}
                     <div>
                       <p className="text-sm font-medium text-blue-800">
-                        👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname} {selectedProfesor.lastname}
+                        👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname}{" "}
+                        {selectedProfesor.lastname}
                       </p>
                       <p className="text-xs text-blue-600">
                         Este profesor aparecerá como instructor de la salida
@@ -462,7 +535,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
           <label className="block text-sm font-medium">
             Sponsor (opcional)
           </label>
-          
+
           {sponsorsLoading ? (
             <div className="w-full px-4 py-4 border shadow-md rounded-[15px] bg-gray-100 text-gray-500 flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -478,28 +551,35 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
                 Selecciona uno o más sponsors (opcional):
               </div>
               {sponsorsData?.data?.map((sponsor) => (
-                <label key={sponsor._id} className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer">
+                <label
+                  key={sponsor._id}
+                  className="flex items-center gap-3 p-3 border rounded-[15px] hover:bg-gray-50 cursor-pointer"
+                >
                   <input
                     type="checkbox"
-                    checked={localSalida?.sponsors?.includes(sponsor._id) || false}
+                    checked={
+                      localSalida?.sponsors?.includes(sponsor._id) || false
+                    }
                     onChange={(e) => {
                       if (e.target.checked) {
                         setLocalSalida((prev: any) => ({
                           ...prev,
-                          sponsors: [...(prev.sponsors || []), sponsor._id]
+                          sponsors: [...(prev.sponsors || []), sponsor._id],
                         }));
                       } else {
                         setLocalSalida((prev: any) => ({
                           ...prev,
-                          sponsors: (prev.sponsors || []).filter((id: string) => id !== sponsor._id)
+                          sponsors: (prev.sponsors || []).filter(
+                            (id: string) => id !== sponsor._id
+                          ),
                         }));
                       }
                     }}
                     className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
                   />
                   {sponsor.imagen && (
-                    <img 
-                      src={sponsor.imagen} 
+                    <img
+                      src={sponsor.imagen}
                       alt={sponsor.name}
                       className="w-8 h-8 object-cover rounded"
                     />
@@ -509,35 +589,44 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
               ))}
             </div>
           )}
-          
+
           {/* Mostrar preview de sponsors seleccionados */}
-          {localSalida?.sponsors && localSalida.sponsors.length > 0 && sponsorsData?.data && (
-            <div className="p-3 bg-orange-50 border border-orange-200 rounded-[15px]">
-              <p className="text-sm font-medium text-orange-800 mb-2">
-                🎯 Sponsors seleccionados ({localSalida.sponsors.length}):
-              </p>
-              <div className="space-y-2">
-                {localSalida.sponsors.map(sponsorId => {
-                  const sponsor = sponsorsData.data.find(s => s._id === sponsorId);
-                  return sponsor ? (
-                    <div key={sponsor._id} className="flex items-center gap-2">
-                      {sponsor.imagen && (
-                        <img 
-                          src={sponsor.imagen} 
-                          alt={sponsor.name}
-                          className="w-6 h-6 object-cover rounded"
-                        />
-                      )}
-                      <span className="text-sm text-orange-700">{sponsor.name}</span>
-                    </div>
-                  ) : null;
-                })}
+          {localSalida?.sponsors &&
+            localSalida.sponsors.length > 0 &&
+            sponsorsData?.data && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-[15px]">
+                <p className="text-sm font-medium text-orange-800 mb-2">
+                  🎯 Sponsors seleccionados ({localSalida.sponsors.length}):
+                </p>
+                <div className="space-y-2">
+                  {localSalida.sponsors.map((sponsorId) => {
+                    const sponsor = sponsorsData.data.find(
+                      (s) => s._id === sponsorId
+                    );
+                    return sponsor ? (
+                      <div
+                        key={sponsor._id}
+                        className="flex items-center gap-2"
+                      >
+                        {sponsor.imagen && (
+                          <img
+                            src={sponsor.imagen}
+                            alt={sponsor.name}
+                            className="w-6 h-6 object-cover rounded"
+                          />
+                        )}
+                        <span className="text-sm text-orange-700">
+                          {sponsor.name}
+                        </span>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+                <p className="text-xs text-orange-600 mt-2">
+                  Estos sponsors aparecerán asociados a tu salida
+                </p>
               </div>
-              <p className="text-xs text-orange-600 mt-2">
-                Estos sponsors aparecerán asociados a tu salida
-              </p>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Ubicación */}

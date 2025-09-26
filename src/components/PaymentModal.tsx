@@ -1,8 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -49,69 +55,66 @@ export default function PaymentModal({
     toast.success("Copiado al portapapeles");
   };
 
-
-const handleEnviarPago = async () => {
-  if (!file) {
-    toast.error("Debes subir un comprobante");
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-
-    // 1️⃣ Subir comprobante a Firebase Storage
-    const fileRef = ref(storage, `comprobantes/${userId}-${Date.now()}-${file.name}`);
-    await uploadBytes(fileRef, file);
-    const url = await getDownloadURL(fileRef);
-
-    // 2️⃣ Guardar pago en tu API
-    const resPago = await fetch("/api/pagos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        salidaId,
-        userId,
-        comprobanteUrl: url,
-        estado: "pendiente", // opcional, depende de tu API de pagos
-      }),
-    });
-
-    
-
-    if (!resPago.ok) {
-      toast.error("Error al enviar comprobante.");
+  const handleEnviarPago = async () => {
+    if (!file) {
+      toast.error("Debes subir un comprobante");
       return;
     }
 
-    const pagoData = await resPago.json();
+    try {
+      setIsLoading(true);
 
-    // 3️⃣ Crear solicitud de unirse con estado pendiente y asociando el pago
-    const resUnirse = await fetch("/api/social/unirse", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        salidaId,
-        pago_id: pagoData.pago._id, // ⚡ importante: asociar pago al miembro
-      }),
-    });
+      // 1️⃣ Subir comprobante a Firebase Storage
+      const fileRef = ref(
+        storage,
+        `comprobantes/${userId}-${Date.now()}-${file.name}`
+      );
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
 
-    if (resUnirse.ok) {
-      toast.success("Solicitud enviada. Espera aprobación del organizador.");
-     onClose(); // cerrar modal
-    window.location.reload(); // recargar página
-    } else {
-      const msg = await resUnirse.text();
-      toast.error("Pago guardado pero fallo al enviar solicitud: " + msg);
+      // 2️⃣ Guardar pago en tu API
+      const resPago = await fetch("/api/pagos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salidaId,
+          userId,
+          comprobanteUrl: url,
+          estado: "pendiente", // opcional, depende de tu API de pagos
+        }),
+      });
+
+      if (!resPago.ok) {
+        toast.error("Error al enviar comprobante.");
+        return;
+      }
+
+      const pagoData = await resPago.json();
+
+      // 3️⃣ Crear solicitud de unirse con estado pendiente y asociando el pago
+      const resUnirse = await fetch("/api/social/unirse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salidaId,
+          pago_id: pagoData.pago._id, // ⚡ importante: asociar pago al miembro
+        }),
+      });
+
+      if (resUnirse.ok) {
+        toast.success("Solicitud enviada. Espera aprobación del organizador.");
+        onClose(); // cerrar modal
+        window.location.reload(); // recargar página
+      } else {
+        const msg = await resUnirse.text();
+        toast.error("Pago guardado pero fallo al enviar solicitud: " + msg);
+      }
+    } catch (error) {
+      toast.error("Ocurrió un error. Intenta de nuevo.");
+    } finally {
+      setIsLoading(false);
     }
-
-  } catch (error) {
-    toast.error("Ocurrió un error. Intenta de nuevo.");
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

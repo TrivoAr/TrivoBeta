@@ -13,9 +13,10 @@ const StravaActivitySchema = new Schema({
     id: { type: String }, // id de la ruta en Strava
     summary_polyline: { type: String }, // polyline resumida
     polyline: { type: String }, // polyline detallada
-    resource_tate: {type: String}
+    resource_tate: { type: String },
   },
   created_at: { type: Date, default: Date.now },
 });
 
-export default models.StravaActivity || model("StravaActivity", StravaActivitySchema);
+export default models.StravaActivity ||
+  model("StravaActivity", StravaActivitySchema);

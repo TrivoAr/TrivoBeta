@@ -13,15 +13,16 @@ export async function GET(req: NextRequest) {
 
   try {
     // Buscar donde el usuario es miembro aprobado
-    const membresias = await MiembroSalida.find({ 
-      usuario_id: session.user.id, 
+    const membresias = await MiembroSalida.find({
+      usuario_id: session.user.id,
     });
-    
+
     const salidaIds = membresias.map((m) => m.salida_id);
 
     // Obtener las salidas sociales populadas con creador
-    const salidas = await SalidaSocial.find({ _id: { $in: salidaIds } })
-      .populate("creador_id", "firstname lastname");
+    const salidas = await SalidaSocial.find({
+      _id: { $in: salidaIds },
+    }).populate("creador_id", "firstname lastname");
 
     return new Response(JSON.stringify(salidas), { status: 200 });
   } catch (error) {

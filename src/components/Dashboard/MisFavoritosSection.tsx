@@ -55,14 +55,14 @@ interface FavoritoAcademia {
 const fetchFavoritos = async (userId: string) => {
   const response = await fetch(`/api/profile/${userId}`);
   if (!response.ok) throw new Error("Error al obtener perfil");
-  
+
   const data = await response.json();
   const favoritos = data.favoritos || {};
 
   const results = {
     salidas: [] as FavoritoSalida[],
     teams: [] as FavoritoTeam[],
-    academias: [] as FavoritoAcademia[]
+    academias: [] as FavoritoAcademia[],
   };
 
   // Fetch salidas favoritas
@@ -71,23 +71,26 @@ const fetchFavoritos = async (userId: string) => {
       try {
         const res = await fetch(`/api/social/${salidaId}`);
         if (!res.ok) return null;
-        
+
         const salida = await res.json();
-        
+
         try {
-          const imagenUrl = await getSocialImage("social-image.jpg", salida._id);
+          const imagenUrl = await getSocialImage(
+            "social-image.jpg",
+            salida._id
+          );
           return { ...salida, imagen: imagenUrl };
         } catch (error) {
           return {
             ...salida,
-            imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`
+            imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(salida.nombre)}&background=C95100&color=fff&size=310x115`,
           };
         }
       } catch (error) {
         return null;
       }
     });
-    
+
     const salidas = await Promise.all(salidasPromises);
     results.salidas = salidas.filter(Boolean) as FavoritoSalida[];
   }
@@ -98,50 +101,58 @@ const fetchFavoritos = async (userId: string) => {
       try {
         const res = await fetch(`/api/team-social/${teamId}`);
         if (!res.ok) return null;
-        
+
         const team = await res.json();
-        
+
         try {
-          const imagenUrl = await getTeamSocialImage("team-social-image.jpg", team._id);
+          const imagenUrl = await getTeamSocialImage(
+            "team-social-image.jpg",
+            team._id
+          );
           return { ...team, imagen: imagenUrl };
         } catch (error) {
           return {
             ...team,
-            imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`
+            imagen: `https://ui-avatars.com/api/?name=${encodeURIComponent(team.nombre)}&background=C95100&color=fff&size=310x115`,
           };
         }
       } catch (error) {
         return null;
       }
     });
-    
+
     const teams = await Promise.all(teamsPromises);
     results.teams = teams.filter(Boolean) as FavoritoTeam[];
   }
 
   // Fetch academias favoritas
   if (favoritos.academias && favoritos.academias.length > 0) {
-    const academiasPromises = favoritos.academias.map(async (academiaId: string) => {
-      try {
-        const res = await fetch(`/api/academias/${academiaId}`);
-        if (!res.ok) return null;
-        
-        const academia = await res.json();
-        
+    const academiasPromises = favoritos.academias.map(
+      async (academiaId: string) => {
         try {
-          const imagenUrl = await getAcademyImage("profile-image.jpg", academia._id);
-          return { ...academia, imagenUrl };
+          const res = await fetch(`/api/academias/${academiaId}`);
+          if (!res.ok) return null;
+
+          const academia = await res.json();
+
+          try {
+            const imagenUrl = await getAcademyImage(
+              "profile-image.jpg",
+              academia._id
+            );
+            return { ...academia, imagenUrl };
+          } catch (error) {
+            return {
+              ...academia,
+              imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`,
+            };
+          }
         } catch (error) {
-          return {
-            ...academia,
-            imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`
-          };
+          return null;
         }
-      } catch (error) {
-        return null;
       }
-    });
-    
+    );
+
     const academias = await Promise.all(academiasPromises);
     results.academias = academias.filter(Boolean) as FavoritoAcademia[];
   }
@@ -152,18 +163,22 @@ const fetchFavoritos = async (userId: string) => {
 export const MisFavoritosSection: React.FC = () => {
   const { data: session } = useSession();
   const router = useRouter();
-  const [favoritos, setFavoritos] = useState<{ salidas: FavoritoSalida[], teams: FavoritoTeam[], academias: FavoritoAcademia[] }>({ salidas: [], teams: [], academias: [] });
+  const [favoritos, setFavoritos] = useState<{
+    salidas: FavoritoSalida[];
+    teams: FavoritoTeam[];
+    academias: FavoritoAcademia[];
+  }>({ salidas: [], teams: [], academias: [] });
   const [isLoading, setIsLoading] = useState(true);
 
   const loadFavoritos = async () => {
     if (!session?.user?.id) return;
-    
+
     setIsLoading(true);
     try {
       const data = await fetchFavoritos(session.user.id);
       setFavoritos(data);
     } catch (error) {
-      console.error('Error loading favoritos:', error);
+      console.error("Error loading favoritos:", error);
       toast.error("Error al cargar favoritos");
     } finally {
       setIsLoading(false);
@@ -176,7 +191,10 @@ export const MisFavoritosSection: React.FC = () => {
     }
   }, [session?.user?.id]);
 
-  const handleRemoveFavorite = async (type: 'salidas' | 'teamsocial' | 'academias', id: string) => {
+  const handleRemoveFavorite = async (
+    type: "salidas" | "teamsocial" | "academias",
+    id: string
+  ) => {
     try {
       const response = await fetch(`/api/favoritos/${type}/${id}`, {
         method: "DELETE",
@@ -184,7 +202,7 @@ export const MisFavoritosSection: React.FC = () => {
 
       if (response.ok) {
         toast.success("Eliminado de favoritos");
-        
+
         // Reload data to update UI
         loadFavoritos();
       } else {
@@ -204,7 +222,10 @@ export const MisFavoritosSection: React.FC = () => {
     );
   }
 
-  const totalFavoritos = favoritos.salidas.length + favoritos.teams.length + favoritos.academias.length;
+  const totalFavoritos =
+    favoritos.salidas.length +
+    favoritos.teams.length +
+    favoritos.academias.length;
 
   return (
     <div className="space-y-4">
@@ -225,7 +246,7 @@ export const MisFavoritosSection: React.FC = () => {
           type="salida"
           showActions={true}
           isFavorite={true}
-          onToggleFavorite={() => handleRemoveFavorite('salidas', salida._id)}
+          onToggleFavorite={() => handleRemoveFavorite("salidas", salida._id)}
         />
       ))}
 
@@ -246,7 +267,7 @@ export const MisFavoritosSection: React.FC = () => {
           type="team"
           showActions={true}
           isFavorite={true}
-          onToggleFavorite={() => handleRemoveFavorite('teamsocial', team._id)}
+          onToggleFavorite={() => handleRemoveFavorite("teamsocial", team._id)}
         />
       ))}
 
@@ -264,30 +285,35 @@ export const MisFavoritosSection: React.FC = () => {
           type="academia"
           showActions={true}
           isFavorite={true}
-          onToggleFavorite={() => handleRemoveFavorite('academias', academia._id)}
+          onToggleFavorite={() =>
+            handleRemoveFavorite("academias", academia._id)
+          }
         />
       ))}
 
       {totalFavoritos === 0 && (
         <div className="text-center py-12 text-gray-500">
           <div className="mb-4">
-            <svg 
-              className="mx-auto h-16 w-16 text-gray-300" 
-              fill="none" 
-              viewBox="0 0 24 24" 
+            <svg
+              className="mx-auto h-16 w-16 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1} 
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
               />
             </svg>
           </div>
           <p className="text-lg font-medium">No tienes favoritos guardados</p>
-          <p className="text-sm mt-2">Explora y marca como favoritos las salidas, teams y academias que te interesen</p>
-          <button 
+          <p className="text-sm mt-2">
+            Explora y marca como favoritos las salidas, teams y academias que te
+            interesen
+          </p>
+          <button
             onClick={() => router.push("/home")}
             className="mt-4 px-4 py-2 bg-[#C95100] text-white rounded-[20px] hover:bg-[#A03D00] transition-colors"
           >

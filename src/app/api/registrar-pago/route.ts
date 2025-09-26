@@ -6,10 +6,28 @@ import { connectDB } from "@/libs/mongodb";
 export async function POST(req) {
   try {
     await connectDB();
-    
-    const { payment_id, status, external_reference, monto, metodo_pago, usuario_id, grupo_id, mes_pagado } = await req.json();
 
-    if (!payment_id || !status || !external_reference || !monto || !metodo_pago || !usuario_id || !grupo_id || !mes_pagado) {
+    const {
+      payment_id,
+      status,
+      external_reference,
+      monto,
+      metodo_pago,
+      usuario_id,
+      grupo_id,
+      mes_pagado,
+    } = await req.json();
+
+    if (
+      !payment_id ||
+      !status ||
+      !external_reference ||
+      !monto ||
+      !metodo_pago ||
+      !usuario_id ||
+      !grupo_id ||
+      !mes_pagado
+    ) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
@@ -29,10 +47,16 @@ export async function POST(req) {
 
     await nuevoPago.save();
 
-    return NextResponse.json({ message: "Pago registrado correctamente" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Pago registrado correctamente" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error al registrar el pago:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
 
@@ -48,6 +72,9 @@ export async function GET() {
     return NextResponse.json(pagos, { status: 200 });
   } catch (error) {
     console.error("Error al obtener los pagos:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

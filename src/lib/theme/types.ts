@@ -1,6 +1,6 @@
-export type SeasonalTheme = 'none' | 'halloween' | 'christmas' | 'newyear';
+export type SeasonalTheme = "none" | "halloween" | "christmas" | "newyear";
 
-export type ActiveTheme = 'base' | 'night' | SeasonalTheme;
+export type ActiveTheme = "base" | "night" | SeasonalTheme;
 
 export interface ThemeFlags {
   activeSeasonalTheme: SeasonalTheme;

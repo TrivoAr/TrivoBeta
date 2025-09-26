@@ -1,5 +1,5 @@
 // app/event/[id]/page.tsx
-import Image from 'next/image';
+import Image from "next/image";
 
 interface PageProps {
   params: {
@@ -12,28 +12,28 @@ export default function EventPage({ params }: PageProps) {
 
   // Simulamos la data del evento (esto después lo podés hacer fetch desde una API o base de datos)
   const event = {
-    title: 'Running en el parque',
-    location: 'Parque 9 de julio',
-    date: 'Lunes 28/04/25',
-    time: '16:00 hs',
-    difficulty: 'Baja',
-    organizer: 'Profe Frank',
+    title: "Running en el parque",
+    location: "Parque 9 de julio",
+    date: "Lunes 28/04/25",
+    time: "16:00 hs",
+    difficulty: "Baja",
+    organizer: "Profe Frank",
     description:
-      'Organizamos una salida de running tranquila por semana para quien quiera sumarse y adentrarse en este hermoso deporte. ¡Anímate y sumate esta semana a tiempo!',
+      "Organizamos una salida de running tranquila por semana para quien quiera sumarse y adentrarse en este hermoso deporte. ¡Anímate y sumate esta semana a tiempo!",
     participants: [
-      '/assets/avatars/user1.png',
-      '/assets/avatars/user2.png',
-      '/assets/avatars/user3.png',
+      "/assets/avatars/user1.png",
+      "/assets/avatars/user2.png",
+      "/assets/avatars/user3.png",
     ],
-    image: '/assets/icons/pexels-runffwpu-2402761.png',
+    image: "/assets/icons/pexels-runffwpu-2402761.png",
     mapEmbedUrl:
-      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3560.3356758610597!2d-65.2079804!3d-26.8325606!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94225d3e733c3455%3A0xa6bbbe801421c45b!2sParque%209%20de%20Julio!5e0!3m2!1ses!2sar!4v1680000000000!5m2!1ses!2sar',
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3560.3356758610597!2d-65.2079804!3d-26.8325606!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94225d3e733c3455%3A0xa6bbbe801421c45b!2sParque%209%20de%20Julio!5e0!3m2!1ses!2sar!4v1680000000000!5m2!1ses!2sar",
   };
 
   return (
     <main className="bg-[#FEFBF9] min-h-screen text-black px-4 py-6 space-y-6 w-[390px] mx-auto">
       {/* Título */}
-      <button className="text-sm mb-2">{'< Volver'}</button>
+      <button className="text-sm mb-2">{"< Volver"}</button>
 
       <h1 className="text-xl font-bold">
         <span className="text-[#C76C01]">Running</span> en el parque

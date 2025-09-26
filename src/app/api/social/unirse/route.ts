@@ -30,12 +30,12 @@ export async function POST(req: Request) {
     return new Response("Ya eres miembro de esta salida", { status: 400 });
   }
 
- const nuevoMiembro = new MiembroSalida({
-  usuario_id: user._id,
-  salida_id: salidaId,
-  estado: "pendiente",
-  pago_id: pago_id,
-});
+  const nuevoMiembro = new MiembroSalida({
+    usuario_id: user._id,
+    salida_id: salidaId,
+    estado: "pendiente",
+    pago_id: pago_id,
+  });
 
   await nuevoMiembro.save();
 
@@ -43,9 +43,9 @@ export async function POST(req: Request) {
   if (String(salida.creador_id) !== String(user._id)) {
     try {
       await Notificacion.create({
-        userId: salida.creador_id,     // el creador recibe
+        userId: salida.creador_id, // el creador recibe
         fromUserId: user._id,
-        salidaId: salida._id,           // el que se unió
+        salidaId: salida._id, // el que se unió
         type: "joined_event",
         message: `${user.firstname} quiere unirse a tu salida ${salida.nombre}.`,
       });
@@ -57,10 +57,6 @@ export async function POST(req: Request) {
 
   return new Response(JSON.stringify(nuevoMiembro), { status: 200 });
 }
-
-
-
-
 
 export async function DELETE(req: Request) {
   await connectDB();

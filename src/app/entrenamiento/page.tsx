@@ -32,7 +32,9 @@ const EntrenamientoPage = () => {
     try {
       setEntrenamientos([]);
       if (session) {
-        const weekStart = getWeekStartDate(currentWeek).toISOString().split("T")[0];
+        const weekStart = getWeekStartDate(currentWeek)
+          .toISOString()
+          .split("T")[0];
         const response = await axios.get("/api/entrenamientos", {
           params: {
             user: session.user.id,
@@ -50,7 +52,10 @@ const EntrenamientoPage = () => {
   const loadProfileImage = async () => {
     if (session?.user) {
       try {
-        const imageUrl = await getProfileImage("profile-image.jpg", session.user.id);
+        const imageUrl = await getProfileImage(
+          "profile-image.jpg",
+          session.user.id
+        );
         setProfileImage(imageUrl);
       } catch (error) {
         console.error("Error al obtener la imagen del perfil:", error);
@@ -124,7 +129,7 @@ const EntrenamientoPage = () => {
         <div className="flex flex-col w-[390px] items-center">
           <p className="font-bold text-xl">Entrenamiento</p>
           <p className="font-light text-sm text-slate-500">
-            {session?.user?.firstname  || "Usuario no identificado"}
+            {session?.user?.firstname || "Usuario no identificado"}
           </p>
         </div>
       </div>
@@ -188,8 +193,8 @@ const EntrenamientoPage = () => {
                 entrenamiento.estado === "verde"
                   ? "bg-green-500"
                   : entrenamiento.estado === "rojo"
-                  ? "bg-red-500"
-                  : "bg-gray-400"
+                    ? "bg-red-500"
+                    : "bg-gray-400"
               }`}
             ></div>
           </div>
@@ -217,8 +222,9 @@ const EntrenamientoPage = () => {
               value={selectedEntrenamiento.descripcion}
               className="mb-4 border p-2 w-[90%] rounded"
             ></textarea>
-             <p>
-             <strong>Estado:</strong> {traducirEstado(selectedEntrenamiento.estado)}
+            <p>
+              <strong>Estado:</strong>{" "}
+              {traducirEstado(selectedEntrenamiento.estado)}
             </p>
             <button
               onClick={() => setSelectedEntrenamiento(null)}

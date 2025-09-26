@@ -5,7 +5,6 @@ import Academia from "@/models/academia"; // Asegúrate de que la ruta sea corre
 import { getServerSession } from "next-auth"; // Para obtener la sesión del usuario
 import { authOptions } from "../../../libs/authOptions"; // Configuración de NextAuth
 
-
 // Obtener el perfil del usuario (GET)
 export async function GET(req: Request) {
   try {
@@ -16,15 +15,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-
-  const user = await User.findById(session.user.id)
-  .populate("favoritos.salidas")
-  .populate("favoritos.academias")
-  .populate("favoritos.teamSocial");
-
-
-  
-
+    const user = await User.findById(session.user.id)
+      .populate("favoritos.salidas")
+      .populate("favoritos.academias")
+      .populate("favoritos.teamSocial");
 
     if (!user) {
       return NextResponse.json(

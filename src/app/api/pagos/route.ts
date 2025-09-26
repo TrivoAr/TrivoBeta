@@ -1,5 +1,5 @@
-// import MercadoPagoCredentials from "../../../models/mercadoPagoCredentials"; 
-// import api from "../api.js"; 
+// import MercadoPagoCredentials from "../../../models/mercadoPagoCredentials";
+// import api from "../api.js";
 
 // export async function POST(request: Request) {
 //   try {
@@ -65,7 +65,10 @@ export async function POST(req: Request) {
       comprobanteUrl,
     });
 
-    return NextResponse.json({ message: "Pago registrado", pago }, { status: 201 });
+    return NextResponse.json(
+      { message: "Pago registrado", pago },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creando pago:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });

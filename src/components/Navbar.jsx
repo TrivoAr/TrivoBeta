@@ -29,7 +29,6 @@ function Navbar() {
       </>
     );
 
-
     return (
       <li className="flex flex-col items-center justify-center">
         {href ? (
@@ -67,23 +66,23 @@ function Navbar() {
               >
                 Salida
               </Link>
-              
-                <>
-                  <Link
-                    href="/team-social/crear"
-                    onClick={() => setIsModalOpen(false)}
-                    className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-                  >
-                    Social Team
-                  </Link>
-                  <Link
-                    href="/academias/crear"
-                    onClick={() => setIsModalOpen(false)}
-                    className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-                  >
-                    Grupo de entrenamiento
-                  </Link>
-                </>
+
+              <>
+                <Link
+                  href="/team-social/crear"
+                  onClick={() => setIsModalOpen(false)}
+                  className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
+                >
+                  Social Team
+                </Link>
+                <Link
+                  href="/academias/crear"
+                  onClick={() => setIsModalOpen(false)}
+                  className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
+                >
+                  Grupo de entrenamiento
+                </Link>
+              </>
 
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -182,11 +181,11 @@ function Navbar() {
                   id="XMLID_186_"
                   viewBox="0 0 24 24"
                 >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                  <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                   <g
                     id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   ></g>
                   <g id="SVGRepo_iconCarrier">
                     {" "}
@@ -204,7 +203,6 @@ function Navbar() {
                   </g>
                 </svg>
               }
-             
             />
           )}
 

@@ -43,7 +43,10 @@ export async function POST(req: Request) {
     const user = await User.findOne({ email }).select("_id email");
     // 🔒 Anti user-enumeration (opcional): siempre responde 200
     if (!user) {
-      return NextResponse.json({ message: "Si el email existe, enviaremos un código" }, { status: 200 });
+      return NextResponse.json(
+        { message: "Si el email existe, enviaremos un código" },
+        { status: 200 }
+      );
     }
 
     // Código 6 dígitos
@@ -60,10 +63,15 @@ export async function POST(req: Request) {
     // TODO: enviar `resetCode` por email con tu mailer (ya dijiste que te funciona)
     // Nunca envíes el hash.
 
-    return NextResponse.json({ ok: true, message: "Código enviado si el email existe" }, { status: 200 });
+    return NextResponse.json(
+      { ok: true, message: "Código enviado si el email existe" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("reset/request error:", error);
-    return NextResponse.json({ message: "Error en el servidor" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error en el servidor" },
+      { status: 500 }
+    );
   }
 }
-

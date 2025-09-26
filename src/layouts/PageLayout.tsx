@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { BaseCard } from '@/components/base/BaseCard';
+import React from "react";
+import { BaseCard } from "@/components/base/BaseCard";
 
 /**
  * Interfaces para PageLayout
@@ -40,13 +40,13 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   showBackButton = false,
   backUrl,
   actions,
-  className = '',
-  containerClassName = '',
-  headerClassName = '',
-  contentClassName = '',
+  className = "",
+  containerClassName = "",
+  headerClassName = "",
+  contentClassName = "",
   loading = false,
   error = null,
-  onRetry
+  onRetry,
 }) => {
   const handleBackClick = () => {
     if (backUrl) {
@@ -58,7 +58,9 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
   return (
     <div className={`page-layout min-h-screen bg-gray-50 ${className}`}>
-      <div className={`container mx-auto px-4 py-6 max-w-sm ${containerClassName}`}>
+      <div
+        className={`container mx-auto px-4 py-6 max-w-sm ${containerClassName}`}
+      >
         {/* Header */}
         {(title || subtitle || breadcrumbs || showBackButton || actions) && (
           <header className={`page-header mb-6 ${headerClassName}`}>
@@ -69,8 +71,16 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                   {breadcrumbs.map((item, index) => (
                     <li key={index} className="flex items-center">
                       {index > 0 && (
-                        <svg className="h-4 w-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="h-4 w-4 mx-2"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                       {item.href && !item.active ? (
@@ -81,7 +91,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                           {item.label}
                         </a>
                       ) : (
-                        <span className={item.active ? 'text-gray-900 font-medium' : ''}>
+                        <span
+                          className={
+                            item.active ? "text-gray-900 font-medium" : ""
+                          }
+                        >
                           {item.label}
                         </span>
                       )}
@@ -101,8 +115,18 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                     title="Volver"
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
                 )}
@@ -114,19 +138,13 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
                       {title}
                     </h1>
                   )}
-                  {subtitle && (
-                    <p className="text-gray-600 mt-1">
-                      {subtitle}
-                    </p>
-                  )}
+                  {subtitle && <p className="text-gray-600 mt-1">{subtitle}</p>}
                 </div>
               </div>
 
               {/* Acciones */}
               {actions && (
-                <div className="flex items-center space-x-2">
-                  {actions}
-                </div>
+                <div className="flex items-center space-x-2">{actions}</div>
               )}
             </div>
           </header>
@@ -170,8 +188,18 @@ interface ErrorStateProps {
 const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry }) => (
   <BaseCard className="text-center py-12">
     <div className="text-red-500 mb-4">
-      <svg className="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+      <svg
+        className="h-12 w-12 mx-auto"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+        />
       </svg>
     </div>
     <h3 className="text-lg font-medium text-gray-900 mb-2">Error</h3>
@@ -190,7 +218,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({ error, onRetry }) => (
 /**
  * Layout específico para dashboards
  */
-export interface DashboardLayoutProps extends Omit<PageLayoutProps, 'title'> {
+export interface DashboardLayoutProps extends Omit<PageLayoutProps, "title"> {
   user?: {
     firstname?: string;
     lastname?: string;
@@ -211,11 +239,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   ...pageLayoutProps
 }) => {
   const getUserDisplayName = () => {
-    if (!user) return 'Usuario';
+    if (!user) return "Usuario";
     if (user.firstname && user.lastname) {
       return `${user.firstname} ${user.lastname}`;
     }
-    return user.firstname || user.lastname || 'Usuario';
+    return user.firstname || user.lastname || "Usuario";
   };
 
   const title = `¡Hola, ${getUserDisplayName()}!`;
@@ -232,16 +260,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {stats.map((stat, index) => (
             <BaseCard key={index} className="text-center">
               {stat.icon && (
-                <div className={`text-2xl mb-2 ${stat.color || 'text-blue-500'}`}>
+                <div
+                  className={`text-2xl mb-2 ${stat.color || "text-blue-500"}`}
+                >
                   {stat.icon}
                 </div>
               )}
               <div className="text-2xl font-bold text-gray-900">
                 {stat.value}
               </div>
-              <div className="text-sm text-gray-600">
-                {stat.label}
-              </div>
+              <div className="text-sm text-gray-600">{stat.label}</div>
             </BaseCard>
           ))}
         </div>
@@ -255,7 +283,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 /**
  * Layout para formularios
  */
-export interface FormLayoutProps extends Omit<PageLayoutProps, 'children'> {
+export interface FormLayoutProps extends Omit<PageLayoutProps, "children"> {
   children: React.ReactNode;
   onSubmit?: (e: React.FormEvent) => void;
   submitLabel?: string;
@@ -271,14 +299,14 @@ export interface FormLayoutProps extends Omit<PageLayoutProps, 'children'> {
 export const FormLayout: React.FC<FormLayoutProps> = ({
   children,
   onSubmit,
-  submitLabel = 'Guardar',
+  submitLabel = "Guardar",
   submitDisabled = false,
   submitLoading = false,
   showCancelButton = false,
   onCancel,
-  cancelLabel = 'Cancelar',
-  formClassName = '',
-  actionsClassName = '',
+  cancelLabel = "Cancelar",
+  formClassName = "",
+  actionsClassName = "",
   ...pageLayoutProps
 }) => {
   return (
@@ -287,7 +315,9 @@ export const FormLayout: React.FC<FormLayoutProps> = ({
         {children}
 
         {/* Acciones del formulario */}
-        <div className={`flex flex-col space-y-3 pt-6 border-t border-gray-200 ${actionsClassName}`}>
+        <div
+          className={`flex flex-col space-y-3 pt-6 border-t border-gray-200 ${actionsClassName}`}
+        >
           <button
             type="submit"
             disabled={submitDisabled || submitLoading}
@@ -341,7 +371,7 @@ export const ListLayout: React.FC<ListLayoutProps> = ({
   ...pageLayoutProps
 }) => {
   const finalSubtitle = showItemCount
-    ? `${subtitle || ''}${subtitle ? ' - ' : ''}${itemCount} elemento${itemCount !== 1 ? 's' : ''}`
+    ? `${subtitle || ""}${subtitle ? " - " : ""}${itemCount} elemento${itemCount !== 1 ? "s" : ""}`
     : subtitle;
 
   // Verificar si mostrar empty state
@@ -349,11 +379,7 @@ export const ListLayout: React.FC<ListLayoutProps> = ({
 
   return (
     <PageLayout {...pageLayoutProps} subtitle={finalSubtitle}>
-      {shouldShowEmptyState ? (
-        <EmptyState {...emptyState} />
-      ) : (
-        children
-      )}
+      {shouldShowEmptyState ? <EmptyState {...emptyState} /> : children}
     </PageLayout>
   );
 };
@@ -372,22 +398,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
-  icon
+  icon,
 }) => (
   <BaseCard className="text-center py-12">
-    {icon && (
-      <div className="text-gray-400 mb-4">
-        {icon}
-      </div>
-    )}
-    <h3 className="text-lg font-medium text-gray-900 mb-2">
-      {title}
-    </h3>
-    {description && (
-      <p className="text-gray-600 mb-6">
-        {description}
-      </p>
-    )}
+    {icon && <div className="text-gray-400 mb-4">{icon}</div>}
+    <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+    {description && <p className="text-gray-600 mb-6">{description}</p>}
     {action && action}
   </BaseCard>
 );

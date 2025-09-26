@@ -9,7 +9,7 @@ interface StravaProfile {
   profile: string;
 }
 
-// 
+//
 
 export default function StravaProvider<P extends StravaProfile>(
   options: OAuthUserConfig<P>
@@ -20,7 +20,11 @@ export default function StravaProvider<P extends StravaProfile>(
     type: "oauth",
     authorization: {
       url: "https://www.strava.com/oauth/authorize",
-      params: { scope: "read,activity:read_all", approval_prompt: "force", response_type: "code" },
+      params: {
+        scope: "read,activity:read_all",
+        approval_prompt: "force",
+        response_type: "code",
+      },
     },
     token: {
       url: "https://www.strava.com/oauth/token",
@@ -28,8 +32,6 @@ export default function StravaProvider<P extends StravaProfile>(
     userinfo: {
       url: "https://www.strava.com/api/v3/athlete",
     },
-
-    
 
     profile(profile: P): User {
       return {
@@ -51,19 +53,7 @@ export default function StravaProvider<P extends StravaProfile>(
         },
         name: `${profile.firstname} ${profile.lastname}`, // para compatibilidad con DefaultUser
       };
-      
     },
     ...options,
-    
-
   };
-
-   
-
-
-
 }
-
-
-
-

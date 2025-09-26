@@ -1,9 +1,9 @@
-import { BaseRepository, RepositoryOptions } from './BaseRepository';
-import Academia from '@/models/academia';
-import Grupo from '@/models/grupo';
-import User from '@/models/user';
-import { Document } from 'mongoose';
-import { ImageService } from '@/libs/services/ImageService';
+import { BaseRepository, RepositoryOptions } from "./BaseRepository";
+import Academia from "@/models/academia";
+import Grupo from "@/models/grupo";
+import User from "@/models/user";
+import { Document } from "mongoose";
+import { ImageService } from "@/libs/services/ImageService";
 
 export interface IAcademia extends Document {
   _id: string;
@@ -13,7 +13,7 @@ export interface IAcademia extends Document {
   provincia: string;
   localidad: string;
   descripcion?: string;
-  tipo_disciplina: 'Running' | 'Trekking' | 'Ciclismo' | 'Otros';
+  tipo_disciplina: "Running" | "Trekking" | "Ciclismo" | "Otros";
   telefono?: string;
   imagen?: string;
   clase_gratis: boolean;
@@ -33,7 +33,7 @@ export interface AcademiaFilters {
   precioMaximo?: number;
 }
 
-export interface PopulatedAcademia extends Omit<IAcademia, 'dueño_id'> {
+export interface PopulatedAcademia extends Omit<IAcademia, "dueño_id"> {
   dueño_id: {
     _id: string;
     firstname: string;
@@ -54,22 +54,31 @@ export interface AcademiaWithGroups extends PopulatedAcademia {
  */
 export class AcademiaRepository extends BaseRepository<IAcademia> {
   constructor() {
-    super(Academia, 'Academia');
+    super(Academia, "Academia");
   }
 
   /**
    * Find an academy with populated owner data and profile image
    */
-  async findWithPopulatedData(id: string, options: RepositoryOptions = {}): Promise<PopulatedAcademia> {
+  async findWithPopulatedData(
+    id: string,
+    options: RepositoryOptions = {}
+  ): Promise<PopulatedAcademia> {
     if (options.requireConnection !== false) {
       await this.ensureConnection();
     }
 
     try {
-      const academia = await this.model.findById(id).populate("dueño_id").exec();
+      const academia = await this.model
+        .findById(id)
+        .populate("dueño_id")
+        .exec();
 
       if (!academia) {
-        throw this.handleError(new Error('Not found'), `buscar ${this.resourceName} por ID`);
+        throw this.handleError(
+          new Error("Not found"),
+          `buscar ${this.resourceName} por ID`
+        );
       }
 
       // Get owner profile image with fallback
@@ -80,8 +89,12 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
           academia.dueño_id.firstname
         );
       } catch (error) {
-        console.log(`[AcademiaRepository] Image fetch failed for owner:`, error);
-        ownerImageUrl = "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
+        console.log(
+          `[AcademiaRepository] Image fetch failed for owner:`,
+          error
+        );
+        ownerImageUrl =
+          "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
       }
 
       // Create the response object with owner info
@@ -101,14 +114,20 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
 
       return responseAcademia as PopulatedAcademia;
     } catch (error) {
-      throw this.handleError(error, `buscar ${this.resourceName} con datos poblados`);
+      throw this.handleError(
+        error,
+        `buscar ${this.resourceName} con datos poblados`
+      );
     }
   }
 
   /**
    * Find an academy with its groups
    */
-  async findWithGroups(id: string, options: RepositoryOptions = {}): Promise<AcademiaWithGroups> {
+  async findWithGroups(
+    id: string,
+    options: RepositoryOptions = {}
+  ): Promise<AcademiaWithGroups> {
     const academia = await this.findWithPopulatedData(id, options);
 
     if (options.requireConnection !== false) {
@@ -121,7 +140,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
 
       return {
         ...academia,
-        grupos
+        grupos,
       } as AcademiaWithGroups;
     } catch (error) {
       throw this.handleError(error, `buscar grupos de ${this.resourceName}`);
@@ -148,15 +167,21 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       // Build query filters
       const query: Record<string, any> = {};
 
-      if (filters.tipo_disciplina) query.tipo_disciplina = filters.tipo_disciplina;
-      if (filters.localidad) query.localidad = new RegExp(filters.localidad, 'i');
+      if (filters.tipo_disciplina)
+        query.tipo_disciplina = filters.tipo_disciplina;
+      if (filters.localidad)
+        query.localidad = new RegExp(filters.localidad, "i");
       if (filters.provincia) query.provincia = filters.provincia;
       if (filters.pais) query.pais = filters.pais;
-      if (filters.clase_gratis !== undefined) query.clase_gratis = filters.clase_gratis;
+      if (filters.clase_gratis !== undefined)
+        query.clase_gratis = filters.clase_gratis;
       if (filters.dueño_id) query.dueño_id = filters.dueño_id;
 
       // Price filters
-      if (filters.precioMinimo !== undefined || filters.precioMaximo !== undefined) {
+      if (
+        filters.precioMinimo !== undefined ||
+        filters.precioMaximo !== undefined
+      ) {
         query.precio = {};
         if (filters.precioMinimo !== undefined) {
           query.precio.$gte = filters.precioMinimo.toString();
@@ -166,10 +191,14 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
         }
       }
 
-      return await this.findMany(query, {
-        ...options,
-        populate: ['dueño_id']
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          ...options,
+          populate: ["dueño_id"],
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s con filtros`);
     }
@@ -191,7 +220,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       { dueño_id: ownerId },
       {
         sort: { createdAt: -1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -218,7 +247,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       filters,
       {
         sort: { nombre_academia: 1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -240,7 +269,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       { tipo_disciplina },
       {
         sort: { nombre_academia: 1 },
-        ...options
+        ...options,
       },
       repositoryOptions
     );
@@ -265,21 +294,25 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       const academias = await this.findByOwner(ownerId, {}, repositoryOptions);
 
       // Count academies by discipline
-      const academiesByDiscipline = academias.reduce((acc, academia) => {
-        acc[academia.tipo_disciplina] = (acc[academia.tipo_disciplina] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const academiesByDiscipline = academias.reduce(
+        (acc, academia) => {
+          acc[academia.tipo_disciplina] =
+            (acc[academia.tipo_disciplina] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       // Count total groups across all academies
-      const academiaIds = academias.map(a => a._id);
+      const academiaIds = academias.map((a) => a._id);
       const totalGroups = await Grupo.countDocuments({
-        academia_id: { $in: academiaIds }
+        academia_id: { $in: academiaIds },
       });
 
       return {
         totalAcademies: academias.length,
         academiesByDiscipline,
-        totalGroups
+        totalGroups,
       };
     } catch (error) {
       throw this.handleError(error, `obtener estadísticas del propietario`);
@@ -298,14 +331,15 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
 
     if (imageFile) {
       try {
-        const imageUrl = await ImageService.saveAcademyImage(imageFile, academia._id);
-        return await this.model.findByIdAndUpdate(
-          academia._id,
-          { imagen: imageUrl },
-          { new: true }
-        ).exec() as IAcademia;
+        const imageUrl = await ImageService.saveAcademyImage(
+          imageFile,
+          academia._id
+        );
+        return (await this.model
+          .findByIdAndUpdate(academia._id, { imagen: imageUrl }, { new: true })
+          .exec()) as IAcademia;
       } catch (error) {
-        console.error('[AcademiaRepository] Failed to upload image:', error);
+        console.error("[AcademiaRepository] Failed to upload image:", error);
         // Return academia without image rather than failing completely
         return academia;
       }
@@ -324,14 +358,14 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
     imageFile?: File,
     repositoryOptions: RepositoryOptions = {}
   ): Promise<IAcademia> {
-    let updatedData = { ...academiaData };
+    const updatedData = { ...academiaData };
 
     if (imageFile) {
       try {
         const imageUrl = await ImageService.saveAcademyImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error('[AcademiaRepository] Failed to upload image:', error);
+        console.error("[AcademiaRepository] Failed to upload image:", error);
         // Continue with update without new image
       }
     }
@@ -340,7 +374,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
       id,
       updatedData,
       ownerId,
-      'dueño_id',
+      "dueño_id",
       repositoryOptions
     );
   }
@@ -362,19 +396,20 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
     }
 
     try {
-      const searchRegex = new RegExp(searchTerm, 'i');
+      const searchRegex = new RegExp(searchTerm, "i");
       const query = {
-        $or: [
-          { nombre_academia: searchRegex },
-          { descripcion: searchRegex }
-        ]
+        $or: [{ nombre_academia: searchRegex }, { descripcion: searchRegex }],
       };
 
-      return await this.findMany(query, {
-        sort: { nombre_academia: 1 },
-        populate: ['dueño_id'],
-        ...options
-      }, repositoryOptions);
+      return await this.findMany(
+        query,
+        {
+          sort: { nombre_academia: 1 },
+          populate: ["dueño_id"],
+          ...options,
+        },
+        repositoryOptions
+      );
     } catch (error) {
       throw this.handleError(error, `buscar ${this.resourceName}s por término`);
     }

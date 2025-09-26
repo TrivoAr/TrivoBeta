@@ -4,7 +4,7 @@ import SalidaSocial from "@/models/salidaSocial";
 import { buildQrPdf } from "@/libs/pdf";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
-type LeanUser   = { email?: string } | null;
+type LeanUser = { email?: string } | null;
 type LeanSalida = { nombre?: string } | null;
 
 function dataUrlToBase64(dataUrl: string) {
@@ -13,42 +13,68 @@ function dataUrlToBase64(dataUrl: string) {
 }
 
 export async function sendTicketEmail({
-  userId, salidaId, redeemUrl, qrDataUrl,
-}: { userId: string; salidaId: string; redeemUrl: string; qrDataUrl: string }): Promise<string> {
+  userId,
+  salidaId,
+  redeemUrl,
+  qrDataUrl,
+}: {
+  userId: string;
+  salidaId: string;
+  redeemUrl: string;
+  qrDataUrl: string;
+}): Promise<string> {
   try {
-    console.log("[SEND_TICKET_EMAIL] Starting email process for user:", userId, "salida:", salidaId);
-    
+    console.log(
+      "[SEND_TICKET_EMAIL] Starting email process for user:",
+      userId,
+      "salida:",
+      salidaId
+    );
+
     // Check environment variables
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY environment variable is not set");
     }
-    console.log("[SEND_TICKET_EMAIL] Resend API key is present:", !!process.env.RESEND_API_KEY);
-    
-    const user = (await User.findById(userId).lean()) as LeanUser & { firstname?: string; lastname?: string };
-    const salida = (await SalidaSocial.findById(salidaId).lean()) as LeanSalida & { 
-      ubicacion?: string; 
-      fecha?: string; 
-      hora?: string; 
-      precio?: string; 
+    console.log(
+      "[SEND_TICKET_EMAIL] Resend API key is present:",
+      !!process.env.RESEND_API_KEY
+    );
+
+    const user = (await User.findById(userId).lean()) as LeanUser & {
+      firstname?: string;
+      lastname?: string;
     };
-    
+    const salida = (await SalidaSocial.findById(
+      salidaId
+    ).lean()) as LeanSalida & {
+      ubicacion?: string;
+      fecha?: string;
+      hora?: string;
+      precio?: string;
+    };
+
     if (!user) {
       throw new Error(`User not found with ID: ${userId}`);
     }
-    
+
     if (!user.email) {
       throw new Error(`User ${userId} has no email address`);
     }
-    
+
     if (!salida) {
       throw new Error(`SalidaSocial not found with ID: ${salidaId}`);
     }
 
-    console.log("[SEND_TICKET_EMAIL] User found:", user.email, "Event:", salida.nombre);
+    console.log(
+      "[SEND_TICKET_EMAIL] User found:",
+      user.email,
+      "Event:",
+      salida.nombre
+    );
 
     const titulo = salida?.nombre ?? "la salida";
     const qrBase64 = dataUrlToBase64(qrDataUrl);
-    
+
     // Prepare ticket info for enhanced PDF
     const ticketInfo = {
       eventName: titulo,
@@ -56,13 +82,20 @@ export async function sendTicketEmail({
       date: salida?.fecha,
       time: salida?.hora,
       price: salida?.precio ? `$${salida.precio}` : undefined,
-      userName: user.firstname && user.lastname ? `${user.firstname} ${user.lastname}` : undefined
+      userName:
+        user.firstname && user.lastname
+          ? `${user.firstname} ${user.lastname}`
+          : undefined,
     };
-    
-    console.log("[SEND_TICKET_EMAIL] Generating PDF with info:", ticketInfo);
-    const pdfBase64 = await buildQrPdf(`QR de acceso — ${titulo}`, qrBase64, ticketInfo);
 
-  const html = `
+    console.log("[SEND_TICKET_EMAIL] Generating PDF with info:", ticketInfo);
+    const pdfBase64 = await buildQrPdf(
+      `QR de acceso — ${titulo}`,
+      qrBase64,
+      ticketInfo
+    );
+
+    const html = `
   <div style="font-family:system-ui,Arial,sans-serif; max-width:600px; margin:0 auto; background:#ffffff;">
     <!-- Header -->
     <div style="background:#C95100; padding:20px; text-align:center;">
@@ -74,9 +107,9 @@ export async function sendTicketEmail({
       <h2 style="color:#C95100; text-align:center; margin:0 0 10px 0;">✅ Pago Aprobado</h2>
       <h3 style="color:#333; text-align:center; margin:0 0 20px 0; font-size:18px;">${titulo}</h3>
       
-      ${ticketInfo.location ? `<p style="text-align:center; color:#666; margin:5px 0;">📍 ${ticketInfo.location}</p>` : ''}
-      ${ticketInfo.date || ticketInfo.time ? `<p style="text-align:center; color:#666; margin:5px 0;">📅 ${[ticketInfo.date, ticketInfo.time].filter(Boolean).join(' - ')}</p>` : ''}
-      ${ticketInfo.price ? `<p style="text-align:center; color:#666; margin:5px 0 20px 0;">💰 ${ticketInfo.price}</p>` : ''}
+      ${ticketInfo.location ? `<p style="text-align:center; color:#666; margin:5px 0;">📍 ${ticketInfo.location}</p>` : ""}
+      ${ticketInfo.date || ticketInfo.time ? `<p style="text-align:center; color:#666; margin:5px 0;">📅 ${[ticketInfo.date, ticketInfo.time].filter(Boolean).join(" - ")}</p>` : ""}
+      ${ticketInfo.price ? `<p style="text-align:center; color:#666; margin:5px 0 20px 0;">💰 ${ticketInfo.price}</p>` : ""}
       
       <div style="background:#f8f9fa; padding:20px; border-radius:10px; text-align:center; margin:20px 0;">
         <p style="color:#333; font-weight:bold; margin:0 0 15px 0;">Tu entrada digital está lista</p>
@@ -113,35 +146,55 @@ export async function sendTicketEmail({
     </div>
   </div>`;
 
-  console.log("[SEND_TICKET_EMAIL] Sending email to:", user.email);
-  console.log("[SEND_TICKET_EMAIL] PDF size:", pdfBase64.length, "characters");
-  console.log("[SEND_TICKET_EMAIL] From address:", process.env.RESEND_FROM);
-  
-  // Debug: verificar si hay restricciones por dominio
-  console.log("[SEND_TICKET_EMAIL] User email domain:", user.email.split('@')[1]);
+    console.log("[SEND_TICKET_EMAIL] Sending email to:", user.email);
+    console.log(
+      "[SEND_TICKET_EMAIL] PDF size:",
+      pdfBase64.length,
+      "characters"
+    );
+    console.log("[SEND_TICKET_EMAIL] From address:", process.env.RESEND_FROM);
 
-  const resp = await resend.emails.send({
-    from: process.env.RESEND_FROM ?? "Soporte Trivo <noreply@trivo.com.ar>",
-    to: user.email,
-    subject: `Tu QR para ${titulo}`,
-    html,
-    attachments: [
-      { filename: "entrada.pdf", content: pdfBase64, contentType: "application/pdf" },
-      { filename: "qr-code.png", content: qrBase64, contentType: "image/png", cid: "qr-image" } as any,
-    ],
-  });
+    // Debug: verificar si hay restricciones por dominio
+    console.log(
+      "[SEND_TICKET_EMAIL] User email domain:",
+      user.email.split("@")[1]
+    );
 
-  console.log("[SEND_TICKET_EMAIL] Resend response:", JSON.stringify(resp, null, 2));
+    const resp = await resend.emails.send({
+      from: process.env.RESEND_FROM ?? "Soporte Trivo <noreply@trivo.com.ar>",
+      to: user.email,
+      subject: `Tu QR para ${titulo}`,
+      html,
+      attachments: [
+        {
+          filename: "entrada.pdf",
+          content: pdfBase64,
+          contentType: "application/pdf",
+        },
+        {
+          filename: "qr-code.png",
+          content: qrBase64,
+          contentType: "image/png",
+          cid: "qr-image",
+        } as any,
+      ],
+    });
 
-  const id = (resp as any)?.data?.id;
-  const error = (resp as any)?.error;
-  if (error) {
-    console.error("[RESEND][ERROR]", error);
-    throw new Error(typeof error === "string" ? error : JSON.stringify(error));
-  }
-  console.log("[RESEND] Email sent successfully. ID:", id);
-  return id || "";
-  
+    console.log(
+      "[SEND_TICKET_EMAIL] Resend response:",
+      JSON.stringify(resp, null, 2)
+    );
+
+    const id = (resp as any)?.data?.id;
+    const error = (resp as any)?.error;
+    if (error) {
+      console.error("[RESEND][ERROR]", error);
+      throw new Error(
+        typeof error === "string" ? error : JSON.stringify(error)
+      );
+    }
+    console.log("[RESEND] Email sent successfully. ID:", id);
+    return id || "";
   } catch (error) {
     console.error("[SEND_TICKET_EMAIL] Fatal error:", error);
     throw error;

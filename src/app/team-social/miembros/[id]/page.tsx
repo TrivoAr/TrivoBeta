@@ -80,11 +80,9 @@ export default function EventPage({ params }: PageProps) {
     fetchMiembros();
   }, [params.id, session]);
 
-
   const filteredMiembros = miembros.filter((miembro) =>
     miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
 
   if (loading)
     return <main className="py-20 text-center">Cargando participantes...</main>;
@@ -109,9 +107,7 @@ export default function EventPage({ params }: PageProps) {
         />
       </button>
 
-      <p className="font-medium text-2xl mb-3 mt-3">
-        Participantes
-      </p>
+      <p className="font-medium text-2xl mb-3 mt-3">Participantes</p>
       <div className="px-1 mb-5">
         <input
           type="text"
@@ -128,7 +124,9 @@ export default function EventPage({ params }: PageProps) {
             <th className="font-bold">Foto</th>
             <th className="font-bold">Nombre</th>
             {event?.creadorId?._id &&
-              session?.user?.id === event.creadorId._id && <th className="font-bold">Acciones</th>}
+              session?.user?.id === event.creadorId._id && (
+                <th className="font-bold">Acciones</th>
+              )}
           </tr>
         </thead>
         <tbody>
@@ -140,59 +138,65 @@ export default function EventPage({ params }: PageProps) {
             >
               <td className="flex justify-center items-center h-[70px]">
                 <img
-                  src={miembro.imagen ? (miembro.imagen) : (session.user.imagen)}
+                  src={miembro.imagen ? miembro.imagen : session.user.imagen}
                   alt={miembro.nombre}
                   className="w-[50px] h-[50px] rounded-full"
                 />
               </td>
               <td>{miembro.nombre}</td>
               {session?.user?.id === event?.creadorId?._id ? (
-                <td> <button> <svg
-                        viewBox="0 0 24 24"
-                        height={25}
-                        width={25}
-                        fill="none"
-                        stroke="#6f6d6d"
-                      >
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g
-                          id="SVGRepo_tracerCarrier"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></g>
-                        <g id="SVGRepo_iconCarrier">
-                          {" "}
-                          <path
-                            d="M20.5001 6H3.5"
-                            stroke="#6e6c6c"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                          ></path>{" "}
-                          <path
-                            d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
-                            stroke="#6e6c6c"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                          ></path>{" "}
-                          <path
-                            d="M9.5 11L10 16"
-                            stroke="#6e6c6c"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                          ></path>{" "}
-                          <path
-                            d="M14.5 11L14 16"
-                            stroke="#6e6c6c"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                          ></path>{" "}
-                          <path
-                            d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6"
-                            stroke="#6e6c6c"
-                            stroke-width="1.5"
-                          ></path>{" "}
-                        </g>
-                      </svg></button></td>
+                <td>
+                  {" "}
+                  <button>
+                    {" "}
+                    <svg
+                      viewBox="0 0 24 24"
+                      height={25}
+                      width={25}
+                      fill="none"
+                      stroke="#6f6d6d"
+                    >
+                      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        {" "}
+                        <path
+                          d="M20.5001 6H3.5"
+                          stroke="#6e6c6c"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
+                          stroke="#6e6c6c"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M9.5 11L10 16"
+                          stroke="#6e6c6c"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M14.5 11L14 16"
+                          stroke="#6e6c6c"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>{" "}
+                        <path
+                          d="M6.5 6C6.55588 6 6.58382 6 6.60915 5.99936C7.43259 5.97849 8.15902 5.45491 8.43922 4.68032C8.44784 4.65649 8.45667 4.62999 8.47434 4.57697L8.57143 4.28571C8.65431 4.03708 8.69575 3.91276 8.75071 3.8072C8.97001 3.38607 9.37574 3.09364 9.84461 3.01877C9.96213 3 10.0932 3 10.3553 3H13.6447C13.9068 3 14.0379 3 14.1554 3.01877C14.6243 3.09364 15.03 3.38607 15.2493 3.8072C15.3043 3.91276 15.3457 4.03708 15.4286 4.28571L15.5257 4.57697C15.5433 4.62992 15.5522 4.65651 15.5608 4.68032C15.841 5.45491 16.5674 5.97849 17.3909 5.99936C17.4162 6 17.4441 6 17.5 6"
+                          stroke="#6e6c6c"
+                          strokeWidth="1.5"
+                        ></path>{" "}
+                      </g>
+                    </svg>
+                  </button>
+                </td>
               ) : null}
             </tr>
           ))}
@@ -219,21 +223,27 @@ export default function EventPage({ params }: PageProps) {
             {/* Overlay SOLO en parte inferior */}
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
-                <p className="text-white text-xl font-semibold mb-1" onClick={() => router.push(`/profile/${selectedMiembro._id}`)}>
+                <p
+                  className="text-white text-xl font-semibold mb-1"
+                  onClick={() => router.push(`/profile/${selectedMiembro._id}`)}
+                >
                   {selectedMiembro.nombre}
                 </p>
                 <p className="text-white text-sm opacity-80">
                   {selectedMiembro.email}
                 </p>
-                <p className="text-white text-xs mt-2">   {selectedMiembro.instagram && (
-                                                <a
-                                                  href={`https://instagram.com/${selectedMiembro.instagram}`}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                >
-                                                  <FaInstagram />
-                                                </a>
-                                              )}</p>
+                <p className="text-white text-xs mt-2">
+                  {" "}
+                  {selectedMiembro.instagram && (
+                    <a
+                      href={`https://instagram.com/${selectedMiembro.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaInstagram />
+                    </a>
+                  )}
+                </p>
               </div>
             </div>
 

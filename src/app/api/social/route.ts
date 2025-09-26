@@ -5,8 +5,6 @@ import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
 import { nanoid } from "nanoid";
 
-
-
 async function generateUniqueShortId() {
   // Intentos para evitar colisiones
   for (let i = 0; i < 6; i++) {
@@ -17,8 +15,6 @@ async function generateUniqueShortId() {
   // fallback muy poco probable
   return nanoid(12);
 }
-
-
 
 export async function POST(req: Request) {
   console.log("[CREATE_SALIDA] Starting request");
@@ -37,7 +33,10 @@ export async function POST(req: Request) {
   // Basic validation
   if (!body.nombre) {
     console.log("[CREATE_SALIDA] Missing required field: nombre");
-    return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 });
+    return NextResponse.json(
+      { error: "El nombre es requerido" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -50,9 +49,15 @@ export async function POST(req: Request) {
       cupo: body.cupo ? parseInt(body.cupo) : 0,
       sponsors: body.sponsors || [], // Ensure sponsors array exists
       // Filter out empty string profesorId to prevent ObjectId cast error
-      profesorId: body.profesorId && body.profesorId.trim() !== "" ? body.profesorId : undefined,
+      profesorId:
+        body.profesorId && body.profesorId.trim() !== ""
+          ? body.profesorId
+          : undefined,
     };
-    console.log("[CREATE_SALIDA] Processed data:", JSON.stringify(processedData, null, 2));
+    console.log(
+      "[CREATE_SALIDA] Processed data:",
+      JSON.stringify(processedData, null, 2)
+    );
 
     const nuevaSalida = await SalidaSocial.create({
       ...processedData,
@@ -61,7 +66,7 @@ export async function POST(req: Request) {
     });
     console.log("[CREATE_SALIDA] Created salida:", nuevaSalida._id);
 
-     try {
+    try {
       const payload = {
         title: "Nueva salida publicada 🚀",
         body: `${nuevaSalida.nombre} en ${nuevaSalida.localidad} el ${nuevaSalida.fecha}`,
@@ -83,23 +88,29 @@ export async function POST(req: Request) {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       timestamp: new Date().toISOString(),
-      userId: session.user.id
+      userId: session.user.id,
     });
 
     // Return more specific error information for debugging
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({
-      error: "Error al crear la salida social",
-      details: errorMessage,
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Error al crear la salida social",
+        details: errorMessage,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const salidas = await SalidaSocial.find().populate('creador_id', 'firstname');
+    const salidas = await SalidaSocial.find().populate(
+      "creador_id",
+      "firstname"
+    );
 
     return NextResponse.json(salidas, { status: 200 });
   } catch (error) {

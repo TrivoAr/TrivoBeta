@@ -9,13 +9,22 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+  if (!session)
+    return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
   const { teamSocialId } = await req.json();
-  if (!teamSocialId) return NextResponse.json({ message: "Falta teamSocialId" }, { status: 400 });
+  if (!teamSocialId)
+    return NextResponse.json(
+      { message: "Falta teamSocialId" },
+      { status: 400 }
+    );
 
   const user = await User.findOne({ email: session.user?.email });
-  if (!user) return NextResponse.json({ message: "Usuario no encontrado" }, { status: 404 });
+  if (!user)
+    return NextResponse.json(
+      { message: "Usuario no encontrado" },
+      { status: 404 }
+    );
 
   const miembro = await MiembroTeamSocial.findOne({
     usuario_id: user._id,

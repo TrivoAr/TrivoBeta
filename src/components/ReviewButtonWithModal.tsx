@@ -38,7 +38,11 @@ const StarRatingInput = ({
             width="32"
             height="32"
             viewBox="0 0 24 24"
-            className={(hover || rating) >= star ? "text-[#C95100]" : "text-muted-foreground"}
+            className={
+              (hover || rating) >= star
+                ? "text-[#C95100]"
+                : "text-muted-foreground"
+            }
             fill="currentColor"
           >
             <path d="M12 .587l3.668 7.57 8.332 1.591-6 5.845 1.42 8.29L12 19.771 4.58 24.293 6 15.593 0 9.748l8.332-1.591z" />
@@ -124,10 +128,14 @@ const ReviewModal = ({
         </h3>
 
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium mb-1 text-foreground">Puntuación</label>
+          <label className="block text-sm font-medium mb-1 text-foreground">
+            Puntuación
+          </label>
           <StarRatingInput rating={rating} setRating={setRating} />
 
-          <label className="block text-sm font-medium mb-1 text-foreground">Comentario</label>
+          <label className="block text-sm font-medium mb-1 text-foreground">
+            Comentario
+          </label>
           <textarea
             rows={4}
             className="w-full border border-border bg-background text-foreground rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
@@ -146,8 +154,8 @@ const ReviewModal = ({
                 ? "Actualizando..."
                 : "Enviando..."
               : existingReview
-              ? "Actualizar reseña"
-              : "Enviar reseña"}
+                ? "Actualizar reseña"
+                : "Enviar reseña"}
           </button>
         </form>
       </div>

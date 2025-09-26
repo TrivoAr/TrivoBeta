@@ -19,7 +19,10 @@ export async function GET(_req: Request) {
 
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ message: "Usuario no autenticado" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Usuario no autenticado" },
+        { status: 401 }
+      );
     }
 
     const userId = session.user.id;
@@ -38,19 +41,20 @@ export async function GET(_req: Request) {
       estado: "pendiente",
     }).populate("user_id academia_id");
 
-    
-
     // Enriquecemos con imagen + campos seguros
     const enrichedSolicitudes = await Promise.all(
       solicitudes.map(async (sol: any) => {
         let imagen = "";
         try {
-          imagen = await getProfileImage("profile-image.jpg", sol.user_id?._id?.toString());
+          imagen = await getProfileImage(
+            "profile-image.jpg",
+            sol.user_id?._id?.toString()
+          );
         } catch {
           // const nombre = `${sol?.user_id?.firstname || "User"} ${sol?.user_id?.lastname || ""}.trim()`;
-          const nombre = `${(sol?.user_id?.firstname || "User")} ${(sol?.user_id?.lastname || "")}`;
+          const nombre = `${sol?.user_id?.firstname || "User"} ${sol?.user_id?.lastname || ""}`;
 
-          imagen = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&color=fff&size=128;`
+          imagen = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=random&color=fff&size=128;`;
         }
 
         return {
@@ -76,20 +80,26 @@ export async function GET(_req: Request) {
   }
 }
 
-
 export async function PATCH(req: Request) {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
-    if (!session?.user) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    if (!session?.user)
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
     const { solicitud_id, estado } = await req.json();
     if (!solicitud_id || !estado)
-      return NextResponse.json({ message: "Datos incompletos" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Datos incompletos" },
+        { status: 400 }
+      );
 
     const solicitud = await UsuarioAcademia.findById(solicitud_id);
     if (!solicitud)
-      return NextResponse.json({ message: "Solicitud no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Solicitud no encontrada" },
+        { status: 404 }
+      );
 
     const academia = await Academia.findById(solicitud.academia_id);
     if (!academia || String(academia.dueño_id) !== session.user.id) {
@@ -106,17 +116,27 @@ export async function PATCH(req: Request) {
 
     // ✅ Agregamos type
     const creada = await Notificacion.create({
-      userId: solicitud.user_id,       // receptor (quien pidió unirse)
-      fromUserId: session.user.id,     // dueño que acepta/rechaza
-      type: "solicitud_respuesta",     // ✅ requerido por el schema
+      userId: solicitud.user_id, // receptor (quien pidió unirse)
+      fromUserId: session.user.id, // dueño que acepta/rechaza
+      type: "solicitud_respuesta", // ✅ requerido por el schema
       message: mensaje,
       read: false,
     });
 
     // opcional: devolvé el id creada para debug
-    return NextResponse.json({ ok: true, estado: solicitud.estado, notificacionId: creada._id }, { status: 200 });
+    return NextResponse.json(
+      { ok: true, estado: solicitud.estado, notificacionId: creada._id },
+      { status: 200 }
+    );
   } catch (error: any) {
-    console.error("Error al actualizar solicitud / crear notificación:", error?.message, error?.errors);
-    return NextResponse.json({ message: "Error interno", detalle: error?.message }, { status: 500 });
+    console.error(
+      "Error al actualizar solicitud / crear notificación:",
+      error?.message,
+      error?.errors
+    );
+    return NextResponse.json(
+      { message: "Error interno", detalle: error?.message },
+      { status: 500 }
+    );
   }
 }

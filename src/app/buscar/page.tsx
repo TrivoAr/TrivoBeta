@@ -52,10 +52,26 @@ type SearchResult = {
 };
 
 const disciplines = [
-  { key: "todos", label: "Todos", icon: "/assets/icons/terrain_40dp_FFB86A.svg" },
-  { key: "running", label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
-  { key: "ciclismo", label: "Ciclismo", icon: "/assets/icons/directions_bike_40dp_FFB86A.svg" },
-  { key: "trekking", label: "Trekking", icon: "/assets/icons/hiking_40dp_FFB86A.svg" },
+  {
+    key: "todos",
+    label: "Todos",
+    icon: "/assets/icons/terrain_40dp_FFB86A.svg",
+  },
+  {
+    key: "running",
+    label: "Running",
+    icon: "/assets/icons/directions_run_40dp_FFB86A.svg",
+  },
+  {
+    key: "ciclismo",
+    label: "Ciclismo",
+    icon: "/assets/icons/directions_bike_40dp_FFB86A.svg",
+  },
+  {
+    key: "trekking",
+    label: "Trekking",
+    icon: "/assets/icons/hiking_40dp_FFB86A.svg",
+  },
 ];
 
 const eventTypes = [
@@ -82,31 +98,31 @@ export default function BuscarPage() {
         const [academiasRes, salidasRes, teamSocialsRes] = await Promise.all([
           fetch("/api/academias"),
           fetch("/api/social"),
-          fetch("/api/team-social")
+          fetch("/api/team-social"),
         ]);
 
         const [academias, salidas, teamSocials] = await Promise.all([
           academiasRes.json(),
           salidasRes.json(),
-          teamSocialsRes.json()
+          teamSocialsRes.json(),
         ]);
 
         const results: SearchResult[] = [
           ...academias.map((item: Academia) => ({
             id: item._id,
             type: "academia" as const,
-            data: item
+            data: item,
           })),
           ...salidas.map((item: SalidaSocial) => ({
             id: item._id,
             type: "salida" as const,
-            data: item
+            data: item,
           })),
           ...teamSocials.map((item: TeamSocial) => ({
             id: item._id,
             type: "team-social" as const,
-            data: item
-          }))
+            data: item,
+          })),
         ];
 
         setAllResults(results);
@@ -125,9 +141,10 @@ export default function BuscarPage() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Configurar a inicio del día
 
-    return allResults.filter(result => {
+    return allResults.filter((result) => {
       // Filtro de tipo de evento
-      const matchesEventType = selectedEventType === "todos" || result.type === selectedEventType;
+      const matchesEventType =
+        selectedEventType === "todos" || result.type === selectedEventType;
 
       // Filtro de fecha (solo para salidas y team-social, no para academias)
       let matchesDate = true;
@@ -183,17 +200,26 @@ export default function BuscarPage() {
       if (selectedDiscipline !== "todos") {
         if (result.type === "academia") {
           const academia = result.data as Academia;
-          matchesDiscipline = academia.tipo_disciplina?.toLowerCase() === selectedDiscipline.toLowerCase();
+          matchesDiscipline =
+            academia.tipo_disciplina?.toLowerCase() ===
+            selectedDiscipline.toLowerCase();
         } else if (result.type === "salida") {
           const salida = result.data as SalidaSocial;
-          matchesDiscipline = salida.deporte?.toLowerCase() === selectedDiscipline.toLowerCase();
+          matchesDiscipline =
+            salida.deporte?.toLowerCase() === selectedDiscipline.toLowerCase();
         } else if (result.type === "team-social") {
           const team = result.data as TeamSocial;
-          matchesDiscipline = team.deporte?.toLowerCase() === selectedDiscipline.toLowerCase();
+          matchesDiscipline =
+            team.deporte?.toLowerCase() === selectedDiscipline.toLowerCase();
         }
       }
 
-      return (query === "" || matchesSearch) && matchesDiscipline && matchesEventType && matchesDate;
+      return (
+        (query === "" || matchesSearch) &&
+        matchesDiscipline &&
+        matchesEventType &&
+        matchesDate
+      );
     });
   };
 
@@ -201,17 +227,14 @@ export default function BuscarPage() {
 
   return (
     <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
-      <TopContainer
-        selectedLocalidad={null}
-        setSelectedLocalidad={null}
-      />
+      <TopContainer selectedLocalidad={null} setSelectedLocalidad={null} />
 
       {/* Buscador */}
       <div className="px-1">
         <input
           type="text"
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar eventos deportivos..."
           className="w-full px-4 py-3 border border-border rounded-[20px] shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#C95100] focus:border-[#C95100] transition-all bg-card"
         />
@@ -237,10 +260,16 @@ export default function BuscarPage() {
       {/* Encabezado */}
       <div className="flex justify-between items-center px-1">
         <div>
-          <h2 className="text-2xl font-bold text-[#C95100]">Eventos Deportivos</h2>
-          {(searchQuery || selectedEventType !== "todos" || selectedDiscipline !== "todos") && (
+          <h2 className="text-2xl font-bold text-[#C95100]">
+            Eventos Deportivos
+          </h2>
+          {(searchQuery ||
+            selectedEventType !== "todos" ||
+            selectedDiscipline !== "todos") && (
             <p className="text-sm text-muted-foreground mt-1">
-              {filteredResults.length} resultado{filteredResults.length !== 1 ? 's' : ''} encontrado{filteredResults.length !== 1 ? 's' : ''}
+              {filteredResults.length} resultado
+              {filteredResults.length !== 1 ? "s" : ""} encontrado
+              {filteredResults.length !== 1 ? "s" : ""}
             </p>
           )}
         </div>
@@ -263,11 +292,23 @@ export default function BuscarPage() {
               data={result.data}
             />
           ))
-        ) : (searchQuery || selectedEventType !== "todos" || selectedDiscipline !== "todos") ? (
+        ) : searchQuery ||
+          selectedEventType !== "todos" ||
+          selectedDiscipline !== "todos" ? (
           <div className="text-center py-12">
             <div className="text-muted-foreground mb-2">
-              <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -280,8 +321,18 @@ export default function BuscarPage() {
         ) : (
           <div className="text-center py-12">
             <div className="text-muted-foreground mb-2">
-              <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <p className="text-sm text-muted-foreground">

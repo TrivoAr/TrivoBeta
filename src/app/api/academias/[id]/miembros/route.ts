@@ -5,18 +5,27 @@ import { connectDB } from "@/libs/mongodb";
 import { NextResponse } from "next/server";
 
 // Obtener los miembros de la academia y sus grupos
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectDB();
 
     const { id } = params;
 
     if (!id) {
-      return NextResponse.json({ message: "ID no proporcionado" }, { status: 400 });
+      return NextResponse.json(
+        { message: "ID no proporcionado" },
+        { status: 400 }
+      );
     }
 
     // Buscar los miembros de la academia
-    const miembrosAcademia = await UsuarioAcademia.find({ academia_id: id, estado: "aceptado" })
+    const miembrosAcademia = await UsuarioAcademia.find({
+      academia_id: id,
+      estado: "aceptado",
+    })
       .populate("user_id") // Incluye información del usuario
       .lean();
 
@@ -55,9 +64,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-
 // Asignar un usuario a un grupo
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectDB();
     const { id } = params; // ID de la academia
@@ -103,14 +114,20 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const url = new URL(req.url);
   const user_id = url.searchParams.get("user_id");
 
   console.log("🔍 Eliminando usuario con ID:", user_id);
 
   if (!user_id) {
-    return NextResponse.json({ message: "ID del usuario no proporcionado" }, { status: 400 });
+    return NextResponse.json(
+      { message: "ID del usuario no proporcionado" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -125,7 +142,10 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     });
 
     if (eliminarUsuarioAcademia.deletedCount === 0) {
-      return NextResponse.json({ message: "El usuario no pertenece a esta academia" }, { status: 404 });
+      return NextResponse.json(
+        { message: "El usuario no pertenece a esta academia" },
+        { status: 404 }
+      );
     }
 
     // 2. Eliminar la relación entre el usuario y el grupo (si tiene uno)
@@ -134,13 +154,20 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     });
 
     if (eliminarUsuarioGrupo.deletedCount === 0) {
-      console.log(`El usuario ${user_id} no tiene grupo asignado o no se encontró.`);
+      console.log(
+        `El usuario ${user_id} no tiene grupo asignado o no se encontró.`
+      );
     }
 
-    return NextResponse.json({ message: "Usuario eliminado correctamente" }, { status: 200 });
-
+    return NextResponse.json(
+      { message: "Usuario eliminado correctamente" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error al eliminar usuario:", error);
-    return NextResponse.json({ message: "Error al eliminar el usuario", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Error al eliminar el usuario", error },
+      { status: 500 }
+    );
   }
 }
