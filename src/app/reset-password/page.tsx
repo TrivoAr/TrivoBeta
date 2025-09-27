@@ -104,10 +104,11 @@
 // }
 
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function ResetPassword() {
   const [step, setStep] = useState<"requestCode" | "reset">("requestCode"); // Paso actual
@@ -117,6 +118,31 @@ export default function ResetPassword() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Redirigir si ya hay una sesión activa
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/home");
+    }
+  }, [status, router]);
+
+  // Mostrar loading mientras se verifica la sesión
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FEFBF9]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C95100]"></div>
+          <p className="text-gray-600">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No mostrar el formulario si ya está autenticado
+  if (status === "authenticated") {
+    return null;
+  }
 
   // Paso 1: solicitar el código
   const handleRequestCode = async (e: React.FormEvent) => {
