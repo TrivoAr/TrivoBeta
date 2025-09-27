@@ -11,10 +11,10 @@ export async function POST(request: NextRequest) {
   try {
     // Debug environment variables
     console.log("Environment check:");
-    console.log("MERCADOPAGO_ACCESS_TOKEN:", process.env.MERCADOPAGO_ACCESS_TOKEN ? "Set ✓" : "Not set ✗");
+    console.log("MP_ACCESS_TOKEN:", process.env.MP_ACCESS_TOKEN ? "Set ✓" : "Not set ✗");
     console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL ? "Set ✓" : "Not set ✗");
 
-    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    if (!process.env.MP_ACCESS_TOKEN) {
       return NextResponse.json({
         error: "Configuración de MercadoPago incompleta"
       }, { status: 500 });
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize MercadoPago client
     const client = new MercadoPagoConfig({
-      accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+      accessToken: process.env.MP_ACCESS_TOKEN!,
       options: { timeout: 10000, idempotencyKey: undefined }
     });
 
