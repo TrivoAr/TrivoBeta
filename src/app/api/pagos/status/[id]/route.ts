@@ -46,8 +46,8 @@ export async function GET(
         id: miembro._id,
         estado: miembro.estado
       } : null,
-      isApproved: miembro?.estado === "aprobado",
-      isPending: pago?.estado === "pendiente" || miembro?.estado === "pendiente"
+      isApproved: miembro?.estado === "aprobado" && pago?.estado === "aprobado",
+      isPending: pago?.estado === "pendiente" || (pago?.estado === "aprobado" && miembro?.estado === "pendiente")
     });
 
   } catch (error) {

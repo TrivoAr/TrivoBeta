@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { isNightEvent } from "@/lib/theme";
 import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
+import { useSearchParams } from "next/navigation";
 
 interface PageProps {
   params: {
@@ -102,6 +103,7 @@ export default function EventPage({ params }: PageProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [showFullMap, setShowFullMap] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -113,6 +115,32 @@ export default function EventPage({ params }: PageProps) {
     params.id,
     !!session?.user?.id
   );
+
+  // Manejar parámetros de retorno de MercadoPago
+  useEffect(() => {
+    const paymentParam = searchParams.get('payment');
+    if (paymentParam && session?.user?.id) {
+      switch (paymentParam) {
+        case 'success':
+          toast.success('¡Pago exitoso! Tu solicitud ha sido enviada.');
+          // Invalidar queries para actualizar estado
+          queryClient.invalidateQueries({ queryKey: ["payment-status", params.id] });
+          queryClient.invalidateQueries({ queryKey: ["unido", params.id, session.user.id] });
+          queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
+          break;
+        case 'failure':
+          toast.error('Pago fallido. Intenta nuevamente.');
+          break;
+        case 'pending':
+          toast.info('Pago pendiente. Te notificaremos cuando sea procesado.');
+          break;
+      }
+      // Limpiar el parámetro de la URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('payment');
+      router.replace(newUrl.pathname, { scroll: false });
+    }
+  }, [searchParams, session?.user?.id, queryClient, params.id, router]);
   let decodedCoords: [number, number][] = [];
   let routeCoords: [number, number][] = [];
 

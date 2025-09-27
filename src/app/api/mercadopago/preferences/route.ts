@@ -96,12 +96,12 @@ export async function POST(request: NextRequest) {
         email: session.user.email,
       },
       back_urls: {
-        success: `${process.env.NEXTAUTH_URL}/social/${salidaId}?payment=success`,
-        failure: `${process.env.NEXTAUTH_URL}/social/${salidaId}?payment=failure`,
-        pending: `${process.env.NEXTAUTH_URL}/social/${salidaId}?payment=pending`
+        success: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=success`,
+        failure: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=failure`,
+        pending: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=pending`
       },
       auto_return: "approved" as const,
-      notification_url: `${process.env.NEXTAUTH_URL}/api/mercadopago/webhook`,
+      notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/mercadopago/webhook`,
       external_reference: `${salidaId}-${userId}`,
       statement_descriptor: "TRIVO EVENTOS",
       expires: true,
