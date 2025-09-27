@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MercadoPagoConfig, Payment } from "mercadopago";
 import { connectDB } from "@/libs/mongodb";
-import Pagos from "@/models/Pagos";
+import Pagos from "@/models/pagos";
 import MiembroSalida from "@/models/MiembroSalida";
 
 // Configurar cliente de MercadoPago

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import Pago from "@/models/Pagos";
+import Pago from "@/models/pagos";
 import { connectDB } from "@/libs/mongodb";
 
 export async function POST(req) {

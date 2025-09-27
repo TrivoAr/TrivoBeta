@@ -4,7 +4,7 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import SalidaSocial from "@/models/salidaSocial";
-import Pago from "@/models/Pagos";
+import Pago from "@/models/pagos";
 import mongoose from "mongoose";
 import { revalidateTag } from "next/cache";
 import {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
-import Pago from "@/models/Pagos";
+import Pago from "@/models/pagos";
 import Notificacion from "@/models/notificacion";
 import { sendPaymentStatusEmail } from "@/libs/mailer";
 import SalidaSocial from "@/models/salidaSocial";

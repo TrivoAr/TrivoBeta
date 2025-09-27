@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
-import Pago from "@/models/Pagos";
+import Pago from "@/models/pagos";
 import mongoose from "mongoose";
 import SalidaSocial from "@/models/salidaSocial";
 import Notificacion from "@/models/notificacion";
