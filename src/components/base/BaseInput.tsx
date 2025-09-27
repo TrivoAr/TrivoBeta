@@ -124,10 +124,10 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
     // Variant classes
     const variantClasses = {
       default:
-        "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
+        "border border-border bg-background focus:border-ring focus:ring-ring",
       filled:
-        "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
-      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500",
+        "border-0 bg-muted focus:bg-background focus:ring-2 focus:ring-ring",
+      outline: "border-2 border-border bg-transparent focus:border-ring",
     };
 
     // Error state classes
@@ -142,8 +142,8 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
       // Base styles
       "w-full rounded-lg transition-colors duration-200",
       "focus:outline-none focus:ring-1",
-      "disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed",
-      "placeholder:text-gray-400",
+      "disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed",
+      "placeholder:text-muted-foreground",
       // Size styles
       sizeClasses[size],
       // Variant styles
@@ -179,7 +179,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
           <label
             htmlFor={inputId}
             className={cn(
-              "block text-sm font-medium text-gray-700 mb-1",
+              "block text-sm font-medium text-foreground mb-1",
               labelClassName
             )}
           >
@@ -194,7 +194,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
           {leftIcon && (
             <div
               className={cn(
-                "absolute left-3 pointer-events-none text-gray-400",
+                "absolute left-3 pointer-events-none text-muted-foreground",
                 iconSizeClasses[size],
                 floatingLabel ? "top-6" : iconPositionClasses[size]
               )}
@@ -226,7 +226,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
             <label
               htmlFor={inputId}
               className={cn(
-                "absolute left-3 text-gray-400 transition-all duration-200 pointer-events-none",
+                "absolute left-3 text-muted-foreground transition-all duration-200 pointer-events-none",
                 "transform origin-left",
                 hasValue || props.placeholder
                   ? "top-1 text-xs scale-75"
@@ -249,14 +249,14 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
             {loading && (
               <div
                 className={cn(
-                  "border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin",
+                  "border-2 border-border border-t-primary rounded-full animate-spin",
                   iconSizeClasses[size]
                 )}
               />
             )}
 
             {rightIcon && !loading && (
-              <div className={cn("text-gray-400", iconSizeClasses[size])}>
+              <div className={cn("text-muted-foreground", iconSizeClasses[size])}>
                 {rightIcon}
               </div>
             )}
@@ -271,7 +271,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
                 {error}
               </p>
             ) : helperText ? (
-              <p id={`${inputId}-helper`} className="text-sm text-gray-500">
+              <p id={`${inputId}-helper`} className="text-sm text-muted-foreground">
                 {helperText}
               </p>
             ) : null}
@@ -285,7 +285,7 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
                   ? "text-red-500"
                   : characterCount > maxLength * 0.7
                     ? "text-yellow-600"
-                    : "text-gray-400"
+                    : "text-muted-foreground"
               )}
             >
               {characterCount}/{maxLength}
@@ -400,7 +400,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         <button
           type="button"
           onClick={handleClear}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <svg
             className="w-4 h-4"
@@ -498,10 +498,10 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
 
     const variantClasses = {
       default:
-        "border border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-500",
+        "border border-border bg-background focus:border-ring focus:ring-ring",
       filled:
-        "border-0 bg-gray-100 focus:bg-white focus:ring-2 focus:ring-blue-500",
-      outline: "border-2 border-gray-300 bg-transparent focus:border-blue-500",
+        "border-0 bg-muted focus:bg-background focus:ring-2 focus:ring-ring",
+      outline: "border-2 border-border bg-transparent focus:border-ring",
     };
 
     const errorClasses = error
@@ -511,8 +511,8 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
     const textareaClasses = cn(
       "w-full rounded-lg transition-colors duration-200 resize-none",
       "focus:outline-none focus:ring-1",
-      "disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed",
-      "placeholder:text-gray-400",
+      "disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed",
+      "placeholder:text-muted-foreground",
       sizeClasses[size],
       variantClasses[variant],
       errorClasses,
@@ -528,7 +528,7 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
           <label
             htmlFor={textareaId}
             className={cn(
-              "block text-sm font-medium text-gray-700 mb-1",
+              "block text-sm font-medium text-foreground mb-1",
               labelClassName
             )}
           >
@@ -562,7 +562,7 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
                 {error}
               </p>
             ) : helperText ? (
-              <p id={`${textareaId}-helper`} className="text-sm text-gray-500">
+              <p id={`${textareaId}-helper`} className="text-sm text-muted-foreground">
                 {helperText}
               </p>
             ) : null}
@@ -576,7 +576,7 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
                   ? "text-red-500"
                   : characterCount > maxLength * 0.7
                     ? "text-yellow-600"
-                    : "text-gray-400"
+                    : "text-muted-foreground"
               )}
             >
               {characterCount}/{maxLength}

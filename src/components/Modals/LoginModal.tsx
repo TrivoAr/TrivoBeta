@@ -1,9 +1,14 @@
 // components/LoginModal.tsx
 "use client";
 import { useEffect } from "react";
-import { Dialog } from "@headlessui/react";
 import { signIn } from "next-auth/react";
 import { X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -20,31 +25,31 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   }, [onClose]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      className="fixed z-50 inset-0 flex items-center justify-center bg-black/50 p-4"
-    >
-      <Dialog.Panel className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-black"
-        >
-          <X />
-        </button>
-        <Dialog.Title className="text-lg font-semibold mb-4">
-          Inicia sesión para continuar
-        </Dialog.Title>
-        <p className="text-sm text-gray-600 mb-6">
-          Debes estar logueado para realizar esta acción.
-        </p>
-        <button
-          onClick={() => signIn("google")} // o "credentials", según tu setup
-          className="bg-[#C95100] text-white w-full py-2 rounded-[20px] font-medium transition"
-        >
-          Iniciar sesión
-        </button>
-      </Dialog.Panel>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-foreground">
+            Inicia sesión para continuar
+          </DialogTitle>
+          <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Debes estar logueado para realizar esta acción.
+          </p>
+          <button
+            onClick={() => signIn("google")}
+            className="bg-[#C95100] text-white w-full py-2 rounded-[20px] font-medium transition hover:bg-[#A03D00]"
+          >
+            Iniciar sesión
+          </button>
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }

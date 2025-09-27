@@ -43,7 +43,7 @@
 
 import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
-import Pago from "@/models/pagos";
+import Pago from "@/models/Pagos";
 
 export async function POST(req: Request) {
   try {

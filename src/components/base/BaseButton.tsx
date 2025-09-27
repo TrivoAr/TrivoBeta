@@ -107,21 +107,21 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
   ) => {
     const variants = {
       default:
-        "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+        "bg-background text-foreground border border-border hover:bg-muted focus:ring-ring",
       primary:
-        "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+        "bg-primary text-primary-foreground border border-primary hover:bg-primary/90 focus:ring-ring",
       secondary:
-        "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+        "bg-secondary text-secondary-foreground border border-secondary hover:bg-secondary/80 focus:ring-ring",
       danger:
-        "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+        "bg-destructive text-destructive-foreground border border-destructive hover:bg-destructive/90 focus:ring-ring",
       success:
-        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-ring dark:bg-green-600 dark:hover:bg-green-700",
       warning:
-        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-ring dark:bg-yellow-600 dark:hover:bg-yellow-700",
       ghost:
-        "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+        "bg-transparent text-foreground border-none hover:bg-muted focus:ring-ring",
       outline:
-        "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
+        "bg-transparent text-primary border border-primary hover:bg-primary/5 focus:ring-ring",
     };
 
     const sizes = {
@@ -264,21 +264,21 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
 
       const variants = {
         default:
-          "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+          "bg-background text-foreground border border-border hover:bg-muted focus:ring-ring",
         primary:
-          "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+          "bg-primary text-primary-foreground border border-primary hover:bg-primary/90 focus:ring-ring",
         secondary:
-          "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+          "bg-secondary text-secondary-foreground border border-secondary hover:bg-secondary/80 focus:ring-ring",
         danger:
-          "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+          "bg-destructive text-destructive-foreground border border-destructive hover:bg-destructive/90 focus:ring-ring",
         success:
-          "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+          "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-ring dark:bg-green-600 dark:hover:bg-green-700",
         warning:
-          "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+          "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-ring dark:bg-yellow-600 dark:hover:bg-yellow-700",
         ghost:
-          "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+          "bg-transparent text-foreground border-none hover:bg-muted focus:ring-ring",
         outline:
-          "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
+          "bg-transparent text-primary border border-primary hover:bg-primary/5 focus:ring-ring",
       };
 
       const sizes = {
@@ -323,21 +323,21 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
 
     const variants = {
       default:
-        "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500",
+        "bg-background text-foreground border border-border hover:bg-muted focus:ring-ring",
       primary:
-        "bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 focus:ring-blue-500",
+        "bg-primary text-primary-foreground border border-primary hover:bg-primary/90 focus:ring-ring",
       secondary:
-        "bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+        "bg-secondary text-secondary-foreground border border-secondary hover:bg-secondary/80 focus:ring-ring",
       danger:
-        "bg-red-600 text-white border border-red-600 hover:bg-red-700 focus:ring-red-500",
+        "bg-destructive text-destructive-foreground border border-destructive hover:bg-destructive/90 focus:ring-ring",
       success:
-        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-green-500",
+        "bg-green-600 text-white border border-green-600 hover:bg-green-700 focus:ring-ring dark:bg-green-600 dark:hover:bg-green-700",
       warning:
-        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
+        "bg-yellow-600 text-white border border-yellow-600 hover:bg-yellow-700 focus:ring-ring dark:bg-yellow-600 dark:hover:bg-yellow-700",
       ghost:
-        "bg-transparent text-gray-700 border-none hover:bg-gray-100 focus:ring-gray-500",
+        "bg-transparent text-foreground border-none hover:bg-muted focus:ring-ring",
       outline:
-        "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50 focus:ring-blue-500",
+        "bg-transparent text-primary border border-primary hover:bg-primary/5 focus:ring-ring",
     };
 
     const sizes = {

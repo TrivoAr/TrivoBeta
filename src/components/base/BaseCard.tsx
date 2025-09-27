@@ -139,10 +139,10 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
     ref
   ) => {
     const variants = {
-      default: "bg-white border border-gray-200 shadow-sm",
-      bordered: "bg-white border-2 border-gray-300",
-      elevated: "bg-white shadow-lg border border-gray-100",
-      flat: "bg-gray-50",
+      default: "bg-card border border-border shadow-sm",
+      bordered: "bg-card border-2 border-border",
+      elevated: "bg-card shadow-lg border border-border",
+      flat: "bg-muted",
     };
 
     const sizes = {
@@ -207,7 +207,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
             className={cn("relative w-full", aspectRatios[imageAspectRatio])}
           >
             {loading && showImageSkeleton ? (
-              <div className="w-full h-full bg-gray-200 animate-pulse" />
+              <div className="w-full h-full bg-muted animate-pulse" />
             ) : (
               <Image
                 src={image}
@@ -239,7 +239,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
                 {title && (
                   <h3
                     className={cn(
-                      "font-semibold text-gray-900 line-clamp-2",
+                      "font-semibold text-foreground line-clamp-2",
                       size === "sm"
                         ? "text-sm"
                         : size === "lg"
@@ -248,7 +248,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
                     )}
                   >
                     {loading ? (
-                      <div className="h-5 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-5 bg-muted rounded animate-pulse" />
                     ) : (
                       title
                     )}
@@ -257,13 +257,13 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
                 {subtitle && (
                   <p
                     className={cn(
-                      "text-gray-600 line-clamp-2",
+                      "text-muted-foreground line-clamp-2",
                       size === "sm" ? "text-xs" : "text-sm",
                       title && "mt-1"
                     )}
                   >
                     {loading ? (
-                      <div className="h-4 bg-gray-200 rounded animate-pulse mt-1" />
+                      <div className="h-4 bg-muted rounded animate-pulse mt-1" />
                     ) : (
                       subtitle
                     )}
@@ -278,8 +278,8 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
             <div className="flex-1">
               {loading ? (
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4" />
+                  <div className="h-4 bg-muted rounded animate-pulse" />
+                  <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
                 </div>
               ) : (
                 children
@@ -289,7 +289,7 @@ export const BaseCard = forwardRef<HTMLDivElement, BaseCardProps>(
 
           {/* Footer */}
           {footer && (
-            <div className="mt-4 pt-3 border-t border-gray-100">{footer}</div>
+            <div className="mt-4 pt-3 border-t border-border">{footer}</div>
           )}
         </div>
 

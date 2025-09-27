@@ -31,7 +31,7 @@ export default function EmptyState({
 
       <h3 className="text-lg font-semibold">{title}</h3>
       {description && (
-        <p className="text-sm text-gray-500 max-w-md">{description}</p>
+        <p className="text-sm text-muted-foreground max-w-md">{description}</p>
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
