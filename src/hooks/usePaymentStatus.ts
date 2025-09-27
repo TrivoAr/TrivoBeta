@@ -53,10 +53,17 @@ export function usePaymentStatus(salidaId: string, enabled: boolean = true) {
       if (lastStatus !== null) { // No mostrar en la primera carga
         switch (data.pago.estado) {
           case "aprobado":
-            toast.success("¡Pago aprobado! Ya estás inscrito en el evento.");
+            // Verificar si el miembro también fue aprobado automáticamente
+            if (data.miembro?.estado === "aprobado") {
+              toast.success("¡Pago exitoso! Ya estás inscrito en el evento.");
+            } else {
+              toast.success("¡Pago aprobado! Espera la confirmación del organizador.");
+            }
             // Invalidar queries relacionadas para actualizar la UI
             queryClient.invalidateQueries({ queryKey: ["event", salidaId] });
             queryClient.invalidateQueries({ queryKey: ["user-events"] });
+            queryClient.invalidateQueries({ queryKey: ["unido", salidaId] });
+            queryClient.invalidateQueries({ queryKey: ["miembros", salidaId] });
             break;
           case "rechazado":
             toast.error("Pago rechazado. Intenta con otro método de pago.");
@@ -77,5 +84,8 @@ export function usePaymentStatus(salidaId: string, enabled: boolean = true) {
     error,
     isApproved: data?.isApproved || false,
     isPending: data?.isPending || false,
+    // Agregar información adicional para el estado del miembro
+    memberStatus: data?.miembro?.estado || "no",
+    paymentApproved: data?.pago?.estado === "aprobado",
   };
 }

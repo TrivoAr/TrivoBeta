@@ -3,10 +3,13 @@ import { MercadoPagoConfig, Payment } from "mercadopago";
 import { connectDB } from "@/libs/mongodb";
 import Pagos from "@/models/pagos";
 import MiembroSalida from "@/models/MiembroSalida";
+import SalidaSocial from "@/models/salidaSocial";
+import User from "@/models/user";
+import Notificacion from "@/models/notificacion";
 
 // Configurar cliente de MercadoPago
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
+  accessToken: process.env.MP_ACCESS_TOKEN!,
 });
 
 const payment = new Payment(client);
@@ -116,23 +119,63 @@ async function procesarPagoAprobado(salidaId: string, userId: string, pagoId: st
     });
 
     if (!miembro) {
-      // Crear nuevo miembro
+      // Crear nuevo miembro con auto-aprobación para pagos de MercadoPago
       miembro = new MiembroSalida({
         salida_id: salidaId,
         usuario_id: userId,
         pago_id: pagoId,
-        estado: "aprobado"
+        estado: "aprobado" // Auto-aprobación para MercadoPago
       });
     } else {
-      // Actualizar miembro existente
+      // Actualizar miembro existente y auto-aprobar para MercadoPago
       miembro.pago_id = pagoId;
-      miembro.estado = "aprobado";
+      miembro.estado = "aprobado"; // Auto-aprobación para MercadoPago
     }
 
     await miembro.save();
-    console.log(`Miembro aprobado para salida ${salidaId}, usuario ${userId}`);
+    console.log(`Pago de MercadoPago aprobado automáticamente para salida ${salidaId}, usuario ${userId}`);
+
+    // Notificar al creador de la salida
+    await notificarCreadorPagoAprobado(salidaId, userId, "mercadopago");
 
   } catch (error) {
     console.error("Error procesando pago aprobado:", error);
+  }
+}
+
+// Función para notificar al creador sobre el pago aprobado
+async function notificarCreadorPagoAprobado(salidaId: string, userId: string, metodoPago: string) {
+  try {
+    // Obtener información de la salida y el usuario
+    const salida = await SalidaSocial.findById(salidaId);
+    const usuario = await User.findById(userId);
+
+    if (!salida || !usuario) {
+      console.error("No se encontró la salida o el usuario para notificar");
+      return;
+    }
+
+    // No notificar si el creador es el mismo usuario (no debería pasar, pero por las dudas)
+    if (String(salida.creador_id) === String(userId)) {
+      return;
+    }
+
+    // Crear notificación para el creador
+    const mensaje = metodoPago === "mercadopago"
+      ? `${usuario.firstname} ha pagado y se unió automáticamente a tu salida "${salida.nombre}".`
+      : `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${salida.nombre}". Revisa y aprueba su participación.`;
+
+    await Notificacion.create({
+      userId: salida.creador_id,
+      fromUserId: userId,
+      salidaId: salida._id,
+      type: metodoPago === "mercadopago" ? "payment_approved" : "payment_pending",
+      message: mensaje,
+    });
+
+    console.log(`Notificación enviada al creador (${salida.creador_id}) sobre ${metodoPago === "mercadopago" ? "pago aprobado" : "comprobante recibido"}`);
+
+  } catch (error) {
+    console.error("Error enviando notificación al creador:", error);
   }
 }
