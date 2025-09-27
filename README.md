@@ -1,4 +1,4 @@
-# Klubo Trivo
+#Trivo
 
 Trivo es una aplicación diseñada para la gestión de academias y entrenamientos. Este MVP (Minimum Viable Product) proporciona una plataforma para administrar usuarios, academias y entrenamientos con autenticación segura y almacenamiento en MongoDB.
 

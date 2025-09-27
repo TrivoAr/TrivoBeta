@@ -58,7 +58,7 @@ function DashboardSection<T extends BaseItem>({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         <button
           onClick={onCreateNew}
           className="text-sm px-3 py-1 bg-[#C95100] text-white rounded-[15px] hover:bg-[#A03D00] transition-colors"
@@ -130,7 +130,7 @@ interface EmptyStateProps {
 const EmptyState: React.FC<EmptyStateProps> = ({
   message,
   icon = (
-    <div className="text-gray-300 mb-4">
+    <div className="text-muted-foreground mb-4">
       <svg
         className="mx-auto h-16 w-16"
         fill="none"
@@ -147,7 +147,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   ),
 }) => (
-  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-[20px]">
+  <div className="text-center py-8 text-muted-foreground bg-muted rounded-[20px]">
     {icon}
     <p>{message}</p>
   </div>
@@ -273,10 +273,10 @@ export const MatchesSection: React.FC<MatchesSectionProps> = ({
 
   if (totalMatches === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-muted-foreground">
         <div className="mb-4">
           <svg
-            className="mx-auto h-16 w-16 text-gray-300"
+            className="mx-auto h-16 w-16 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -394,10 +394,10 @@ export const FavoritosSection: React.FC<FavoritosSectionProps> = ({
 
   if (totalFavoritos === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-muted-foreground">
         <div className="mb-4">
           <svg
-            className="mx-auto h-16 w-16 text-gray-300"
+            className="mx-auto h-16 w-16 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -430,7 +430,7 @@ export const FavoritosSection: React.FC<FavoritosSectionProps> = ({
       {/* Academias Favoritas */}
       {favoritosAcademias.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-foreground">
             Mis Academias Favoritas
           </h3>
           {favoritosAcademias.map((academia) => (
@@ -458,7 +458,7 @@ export const FavoritosSection: React.FC<FavoritosSectionProps> = ({
       {/* Salidas Sociales Favoritas */}
       {favoritosSalidas.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-foreground">
             Mis Salidas Sociales Favoritas
           </h3>
           {favoritosSalidas.map((salida) => (
@@ -495,7 +495,7 @@ export const FavoritosSection: React.FC<FavoritosSectionProps> = ({
       {/* Teams Sociales Favoritos */}
       {favoritosTeams.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-foreground">
             Mis Teams Sociales Favoritos
           </h3>
           {favoritosTeams.map((team) => (

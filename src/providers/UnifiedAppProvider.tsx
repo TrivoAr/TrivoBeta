@@ -75,7 +75,7 @@ export function UnifiedAppProvider({
   };
 
   // Environment-specific provider selection
-  const AppProviders = React.useMemo(() => {
+  const _AppProviders = React.useMemo(() => {
     switch (environment) {
       case "development":
         return ProviderFactory.createDevProviders(session);
@@ -228,7 +228,7 @@ class GlobalErrorBoundary extends React.Component<
  * Network Status Provider for handling online/offline states
  */
 function NetworkStatusProvider({ children }: { children: ReactNode }) {
-  const [isOnline, setIsOnline] = React.useState(true);
+  const [_isOnline, setIsOnline] = React.useState(true);
   const [showOfflineNotice, setShowOfflineNotice] = React.useState(false);
 
   React.useEffect(() => {

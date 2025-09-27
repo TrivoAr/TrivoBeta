@@ -191,7 +191,7 @@ export default function EventCardRefactored({
         onClick={handleJoin}
         className="w-[360px]"
         badge={
-          <span className="text-xs text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+          <span className="text-xs text-foreground bg-muted px-3 py-1 rounded-full">
             {event.localidad}
           </span>
         }
@@ -244,7 +244,7 @@ export default function EventCardRefactored({
 
         {/* Category and Difficulty */}
         <div className="flex w-full justify-between mb-2">
-          <p className="text-sm text-gray-500 capitalize">
+          <p className="text-sm text-muted-foreground capitalize">
             {event.category} · {event.dificultad}
           </p>
           <span
@@ -258,7 +258,7 @@ export default function EventCardRefactored({
         </div>
 
         {/* Date and Time */}
-        <div className="flex items-center gap-1 text-sm text-gray-700 mb-2">
+        <div className="flex items-center gap-1 text-sm text-foreground mb-2">
           <Clock size={16} />
           {parseLocalDate(event.date)} {event.time} hs
         </div>
@@ -349,7 +349,7 @@ export function EventCardWithStates({
       >
         <div className="text-center p-4">
           <p className="text-red-600 font-medium">Error loading event</p>
-          <p className="text-sm text-gray-500 mt-1">{error}</p>
+          <p className="text-sm text-muted-foreground mt-1">{error}</p>
           <BaseButton
             variant="outline"
             size="sm"
@@ -367,7 +367,7 @@ export function EventCardWithStates({
     return (
       <BaseCard variant="flat" size="default" className="w-[360px]">
         <div className="text-center p-4">
-          <p className="text-gray-500">No event data available</p>
+          <p className="text-muted-foreground">No event data available</p>
         </div>
       </BaseCard>
     );

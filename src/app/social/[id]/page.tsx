@@ -18,6 +18,7 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { isNightEvent } from "@/lib/theme";
 import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
+import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 
 interface PageProps {
   params: {
@@ -106,6 +107,12 @@ export default function EventPage({ params }: PageProps) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     useState(false);
+
+  // Hook para monitorear el estado del pago en tiempo real
+  const { paymentStatus, isApproved, isPending } = usePaymentStatus(
+    params.id,
+    !!session?.user?.id
+  );
   let decodedCoords: [number, number][] = [];
   let routeCoords: [number, number][] = [];
 
@@ -282,6 +289,13 @@ export default function EventPage({ params }: PageProps) {
       return "no";
     },
   });
+
+  // Determinar el estado final considerando tanto el miembro como el pago de MercadoPago
+  const estadoFinal = (() => {
+    if (isApproved) return "si";
+    if (isPending || paymentStatus?.isPending) return "pendiente";
+    return yaUnido;
+  })();
 
   // 📌 Perfil del usuario (para validar DNI/tel)
   // const { data: profile } = useQuery({
@@ -957,18 +971,18 @@ export default function EventPage({ params }: PageProps) {
                   onClick={() => {
                     handleAccion();
                   }}
-                  disabled={yaUnido === "pendiente" || yaUnido === "si"} // deshabilitar si está pendiente o ya unido
+                  disabled={estadoFinal === "pendiente" || estadoFinal === "si"} // deshabilitar si está pendiente o ya unido
                   className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
-        ${yaUnido === "no" ? (isNight ? "seasonal-gradient text-white" : "bg-[#C95100] text-white") : ""}
-        ${yaUnido === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
-        ${yaUnido === "rechazado" ? "bg-red-500 text-white" : ""}
-        ${yaUnido === "si" ? (isNight ? "theme-accent-bg-primary text-white" : "bg-[#001A46] text-white") : ""}
+        ${estadoFinal === "no" ? (isNight ? "seasonal-gradient text-white" : "bg-[#C95100] text-white") : ""}
+        ${estadoFinal === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
+        ${estadoFinal === "rechazado" ? "bg-red-500 text-white" : ""}
+        ${estadoFinal === "si" ? (isNight ? "theme-accent-bg-primary text-white" : "bg-[#001A46] text-white") : ""}
       `}
                 >
-                  {yaUnido === "no" && "Unirse"}
-                  {yaUnido === "pendiente" && "Solicitud enviada"}
-                  {yaUnido === "rechazado" && "Reenviar"}
-                  {yaUnido === "si" && "Miembro"}
+                  {estadoFinal === "no" && "Unirse"}
+                  {estadoFinal === "pendiente" && (isPending ? "Procesando pago..." : "Solicitud enviada")}
+                  {estadoFinal === "rechazado" && "Reenviar"}
+                  {estadoFinal === "si" && "Miembro"}
                 </button>
               )}
             </div>
@@ -991,6 +1005,7 @@ export default function EventPage({ params }: PageProps) {
         cbu={event.cbu}
         alias={event.alias}
         userId={session?.user.id}
+        eventName={event.nombre}
       />
 
       {showFullMap && (

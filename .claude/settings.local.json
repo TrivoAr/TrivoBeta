@@ -36,7 +36,9 @@
       "Bash(cp:*)",
       "Bash(node:*)",
       "Read(//c/**)",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(del /S /Q \".next\")",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

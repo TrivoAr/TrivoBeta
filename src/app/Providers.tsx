@@ -32,7 +32,6 @@ export default function Providers({ children }: Props) {
           disableTransitionOnChange
         >
           <CustomThemeProvider>{children}</CustomThemeProvider>
-          ThemeProvider{" "}
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

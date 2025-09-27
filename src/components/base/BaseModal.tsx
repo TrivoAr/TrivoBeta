@@ -314,7 +314,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
       >
         {/* Header */}
         {(header || title || description || showCloseButton) && (
-          <div className="flex items-start justify-between p-6 border-b border-gray-200">
+          <div className="flex items-start justify-between p-6 border-b border-border">
             <div className="flex-1">
               {header ? (
                 header
@@ -323,7 +323,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                   {title && (
                     <h2
                       id="modal-title"
-                      className="text-lg font-semibold text-gray-900"
+                      className="text-lg font-semibold text-foreground"
                     >
                       {title}
                     </h2>
@@ -331,7 +331,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                   {description && (
                     <p
                       id="modal-description"
-                      className="mt-1 text-sm text-gray-600"
+                      className="mt-1 text-sm text-muted-foreground"
                     >
                       {description}
                     </p>
@@ -343,7 +343,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="ml-4 p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                className="ml-4 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
                 aria-label="Close modal"
               >
                 <svg
@@ -369,7 +369,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+          <div className="px-6 py-4 border-t border-border bg-muted rounded-b-xl">
             {footer}
           </div>
         )}
@@ -424,7 +424,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors disabled:opacity-50"
           >
             {cancelText}
           </button>
@@ -448,7 +448,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
       }
     >
-      <p className="text-gray-600">{message}</p>
+      <p className="text-muted-foreground">{message}</p>
     </BaseModal>
   );
 };
