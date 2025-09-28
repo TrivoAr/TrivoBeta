@@ -5,7 +5,12 @@ const PagoSchema = new Schema(
     salidaId: {
       type: Schema.Types.ObjectId,
       ref: "SalidaSocial", // tu colección de eventos
-      required: true,
+      required: false,
+    },
+    academiaId: {
+      type: Schema.Types.ObjectId,
+      ref: "Academia", // Referencia a academias
+      required: false,
     },
     userId: {
       type: Schema.Types.ObjectId,
@@ -14,10 +19,7 @@ const PagoSchema = new Schema(
     },
     comprobanteUrl: {
       type: String,
-      required: function () {
-        // Solo requerido si no es pago de MercadoPago
-        return !this.mercadoPagoPaymentId;
-      },
+      required: false,
     },
     estado: {
       type: String,
@@ -62,4 +64,5 @@ const PagoSchema = new Schema(
   { timestamps: true }
 );
 
-export default models.Pago || model("Pago", PagoSchema);
+const Pago = models.Pago || model("Pago", PagoSchema);
+export default Pago;

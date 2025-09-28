@@ -5,6 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { usePaymentStatusAcademia } from "@/hooks/usePaymentStatusAcademia";
+import PaymentModal from "@/components/PaymentModal";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import { getGroupImage } from "@/app/api/grupos/getGroupImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
@@ -61,6 +64,8 @@ type Academia = {
   precio: string;
   telefono: string;
   localidad: string;
+  cbu?: string;
+  alias?: string;
 };
 
 export default function AcademiaDetailPage({
@@ -79,8 +84,11 @@ export default function AcademiaDetailPage({
   const [esFavorito, setEsFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstname: session?.user.firstname || "",
@@ -90,6 +98,12 @@ export default function AcademiaDetailPage({
   });
 
   const [groupImages, setGroupImages] = useState<{ [key: string]: string }>({});
+
+  // Hook para monitorear el estado del pago en tiempo real
+  const { paymentStatus, isApproved, isPending } = usePaymentStatusAcademia(
+    params.id,
+    !!session?.user?.id
+  );
 
   const fetchReviews = async () => {
     setLoadingReviews(true);
@@ -362,6 +376,60 @@ export default function AcademiaDetailPage({
     }
   };
 
+  // Mutación para eventos gratuitos
+  const joinFreeAcademiaMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/pagos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          academiaId: params.id,
+          userId: session?.user?.id,
+          comprobanteUrl: "EVENTO_GRATUITO",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al procesar evento gratuito");
+      }
+
+      const pagoData = await response.json();
+
+      const unirsResponse = await fetch("/api/academias/unirse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          academia_id: params.id,
+          user_id: session?.user?.id,
+          pago_id: pagoData.pago._id,
+        }),
+      });
+
+      if (!unirsResponse.ok) {
+        throw new Error("Error al unirse a la academia");
+      }
+
+      return unirsResponse.json();
+    },
+    onSuccess: () => {
+      toast.success("¡Te uniste exitosamente a la academia!");
+      queryClient.invalidateQueries({
+        queryKey: ["payment-status-academia", params.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["miembro-academia", params.id, session?.user?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["miembros-academia", params.id],
+      });
+      setHasActiveRequest(true);
+    },
+    onError: (error: any) => {
+      console.error("Error:", error);
+      toast.error("Error al unirse a la academia");
+    },
+  });
+
   const handleJoinAcademia = async () => {
     if (!session || !session.user || !session.user.id) {
       toast.error("Por favor, inicia sesión para unirte a esta academia.");
@@ -369,33 +437,13 @@ export default function AcademiaDetailPage({
       return;
     }
 
-    toast
-      .promise(
-        axios.post("/api/academias/unirse", {
-          academia_id: params.id,
-          user_id: session.user.id,
-        }),
-        {
-          loading: "Enviando solicitud...",
-          success: "¡Solicitud enviada con éxito! Espera la aprobación.",
-          error: "Hubo un error al enviar la solicitud.",
-        }
-      )
-      .then(() => {
-        setHasActiveRequest(true); // Deshabilitar botón después de la solicitud
-        router.push("/dashboard");
-      })
-      .catch((err) => {
-        if (
-          err.response?.status === 400 &&
-          err.response.data.message.includes("solicitud activa")
-        ) {
-          setHasActiveRequest(true);
-          toast.error("Ya tienes una solicitud activa para esta academia.");
-        } else {
-        }
-        console.error("Error al unirse a la academia:", err);
-      });
+    // Si el precio es 0, es gratuito
+    if (Number(academia?.precio) === 0) {
+      joinFreeAcademiaMutation.mutate();
+    } else {
+      // Si tiene precio, mostrar modal de pago
+      setShowPaymentModal(true);
+    }
   };
 
   if (error) {
@@ -898,26 +946,77 @@ export default function AcademiaDetailPage({
               </div>
             ) : (
               <div>
-                {!esMiembro && (
-                  <button
-                    onClick={handleJoinAcademia}
-                    disabled={hasActiveRequest}
-                    className={`h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg ${
-                      hasActiveRequest
-                        ? "bg-card text-muted-foreground border-border shadow-md"
-                        : "bg-[#C95100] text-white"
-                    }`}
-                  >
-                    {hasActiveRequest ? "Pendiente" : "Participar"}
-                  </button>
-                )}
-
-                {esMiembro && (
+                {(() => {
+                  // Lógica del estado final del botón
+                  if (esMiembro) return "miembro";
+                  if (hasActiveRequest) return "pendiente";
+                  if (isApproved) return "miembro";
+                  if (
+                    isPending ||
+                    paymentStatus?.isPending ||
+                    isProcessingPayment
+                  )
+                    return "pendiente";
+                  return "unirse";
+                })() === "miembro" && (
                   <button
                     disabled
                     className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#001a46] text-[#FDFCFA]"
                   >
                     Miembro
+                  </button>
+                )}
+
+                {(() => {
+                  const estadoFinal = (() => {
+                    if (esMiembro) return "miembro";
+                    if (hasActiveRequest) return "pendiente";
+                    if (isApproved) return "miembro";
+                    if (
+                      isPending ||
+                      paymentStatus?.isPending ||
+                      isProcessingPayment
+                    )
+                      return "pendiente";
+                    return "unirse";
+                  })();
+                  return estadoFinal === "pendiente";
+                })() && (
+                  <button
+                    disabled
+                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-card text-muted-foreground border-border shadow-md"
+                  >
+                    {isProcessingPayment
+                      ? "Procesando pago..."
+                      : isPending || paymentStatus?.isPending
+                        ? "Solicitud enviada"
+                        : "Pendiente"}
+                  </button>
+                )}
+
+                {(() => {
+                  const estadoFinal = (() => {
+                    if (esMiembro) return "miembro";
+                    if (hasActiveRequest) return "pendiente";
+                    if (isApproved) return "miembro";
+                    if (
+                      isPending ||
+                      paymentStatus?.isPending ||
+                      isProcessingPayment
+                    )
+                      return "pendiente";
+                    return "unirse";
+                  })();
+                  return estadoFinal === "unirse";
+                })() && (
+                  <button
+                    onClick={handleJoinAcademia}
+                    disabled={joinFreeAcademiaMutation.isPending}
+                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#C95100] text-white"
+                  >
+                    {joinFreeAcademiaMutation.isPending
+                      ? "Uniéndose..."
+                      : "Participar"}
                   </button>
                 )}
               </div>
@@ -930,6 +1029,21 @@ export default function AcademiaDetailPage({
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
       />
+
+      {/* Modal de pago */}
+      {academia && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          academiaId={params.id}
+          precio={academia.precio}
+          cbu={academia.cbu || ""}
+          alias={academia.alias || ""}
+          userId={session?.user?.id || ""}
+          eventName={academia.nombre_academia}
+          onProcessingChange={setIsProcessingPayment}
+        />
+      )}
 
       <div className="pb-[230px]"></div>
     </div>

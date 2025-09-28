@@ -109,6 +109,7 @@ export default function EventPage({ params }: PageProps) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Hook para monitorear el estado del pago en tiempo real
   const { paymentStatus, isApproved, isPending } = usePaymentStatus(
@@ -118,26 +119,30 @@ export default function EventPage({ params }: PageProps) {
 
   // Manejar parámetros de retorno de MercadoPago
   useEffect(() => {
-    const paymentParam = searchParams.get('payment');
+    const paymentParam = searchParams.get("payment");
     if (paymentParam && session?.user?.id) {
       switch (paymentParam) {
-        case 'success':
-          toast.success('¡Pago exitoso! Tu solicitud ha sido enviada.');
+        case "success":
+          toast.success("¡Pago exitoso! Tu solicitud ha sido enviada.");
           // Invalidar queries para actualizar estado
-          queryClient.invalidateQueries({ queryKey: ["payment-status", params.id] });
-          queryClient.invalidateQueries({ queryKey: ["unido", params.id, session.user.id] });
+          queryClient.invalidateQueries({
+            queryKey: ["payment-status", params.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["unido", params.id, session.user.id],
+          });
           queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
           break;
-        case 'failure':
-          toast.error('Pago fallido. Intenta nuevamente.');
+        case "failure":
+          toast.error("Pago fallido. Intenta nuevamente.");
           break;
-        case 'pending':
-          toast.info('Pago pendiente. Te notificaremos cuando sea procesado.');
+        case "pending":
+          toast.info("Pago pendiente. Te notificaremos cuando sea procesado.");
           break;
       }
       // Limpiar el parámetro de la URL
       const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('payment');
+      newUrl.searchParams.delete("payment");
       router.replace(newUrl.pathname, { scroll: false });
     }
   }, [searchParams, session?.user?.id, queryClient, params.id, router]);
@@ -320,8 +325,15 @@ export default function EventPage({ params }: PageProps) {
 
   // Determinar el estado final considerando tanto el miembro como el pago de MercadoPago
   const estadoFinal = (() => {
+    // Priorizar el estado real del miembro sobre el hook de payment status
+    if (yaUnido === "si") return "si";
+    if (yaUnido === "rechazado") return "rechazado";
+
+    // Solo usar el hook de payment status si no hay información del miembro
     if (isApproved) return "si";
-    if (isPending || paymentStatus?.isPending) return "pendiente";
+    if (isPending || paymentStatus?.isPending || yaUnido === "pendiente")
+      return "pendiente";
+
     return yaUnido;
   })();
 
@@ -1008,7 +1020,10 @@ export default function EventPage({ params }: PageProps) {
       `}
                 >
                   {estadoFinal === "no" && "Unirse"}
-                  {estadoFinal === "pendiente" && (isPending ? "Procesando pago..." : "Solicitud enviada")}
+                  {estadoFinal === "pendiente" &&
+                    (isProcessingPayment || joinFreeMutation.isPending
+                      ? "Procesando pago..."
+                      : "Solicitud enviada")}
                   {estadoFinal === "rechazado" && "Reenviar"}
                   {estadoFinal === "si" && "Miembro"}
                 </button>
@@ -1027,13 +1042,17 @@ export default function EventPage({ params }: PageProps) {
 
       <PaymentModal
         isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setIsProcessingPayment(false); // Resetear estado cuando se cierra
+        }}
         salidaId={params.id}
         precio={event.precio}
         cbu={event.cbu}
         alias={event.alias}
         userId={session?.user.id}
         eventName={event.nombre}
+        onProcessingChange={setIsProcessingPayment}
       />
 
       {showFullMap && (

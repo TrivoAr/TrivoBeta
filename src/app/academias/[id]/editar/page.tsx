@@ -23,8 +23,8 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
     clase_gratis: false,
     imagen: "",
   });
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [_profileImage, setProfileImage] = useState<string | null>(null);
+  const [_uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(true); // Para la carga inicial
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Función para obtener los datos iniciales

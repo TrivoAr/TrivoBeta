@@ -14,7 +14,7 @@ import {
 // Inicializar MercadoPago con tu Public Key
 if (typeof window !== "undefined") {
   initMercadoPago(process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY!, {
-    locale: "es-AR"
+    locale: "es-AR",
   });
 }
 
@@ -33,11 +33,13 @@ export default function MercadoPagoCheckout({
   salidaId,
   precio,
   userId,
-  eventName
+  eventName,
 }: MercadoPagoCheckoutProps) {
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"mercadopago" | "transferencia">("mercadopago");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "mercadopago" | "transferencia"
+  >("mercadopago");
 
   const createPreference = async () => {
     setLoading(true);
@@ -83,7 +85,9 @@ export default function MercadoPagoCheckout({
 
         <div className="space-y-4">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-foreground">{eventName}</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              {eventName}
+            </h3>
             <p className="text-2xl font-bold text-primary">
               ${Number(precio).toLocaleString("es-AR")}
             </p>
@@ -91,7 +95,9 @@ export default function MercadoPagoCheckout({
 
           {/* Selector de método de pago */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-foreground">Método de pago:</h4>
+            <h4 className="text-sm font-medium text-foreground">
+              Método de pago:
+            </h4>
 
             <div className="space-y-2">
               <button
@@ -103,12 +109,18 @@ export default function MercadoPagoCheckout({
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${
-                    paymentMethod === "mercadopago" ? "border-primary bg-primary" : "border-muted-foreground"
-                  }`} />
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      paymentMethod === "mercadopago"
+                        ? "border-primary bg-primary"
+                        : "border-muted-foreground"
+                    }`}
+                  />
                   <div>
                     <p className="font-medium text-foreground">MercadoPago</p>
-                    <p className="text-xs text-muted-foreground">Tarjeta de crédito, débito, efectivo</p>
+                    <p className="text-xs text-muted-foreground">
+                      Tarjeta de crédito, débito, efectivo
+                    </p>
                   </div>
                 </div>
               </button>
@@ -122,12 +134,20 @@ export default function MercadoPagoCheckout({
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${
-                    paymentMethod === "transferencia" ? "border-primary bg-primary" : "border-muted-foreground"
-                  }`} />
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      paymentMethod === "transferencia"
+                        ? "border-primary bg-primary"
+                        : "border-muted-foreground"
+                    }`}
+                  />
                   <div>
-                    <p className="font-medium text-foreground">Transferencia Bancaria</p>
-                    <p className="text-xs text-muted-foreground">CBU/Alias + comprobante</p>
+                    <p className="font-medium text-foreground">
+                      Transferencia Bancaria
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      CBU/Alias + comprobante
+                    </p>
                   </div>
                 </div>
               </button>

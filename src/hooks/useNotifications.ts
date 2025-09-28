@@ -55,7 +55,7 @@ class NotificationEventEmitter {
   emit(event: string, ...args: any[]) {
     const listeners = this.listeners.get(event);
     if (listeners) {
-      listeners.forEach(callback => {
+      listeners.forEach((callback) => {
         try {
           callback(...args);
         } catch (error) {
@@ -84,7 +84,7 @@ export function useNotifications(options: NotificationOptions = {}) {
     unreadCount: 0,
     isConnected: false,
     isLoading: false,
-    hasMore: false
+    hasMore: false,
   });
 
   const socketRef = useRef<Socket | null>(null);
@@ -100,16 +100,16 @@ export function useNotifications(options: NotificationOptions = {}) {
 
     const socket = io("/", {
       auth: {
-        token: session.user.id // En un caso real, usarías el JWT token
+        token: session.user.id, // En un caso real, usarías el JWT token
       },
       transports: ["websocket", "polling"],
       timeout: 20000,
-      forceNew: false
+      forceNew: false,
     });
 
     socket.on("connect", () => {
       console.log("[NOTIFICATIONS] Socket conectado");
-      setState(prev => ({ ...prev, isConnected: true }));
+      setState((prev) => ({ ...prev, isConnected: true }));
       reconnectAttempts.current = 0;
 
       // Emitir evento global de conexión
@@ -121,7 +121,7 @@ export function useNotifications(options: NotificationOptions = {}) {
 
     socket.on("disconnect", (reason) => {
       console.log("[NOTIFICATIONS] Socket desconectado:", reason);
-      setState(prev => ({ ...prev, isConnected: false }));
+      setState((prev) => ({ ...prev, isConnected: false }));
       notificationEmitter.emit("socket:disconnected", reason);
 
       // Intentar reconectar automáticamente
@@ -133,59 +133,68 @@ export function useNotifications(options: NotificationOptions = {}) {
 
     socket.on("connect_error", (error) => {
       console.error("[NOTIFICATIONS] Error de conexión:", error);
-      setState(prev => ({ ...prev, isConnected: false }));
+      setState((prev) => ({ ...prev, isConnected: false }));
 
       // Reconexión exponencial
       if (reconnectAttempts.current < maxReconnectAttempts) {
         const delay = Math.pow(2, reconnectAttempts.current) * 1000;
         reconnectAttempts.current++;
 
-        console.log(`[NOTIFICATIONS] Reintentando conexión en ${delay}ms (intento ${reconnectAttempts.current})`);
+        console.log(
+          `[NOTIFICATIONS] Reintentando conexión en ${delay}ms (intento ${reconnectAttempts.current})`
+        );
 
         reconnectTimeoutRef.current = setTimeout(() => {
           connectSocket();
         }, delay);
       } else {
-        console.error("[NOTIFICATIONS] Máximo de intentos de reconexión alcanzado");
+        console.error(
+          "[NOTIFICATIONS] Máximo de intentos de reconexión alcanzado"
+        );
         notificationEmitter.emit("socket:max-reconnect-attempts");
       }
     });
 
     // Listeners para notificaciones
-    socket.on("notifications:history", (data: { notifications: Notification[], hasMore: boolean }) => {
-      setState(prev => ({
-        ...prev,
-        notifications: data.notifications,
-        hasMore: data.hasMore,
-        unreadCount: data.notifications.filter(n => !n.read).length,
-        isLoading: false
-      }));
+    socket.on(
+      "notifications:history",
+      (data: { notifications: Notification[]; hasMore: boolean }) => {
+        setState((prev) => ({
+          ...prev,
+          notifications: data.notifications,
+          hasMore: data.hasMore,
+          unreadCount: data.notifications.filter((n) => !n.read).length,
+          isLoading: false,
+        }));
 
-      notificationEmitter.emit("notifications:updated", data.notifications);
-    });
+        notificationEmitter.emit("notifications:updated", data.notifications);
+      }
+    );
 
     socket.on("notifications:pending", (notifications: Notification[]) => {
-      setState(prev => {
+      setState((prev) => {
         const newNotifications = [...notifications, ...prev.notifications];
-        const uniqueNotifications = newNotifications.filter((notification, index, self) =>
-          index === self.findIndex(n => n._id === notification._id)
+        const uniqueNotifications = newNotifications.filter(
+          (notification, index, self) =>
+            index === self.findIndex((n) => n._id === notification._id)
         );
 
         return {
           ...prev,
           notifications: uniqueNotifications,
-          unreadCount: uniqueNotifications.filter(n => !n.read).length
+          unreadCount: uniqueNotifications.filter((n) => !n.read).length,
         };
       });
 
       // Mostrar toast para nuevas notificaciones
-      notifications.forEach(notification => {
+      notifications.forEach((notification) => {
         toast.info(notification.message, {
           duration: 4000,
           action: {
             label: "Ver",
-            onClick: () => notificationEmitter.emit("notification:click", notification)
-          }
+            onClick: () =>
+              notificationEmitter.emit("notification:click", notification),
+          },
         });
       });
 
@@ -193,10 +202,10 @@ export function useNotifications(options: NotificationOptions = {}) {
     });
 
     socket.on("notification:new", (notification: Notification) => {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         notifications: [notification, ...prev.notifications],
-        unreadCount: prev.unreadCount + 1
+        unreadCount: prev.unreadCount + 1,
       }));
 
       // Toast para notificación nueva
@@ -204,34 +213,47 @@ export function useNotifications(options: NotificationOptions = {}) {
         duration: 4000,
         action: {
           label: "Ver",
-          onClick: () => notificationEmitter.emit("notification:click", notification)
-        }
+          onClick: () =>
+            notificationEmitter.emit("notification:click", notification),
+        },
       });
 
       notificationEmitter.emit("notification:received", notification);
     });
 
-    socket.on("notification:marked-read", ({ notificationId }: { notificationId: string }) => {
-      setState(prev => ({
-        ...prev,
-        notifications: prev.notifications.map(n =>
-          n._id === notificationId ? { ...n, read: true, readAt: new Date().toISOString() } : n
-        ),
-        unreadCount: Math.max(0, prev.unreadCount - 1)
-      }));
+    socket.on(
+      "notification:marked-read",
+      ({ notificationId }: { notificationId: string }) => {
+        setState((prev) => ({
+          ...prev,
+          notifications: prev.notifications.map((n) =>
+            n._id === notificationId
+              ? { ...n, read: true, readAt: new Date().toISOString() }
+              : n
+          ),
+          unreadCount: Math.max(0, prev.unreadCount - 1),
+        }));
 
-      notificationEmitter.emit("notification:read", notificationId);
-    });
+        notificationEmitter.emit("notification:read", notificationId);
+      }
+    );
 
-    socket.on("notifications:all-marked-read", ({ count }: { count: number }) => {
-      setState(prev => ({
-        ...prev,
-        notifications: prev.notifications.map(n => ({ ...n, read: true, readAt: new Date().toISOString() })),
-        unreadCount: 0
-      }));
+    socket.on(
+      "notifications:all-marked-read",
+      ({ count }: { count: number }) => {
+        setState((prev) => ({
+          ...prev,
+          notifications: prev.notifications.map((n) => ({
+            ...n,
+            read: true,
+            readAt: new Date().toISOString(),
+          })),
+          unreadCount: 0,
+        }));
 
-      notificationEmitter.emit("notifications:all-read", count);
-    });
+        notificationEmitter.emit("notifications:all-read", count);
+      }
+    );
 
     socket.on("error", (error: { message: string }) => {
       console.error("[NOTIFICATIONS] Error del socket:", error);
@@ -252,7 +274,7 @@ export function useNotifications(options: NotificationOptions = {}) {
       socketRef.current = null;
     }
 
-    setState(prev => ({ ...prev, isConnected: false }));
+    setState((prev) => ({ ...prev, isConnected: false }));
   }, []);
 
   // Función para marcar como leída
@@ -270,20 +292,26 @@ export function useNotifications(options: NotificationOptions = {}) {
   }, []);
 
   // Función para recargar notificaciones
-  const reload = useCallback((newOptions?: NotificationOptions) => {
-    if (socketRef.current?.connected) {
-      setState(prev => ({ ...prev, isLoading: true }));
-      socketRef.current.emit("get:notifications", { ...options, ...newOptions });
-    }
-  }, [options]);
+  const reload = useCallback(
+    (newOptions?: NotificationOptions) => {
+      if (socketRef.current?.connected) {
+        setState((prev) => ({ ...prev, isLoading: true }));
+        socketRef.current.emit("get:notifications", {
+          ...options,
+          ...newOptions,
+        });
+      }
+    },
+    [options]
+  );
 
   // Función para cargar más notificaciones
   const loadMore = useCallback(() => {
     if (socketRef.current?.connected && state.hasMore && !state.isLoading) {
-      setState(prev => ({ ...prev, isLoading: true }));
+      setState((prev) => ({ ...prev, isLoading: true }));
       socketRef.current.emit("get:notifications", {
         ...options,
-        offset: state.notifications.length
+        offset: state.notifications.length,
       });
     }
   }, [options, state.hasMore, state.isLoading, state.notifications.length]);
@@ -326,43 +354,50 @@ export function useNotifications(options: NotificationOptions = {}) {
 
     // Event emitter para observadores externos
     on: notificationEmitter.on.bind(notificationEmitter),
-    emit: notificationEmitter.emit.bind(notificationEmitter)
+    emit: notificationEmitter.emit.bind(notificationEmitter),
   };
 }
 
 // Hook simplificado para solo escuchar eventos
 export function useNotificationListener() {
-  const [lastNotification, setLastNotification] = useState<Notification | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'reconnecting'>('disconnected');
+  const [lastNotification, setLastNotification] = useState<Notification | null>(
+    null
+  );
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "reconnecting"
+  >("disconnected");
 
   useEffect(() => {
     const unsubscribers = [
-      notificationEmitter.on("notification:received", (notification: Notification) => {
-        setLastNotification(notification);
-      }),
+      notificationEmitter.on(
+        "notification:received",
+        (notification: Notification) => {
+          setLastNotification(notification);
+        }
+      ),
 
       notificationEmitter.on("socket:connected", () => {
-        setConnectionStatus('connected');
+        setConnectionStatus("connected");
       }),
 
       notificationEmitter.on("socket:disconnected", () => {
-        setConnectionStatus('disconnected');
+        setConnectionStatus("disconnected");
       }),
 
       notificationEmitter.on("socket:max-reconnect-attempts", () => {
-        setConnectionStatus('disconnected');
+        setConnectionStatus("disconnected");
         toast.error("No se pudo conectar al servidor de notificaciones");
-      })
+      }),
     ];
 
     return () => {
-      unsubscribers.forEach(unsub => unsub());
+      unsubscribers.forEach((unsub) => unsub());
     };
   }, []);
 
   return {
     lastNotification,
     connectionStatus,
-    on: notificationEmitter.on.bind(notificationEmitter)
+    on: notificationEmitter.on.bind(notificationEmitter),
   };
 }

@@ -256,7 +256,9 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
             )}
 
             {rightIcon && !loading && (
-              <div className={cn("text-muted-foreground", iconSizeClasses[size])}>
+              <div
+                className={cn("text-muted-foreground", iconSizeClasses[size])}
+              >
                 {rightIcon}
               </div>
             )}
@@ -271,7 +273,10 @@ export const BaseInput = forwardRef<HTMLInputElement, BaseInputProps>(
                 {error}
               </p>
             ) : helperText ? (
-              <p id={`${inputId}-helper`} className="text-sm text-muted-foreground">
+              <p
+                id={`${inputId}-helper`}
+                className="text-sm text-muted-foreground"
+              >
                 {helperText}
               </p>
             ) : null}
@@ -562,7 +567,10 @@ export const BaseTextarea = forwardRef<HTMLTextAreaElement, BaseTextareaProps>(
                 {error}
               </p>
             ) : helperText ? (
-              <p id={`${textareaId}-helper`} className="text-sm text-muted-foreground">
+              <p
+                id={`${textareaId}-helper`}
+                className="text-sm text-muted-foreground"
+              >
                 {helperText}
               </p>
             ) : null}

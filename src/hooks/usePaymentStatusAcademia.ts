@@ -22,16 +22,16 @@ interface PaymentStatus {
   isPending: boolean;
 }
 
-export function usePaymentStatus(salidaId: string, enabled = true) {
+export function usePaymentStatusAcademia(academiaId: string, enabled = true) {
   const [lastStatus, setLastStatus] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["payment-status", salidaId],
+    queryKey: ["payment-status-academia", academiaId],
     queryFn: async (): Promise<PaymentStatus> => {
-      const response = await fetch(`/api/pagos/status/${salidaId}`);
+      const response = await fetch(`/api/pagos/academia/${academiaId}`);
       if (!response.ok) {
-        throw new Error("Error obteniendo estado de pago");
+        throw new Error("Error obteniendo estado de pago de academia");
       }
       return response.json();
     },
@@ -55,18 +55,24 @@ export function usePaymentStatus(salidaId: string, enabled = true) {
         switch (data.pago.estado) {
           case "aprobado":
             // Verificar si el miembro también fue aprobado automáticamente
-            if (data.miembro?.estado === "aprobado") {
-              toast.success("¡Pago exitoso! Ya estás inscrito en el evento.");
+            if (data.miembro?.estado === "aceptado") {
+              toast.success("¡Pago exitoso! Ya estás inscrito en la academia.");
             } else {
               toast.success(
-                "¡Pago aprobado! Espera la confirmación del organizador."
+                "¡Pago aprobado! Espera la confirmación del dueño de la academia."
               );
             }
             // Invalidar queries relacionadas para actualizar la UI
-            queryClient.invalidateQueries({ queryKey: ["event", salidaId] });
-            queryClient.invalidateQueries({ queryKey: ["user-events"] });
-            queryClient.invalidateQueries({ queryKey: ["unido", salidaId] });
-            queryClient.invalidateQueries({ queryKey: ["miembros", salidaId] });
+            queryClient.invalidateQueries({
+              queryKey: ["academia", academiaId],
+            });
+            queryClient.invalidateQueries({ queryKey: ["user-academias"] });
+            queryClient.invalidateQueries({
+              queryKey: ["miembro-academia", academiaId],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["miembros-academia", academiaId],
+            });
             break;
           case "rechazado":
             toast.error("Pago rechazado. Intenta con otro método de pago.");
@@ -81,7 +87,7 @@ export function usePaymentStatus(salidaId: string, enabled = true) {
       }
       setLastStatus(data.pago.estado);
     }
-  }, [data?.pago?.estado, lastStatus, queryClient, salidaId]);
+  }, [data?.pago?.estado, lastStatus, queryClient, academiaId]);
 
   return {
     paymentStatus: data,

@@ -26,9 +26,13 @@ if (!admin.apps.length) {
     let credential;
 
     if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      const serviceAccount = JSON.parse(
+        process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+      );
       credential = admin.credential.cert(serviceAccount);
-      console.log("[MP_WEBHOOK] Firebase Admin initialized with service account");
+      console.log(
+        "[MP_WEBHOOK] Firebase Admin initialized with service account"
+      );
     } else if (
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
@@ -39,9 +43,13 @@ if (!admin.apps.length) {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       });
-      console.log("[MP_WEBHOOK] Firebase Admin initialized with individual vars");
+      console.log(
+        "[MP_WEBHOOK] Firebase Admin initialized with individual vars"
+      );
     } else {
-      console.warn("[MP_WEBHOOK] Firebase credentials not found - push notifications disabled");
+      console.warn(
+        "[MP_WEBHOOK] Firebase credentials not found - push notifications disabled"
+      );
     }
 
     if (credential) {
@@ -53,13 +61,21 @@ if (!admin.apps.length) {
 }
 
 // FCM Token Schema
-const FCMTokenSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
-  token: { type: String, required: true, unique: true },
-  device_info: { userAgent: String, platform: String },
-}, { timestamps: true });
+const FCMTokenSchema = new mongoose.Schema(
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    token: { type: String, required: true, unique: true },
+    device_info: { userAgent: String, platform: String },
+  },
+  { timestamps: true }
+);
 
-const FCMToken = mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
+const FCMToken =
+  mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,13 +85,18 @@ export async function POST(request: NextRequest) {
 
     // Verificar que es una notificación de pago
     if (body.type !== "payment") {
-      return NextResponse.json({ message: "Tipo de notificación no procesada" });
+      return NextResponse.json({
+        message: "Tipo de notificación no procesada",
+      });
     }
 
     const paymentId = body.data.id;
 
     if (!paymentId) {
-      return NextResponse.json({ error: "ID de pago no encontrado" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de pago no encontrado" },
+        { status: 400 }
+      );
     }
 
     // Obtener información del pago desde MercadoPago
@@ -97,7 +118,7 @@ export async function POST(request: NextRequest) {
     let pagoRecord = await Pagos.findOne({
       salidaId,
       userId,
-      mercadoPagoPaymentId: paymentId
+      mercadoPagoPaymentId: paymentId,
     });
 
     if (!pagoRecord) {
@@ -113,7 +134,7 @@ export async function POST(request: NextRequest) {
         statusDetail: paymentData.status_detail,
         externalReference: paymentData.external_reference,
         mercadoPagoData: paymentData,
-        estado: mapMercadoPagoStatus(paymentData.status)
+        estado: mapMercadoPagoStatus(paymentData.status),
       });
     } else {
       // Actualizar registro existente
@@ -131,12 +152,14 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ message: "Webhook procesado correctamente" });
-
   } catch (error) {
     console.error("Error procesando webhook MercadoPago:", error);
-    return NextResponse.json({
-      error: "Error interno del servidor"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Error interno del servidor",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -157,12 +180,16 @@ function mapMercadoPagoStatus(mpStatus: string): string {
 }
 
 // Procesar pago aprobado
-async function procesarPagoAprobado(salidaId: string, userId: string, pagoId: string) {
+async function procesarPagoAprobado(
+  salidaId: string,
+  userId: string,
+  pagoId: string
+) {
   try {
     // Buscar si ya existe un miembro para esta salida y usuario
     let miembro = await MiembroSalida.findOne({
       salida_id: salidaId,
-      usuario_id: userId
+      usuario_id: userId,
     });
 
     if (!miembro) {
@@ -171,7 +198,7 @@ async function procesarPagoAprobado(salidaId: string, userId: string, pagoId: st
         salida_id: salidaId,
         usuario_id: userId,
         pago_id: pagoId,
-        estado: "aprobado" // Auto-aprobación para MercadoPago
+        estado: "aprobado", // Auto-aprobación para MercadoPago
       });
     } else {
       // Actualizar miembro existente y auto-aprobar para MercadoPago
@@ -180,23 +207,30 @@ async function procesarPagoAprobado(salidaId: string, userId: string, pagoId: st
     }
 
     await miembro.save();
-    console.log(`Pago de MercadoPago aprobado automáticamente para salida ${salidaId}, usuario ${userId}`);
+    console.log(
+      `Pago de MercadoPago aprobado automáticamente para salida ${salidaId}, usuario ${userId}`
+    );
 
     // Generar y enviar QR de acceso por email
     await enviarQRAcceso(salidaId, userId, pagoId);
 
     // Notificar al creador de la salida
     await notificarCreadorPagoAprobado(salidaId, userId, "mercadopago");
-
   } catch (error) {
     console.error("Error procesando pago aprobado:", error);
   }
 }
 
 // Función para generar y enviar QR de acceso por email
-async function enviarQRAcceso(salidaId: string, userId: string, pagoId: string) {
+async function enviarQRAcceso(
+  salidaId: string,
+  userId: string,
+  pagoId: string
+) {
   try {
-    console.log(`[MP_WEBHOOK] Generando QR para salida ${salidaId}, usuario ${userId}`);
+    console.log(
+      `[MP_WEBHOOK] Generando QR para salida ${salidaId}, usuario ${userId}`
+    );
 
     // Buscar o crear ticket (idempotente)
     let ticket = await Ticket.findOne({
@@ -225,7 +259,9 @@ async function enviarQRAcceso(salidaId: string, userId: string, pagoId: string) 
       const redeemUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL}/r/${ticket.code}`;
       const dataUrl = await qrPngDataUrl(redeemUrl);
 
-      console.log(`[MP_WEBHOOK] Enviando QR por email para ticket: ${ticket.code}`);
+      console.log(
+        `[MP_WEBHOOK] Enviando QR por email para ticket: ${ticket.code}`
+      );
 
       const emailId = await sendTicketEmail({
         userId: String(userId),
@@ -241,23 +277,30 @@ async function enviarQRAcceso(salidaId: string, userId: string, pagoId: string) 
 
       console.log(`[MP_WEBHOOK] QR enviado exitosamente. Email ID: ${emailId}`);
     } else {
-      console.log(`[MP_WEBHOOK] QR ya había sido enviado para ticket: ${ticket.code}`);
+      console.log(
+        `[MP_WEBHOOK] QR ya había sido enviado para ticket: ${ticket.code}`
+      );
     }
-
   } catch (error) {
     console.error("[MP_WEBHOOK] Error enviando QR de acceso:", error);
   }
 }
 
 // Función para notificar al creador sobre el pago aprobado
-async function notificarCreadorPagoAprobado(salidaId: string, userId: string, metodoPago: string) {
+async function notificarCreadorPagoAprobado(
+  salidaId: string,
+  userId: string,
+  metodoPago: string
+) {
   try {
     // Obtener información de la salida y el usuario
     const salida = await SalidaSocial.findById(salidaId);
     const usuario = await User.findById(userId);
 
     if (!salida || !usuario) {
-      console.error("[MP_WEBHOOK] No se encontró la salida o el usuario para notificar");
+      console.error(
+        "[MP_WEBHOOK] No se encontró la salida o el usuario para notificar"
+      );
       return;
     }
 
@@ -267,28 +310,39 @@ async function notificarCreadorPagoAprobado(salidaId: string, userId: string, me
     }
 
     // Crear notificación para el creador
-    const mensaje = metodoPago === "mercadopago"
-      ? `${usuario.firstname} ha pagado y se unió automáticamente a tu salida "${salida.nombre}".`
-      : `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${salida.nombre}". Revisa y aprueba su participación.`;
+    const mensaje =
+      metodoPago === "mercadopago"
+        ? `${usuario.firstname} ha pagado y se unió automáticamente a tu salida "${salida.nombre}".`
+        : `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${salida.nombre}". Revisa y aprueba su participación.`;
 
     const notificacion = await Notificacion.create({
       userId: salida.creador_id,
       fromUserId: userId,
       salidaId: salida._id,
-      type: metodoPago === "mercadopago" ? "payment_approved" : "payment_pending",
+      type:
+        metodoPago === "mercadopago" ? "payment_approved" : "payment_pending",
       message: mensaje,
     });
 
-    console.log(`[MP_WEBHOOK] Notificación DB creada para creador (${salida.creador_id})`);
+    console.log(
+      `[MP_WEBHOOK] Notificación DB creada para creador (${salida.creador_id})`
+    );
 
     // Enviar notificación en tiempo real via Socket.IO
     await enviarNotificacionSocketIO(salida.creador_id, notificacion);
 
     // Enviar push notification si Firebase está disponible
-    await enviarPushNotificationCreador(salida.creador_id, usuario.firstname || "Un usuario", salida.nombre, metodoPago);
-
+    await enviarPushNotificationCreador(
+      salida.creador_id,
+      usuario.firstname || "Un usuario",
+      salida.nombre,
+      metodoPago
+    );
   } catch (error) {
-    console.error("[MP_WEBHOOK] Error enviando notificación al creador:", error);
+    console.error(
+      "[MP_WEBHOOK] Error enviando notificación al creador:",
+      error
+    );
   }
 }
 
@@ -299,33 +353,49 @@ async function enviarNotificacionSocketIO(userId: string, notificacion: any) {
     const socketServer = (global as any).socketServer;
 
     if (!socketServer || !socketServer.emitToUser) {
-      console.log("[MP_WEBHOOK] Socket.IO server no disponible - saltando notificación en tiempo real");
+      console.log(
+        "[MP_WEBHOOK] Socket.IO server no disponible - saltando notificación en tiempo real"
+      );
       return;
     }
 
     // Poblar la información del usuario que envió la notificación
-    const populatedNotification = await Notificacion
-      .findById(notificacion._id)
-      .populate('fromUserId', 'firstname lastname')
+    const populatedNotification = await Notificacion.findById(notificacion._id)
+      .populate("fromUserId", "firstname lastname")
       .lean();
 
     if (populatedNotification) {
       // Emitir notificación en tiempo real al usuario específico
-      await socketServer.emitToUser(userId, "notification:new", populatedNotification);
-      console.log(`[MP_WEBHOOK] Notificación enviada via Socket.IO a usuario ${userId}`);
+      await socketServer.emitToUser(
+        userId,
+        "notification:new",
+        populatedNotification
+      );
+      console.log(
+        `[MP_WEBHOOK] Notificación enviada via Socket.IO a usuario ${userId}`
+      );
     }
-
   } catch (error) {
-    console.error("[MP_WEBHOOK] Error enviando notificación via Socket.IO:", error);
+    console.error(
+      "[MP_WEBHOOK] Error enviando notificación via Socket.IO:",
+      error
+    );
   }
 }
 
 // Función para enviar push notification al creador
-async function enviarPushNotificationCreador(creadorId: string, usuarioNombre: string, salidaNombre: string, metodoPago: string) {
+async function enviarPushNotificationCreador(
+  creadorId: string,
+  usuarioNombre: string,
+  salidaNombre: string,
+  metodoPago: string
+) {
   try {
     // Verificar si Firebase Admin está disponible
     if (!admin.apps.length) {
-      console.log("[MP_WEBHOOK] Firebase Admin no disponible - saltando push notification");
+      console.log(
+        "[MP_WEBHOOK] Firebase Admin no disponible - saltando push notification"
+      );
       return;
     }
 
@@ -333,23 +403,28 @@ async function enviarPushNotificationCreador(creadorId: string, usuarioNombre: s
     const fcmToken = await FCMToken.findOne({ user_id: creadorId });
 
     if (!fcmToken) {
-      console.log(`[MP_WEBHOOK] No hay token FCM para el creador ${creadorId} - saltando push notification`);
+      console.log(
+        `[MP_WEBHOOK] No hay token FCM para el creador ${creadorId} - saltando push notification`
+      );
       return;
     }
 
     // Preparar mensaje de push notification
-    const title = metodoPago === "mercadopago"
-      ? "💰 Pago confirmado"
-      : "📄 Comprobante recibido";
+    const title =
+      metodoPago === "mercadopago"
+        ? "💰 Pago confirmado"
+        : "📄 Comprobante recibido";
 
-    const body = metodoPago === "mercadopago"
-      ? `${usuarioNombre} se unió automáticamente a "${salidaNombre}"`
-      : `${usuarioNombre} envió un comprobante para "${salidaNombre}"`;
+    const body =
+      metodoPago === "mercadopago"
+        ? `${usuarioNombre} se unió automáticamente a "${salidaNombre}"`
+        : `${usuarioNombre} envió un comprobante para "${salidaNombre}"`;
 
     const message = {
       notification: { title, body },
       data: {
-        type: metodoPago === "mercadopago" ? "payment_approved" : "payment_pending",
+        type:
+          metodoPago === "mercadopago" ? "payment_approved" : "payment_pending",
         salidaId: String(creadorId),
         timestamp: new Date().toISOString(),
       },
@@ -358,8 +433,9 @@ async function enviarPushNotificationCreador(creadorId: string, usuarioNombre: s
 
     // Enviar push notification
     const response = await admin.messaging().send(message);
-    console.log(`[MP_WEBHOOK] Push notification enviada al creador ${creadorId}: ${response}`);
-
+    console.log(
+      `[MP_WEBHOOK] Push notification enviada al creador ${creadorId}: ${response}`
+    );
   } catch (fcmError: any) {
     console.error("[MP_WEBHOOK] Error enviando push notification:", fcmError);
 
@@ -370,7 +446,9 @@ async function enviarPushNotificationCreador(creadorId: string, usuarioNombre: s
     ) {
       try {
         await FCMToken.deleteOne({ user_id: creadorId });
-        console.log(`[MP_WEBHOOK] Token FCM inválido eliminado para usuario ${creadorId}`);
+        console.log(
+          `[MP_WEBHOOK] Token FCM inválido eliminado para usuario ${creadorId}`
+        );
       } catch (dbError) {
         console.error("[MP_WEBHOOK] Error eliminando token inválido:", dbError);
       }

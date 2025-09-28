@@ -18,8 +18,12 @@ const UsuarioAcademiaSchema = new Schema(
     },
     estado: {
       type: String,
-      enum: ["pendiente", "aceptado"],
+      enum: ["pendiente", "aceptado", "rechazado"],
       required: true,
+    },
+    pago_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Pago",
     },
   },
   {
