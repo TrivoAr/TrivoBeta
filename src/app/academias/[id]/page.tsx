@@ -16,7 +16,7 @@ import { User } from "mercadopago";
 import RatingStars from "@/components/RatingStars";
 import ReviewForm from "@/components/ReviewButtonWithModal";
 import Review from "@/models/Review";
-import AcademiaLoadingSkeleton from "@/components/MatchLoadingSkeleton";
+import AcademiaDetailSkeleton from "@/components/AcademiaDetailSkeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import ReviewButtonWithModal from "@/components/ReviewButtonWithModal";
 import ReviewCard from "@/components/ReviewCard";
@@ -451,7 +451,7 @@ export default function AcademiaDetailPage({
   }
 
   if (!academia) {
-    return <AcademiaLoadingSkeleton />;
+    return <AcademiaDetailSkeleton />;
   }
 
   const formatDias = (dias: string[]) => {

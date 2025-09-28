@@ -227,8 +227,8 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
   const handleDelete = () => {
     toast.custom(
       (t) => (
-        <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col w-[300px] gap-3">
-          <p className="text-sm text-gray-800">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col w-[300px] gap-3 border dark:border-gray-600">
+          <p className="text-sm text-gray-800 dark:text-gray-200">
             ¿Estás seguro de que deseas eliminar este grupo?
           </p>
           <div className="flex justify-end gap-2">
@@ -259,7 +259,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              className="text-gray-600 hover:text-black px-3 py-1 text-sm"
+              className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white px-3 py-1 text-sm"
             >
               Cancelar
             </button>
@@ -311,7 +311,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
   }, [debouncedFetch]);
 
   return (
-    <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9">
+    <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9] dark:bg-gray-900 min-h-screen">
       <Toaster position="top-center" />
       <div className="relative w-full h-[40px] flex">
         <button
@@ -333,11 +333,11 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           </svg>
         </button>
       </div>
-      <h2 className="text-center font-medium text-xl">Editar grupo</h2>
+      <h2 className="text-center font-medium text-xl text-gray-900 dark:text-white">Editar grupo</h2>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
+        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9] dark:bg-gray-900"
       >
         <input
           type="text"
@@ -346,7 +346,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           onChange={handleChange}
           required
           placeholder="Nombre del grupo"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <textarea
@@ -354,7 +354,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           value={formData.descripcion}
           onChange={handleChange}
           placeholder="Descripción"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
         <input
           type="time"
@@ -363,11 +363,11 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           onChange={handleChange}
           placeholder="Horario"
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         />
 
         <div className="space-y-4">
-          <label className="block font-medium text-slate-400">
+          <label className="block font-medium text-slate-400 dark:text-gray-300">
             Días de entrenamiento
           </label>
           {/* Chips visuales */}
@@ -375,13 +375,13 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
             {formData.dias.map((dia) => (
               <span
                 key={dia}
-                className="flex items-center bg-white border text-orange-700 px-4 py-1.5 rounded-full text-sm shadow-sm"
+                className="flex items-center bg-white dark:bg-gray-700 border dark:border-gray-600 text-orange-700 dark:text-orange-300 px-4 py-1.5 rounded-full text-sm shadow-sm"
               >
                 {dia}
                 <button
                   type="button"
                   onClick={() => removeDia(dia)}
-                  className="ml-2 text-orange-500 hover:text-orange-700"
+                  className="ml-2 text-orange-500 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
                   title="Eliminar"
                 >
                   ×
@@ -402,10 +402,13 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       px-5
       py-3
       border
+      dark:border-gray-600
       rounded-xl
       shadow-md
       bg-white
+      dark:bg-gray-800
       text-gray-400
+      dark:text-gray-300
       focus:outline-none
       focus:ring-2
       focus:ring-orange-400
@@ -441,7 +444,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           value={formData.tiempo_promedio}
           onChange={handleChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Duracion del Entrenamiento</option>
           <option value="1hs">1 hora</option>
@@ -454,7 +457,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           value={formData.nivel}
           onChange={handleChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Selecciona dificultad</option>
           <option value="baja">Baja</option>
@@ -466,7 +469,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           name="tipo_grupo"
           value={formData.tipo_grupo}
           onChange={handleChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           {academias[0]?.tipo_disciplina === "Ciclismo" ? (
             <div>
@@ -503,14 +506,14 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           value={formData.cuota_mensual}
           onChange={handleChange}
           placeholder="Cuota mensual"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
         <textarea
           name="aviso"
           value={formData.aviso}
           onChange={handleChange}
           placeholder="Avisos, indicaciones para hacer en el grupo"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <div className="relative">
@@ -521,14 +524,14 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
             value={formData.ubicacion}
             onChange={handleChange}
             required
-            className="w-full px-4 py-4 border shadow-md rounded-[15px]"
+            className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
           {suggestions.length > 0 && (
-            <ul className="absolute bg-white border rounded-md z-10 w-full max-h-40 overflow-y-auto">
+            <ul className="absolute bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md z-10 w-full max-h-40 overflow-y-auto shadow-lg">
               {suggestions.map((s, idx) => (
                 <li
                   key={idx}
-                  className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-900 dark:text-white"
                   onClick={() => handleSuggestionClick(s)}
                 >
                   {s.display_name}
@@ -554,7 +557,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
             ) : (
               <div
                 onClick={() => document.getElementById("fileInput")?.click()}
-                className="w-full h-48 border-2 border-dashed border-orange-300 rounded-xl flex flex-col items-center justify-center cursor-pointer text-orange-400 hover:bg-orange-50 transition"
+                className="w-full h-48 border-2 border-dashed border-orange-300 dark:border-orange-600 rounded-xl flex flex-col items-center justify-center cursor-pointer text-orange-400 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-gray-800 transition"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

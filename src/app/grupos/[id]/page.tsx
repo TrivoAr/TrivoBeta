@@ -9,20 +9,9 @@ import { getGroupImage } from "@/app/api/grupos/getGroupImage";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import toast, { Toaster } from "react-hot-toast";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import type { LatLngExpression } from "leaflet";
-import L from "leaflet";
-import { url } from "inspector";
-import GrupoDetailSkeleton from "@/components/GrupoDetailSkeleton";
+import MapComponent from "@/components/MapComponent";
+import GrupoDetailSkeletonV2 from "@/components/GrupoDetailSkeletonV2";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
 
 // Tipos
 type Grupo = {
@@ -92,6 +81,8 @@ export default function GrupoDetailPage({
   const [groupImage, setGroupImage] = useState<string>(
     "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
   );
+  const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
+      useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Para controlar el acceso del usuario
@@ -108,57 +99,57 @@ export default function GrupoDetailPage({
     rol: session?.user.rol || "",
   });
 
+  // useEffect(() => {
+  //   if (!userId || !params.id) return; // Verificar que el userId y el params.id estén disponibles
+
+  //   const checkUserAccess = async () => {
+  //     try {
+  //       // Obtener los detalles del grupo primero para obtener el ID de la academia
+  //       const academiaId = localStorage.getItem("academia_id");
+
+  //       // Ahora hacer la solicitud para verificar el acceso con el ID de la academia
+  //       const response = await axios.get(
+  //         `/api/academias/${academiaId}/miembros`,
+  //         {
+  //           headers: {
+  //             user_id: userId,
+  //           },
+  //         }
+  //       );
+
+  //       console.log("Respuesta de verificación de acceso:", response);
+
+  //       // Verificar si el usuario está en la lista de miembros de la academia y tiene un grupo asignado
+  //       // const hasAccess = response.data.miembros.some(
+  //       //   (miembro: any) => miembro.user_id._id === userId
+  //       // );
+
+  //       // if (hasAccess) {
+  //       //   setIsAuthorized(true); // Usuario tiene acceso
+  //       // } else {
+  //       //   setIsAuthorized(false); // Usuario no tiene acceso
+  //       // }
+  //     } catch (error) {
+  //       console.error("Error al verificar el acceso del usuario:", error);
+  //       setError("Hubo un problema al verificar el acceso del usuario.");
+  //     }
+  //   };
+  //   if (session?.user) {
+  //     setFormData({
+  //       firstname: session.user.firstname || "",
+  //       lastname: session.user.lastname || "",
+  //       email: session.user.email || "",
+  //       rol: session.user.rol || "",
+  //     });
+  //   }
+  //   checkUserAccess(); // Ejecutar la función para verificar el acceso
+  // }, [params.id, userId]);
+
   useEffect(() => {
-    if (!userId || !params.id) return; // Verificar que el userId y el params.id estén disponibles
-
-    const checkUserAccess = async () => {
-      try {
-        // Obtener los detalles del grupo primero para obtener el ID de la academia
-        const academiaId = localStorage.getItem("academia_id");
-
-        // Ahora hacer la solicitud para verificar el acceso con el ID de la academia
-        const response = await axios.get(
-          `/api/academias/${academiaId}/miembros`,
-          {
-            headers: {
-              user_id: userId,
-            },
-          }
-        );
-
-        console.log("Respuesta de verificación de acceso:", response);
-
-        // Verificar si el usuario está en la lista de miembros de la academia y tiene un grupo asignado
-        const hasAccess = response.data.miembros.some(
-          (miembro: any) => miembro.user_id._id === userId
-        );
-
-        if (hasAccess) {
-          setIsAuthorized(true); // Usuario tiene acceso
-        } else {
-          setIsAuthorized(false); // Usuario no tiene acceso
-        }
-      } catch (error) {
-        console.error("Error al verificar el acceso del usuario:", error);
-        setError("Hubo un problema al verificar el acceso del usuario.");
-      }
-    };
-    if (session?.user) {
-      setFormData({
-        firstname: session.user.firstname || "",
-        lastname: session.user.lastname || "",
-        email: session.user.email || "",
-        rol: session.user.rol || "",
-      });
-    }
-    checkUserAccess(); // Ejecutar la función para verificar el acceso
-  }, [params.id, userId]);
-
-  useEffect(() => {
-    if (isAuthorized === false) {
-      setError("No tienes acceso a esta academia.");
-      return;
-    }
+    // if (isAuthorized === false) {
+    //   setError("No tienes acceso a esta academia.");
+    //   return;
+    // }
 
     const fetchGrupo = async () => {
       try {
@@ -209,9 +200,10 @@ export default function GrupoDetailPage({
       }
     };
 
-    if (isAuthorized === true) {
-      fetchGrupo();
-    }
+    // if (isAuthorized === true) {
+     
+    // }
+     fetchGrupo();
   }, [isAuthorized, params.id]);
 
   const handleAssignEntrenamiento = async () => {
@@ -332,12 +324,12 @@ export default function GrupoDetailPage({
 
   if (error) return <div>{error}</div>;
 
-  if (!grupo) return <GrupoDetailSkeleton />;
+  if (!grupo) return <GrupoDetailSkeletonV2 />;
 
   console.log("datos grupo", grupo.profesor_id);
 
   return (
-    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
+    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9] dark:bg-gray-900">
       {/* <button
         type="button"
         onClick={() => router.back()}
@@ -381,7 +373,7 @@ export default function GrupoDetailPage({
 
       <div className="absolute top-[135px] logo h-[120px] w-[390px] flex justify-start items-center gap-3 p-8">
         <img src={groupImage} className="rounded-full object-cover h-[120px] w-[120px]" alt="Logo" />
-        <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] leading-[22px] mx-auto mt-[30px]">
+        <h1 className="w-[280px] h-[22px] text-[20px] font-[700] text-[#333] dark:text-white leading-[22px] mx-auto mt-[30px]">
           {grupo.nombre_grupo}
         </h1>
       </div> */}
@@ -415,7 +407,7 @@ export default function GrupoDetailPage({
           </svg>
         </button>
 
-        {session.user.id === grupo.profesor_id._id ? (
+        {session?.user?.id === grupo.profesor_id._id ? (
           <div>
             <button
               className="btnFondo absolute top-2 right-16 text-white p-2 rounded-full shadow-md"
@@ -489,7 +481,7 @@ export default function GrupoDetailPage({
 
       <div className="flex flex-col items-center gap-3 w-full px-3 justify-center">
         <div>
-          <h1 className="text-[35px] font-bold text-center">
+          <h1 className="text-[35px] font-bold text-center text-gray-900 dark:text-white">
             {grupo.nombre_grupo}
           </h1>
 
@@ -527,15 +519,15 @@ export default function GrupoDetailPage({
                 ></path>{" "}
               </g>
             </svg>
-            <p className="font-regular">{extraerLocalidad(grupo.ubicacion)}</p>
+            <p className="font-regular text-gray-700 dark:text-gray-300">{extraerLocalidad(grupo.ubicacion)}</p>
           </p>
         </div>
-        <div className="w-[90%] border-b border-b-[#ccc]"></div>
+        <div className="w-[90%] border-b border-b-[#ccc] dark:border-b-gray-600"></div>
       </div>
 
       {/* info del grupo */}
       <div className="w-full flex flex-col gap-2">
-        <p className="ml-6 mt-3 font-regular text-[22px]">
+        <p className="ml-6 mt-3 font-regular text-[22px] text-gray-900 dark:text-white">
           Info del entrenamiento
         </p>
         <div className="w-[90%] ml-4 flex">
@@ -560,9 +552,9 @@ export default function GrupoDetailPage({
                   <polyline points="40 44 32 32 32 16"></polyline>
                 </g>
               </svg>
-              <p className="font-light">Tiempo de Entreamiento</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">Tiempo de Entreamiento</p>
             </div>
-            <p className="text-[#666666] ml-6 font-extralight">
+            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {grupo.tiempo_promedio}
             </p>
           </div>
@@ -619,9 +611,9 @@ export default function GrupoDetailPage({
                   </g>{" "}
                 </g>
               </svg>
-              <p className="font-light">Dificultad</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">Dificultad</p>
             </div>
-            <p className="text-[#666666] ml-6 font-extralight">{grupo.nivel}</p>
+            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">{grupo.nivel}</p>
           </div>
         </div>
 
@@ -656,9 +648,9 @@ export default function GrupoDetailPage({
                   ></path>
                 </g>
               </svg>
-              <p className="font-light">Dirección</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">Dirección</p>
             </div>
-            <p className="text-[#666666] ml-6 font-extralight">
+            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {grupo.ubicacion.split(",")[0]}
             </p>
           </div>
@@ -690,38 +682,38 @@ export default function GrupoDetailPage({
                   ></path>{" "}
                 </g>
               </svg>
-              <p className="font-light">Dias y horario</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">Dias y horario</p>
             </div>
-            <p className="text-[#666666] ml-6 font-extralight">
+            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {formatDias(grupo.dias)}, {grupo.horario}hs
             </p>
           </div>
         </div>
-        <div className="w-[90%] border-b border-b-[#ccc] self-center"></div>
+        <div className="w-[90%] border-b border-b-[#ccc] dark:border-b-gray-600 self-center"></div>
       </div>
 
       <div className="flex flex-col w-[390px] mt-3">
         <div className="flex flex-col">
-          <h2 className="ml-6 font-regular text-[22px]">Descripción</h2>
-          <p className="text-sm  font-extralight text-[#666666] p-2 ml-5 mb-3">
+          <h2 className="ml-6 font-regular text-[22px] text-gray-900 dark:text-white">Descripción</h2>
+          <p className="text-sm  font-extralight text-[#666666] dark:text-gray-400 p-2 ml-5 mb-3">
             {grupo.descripcion || "El Profe no agrego una descripción"}
           </p>
-          <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
+          <hr className="border-t border-[#ccc] dark:border-gray-600 mb-2 w-[90%] self-center" />
         </div>
 
         <div className="flex flex-col">
-          <h2 className="ml-6 mt-2 font-regular text-[22px]">
+          <h2 className="ml-6 mt-2 font-regular text-[22px] text-gray-900 dark:text-white">
             Avisos Importantes
           </h2>
-          <p className="text-sm  font-extralight text-[#666666] p-2 ml-5 mb-3">
+          <p className="text-sm  font-extralight text-[#666666] dark:text-gray-400 p-2 ml-5 mb-3">
             {grupo.aviso || "El profe aún no incluyo avisos"}
           </p>
-          <hr className="border-t border-[#ccc] mb-2 w-[90%] self-center" />
+          <hr className="border-t border-[#ccc] dark:border-gray-600 mb-2 w-[90%] self-center" />
         </div>
 
         <div className="flex flex-col">
-          <h2 className="ml-6 mt-2 font-light text-xl">Punto de Encuentro</h2>
-          <p className="text-sm  font-light text-[#666666] p-2 ml-6 flex gap-1 items-center">
+          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">Punto de Encuentro</h2>
+          <p className="text-sm  font-light text-[#666666] dark:text-gray-400 p-2 ml-6 flex gap-1 items-center">
             <svg
               height="13px"
               width="13px"
@@ -758,111 +750,42 @@ export default function GrupoDetailPage({
           </p>
 
           {grupo.locationCoords ? (
-            <div className="w-[90%] h-[310px] rounded-xl overflow-hidden border z-0 self-center">
-              <MapContainer
-                center={[grupo.locationCoords.lat, grupo.locationCoords.lng]}
-                zoom={15}
-                scrollWheelZoom={false}
-                style={{ height: "100%", width: "100%" }}
-                className="z-2"
+            <div className="w-[90%] h-[310px] rounded-xl overflow-hidden border z-0 self-center relative">
+              <MapComponent
+                position={{
+                  lat: grupo.locationCoords.lat,
+                  lng: grupo.locationCoords.lng,
+                }}
+                onChange={() => {}} // No necesitamos editar, solo mostrar
+                editable={false}
+                showControls={false}
+                style="mapbox://styles/mapbox/navigation-night-v1"
+              />
+              <div
+                className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded cursor-pointer z-10 hover:bg-opacity-70 transition-all"
+                onClick={() => setShowFullMapPuntoDeEncuntro(true)}
               >
-                <TileLayer
-                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker
-                  position={[
-                    grupo.locationCoords.lat,
-                    grupo.locationCoords.lng,
-                  ]}
-                >
-                  <Popup>{grupo.nombre_grupo}</Popup>
-                </Marker>
-              </MapContainer>
+                Tocar para ampliar
+              </div>
             </div>
           ) : (
-            <p className="text-sm  font-light text-[#666666] ml-11 mb-2">
+            <p className="text-sm  font-light text-[#666666] dark:text-gray-400 ml-11 mb-2">
               No hay ubicación cargada
             </p>
           )}
 
-          <hr className="border-t border-[#ccc] mb-3 mt-5 w-[90%] self-center" />
+          <hr className="border-t border-[#ccc] dark:border-gray-600 mb-3 mt-5 w-[90%] self-center" />
+        </div>
+        <div>      
         </div>
 
-        {/* <div className="rounded-lg p-1 w-full max-w-md mx-auto">
-          <h2 className="text-xl font-bold text-left text-[#333] mb-2">
-            Cuota Mensual
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            {grupo.cuota_mensual || "Sin especificar cuota"}
-          </p>
-          <button
-            onClick={handleIrAPago}
-            className="bg-[#FF9A3D] text-#333 text-sm font-semibold w-full py-2 rounded-md hover:bg-[#FFA55C] transition-colors"
-          >
-            Pagar Cuota
-          </button>
-        </div> */}
-        <div>
-          <div className="flex flex-col">
-            <h2 className="ml-6 mt-2 font-light text-xl">
-              Miembros de la tribu
-            </h2>
-            {alumnos.length > 0 ? (
-              <ul className="flex gap-2 ml-6 mt-2 flex-wrap">
-                {alumnos.map((alumno) => (
-                  <li
-                    key={alumno._id}
-                    onClick={() => handleAlumnoClick(alumno)}
-                  >
-                    <div
-                      style={{
-                        backgroundImage: `url(${alumno.profileImage})`,
-                        backgroundSize: "cover",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                      }}
-                      className="w-[75px] h-[75px] rounded-full object-cover"
-                    />
-                    {/* {userRole !== "alumno" &&
-                  selectedAlumno?._id === alumno._id && (
-                    <div>
-                      <button
-                        onClick={() => {
-                          setIsAssigning(true);
-                        }}
-                        className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-                      >
-                        Entrenamiento
-                      </button>
-                      <button
-                        onClick={() =>
-                          router.push(`/entrenamiento/${selectedAlumno?._id}`)
-                        }
-                        className="border border-[#FF9A3D] w-[125px] h-[32px] rounded-[10px] text-[#FF9A3D] self-center"
-                      >
-                        Ver Historial
-                      </button>
-                    </div>
-                  )} */}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm  font-light text-[#666666] ml-6 mb-2">
-                No hay miembros en esta tribu.
-              </p>
-            )}
-          </div>
-        </div>
-
-        <hr className="border-t border-gray-300 w-[90%] mb-2 mt-4 self-center" />
+        <hr className="border-t border-gray-300 dark:border-gray-600 w-[90%] mb-2 mt-4 self-center" />
 
         <div className="">
-          <h2 className="ml-6 mt-2 font-light text-xl">Profesor</h2>
+          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">Profesor</h2>
           <div className="flex flex-col items-center gap-2">
             <div className="self-center mt-2">
-              <div className="w-[300px] h-[176px] bg-white border rounded-[20px] flex flex-col items-center gap-1">
+              <div className="w-[300px] h-[176px] bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-[20px] flex flex-col items-center gap-1">
                 <div
                   className="rounded-full h-[80px] w-[80px] border shadow-sm mt-4"
                   style={{
@@ -872,61 +795,41 @@ export default function GrupoDetailPage({
                     backgroundPosition: "center",
                   }}
                 ></div>
-                <p>
+                <p className="text-gray-900 dark:text-white">
                   {grupo.profesor_id.firstname} {grupo.profesor_id.lastname}
                 </p>
-                <p className="text-xs text-[#666666]">Profesor</p>
+                <p className="text-xs text-[#666666] dark:text-gray-400">Profesor</p>
               </div>
             </div>
-            <p className="text-xs text-[#666666] text-justify self-center mt-2 w-[300px]">
+            <p className="text-xs text-[#666666] dark:text-gray-400 text-justify self-center mt-2 w-[300px]">
               {grupo.profesor_id.bio}
             </p>
           </div>
         </div>
       </div>
 
-      {isAssigning && selectedAlumno && (
-        <ModalEntrenamiento estado={isAssigning} cambiarEstado={setIsAssigning}>
-          <div className="w-full p-2 flex flex-col items-center">
-            <h3 className="font-bold text-center mb-4">
-              {selectedAlumno.firstname} {selectedAlumno.lastname}
-            </h3>
-            <input
-              type="date"
-              name="fecha"
-              value={entrenamientoData.fecha}
-              onChange={handleChange}
-              className="mb-4 border p-2 w-[90%] rounded"
-            />
-            <textarea
-              name="objetivo"
-              value={entrenamientoData.objetivo}
-              onChange={handleChange}
-              placeholder="0bjetivo"
-              className="mb-4 border p-2 w-[90%] rounded"
-            ></textarea>
-            <textarea
-              name="descripcion"
-              value={entrenamientoData.descripcion}
-              onChange={handleChange}
-              placeholder="Estimulo"
-              className="mb-4 border p-2 w-[90%] rounded"
-            ></textarea>
-            <button
-              onClick={handleAssignEntrenamiento}
-              className="bg-[#FF9A3D] text-[#333] py-2 px-4 rounded-full w-[90%] font-bold"
-            >
-              Confirmar
-            </button>
-            <button
-              onClick={() => setIsAssigning(false)}
-              className="mt-3 border-2 border-[#FF9A3D] text-[#FF9A3D] py-2 px-4 rounded-full w-[90%] font-bold"
-            >
-              Cancelar
-            </button>
-          </div>
-        </ModalEntrenamiento>
-      )}
+      {showFullMapPuntoDeEncuntro && grupo.locationCoords && (
+              <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
+                <button
+                  className="absolute top-4 right-4 z-50 rounded-full bg-card dark:bg-gray-800 text-foreground dark:text-white font-bold w-[35px] h-[35px] shadow hover:opacity-80 transition-opacity"
+                  onClick={() => setShowFullMapPuntoDeEncuntro(false)}
+                >
+                  ✕
+                </button>
+                <div className="w-full h-full">
+                  <MapComponent
+                    position={{
+                      lat: grupo.locationCoords.lat,
+                      lng: grupo.locationCoords.lng,
+                    }}
+                    onChange={() => {}}
+                    editable={false}
+                    showControls={true}
+                    style="mapbox://styles/mapbox/streets-v12"
+                  />
+                </div>
+              </div>
+            )}
 
       <div className="pb-[200px]"></div>
     </div>

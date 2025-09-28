@@ -23,9 +23,6 @@ const GrupoSchema = new Schema(
     horario: {
       type: String,
     },
-    aviso: {
-      type: String,
-    },
 
     dias: {
       type: [String],
@@ -36,9 +33,7 @@ const GrupoSchema = new Schema(
     descripcion: {
       type: String,
     },
-    cuota_mensual: {
-      type: String,
-    },
+
     imagen: {
       type: String,
     },

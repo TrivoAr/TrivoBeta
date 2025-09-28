@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { SlideUpModal } from "@/components/base/AnimatedModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,22 @@ import { useSession } from "next-auth/react";
 import { Session } from "inspector/promises";
 import { se } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
+
+// CSS styles for MercadoPago night theme
+const mercadoPagoNightStyles = `
+  .mercadopago-night-theme .mp-wallet-container,
+  .mercadopago-night-theme .mp-wallet-container * {
+    color: #e2e8f0 !important;
+  }
+  .mercadopago-night-theme .mp-wallet-container p,
+  .mercadopago-night-theme .mp-wallet-container span,
+  .mercadopago-night-theme .mp-wallet-container div {
+    color: #e2e8f0 !important;
+  }
+  .mercadopago-night-theme button {
+    color: #ffffff !important;
+  }
+`;
 
 // ⚡ Configura tu Firebase
 const firebaseConfig = {
@@ -45,6 +61,7 @@ interface PaymentModalProps {
   userId: string; // ⚡ Id del usuario que paga
   eventName?: string; // Nombre del evento para mostrar en MercadoPago
   onProcessingChange?: (isProcessing: boolean) => void; // Para comunicar el estado de procesamiento
+  isNight?: boolean; // Para tema nocturno
 }
 
 export default function PaymentModal({
@@ -58,6 +75,7 @@ export default function PaymentModal({
   userId,
   eventName = "Evento",
   onProcessingChange,
+  isNight = false,
 }: PaymentModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +86,21 @@ export default function PaymentModal({
   const [loadingPreference, setLoadingPreference] = useState(false);
   const { data: session, status } = useSession();
   const queryClient = useQueryClient();
+
+  // Inject CSS styles for night theme
+  React.useEffect(() => {
+    if (isNight && isOpen) {
+      const styleId = 'mercadopago-night-styles';
+      let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        styleElement.textContent = mercadoPagoNightStyles;
+        document.head.appendChild(styleElement);
+      }
+    }
+  }, [isNight, isOpen]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -199,6 +232,7 @@ export default function PaymentModal({
       onClose={onClose}
       title="Pago de inscripción"
       size="default"
+      isNight={isNight}
       footer={
         paymentMethod === "transferencia" ? (
           <div className="flex justify-end">
@@ -220,19 +254,23 @@ export default function PaymentModal({
               </Button>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground text-center">
+                <p className={`text-sm text-center ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}>
                   Completa tu pago de forma segura:
                 </p>
-                <Wallet
-                  initialization={{
-                    preferenceId: preferenceId,
-                  }}
-                  customization={{
-                    texts: {
-                      valueProp: "smart_option",
-                    },
-                  }}
-                />
+                <div className={isNight ? "mercadopago-night-theme" : ""}>
+                  <Wallet
+                    initialization={{
+                      preferenceId: preferenceId,
+                    }}
+                    customization={{
+                      texts: {
+                        valueProp: "smart_option",
+                      },
+                    }}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -241,15 +279,21 @@ export default function PaymentModal({
     >
       <div className="space-y-4">
         <div className="text-center">
-          <p className="text-lg font-semibold text-foreground">{eventName}</p>
-          <p className="text-2xl font-bold text-primary">
+          <p className={`text-lg font-semibold ${
+            isNight ? "theme-text-primary" : "text-foreground"
+          }`}>{eventName}</p>
+          <p className={`text-2xl font-bold ${
+            isNight ? "text-orange-400" : "text-primary"
+          }`}>
             ${Number(precio).toLocaleString("es-AR")}
           </p>
         </div>
 
         {/* Selector de método de pago */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground">
+          <h4 className={`text-sm font-medium ${
+            isNight ? "theme-text-primary" : "text-foreground"
+          }`}>
             Método de pago:
           </h4>
 
@@ -259,21 +303,33 @@ export default function PaymentModal({
                 onClick={() => setPaymentMethod("mercadopago")}
                 className={`w-full p-3 rounded-lg border text-left transition-colors ${
                   paymentMethod === "mercadopago"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:bg-muted"
+                    ? isNight
+                      ? "border-orange-400 bg-orange-400/10"
+                      : "border-primary bg-primary/5"
+                    : isNight
+                      ? "border-gray-600 hover:bg-gray-700"
+                      : "border-border hover:bg-muted"
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <div
                     className={`w-4 h-4 rounded-full border-2 ${
                       paymentMethod === "mercadopago"
-                        ? "border-primary bg-primary"
-                        : "border-muted-foreground"
+                        ? isNight
+                          ? "border-orange-400 bg-orange-400"
+                          : "border-primary bg-primary"
+                        : isNight
+                          ? "border-gray-400"
+                          : "border-muted-foreground"
                     }`}
                   />
                   <div>
-                    <p className="font-medium text-foreground">MercadoPago</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className={`font-medium ${
+                      isNight ? "theme-text-primary" : "text-foreground"
+                    }`}>MercadoPago</p>
+                    <p className={`text-xs ${
+                      isNight ? "theme-text-secondary" : "text-muted-foreground"
+                    }`}>
                       Tarjeta de crédito, débito, efectivo
                     </p>
                   </div>
@@ -285,23 +341,35 @@ export default function PaymentModal({
               onClick={() => setPaymentMethod("transferencia")}
               className={`w-full p-3 rounded-lg border text-left transition-colors ${
                 paymentMethod === "transferencia"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted"
+                  ? isNight
+                    ? "border-orange-400 bg-orange-400/10"
+                    : "border-primary bg-primary/5"
+                  : isNight
+                    ? "border-gray-600 hover:bg-gray-700"
+                    : "border-border hover:bg-muted"
               }`}
             >
               <div className="flex items-center space-x-3">
                 <div
                   className={`w-4 h-4 rounded-full border-2 ${
                     paymentMethod === "transferencia"
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground"
+                      ? isNight
+                        ? "border-orange-400 bg-orange-400"
+                        : "border-primary bg-primary"
+                      : isNight
+                        ? "border-gray-400"
+                        : "border-muted-foreground"
                   }`}
                 />
                 <div>
-                  <p className="font-medium text-foreground">
+                  <p className={`font-medium ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}>
                     Transferencia Bancaria
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className={`text-xs ${
+                    isNight ? "theme-text-secondary" : "text-muted-foreground"
+                  }`}>
                     CBU/Alias + comprobante
                   </p>
                 </div>
@@ -312,38 +380,52 @@ export default function PaymentModal({
 
         {paymentMethod === "transferencia" && (
           <>
-            <p className="text-sm text-muted-foreground">
+            <p className={`text-sm ${
+              isNight ? "theme-text-secondary" : "text-muted-foreground"
+            }`}>
               Transfiere ${precio} a la siguiente cuenta:
             </p>
 
-            <div className="bg-muted rounded-lg p-3 space-y-2">
+            <div className={`rounded-lg p-3 space-y-2 ${
+              isNight ? "bg-gray-700" : "bg-muted"
+            }`}>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">
+                <span className={`text-sm font-medium ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}>
                   CBU:
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(cbu)}
+                  className={isNight ? "border-gray-500 hover:bg-gray-600" : ""}
                 >
                   Copiar
                 </Button>
               </div>
-              <p className="text-sm break-all text-muted-foreground">{cbu}</p>
+              <p className={`text-sm break-all ${
+                isNight ? "theme-text-secondary" : "text-muted-foreground"
+              }`}>{cbu}</p>
 
               <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-medium text-foreground">
+                <span className={`text-sm font-medium ${
+                  isNight ? "theme-text-primary" : "text-foreground"
+                }`}>
                   Alias:
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(alias)}
+                  className={isNight ? "border-gray-500 hover:bg-gray-600" : ""}
                 >
                   Copiar
                 </Button>
               </div>
-              <p className="text-sm break-all text-muted-foreground">{alias}</p>
+              <p className={`text-sm break-all ${
+                isNight ? "theme-text-secondary" : "text-muted-foreground"
+              }`}>{alias}</p>
             </div>
 
             <div className="space-y-2">
