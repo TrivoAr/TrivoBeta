@@ -1,205 +1,406 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useSession } from "next-auth/react";
-import { getProfileImage } from "@/app/api/profile/getProfileImage";
-import toast, { Toaster } from "react-hot-toast";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiX, FiEdit } from "react-icons/fi";
-import AcademiaMiembrosSkeleton from "@/components/AcademiaMiembrosSkeleton";
+import { useSession } from "next-auth/react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import Skeleton from "react-loading-skeleton";
+import { FaInstagram } from "react-icons/fa";
+import { FiEdit } from "react-icons/fi";
+import { toast } from "sonner";
+import PaymentReviewModal from "@/components/PaymentReviewModal";
+import ExportUsuarios from "@/app/utils/ExportUsuarios";
 
-const MiembrosPage = ({ params }: { params: { id: string } }) => {
-  const router = useRouter();
+export default function AcademiaMiembrosPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { data: session } = useSession();
-  const [miembros, setMiembros] = useState<any[]>([]);
-  const [grupos, setGrupos] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [grupoSeleccionado, setGrupoSeleccionado] = useState<string | null>(
-    null
-  );
-  const [cargando, setCargando] = useState<boolean>(true);
-  const [editandoGrupo, setEditandoGrupo] = useState<string | null>(null); // Para controlar la edición
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const dueñoId = localStorage.getItem("dueño_id");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState<
+    "todos" | "aprobado" | "rechazado" | "pendiente"
+  >("todos");
+  const [selectedMiembro, setSelectedMiembro] = useState<any>(null);
+  const [reviewModal, setReviewModal] = useState<{
+    open: boolean;
+    miembroId?: string;
+    pagoId?: string;
+  }>({ open: false });
+  // TODO: Funcionalidad de grupos comentada temporalmente
+  // const [editandoGrupo, setEditandoGrupo] = useState<string | null>(null);
+  // const [grupoSeleccionado, setGrupoSeleccionado] = useState<string | null>(null);
 
-        // if (!session?.user?.id || session.user.id !== dueñoId) {
-        //   toast.error("No tienes permiso para ver los miembros de esta academia.");
-        //   router.push("/dashboard");
-        //   return;
-        // }
+  const {
+    data: academia,
+    isLoading: loadingAcademia,
+    error: errorAcademia,
+  } = useQuery({
+    queryKey: ["academia", params.id],
+    queryFn: async () => {
+      const res = await axios.get(`/api/academias/${params.id}`);
+      return res.data.academia;
+    },
+    enabled: !!params.id,
+    retry: 2,
+    retryDelay: 1000,
+  });
 
-        // Obtener los miembros de la academia
-        const miembrosResponse = await axios.get(
-          `/api/academias/${params.id}/miembros`
-        );
-        const miembrosData = miembrosResponse.data.miembros;
+  const {
+    data: miembros = [],
+    isLoading: loadingMiembros,
+    error: errorMiembros,
+  } = useQuery({
+    queryKey: ["miembros-academia", params.id],
+    queryFn: async () => {
+      console.log("[FRONTEND] Fetching miembros for academiaId:", params.id);
 
-        // Obtener las imágenes de perfil de los miembros
-        const miembrosConImagenes = await Promise.all(
-          miembrosData.map(async (miembro: any) => {
-            try {
-              const profileImage = await getProfileImage(
-                "profile-image.jpg",
-                miembro.user_id._id
-              );
-              return { ...miembro, profileImage };
-            } catch (error) {
-              console.error(
-                `Error al obtener la imagen del miembro ${miembro.user_id._id}:`,
-                error
-              );
-              return {
-                ...miembro,
-                profileImage:
-                  "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
-              };
-            }
-          })
-        );
+      const res = await fetch(`/api/academias/${params.id}/miembros`, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
 
-        setMiembros(miembrosConImagenes);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("[FRONTEND] API Error:", {
+          status: res.status,
+          error: errorData,
+          academiaId: params.id,
+        });
 
-        // Obtener los grupos de la academia
-        const gruposResponse = await axios.get(
-          `/api/grupos?academiaId=${params.id}`
-        );
-        setGrupos(gruposResponse.data.grupos || []);
-      } catch (error) {
-        setError("Error al obtener los datos");
-        console.error(error);
-      } finally {
-        setCargando(false);
+        if (res.status === 500) {
+          const errorType = errorData.type || "unknown";
+          throw new Error(
+            `Error del servidor (${errorType}): ${errorData.error || "Error interno"}`
+          );
+        }
+
+        throw new Error(errorData.error || `HTTP ${res.status}`);
       }
-    };
 
-    fetchData();
-  }, [params.id]);
-
-  // Asignar el grupo al miembro
-  const asignarGrupo = async (userId: string, grupoId: string) => {
-    if (!userId || !grupoId) {
-      setError("Debes seleccionar un grupo");
-      return;
-    }
-
-    try {
-      const grupoSeleccionadoObj = grupos.find(
-        (grupo) => grupo._id === grupoId
+      const data = await res.json();
+      console.log(
+        "[FRONTEND] Received miembros data:",
+        Array.isArray(data.miembros) ? data.miembros.length : "not array",
+        data.miembros
       );
-      if (!grupoSeleccionadoObj) {
-        setError("Grupo no encontrado");
-        return;
+      return Array.isArray(data.miembros) ? data.miembros : [];
+    },
+    enabled: !!params.id,
+    retry: (failureCount, error) => {
+      console.log(
+        "[FRONTEND] Query retry attempt:",
+        failureCount,
+        error.message
+      );
+      if (error.message.includes("500") || error.message.includes("timeout")) {
+        return failureCount < 1;
       }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+  });
 
-      await axios.put(`/api/academias/${params.id}/miembros`, {
+  // TODO: Funcionalidad de grupos comentada temporalmente
+  /*
+  const {
+    data: grupos = [],
+    isLoading: loadingGrupos,
+  } = useQuery({
+    queryKey: ["grupos-academia", params.id],
+    queryFn: async () => {
+      const res = await axios.get(`/api/grupos?academiaId=${params.id}`);
+      return res.data.grupos || [];
+    },
+    enabled: !!params.id,
+  });
+  */
+
+  const loading = loadingAcademia || loadingMiembros; // || loadingGrupos;
+  const error = errorAcademia || errorMiembros;
+
+  const isOwner = session?.user?.id === academia?.dueño_id?._id;
+  const safeMiembros = Array.isArray(miembros) ? miembros : [];
+
+  const filteredMiembros = safeMiembros.filter((miembro: any) => {
+    const matchName = miembro.nombre
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    if (isOwner) {
+      const pagoEstado = miembro.pago_id?.estado || "pendiente";
+      const matchPago =
+        paymentFilter === "todos" || pagoEstado === paymentFilter;
+      return matchName && matchPago;
+    }
+    // Los no-owners solo ven miembros aprobados
+    return (
+      matchName &&
+      (miembro.pago_id?.estado === "aprobado" || miembro.estado === "aceptado")
+    );
+  });
+
+  const deleteMiembroMutation = useMutation({
+    mutationFn: async (miembroId: string) => {
+      const res = await axios.delete(
+        `/api/academias/${params.id}/miembros?user_id=${miembroId}`
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Miembro borrado correctamente ✅");
+      queryClient.invalidateQueries({
+        queryKey: ["miembros-academia", params.id],
+      });
+    },
+    onError: (err: any) => {
+      console.error(err);
+      toast.error("❌ No se pudo borrar al miembro");
+    },
+  });
+
+  // TODO: Funcionalidad de grupos comentada temporalmente
+  /*
+  const asignarGrupoMutation = useMutation({
+    mutationFn: async ({ userId, grupoId }: { userId: string; grupoId: string }) => {
+      const res = await axios.put(`/api/academias/${params.id}/miembros`, {
         user_id: userId,
         grupo_id: grupoId,
       });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Grupo asignado correctamente ✅");
+      queryClient.invalidateQueries({ queryKey: ["miembros-academia", params.id] });
+      setEditandoGrupo(null);
+      setGrupoSeleccionado(null);
+    },
+    onError: (err: any) => {
+      console.error(err);
+      toast.error("❌ No se pudo asignar el grupo");
+    },
+  });
+  */
 
-      setMiembros((prevMiembros) =>
-        prevMiembros.map((miembro) =>
-          miembro.user_id._id === userId
-            ? { ...miembro, grupo: grupoSeleccionadoObj }
-            : miembro
-        )
-      );
-
-      toast.success("Grupo actualizado correctamente");
-      setEditandoGrupo(null); // Deja de editar
-    } catch (error) {
-      console.error("Error al actualizar el grupo", error);
-      setError("Error al actualizar el grupo");
-    }
-  };
-
-  // Eliminar miembro
-  const eliminarMiembro = async (userId: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este miembro?")) {
-      try {
-        const response = await axios.delete(
-          `/api/academias/${params.id}/miembros?user_id=${userId}`
-        );
-        if (response.status === 200) {
-          setMiembros((prev) =>
-            prev.filter((miembro) => miembro.user_id._id !== userId)
-          );
-          toast.success("Miembro eliminado correctamente");
-        } else {
-          throw new Error("Error al eliminar miembro");
-        }
-      } catch (error) {
-        console.error("Error al eliminar miembro:", error);
-        toast.error("Error al eliminar miembro");
-      }
-    }
-  };
-
-  if (cargando) {
-    return <AcademiaMiembrosSkeleton />;
+  function handleDelete(miembroId: string) {
+    toast.warning("¿Seguro que quieres borrar este miembro?", {
+      description: "Esta acción no se puede deshacer",
+      action: {
+        label: "Confirmar",
+        onClick: () => {
+          deleteMiembroMutation.mutate(miembroId);
+        },
+      },
+      cancel: {
+        label: "Cancelar",
+        onClick: () => {
+          toast.dismiss();
+        },
+      },
+      duration: Infinity,
+    });
   }
 
-  return (
-    <div className="w-[390px] flex flex-col items-center">
-      <Toaster position="top-center" />
-      <div className="relative w-full h-[40px] flex">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="btnFondo absolute top-2 left-2 text-white p-2 rounded-full shadow-md"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="black"
-            viewBox="0 0 16 16"
-            width="24"
-            height="24"
-          >
-            <path
-              fillRule="evenodd"
-              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
-            />
-          </svg>
-        </button>
-      </div>
-      <h1 className="font-medium">Miembros de la Academia</h1>
-      <br />
-      {error && <p className="text-red-500">{error}</p>}
+  // TODO: Funcionalidad de grupos comentada temporalmente
+  /*
+  function handleAsignarGrupo(userId: string) {
+    if (!grupoSeleccionado) {
+      toast.error("Debes seleccionar un grupo");
+      return;
+    }
+    asignarGrupoMutation.mutate({ userId, grupoId: grupoSeleccionado });
+  }
+  */
 
-      <table className="w-full border-collapse p-2">
+  // Loading UI
+  if (loadingAcademia) return <Skeleton height={200} count={5} />;
+
+  // Manejo específico de errores
+  if (errorAcademia || !academia) {
+    return (
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <div className="text-center py-10">
+          <p className="text-red-500 mb-4">
+            Error: {errorAcademia?.message || "Academia no encontrada"}
+          </p>
+          <button
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: ["academia", params.id],
+              })
+            }
+            className="px-4 py-2 bg-orange-500 text-white rounded"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMiembros) {
+    return (
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">Miembros</p>
+        <div className="text-center py-10">
+          <p className="text-red-500 mb-4">
+            Error al cargar miembros: {errorMiembros.message}
+          </p>
+          <button
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: ["miembros-academia", params.id],
+              })
+            }
+            className="px-4 py-2 bg-[#C95100] text-white rounded"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingMiembros) {
+    return (
+      <div className="w-[390px] p-4">
+        <button
+          onClick={() => router.back()}
+          className="text-[#C76C01] relative bg-card shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px] mb-4"
+        >
+          <img
+            src="/assets/icons/Collapse Arrow.svg"
+            alt="callback"
+            className="h-[20px] w-[20px]"
+          />
+        </button>
+        <p className="font-bold text-orange-500 text-2xl mb-3 mt-3">Miembros</p>
+        <Skeleton height={100} count={3} />
+      </div>
+    );
+  }
+
+  const miembrosAprobados = safeMiembros
+    .filter(
+      (miembro) =>
+        miembro.pago_id?.estado === "aprobado" || miembro.estado === "aceptado"
+    )
+    .map((miembro) => ({
+      dni: miembro.dni,
+      nombre: miembro.nombre,
+      telefono: miembro.telnumber,
+      email: miembro.email,
+      imagen: miembro.imagen,
+      estado: (miembro.pago_id?.estado === "aprobado"
+        ? "aprobado"
+        : "aprobado") as "pendiente" | "aprobado" | "rechazado",
+    }));
+
+  return (
+    <div className="w-[390px] p-4 relative flex flex-col">
+      <button
+        onClick={() => router.back()}
+        className="text-[#C76C01] relative bg-white shadow-md rounded-full w-[40px] h-[40px] flex justify-center items-center left-[10px]"
+      >
+        <img
+          src="/assets/icons/Collapse Arrow.svg"
+          alt="callback"
+          className="h-[20px] w-[20px]"
+        />
+      </button>
+
+      <p className="font-semibold text-2xl mb-3 mt-3">
+        Miembros de la Academia
+      </p>
+
+      <div className="px-1 mb-5">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Buscar miembro..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+        />
+      </div>
+
+      {/* Filtro por estado de pago (solo para dueños) */}
+      {isOwner && (
+        <div className="px-1 mb-5">
+          <select
+            value={paymentFilter}
+            onChange={(e) =>
+              setPaymentFilter(
+                e.target.value as
+                  | "todos"
+                  | "aprobado"
+                  | "rechazado"
+                  | "pendiente"
+              )
+            }
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          >
+            <option value="todos">Todos</option>
+            <option value="aprobado">Aprobados ✅</option>
+            <option value="rechazado">Rechazados ❌</option>
+            <option value="pendiente">Pendientes ⏳</option>
+          </select>
+        </div>
+      )}
+
+      <table className="w-[370px]">
         <thead>
           <tr>
-            <th>Foto</th>
-            <th>Nombre</th>
-            <th>Grupo</th>
-            {session.user.id === localStorage.getItem("dueño_id") ? (
-              <th>Acciones</th>
-            ) : null}
+            <th className="font-bold">Foto</th>
+            <th className="font-bold">Nombre</th>
+            {/* TODO: Funcionalidad de grupos comentada temporalmente */}
+            {/* {isOwner && <th className="font-bold">Grupo</th>} */}
+            {isOwner && <th className="font-bold">Acciones</th>}
           </tr>
         </thead>
         <tbody>
-          {miembros.map((miembro) => (
-            <tr key={miembro.user_id._id}>
-              <td className="flex justify-center mt-3 items-center">
+          {filteredMiembros.map((miembro, index) => (
+            <tr
+              key={index}
+              className="w-full h-[90px] text-center cursor-pointer hover:bg-gray-100"
+            >
+              <td className="flex justify-center">
                 <img
-                  className="rounded-full h-[45px] w-[45px]"
-                  src={
-                    miembro.profileImage ||
-                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
-                  }
-                  alt="Imagen del miembro"
+                  src={miembro.imagen}
+                  alt={miembro.nombre}
+                  className="w-[60px] h-[60px] rounded-full object-cover"
+                  onClick={() => setSelectedMiembro(miembro)}
                 />
               </td>
-              <td className="text-sm text-center">
-                {miembro.user_id.firstname}
-              </td>
-              <td className="text-sm text-center">
-                {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
-              </td>
-              {session.user.id === localStorage.getItem("dueño_id") ? (
-                <td>
+              <td className="">{miembro.nombre}</td>
+
+              {/* TODO: Funcionalidad de grupos comentada temporalmente */}
+              {/*
+              {isOwner && (
+                <td className="text-sm text-center">
                   {editandoGrupo === miembro.user_id._id ? (
                     <div className="flex items-center gap-1 flex-col">
                       <select
@@ -208,47 +409,210 @@ const MiembrosPage = ({ params }: { params: { id: string } }) => {
                         value={grupoSeleccionado || ""}
                       >
                         <option value="">Grupo</option>
-                        {grupos.map((grupo) => (
+                        {grupos.map((grupo: any) => (
                           <option key={grupo._id} value={grupo._id}>
                             {grupo.nombre_grupo}
                           </option>
                         ))}
                       </select>
                       <button
-                        onClick={() =>
-                          asignarGrupo(miembro.user_id._id, grupoSeleccionado!)
-                        }
+                        onClick={() => handleAsignarGrupo(miembro.user_id._id)}
                         className="bg-[#FF9A3D] text-[#333] w-[70px] rounded text-sm"
-                        disabled={!grupoSeleccionado}
+                        disabled={!grupoSeleccionado || asignarGrupoMutation.isPending}
                       >
-                        Asignar
+                        {asignarGrupoMutation.isPending ? "..." : "Asignar"}
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => setEditandoGrupo(miembro.user_id._id)}
-                      className="bg-[#FF9A3D] text-[#333] w-[70px] rounded text-sm"
-                    >
-                      <FiEdit className="text-white" size={18} />
-                    </button>
+                    <div className="flex items-center gap-1 flex-col">
+                      <span className="text-xs">
+                        {miembro.grupo ? miembro.grupo.nombre_grupo : "No asignado"}
+                      </span>
+                      <button
+                        onClick={() => setEditandoGrupo(miembro.user_id._id)}
+                        className="bg-[#FF9A3D] text-[#333] w-[70px] rounded text-sm p-1"
+                      >
+                        <FiEdit className="text-white mx-auto" size={12} />
+                      </button>
+                    </div>
                   )}
                 </td>
-              ) : null}
+              )}
+              */}
 
-              {/* <td className="text-sm text-center">
-                <button
-                  onClick={() => eliminarMiembro(miembro.user_id._id)}
-                  className="bg-red-500 text-white px-2 py-1 rounded"
-                >
-                  <FiX className="text-white" size={20} />
-                </button>
-              </td> */}
+              {isOwner && (
+                <td className="flex justify-center items-center gap-2 h-full w-full">
+                  <button
+                    onClick={() => handleDelete(miembro.user_id._id)}
+                    disabled={deleteMiembroMutation.isPending}
+                    className=""
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      height={25}
+                      width={25}
+                    >
+                      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        <path
+                          d="M9.1709 4C9.58273 2.83481 10.694 2 12.0002 2C13.3064 2 14.4177 2.83481 14.8295 4"
+                          stroke="#1C274C"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>
+                        <path
+                          d="M20.5001 6H3.5"
+                          stroke="#1C274C"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>
+                        <path
+                          d="M18.8332 8.5L18.3732 15.3991C18.1962 18.054 18.1077 19.3815 17.2427 20.1907C16.3777 21 15.0473 21 12.3865 21H11.6132C8.95235 21 7.62195 21 6.75694 20.1907C5.89194 19.3815 5.80344 18.054 5.62644 15.3991L5.1665 8.5"
+                          stroke="#1C274C"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>
+                        <path
+                          d="M9.5 11L10 16"
+                          stroke="#1C274C"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>
+                        <path
+                          d="M14.5 11L14 16"
+                          stroke="#1C274C"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        ></path>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() =>
+                      setReviewModal({
+                        open: true,
+                        miembroId: miembro._id,
+                        pagoId: miembro.pago_id?._id,
+                      })
+                    }
+                    disabled={!miembro.pago_id?._id}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      height={25}
+                      width={25}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M12 8.25C9.92893 8.25 8.25 9.92893 8.25 12C8.25 14.0711 9.92893 15.75 12 15.75C14.0711 15.75 15.75 14.0711 15.75 12C15.75 9.92893 14.0711 8.25 12 8.25ZM9.75 12C9.75 10.7574 10.7574 9.75 12 9.75C13.2426 9.75 14.25 10.7574 14.25 12C14.25 13.2426 13.2426 14.25 12 14.25C10.7574 14.25 9.75 13.2426 9.75 12Z"
+                          fill="#000"
+                        ></path>
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M12 3.25C7.48587 3.25 4.44529 5.9542 2.68057 8.24686L2.64874 8.2882C2.24964 8.80653 1.88206 9.28392 1.63269 9.8484C1.36564 10.4529 1.25 11.1117 1.25 12C1.25 12.8883 1.36564 13.5471 1.63269 14.1516C1.88206 14.7161 2.24964 15.1935 2.64875 15.7118L2.68057 15.7531C4.44529 18.0458 7.48587 20.75 12 20.75C16.5141 20.75 19.5547 18.0458 21.3194 15.7531L21.3512 15.7118C21.7504 15.1935 22.1179 14.7161 22.3673 14.1516C22.6344 13.5471 22.75 12.8883 22.75 12C22.75 11.1117 22.6344 10.4529 22.3673 9.8484C22.1179 9.28391 21.7504 8.80652 21.3512 8.28818L21.3194 8.24686C19.5547 5.9542 16.5141 3.25 12 3.25ZM3.86922 9.1618C5.49864 7.04492 8.15036 4.75 12 4.75C15.8496 4.75 18.5014 7.04492 20.1308 9.1618C20.5694 9.73159 20.8263 10.0721 20.9952 10.4545C21.1532 10.812 21.25 11.2489 21.25 12C21.25 12.7511 21.1532 13.188 20.9952 13.5455C20.8263 13.9279 20.5694 14.2684 20.1308 14.8382C18.5014 16.9551 15.8496 19.25 12 19.25C8.15036 19.25 5.49864 16.9551 3.86922 14.8382C3.43064 14.2684 3.17374 13.9279 3.00476 13.5455C2.84684 13.188 2.75 12.7511 2.75 12C2.75 11.2489 2.84684 10.812 3.00476 10.4545C3.17374 10.0721 3.43063 9.73159 3.86922 9.1618Z"
+                          fill="#000"
+                        ></path>
+                      </g>
+                    </svg>
+                  </button>
+                  <div
+                    className={`w-[20px] h-[20px] rounded-full ${
+                      miembro.pago_id?.estado === "aprobado" ||
+                      miembro.estado === "aceptado"
+                        ? "bg-green-600"
+                        : miembro.pago_id?.estado === "rechazado"
+                          ? "bg-red-600"
+                          : "bg-yellow-600"
+                    }`}
+                  ></div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Popup modal */}
+      {selectedMiembro && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+          onClick={() => setSelectedMiembro(null)}
+        >
+          <div
+            className="relative w-[300px] h-[450px] rounded-xl overflow-hidden shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedMiembro.imagen}
+              alt={selectedMiembro.nombre}
+              className="object-cover w-full h-full"
+            />
+
+            <div className="absolute inset-0 flex flex-col justify-end">
+              <div className="w-full p-4 bg-gradient-to-t from-black/60 via-black/80 to-transparent">
+                <p
+                  className="text-white text-xl font-semibold mb-1"
+                  onClick={() =>
+                    router.push(`/profile/${selectedMiembro.usuarioId}`)
+                  }
+                >
+                  {selectedMiembro.nombre}
+                </p>
+                <p className="text-white text-sm opacity-80">
+                  {selectedMiembro.email}
+                </p>
+                <p className="text-white text-xs mt-2">
+                  {selectedMiembro.instagram && (
+                    <a
+                      href={`https://instagram.com/${selectedMiembro.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaInstagram />
+                    </a>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="absolute top-2 right-2 text-white text-xl bg-red-700 w-8 h-8 rounded-full"
+              onClick={() => setSelectedMiembro(null)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      <PaymentReviewModal
+        isOpen={reviewModal.open}
+        onClose={() => setReviewModal({ open: false })}
+        miembroId={reviewModal.miembroId || ""}
+        pagoId={reviewModal.pagoId || ""}
+      />
+
+      {isOwner && <ExportUsuarios usuarios={miembrosAprobados} />}
+
+      <div className="pb-[150px]"></div>
     </div>
   );
-};
-
-export default MiembrosPage;
+}

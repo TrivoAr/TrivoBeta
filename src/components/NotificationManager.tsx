@@ -1,8 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useNotifications, useNotificationListener, type Notification } from "@/hooks/useNotifications";
-import { Bell, BellDot, Check, CheckCheck, X, Wifi, WifiOff } from "lucide-react";
+import {
+  useNotifications,
+  useNotificationListener,
+  type Notification,
+} from "@/hooks/useNotifications";
+import {
+  Bell,
+  BellDot,
+  Check,
+  CheckCheck,
+  X,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -13,7 +25,7 @@ interface NotificationManagerProps {
 
 export function NotificationManager({
   className = "",
-  showConnectionStatus = true
+  showConnectionStatus = true,
 }: NotificationManagerProps) {
   const {
     notifications,
@@ -24,11 +36,13 @@ export function NotificationManager({
     markAsRead,
     markAllAsRead,
     loadMore,
-    reload
+    reload,
   } = useNotifications();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+  const [expandedNotifications, setExpandedNotifications] = useState<
+    Set<string>
+  >(new Set());
 
   // Listener para eventos específicos
   const { connectionStatus } = useNotificationListener();
@@ -39,7 +53,7 @@ export function NotificationManager({
     }
 
     // Toggle expanded state
-    setExpandedNotifications(prev => {
+    setExpandedNotifications((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(notification._id)) {
         newSet.delete(notification._id);
@@ -88,7 +102,7 @@ export function NotificationManager({
     try {
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
-        locale: es
+        locale: es,
       });
     } catch {
       return "hace un momento";
@@ -190,7 +204,9 @@ export function NotificationManager({
               ) : (
                 <div className="divide-y">
                   {notifications.map((notification) => {
-                    const isExpanded = expandedNotifications.has(notification._id);
+                    const isExpanded = expandedNotifications.has(
+                      notification._id
+                    );
 
                     return (
                       <div
@@ -206,12 +222,14 @@ export function NotificationManager({
                           </span>
 
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm ${!notification.read ? "font-medium" : ""}`}>
-                              {isExpanded ? notification.message :
-                                notification.message.length > 80
+                            <p
+                              className={`text-sm ${!notification.read ? "font-medium" : ""}`}
+                            >
+                              {isExpanded
+                                ? notification.message
+                                : notification.message.length > 80
                                   ? `${notification.message.substring(0, 80)}...`
-                                  : notification.message
-                              }
+                                  : notification.message}
                             </p>
 
                             <div className="flex items-center justify-between mt-1">
@@ -235,7 +253,8 @@ export function NotificationManager({
 
                             {notification.fromUserId && (
                               <p className="text-xs text-gray-400 mt-1">
-                                De: {notification.fromUserId.firstname} {notification.fromUserId.lastname}
+                                De: {notification.fromUserId.firstname}{" "}
+                                {notification.fromUserId.lastname}
                               </p>
                             )}
                           </div>
@@ -274,7 +293,11 @@ export function NotificationManager({
 }
 
 // Componente simplificado para solo mostrar el indicador
-export function NotificationIndicator({ className = "" }: { className?: string }) {
+export function NotificationIndicator({
+  className = "",
+}: {
+  className?: string;
+}) {
   const { unreadCount } = useNotifications({ limit: 0 }); // Solo obtener el count, no las notificaciones
 
   if (unreadCount === 0) return null;
@@ -296,7 +319,7 @@ export function useNotificationObserver() {
 
   useEffect(() => {
     const unsubscribe = on("notification:received", () => {
-      setNewNotificationCount(prev => prev + 1);
+      setNewNotificationCount((prev) => prev + 1);
     });
 
     return unsubscribe;
@@ -306,6 +329,6 @@ export function useNotificationObserver() {
 
   return {
     newNotificationCount,
-    resetCount
+    resetCount,
   };
 }

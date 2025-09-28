@@ -13,37 +13,46 @@ export default function TestSocketPage() {
     // Inicializar Socket.IO
     const socketIO = io("/", {
       auth: {
-        token: userId
+        token: userId,
       },
-      transports: ["websocket", "polling"]
+      transports: ["websocket", "polling"],
     });
 
     socketIO.on("connect", () => {
       console.log("✅ Conectado a Socket.IO");
       setConnected(true);
-      setMessages(prev => [...prev, "✅ Conectado al servidor"]);
+      setMessages((prev) => [...prev, "✅ Conectado al servidor"]);
     });
 
     socketIO.on("disconnect", (reason) => {
       console.log("❌ Desconectado:", reason);
       setConnected(false);
-      setMessages(prev => [...prev, `❌ Desconectado: ${reason}`]);
+      setMessages((prev) => [...prev, `❌ Desconectado: ${reason}`]);
     });
 
     socketIO.on("notifications:history", (data) => {
-      setMessages(prev => [...prev, `📋 Historial recibido: ${data.notifications.length} notificaciones`]);
+      setMessages((prev) => [
+        ...prev,
+        `📋 Historial recibido: ${data.notifications.length} notificaciones`,
+      ]);
     });
 
     socketIO.on("notification:new", (notification) => {
-      setMessages(prev => [...prev, `🔔 Nueva notificación: ${notification.message}`]);
+      setMessages((prev) => [
+        ...prev,
+        `🔔 Nueva notificación: ${notification.message}`,
+      ]);
     });
 
     socketIO.on("notification:marked-read", (data) => {
-      setMessages(prev => [...prev, `✅ Marcada como leída: ${data.notificationId}`]);
+      setMessages((prev) => [
+        ...prev,
+        `✅ Marcada como leída: ${data.notificationId}`,
+      ]);
     });
 
     socketIO.on("error", (error) => {
-      setMessages(prev => [...prev, `❌ Error: ${error.message}`]);
+      setMessages((prev) => [...prev, `❌ Error: ${error.message}`]);
     });
 
     setSocket(socketIO);
@@ -56,7 +65,7 @@ export default function TestSocketPage() {
   const requestNotifications = () => {
     if (socket && connected) {
       socket.emit("get:notifications", { limit: 10 });
-      setMessages(prev => [...prev, "📤 Solicitando notificaciones..."]);
+      setMessages((prev) => [...prev, "📤 Solicitando notificaciones..."]);
     }
   };
 
@@ -64,7 +73,7 @@ export default function TestSocketPage() {
     if (socket && connected) {
       const testId = "test-notification-" + Date.now();
       socket.emit("notification:mark-read", testId);
-      setMessages(prev => [...prev, `📤 Marcando como leída: ${testId}`]);
+      setMessages((prev) => [...prev, `📤 Marcando como leída: ${testId}`]);
     }
   };
 
@@ -74,16 +83,22 @@ export default function TestSocketPage() {
       const response = await fetch("/api/test-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, message: "Notificación de prueba desde API" })
+        body: JSON.stringify({
+          userId,
+          message: "Notificación de prueba desde API",
+        }),
       });
 
       if (response.ok) {
-        setMessages(prev => [...prev, "📤 Notificación simulada enviada"]);
+        setMessages((prev) => [...prev, "📤 Notificación simulada enviada"]);
       } else {
-        setMessages(prev => [...prev, "❌ Error enviando notificación simulada"]);
+        setMessages((prev) => [
+          ...prev,
+          "❌ Error enviando notificación simulada",
+        ]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, `❌ Error: ${error}`]);
+      setMessages((prev) => [...prev, `❌ Error: ${error}`]);
     }
   };
 
@@ -98,9 +113,13 @@ export default function TestSocketPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Estado de Conexión</h2>
           <div className="flex items-center space-x-4">
-            <div className={`w-4 h-4 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className={`font-medium ${connected ? 'text-green-700' : 'text-red-700'}`}>
-              {connected ? 'Conectado' : 'Desconectado'}
+            <div
+              className={`w-4 h-4 rounded-full ${connected ? "bg-green-500" : "bg-red-500"}`}
+            ></div>
+            <span
+              className={`font-medium ${connected ? "text-green-700" : "text-red-700"}`}
+            >
+              {connected ? "Conectado" : "Desconectado"}
             </span>
           </div>
 
@@ -158,7 +177,10 @@ export default function TestSocketPage() {
               <div className="space-y-1">
                 {messages.map((message, index) => (
                   <div key={index} className="text-sm font-mono">
-                    <span className="text-gray-500">[{new Date().toLocaleTimeString()}]</span> {message}
+                    <span className="text-gray-500">
+                      [{new Date().toLocaleTimeString()}]
+                    </span>{" "}
+                    {message}
                   </div>
                 ))}
               </div>
@@ -174,12 +196,19 @@ export default function TestSocketPage() {
 
         {/* Información técnica */}
         <div className="bg-blue-50 rounded-lg p-6 mt-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">ℹ️ Información</h3>
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            ℹ️ Información
+          </h3>
           <div className="text-sm text-blue-800 space-y-1">
             <p>• Socket.IO se conecta al servidor en puerto 3000</p>
-            <p>• Los usuarios se unen automáticamente a su sala: <code>user:{userId}</code></p>
+            <p>
+              • Los usuarios se unen automáticamente a su sala:{" "}
+              <code>user:{userId}</code>
+            </p>
             <p>• Las notificaciones se envían en tiempo real sin polling</p>
-            <p>• Estado de conexión: {connected ? '🟢 Activo' : '🔴 Inactivo'}</p>
+            <p>
+              • Estado de conexión: {connected ? "🟢 Activo" : "🔴 Inactivo"}
+            </p>
           </div>
         </div>
       </div>

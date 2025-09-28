@@ -44,6 +44,12 @@ const AcademiaSchema = new Schema(
     precio: {
       type: String,
     },
+    cbu: {
+      type: String,
+    },
+    alias: {
+      type: String,
+    },
   },
   {
     timestamps: true,

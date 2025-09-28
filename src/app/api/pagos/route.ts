@@ -43,35 +43,72 @@
 
 import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
+import { Types } from "mongoose";
 import Pago from "@/models/pagos";
 import SalidaSocial from "@/models/salidaSocial";
+import Academia from "@/models/academia";
 import User from "@/models/user";
 import Notificacion from "@/models/notificacion";
 
 export async function POST(req: Request) {
   try {
+    console.log("Iniciando POST /api/pagos");
     await connectDB();
     const body = await req.json();
+    console.log("Body recibido:", body);
 
-    const { salidaId, userId, comprobanteUrl } = body;
+    const { salidaId, academiaId, userId, comprobanteUrl } = body;
 
-    if (!salidaId || !userId || !comprobanteUrl) {
+    if (!userId || !comprobanteUrl || (!salidaId && !academiaId)) {
+      console.log("Faltan campos obligatorios:", {
+        userId,
+        comprobanteUrl,
+        salidaId,
+        academiaId,
+      });
       return NextResponse.json(
-        { error: "Faltan campos obligatorios" },
+        {
+          error:
+            "Faltan campos obligatorios (userId, comprobanteUrl, y salidaId o academiaId)",
+        },
         { status: 400 }
       );
     }
 
-    const pago = await Pago.create({
-      salidaId,
-      userId,
+    const pagoData: any = {
+      userId: new Types.ObjectId(userId),
       comprobanteUrl,
-    });
+    };
 
-    // Notificar al creador de la salida sobre el comprobante recibido
+    if (salidaId) {
+      pagoData.salidaId = new Types.ObjectId(salidaId);
+    }
+    if (academiaId) {
+      pagoData.academiaId = new Types.ObjectId(academiaId);
+    }
+
+    console.log("Datos para crear pago:", pagoData);
+
+    // Validación manual: debe tener al menos salidaId o academiaId
+    if (!pagoData.salidaId && !pagoData.academiaId) {
+      console.log("Error: Debe tener al menos salidaId o academiaId");
+      return NextResponse.json(
+        { error: "Debe especificar salidaId o academiaId" },
+        { status: 400 }
+      );
+    }
+
+    const pago = await Pago.create(pagoData);
+    console.log("Pago creado exitosamente:", pago._id);
+
+    // Notificar al creador sobre el comprobante recibido
     // Solo si no es un evento gratuito (que usa "EVENTO_GRATUITO" como comprobanteUrl)
     if (comprobanteUrl !== "EVENTO_GRATUITO") {
-      await notificarCreadorComprobante(salidaId, userId);
+      if (salidaId) {
+        await notificarCreadorComprobante(salidaId, userId, "salida");
+      } else if (academiaId) {
+        await notificarCreadorComprobante(academiaId, userId, "academia");
+      }
     }
 
     return NextResponse.json(
@@ -85,37 +122,80 @@ export async function POST(req: Request) {
 }
 
 // Función para notificar al creador sobre comprobante de transferencia recibido
-async function notificarCreadorComprobante(salidaId: string, userId: string) {
+async function notificarCreadorComprobante(
+  entidadId: string,
+  userId: string,
+  tipo: "salida" | "academia"
+) {
   try {
-    // Obtener información de la salida y el usuario
-    const salida = await SalidaSocial.findById(salidaId);
     const usuario = await User.findById(userId);
-
-    if (!salida || !usuario) {
-      console.error("No se encontró la salida o el usuario para notificar");
+    if (!usuario) {
+      console.error("No se encontró el usuario para notificar");
       return;
     }
 
-    // No notificar si el creador es el mismo usuario
-    if (String(salida.creador_id) === String(userId)) {
-      return;
+    let creadorId: string;
+    let nombre: string;
+    let mensaje: string;
+
+    if (tipo === "salida") {
+      const salida = await SalidaSocial.findById(entidadId);
+      if (!salida) {
+        console.error("No se encontró la salida para notificar");
+        return;
+      }
+
+      creadorId = salida.creador_id;
+      nombre = salida.nombre;
+
+      // No notificar si el creador es el mismo usuario
+      if (String(creadorId) === String(userId)) {
+        return;
+      }
+
+      mensaje = `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${nombre}". Revisa y aprueba su participación.`;
+
+      await Notificacion.create({
+        userId: creadorId,
+        fromUserId: userId,
+        salidaId: salida._id,
+        type: "payment_pending",
+        message: mensaje,
+      });
+    } else if (tipo === "academia") {
+      const academia = await Academia.findById(entidadId);
+      if (!academia) {
+        console.error("No se encontró la academia para notificar");
+        return;
+      }
+
+      creadorId = academia.dueño_id;
+      nombre = academia.nombre_academia;
+
+      // No notificar si el dueño es el mismo usuario
+      if (String(creadorId) === String(userId)) {
+        return;
+      }
+
+      mensaje = `${usuario.firstname} ha enviado el comprobante de pago para tu academia "${nombre}". Revisa y aprueba su participación.`;
+
+      await Notificacion.create({
+        userId: creadorId,
+        fromUserId: userId,
+        academiaId: academia._id,
+        type: "payment_pending",
+        message: mensaje,
+      });
     }
 
-    // Crear notificación para el creador
-    const mensaje = `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${salida.nombre}". Revisa y aprueba su participación.`;
-
-    await Notificacion.create({
-      userId: salida.creador_id,
-      fromUserId: userId,
-      salidaId: salida._id,
-      type: "payment_pending",
-      message: mensaje,
-    });
-
-    console.log(`Notificación enviada al creador (${salida.creador_id}) sobre comprobante recibido de transferencia`);
-
+    console.log(
+      `Notificación enviada al creador (${creadorId}) sobre comprobante recibido de transferencia`
+    );
   } catch (error) {
-    console.error("Error enviando notificación al creador sobre comprobante:", error);
+    console.error(
+      "Error enviando notificación al creador sobre comprobante:",
+      error
+    );
   }
 }
 

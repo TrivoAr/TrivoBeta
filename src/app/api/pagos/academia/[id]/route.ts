@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import Pagos from "@/models/pagos";
-import MiembroSalida from "@/models/MiembroSalida";
+import UsuarioAcademia from "@/models/users_academia";
 
 export async function GET(
   request: NextRequest,
@@ -15,21 +15,21 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { id: salidaId } = params;
+    const { id: academiaId } = params;
     const userId = session.user.id;
 
     await connectDB();
 
-    // Buscar el pago más reciente para esta salida y usuario
+    // Buscar el pago más reciente para esta academia y usuario
     const pago = await Pagos.findOne({
-      salidaId,
+      academiaId, // Nota: necesitaremos actualizar el modelo Pagos para incluir academiaId
       userId,
     }).sort({ createdAt: -1 });
 
-    // Buscar el estado del miembro
-    const miembro = await MiembroSalida.findOne({
-      salida_id: salidaId,
-      usuario_id: userId,
+    // Buscar el estado del miembro en la academia
+    const miembro = await UsuarioAcademia.findOne({
+      academia_id: academiaId,
+      user_id: userId,
     });
 
     return NextResponse.json({
@@ -50,13 +50,13 @@ export async function GET(
             estado: miembro.estado,
           }
         : null,
-      isApproved: miembro?.estado === "aprobado" && pago?.estado === "aprobado",
+      isApproved: miembro?.estado === "aceptado" && pago?.estado === "aprobado",
       isPending:
         pago?.estado === "pendiente" ||
         (pago?.estado === "aprobado" && miembro?.estado === "pendiente"),
     });
   } catch (error) {
-    console.error("Error obteniendo estado de pago:", error);
+    console.error("Error obteniendo estado de pago de academia:", error);
     return NextResponse.json(
       {
         error: "Error interno del servidor",

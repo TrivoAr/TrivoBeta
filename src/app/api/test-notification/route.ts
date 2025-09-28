@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       fromUserId: {
         _id: "system",
         firstname: "Sistema",
-        lastname: "Prueba"
+        lastname: "Prueba",
       },
       type: "test",
       message: message,
@@ -38,22 +38,27 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       data: {
         test: true,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     };
 
     // Emitir notificación en tiempo real al usuario específico
-    const success = await socketServer.emitToUser(userId, "notification:new", testNotification);
+    const success = await socketServer.emitToUser(
+      userId,
+      "notification:new",
+      testNotification
+    );
 
-    console.log(`[TEST_API] Notificación de prueba enviada a usuario ${userId}: ${message} - Éxito: ${success}`);
+    console.log(
+      `[TEST_API] Notificación de prueba enviada a usuario ${userId}: ${message} - Éxito: ${success}`
+    );
 
     return NextResponse.json({
       success: true,
       message: "Notificación de prueba enviada",
       notification: testNotification,
-      clientsReached: success
+      clientsReached: success,
     });
-
   } catch (error) {
     console.error("[TEST_API] Error enviando notificación de prueba:", error);
     return NextResponse.json(

@@ -1,7 +1,11 @@
 "use client";
 
 import React from "react";
-import { NotificationManager, NotificationIndicator, useNotificationObserver } from "@/components/NotificationManager";
+import {
+  NotificationManager,
+  NotificationIndicator,
+  useNotificationObserver,
+} from "@/components/NotificationManager";
 import { useNotificationListener } from "@/hooks/useNotifications";
 
 // Ejemplo de cómo usar en el header de la aplicación
@@ -27,7 +31,13 @@ export function AppHeader() {
 }
 
 // Ejemplo de indicador simple en navegación móvil
-export function MobileNavItem({ href, children }: { href: string; children: React.ReactNode }) {
+export function MobileNavItem({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <a
       href={href}
@@ -60,15 +70,21 @@ export function DashboardWidget() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Estado de Notificaciones</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">
+        Estado de Notificaciones
+      </h3>
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span>Conexión:</span>
-          <span className={`font-medium ${
-            connectionStatus === 'connected' ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {connectionStatus === 'connected' ? 'Conectado' : 'Desconectado'}
+          <span
+            className={`font-medium ${
+              connectionStatus === "connected"
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            {connectionStatus === "connected" ? "Conectado" : "Desconectado"}
           </span>
         </div>
 
@@ -81,7 +97,9 @@ export function DashboardWidget() {
 
         {lastNotification && (
           <div className="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
-            <p className="text-sm font-medium text-blue-800">Última notificación:</p>
+            <p className="text-sm font-medium text-blue-800">
+              Última notificación:
+            </p>
             <p className="text-sm text-blue-700 mt-1">
               {lastNotification.message}
             </p>
@@ -93,12 +111,16 @@ export function DashboardWidget() {
 }
 
 // Ejemplo de provider para inicializar notificaciones globalmente
-export function NotificationProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { connectionStatus } = useNotificationListener();
 
   React.useEffect(() => {
     // Listener global para eventos de conexión
-    if (connectionStatus === 'connected') {
+    if (connectionStatus === "connected") {
       console.log("🔗 Sistema de notificaciones conectado");
     } else {
       console.log("❌ Sistema de notificaciones desconectado");

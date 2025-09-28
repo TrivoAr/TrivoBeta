@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const { academia_id, user_id } = await req.json();
+    const { academia_id, user_id, pago_id } = await req.json();
 
     // Validar si los datos requeridos están presentes
     if (!academia_id || !user_id) {
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       user_id: userObjectId,
       academia_id: academiaObjectId,
       estado: "pendiente",
+      pago_id: pago_id ? new mongoose.Types.ObjectId(pago_id) : undefined,
     });
 
     await nuevaSolicitud.save();
