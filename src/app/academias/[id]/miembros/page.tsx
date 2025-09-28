@@ -7,7 +7,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import { FaInstagram } from "react-icons/fa";
-import { FiEdit } from "react-icons/fi";
 import { toast } from "sonner";
 import PaymentReviewModal from "@/components/PaymentReviewModal";
 import ExportUsuarios from "@/app/utils/ExportUsuarios";
@@ -121,8 +120,8 @@ export default function AcademiaMiembrosPage({
   });
   */
 
-  const loading = loadingAcademia || loadingMiembros; // || loadingGrupos;
-  const error = errorAcademia || errorMiembros;
+  const _loading = loadingAcademia || loadingMiembros; // || loadingGrupos;
+  const _error = errorAcademia || errorMiembros;
 
   const isOwner = session?.user?.id === academia?.dueño_id?._id;
   const safeMiembros = Array.isArray(miembros) ? miembros : [];

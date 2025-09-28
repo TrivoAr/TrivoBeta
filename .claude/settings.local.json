@@ -38,7 +38,8 @@
       "Read(//c/**)",
       "mcp__context7__get-library-docs",
       "Bash(del /S /Q \".next\")",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(PORT=3001 npm run dev)"
     ],
     "deny": [],
     "ask": []

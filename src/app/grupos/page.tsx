@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -10,15 +9,24 @@ import debounce from "lodash.debounce";
 import Academia from "@/models/academia";
 import { useSession } from "next-auth/react";
 import { saveGroupImage } from "@/app/api/grupos/saveGroupImage";
+import FormCreationSkeleton from "@/components/FormCreationSkeleton";
+import dynamic from "next/dynamic";
 
-const MapWithNoSSR = dynamic(() => import("@/components/MapComponent"), {
+// Dynamic import to avoid SSR issues with Mapbox
+const MapboxMap = dynamic(() => import("@/components/MapboxMap"), {
   ssr: false,
+  loading: () => (
+    <div className="w-full h-[300px] bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+      <div className="text-gray-500 dark:text-gray-400">Cargando mapa...</div>
+    </div>
+  ),
 });
 
 interface LatLng {
   lat: number;
   lng: number;
 }
+
 
 const CrearGrupo = () => {
   const router = useRouter();
@@ -51,6 +59,28 @@ const CrearGrupo = () => {
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
   const { data: session } = useSession();
 
+  // Estados para Mapbox
+  const mapRef = useRef<any>(null);
+  const [coords, setCoords] = useState<LatLng>(defaultCoords);
+  const [ubicacion, setUbicacion] = useState("");
+
+  // Efecto para posicionar el marcador inicial si hay coordenadas guardadas
+  useEffect(() => {
+    if (grupo.locationCoords && mapRef.current) {
+      const savedCoords = grupo.locationCoords;
+      setCoords(savedCoords);
+      setMarkerPos(savedCoords);
+      mapRef.current.updateMarker(savedCoords);
+    }
+  }, [grupo.locationCoords]);
+  const suggestionsRef = useRef<HTMLUListElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Estados para búsqueda de profesores
+  const [profes, setProfes] = useState<any[]>([]);
+  const [queryProfesor, setQueryProfesor] = useState("");
+  const [profesorSuggestions, setProfesorSuggestions] = useState<any[]>([]);
+
   useEffect(() => {
     const fetchAcademias = async () => {
       try {
@@ -65,6 +95,33 @@ const CrearGrupo = () => {
       }
     };
     fetchAcademias();
+  }, []);
+
+  // Fetch profesores
+  useEffect(() => {
+    const fetchProfes = async () => {
+      try {
+        const res = await fetch(`/api/profile/profes`);
+        const data = await res.json();
+        setProfes(data);
+      } catch (err) {
+        console.error("Error al obtener los profes", err);
+      }
+    };
+    fetchProfes();
+  }, []);
+
+  // Manejar selección de ubicación desde el mapa
+  const handleLocationSelect = useCallback(async (newCoords: LatLng, address: string) => {
+    setCoords(newCoords);
+    setMarkerPos(newCoords);
+    setQuery(address);
+    setSuggestions([]); // Limpiar sugerencias cuando se selecciona desde el mapa
+    setGrupo((prev) => ({
+      ...prev,
+      ubicacion: address,
+      locationCoords: newCoords,
+    }));
   }, []);
 
   const handleInputChange = (
@@ -100,6 +157,7 @@ const CrearGrupo = () => {
     const url = await getDownloadURL(imageRef);
     return url;
   };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -158,6 +216,11 @@ const CrearGrupo = () => {
     setMarkerPos(coords);
     setGrupo((prev) => ({ ...prev, locationCoords: coords }));
 
+    // Actualizar mapa usando la referencia
+    if (mapRef.current) {
+      mapRef.current.updateMarker(coords);
+    }
+
     const direccion = await fetchAddressFromCoords(coords.lat, coords.lng);
     setQuery(direccion);
     setGrupo((prev) => ({ ...prev, ubicacion: direccion }));
@@ -166,8 +229,15 @@ const CrearGrupo = () => {
   const handleSelectSuggestion = (item: any) => {
     const coords = { lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
     setMarkerPos(coords);
-    setGrupo((prev) => ({ ...prev, coords, ubicacion: item.display_name }));
+    setCoords(coords);
+    setGrupo((prev) => ({ ...prev, locationCoords: coords, ubicacion: item.display_name }));
     setQuery(item.display_name);
+
+    // Actualizar mapa usando la referencia
+    if (mapRef.current) {
+      mapRef.current.updateMarker(coords);
+    }
+
     setSuggestions([]); // cerrar sugerencias
   };
 
@@ -181,9 +251,9 @@ const CrearGrupo = () => {
       });
   };
 
-  const fetchAddressFromCoords = async (lat: number, lon: number) => {
+  const fetchAddressFromCoords = async (lat: number, lng: number) => {
     try {
-      const res = await fetch(`/api/search/reverse?lat=${lat}&lon=${lon}`);
+      const res = await fetch(`/api/search/reverse?lat=${lat}&lng=${lng}`);
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
@@ -192,15 +262,41 @@ const CrearGrupo = () => {
     }
   };
 
-  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 500), []);
+  const handleInputLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    setGrupo((prev) => ({ ...prev, ubicacion: value }));
 
-  useEffect(() => {
-    if (query.length < 3) {
+    if (value.length < 3) {
       setSuggestions([]);
       return;
     }
-    debouncedFetch(query);
-  }, [query, debouncedFetch]);
+
+    // Solo usar el debounced fetch, no hacer fetch inmediato
+    debouncedFetch(value);
+  };
+
+  const handleSuggestionClick = (s: any) => {
+    const coords = { lat: parseFloat(s.lat), lng: parseFloat(s.lon) };
+    setQuery(s.display_name);
+    setCoords(coords);
+    setMarkerPos(coords);
+
+    // Actualizar mapa usando la referencia
+    if (mapRef.current) {
+      mapRef.current.updateMarker(coords);
+    }
+
+    setGrupo((prev) => ({
+      ...prev,
+      ubicacion: s.display_name,
+      locationCoords: coords
+    }));
+    setSuggestions([]);
+  };
+
+  const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 300), []);
+
 
   // Cleanup para evitar memory leaks
   useEffect(() => {
@@ -209,15 +305,34 @@ const CrearGrupo = () => {
     };
   }, [debouncedFetch]);
 
+  // Hook para manejar clics fuera de las sugerencias
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setSuggestions([]);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   if (loading) {
-    return <div className="text-center text-gray-500">Cargando...</div>;
+    return <FormCreationSkeleton />;
   }
 
-  if (academias.length === 0) {
+  if (!Array.isArray(academias) || academias.length === 0) {
     return (
-      <div className="text-center mt-10 p-4 bg-white rounded shadow">
-        <h1 className="text-xl font-bold mb-4">No tienes academias creadas</h1>
-        <p className="text-gray-700">
+      <div className="text-center mt-10 p-4 bg-white dark:bg-gray-800 rounded shadow border dark:border-gray-600">
+        <h1 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">No tienes academias creadas</h1>
+        <p className="text-gray-700 dark:text-gray-300">
           Crea una academia primero para poder gestionar grupos.
         </p>
       </div>
@@ -225,7 +340,7 @@ const CrearGrupo = () => {
   }
 
   return (
-    <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9">
+    <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9] dark:bg-gray-900 min-h-screen">
       <Toaster position="top-center" />
       <div className="relative w-full h-[40px] flex">
         <button
@@ -248,23 +363,23 @@ const CrearGrupo = () => {
         </button>
       </div>
 
-      <h2 className="text-center font-medium text-xl">
+      <h2 className="text-center font-medium text-xl text-gray-900 dark:text-white">
         Crear grupo de entrenamiento
       </h2>
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
+        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl mb-[80px] bg-[#FEFBF9] dark:bg-gray-900"
       >
         <select
           name="academia_id"
           value={grupo.academia_id}
           onChange={handleInputChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Academia</option>
-          {academias.map((academia) => (
+          {Array.isArray(academias) && academias.map((academia) => (
             <option key={academia._id} value={academia._id}>
               {academia.nombre_academia}
             </option>
@@ -278,7 +393,7 @@ const CrearGrupo = () => {
           onChange={handleInputChange}
           required
           placeholder="Nombre"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <select
@@ -286,7 +401,7 @@ const CrearGrupo = () => {
           value={grupo.nivel}
           onChange={handleInputChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Selecciona dificultad</option>
           <option value="baja">Baja</option>
@@ -301,11 +416,11 @@ const CrearGrupo = () => {
           onChange={handleInputChange}
           placeholder="Horario"
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         />
 
         <div className="space-y-4">
-          <label className="block font-medium text-slate-400">
+          <label className="block font-medium text-slate-400 dark:text-gray-300">
             Días de entrenamiento
           </label>
           {/* Chips visuales */}
@@ -313,13 +428,13 @@ const CrearGrupo = () => {
             {grupo.dias.map((dia) => (
               <span
                 key={dia}
-                className="flex items-center bg-white border text-orange-700 px-4 py-1.5 rounded-full text-sm shadow-sm"
+                className="flex items-center bg-white dark:bg-gray-700 border dark:border-gray-600 text-orange-700 dark:text-orange-300 px-4 py-1.5 rounded-full text-sm shadow-sm"
               >
                 {dia}
                 <button
                   type="button"
                   onClick={() => removeDia(dia)}
-                  className="ml-2 text-orange-500 hover:text-orange-700"
+                  className="ml-2 text-orange-500 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
                   title="Eliminar"
                 >
                   ×
@@ -334,22 +449,7 @@ const CrearGrupo = () => {
             onChange={handleInputChange}
             required
             multiple
-            className="
-      w-full
-      h-70
-      px-5
-      py-3
-      border
-      rounded-xl
-      shadow-md
-      bg-white
-      text-gray-400
-      focus:outline-none
-      focus:ring-2
-      focus:ring-orange-400
-      overflow-y-auto
-      scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-gray-100
-    "
+            className="w-full h-70 px-5 py-3 border dark:border-gray-600 rounded-xl shadow-md bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-gray-100"
           >
             <option className="py-3" value={"Lun"}>
               Lunes
@@ -381,7 +481,7 @@ const CrearGrupo = () => {
           value={grupo.tiempo_promedio}
           onChange={handleInputChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Duracion del Entrenamiento</option>
           <option value="1hs">1 hora</option>
@@ -395,7 +495,7 @@ const CrearGrupo = () => {
           value={grupo.cuota_mensual}
           onChange={handleInputChange}
           placeholder="Cuota mensual"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <textarea
@@ -403,54 +503,54 @@ const CrearGrupo = () => {
           value={grupo.descripcion}
           onChange={handleInputChange}
           placeholder="Descripción"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
         <textarea
           name="aviso"
           value={grupo.aviso}
           onChange={handleInputChange}
           placeholder="Avisos, indicaciones para hacer en el grupo"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <select
           name="tipo_grupo"
           value={grupo.tipo_grupo}
           onChange={handleInputChange}
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
-          {academias[0].tipo_disciplina === "Ciclismo" ? (
-            <div>
+          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Ciclismo" ? (
+            <>
               <option value="">Selecciona una diciplina</option>
               <option value="Ruta">Ruta</option>
               <option value="MTB">MTB</option>
               <option value="Otros">Otros</option>
-            </div>
+            </>
           ) : null}
-          {academias[0].tipo_disciplina === "Running" ? (
-            <div>
+          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Running" ? (
+            <>
               <option value="">Selecciona una diciplina</option>
               <option value="Urbano">Urbano</option>
               <option value="Trail">Trail</option>
               <option value="Marathon">Marathon</option>
               <option value="Otros">Otros</option>
-            </div>
+            </>
           ) : null}
-          {academias[0].tipo_disciplina === "Trekking" ? (
-            <div>
+          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Trekking" ? (
+            <>
               <option value="">Selecciona una diciplina</option>
               <option value="de dia">De día</option>
               <option value="varios dias">Varios días</option>
               <option value="Senderismo">Senderimos</option>
               <option value="Ascensos">Ascensos</option>
               <option value="Otros">Otros</option>
-            </div>
+            </>
           ) : null}
         </select>
 
-        <label className="block text-slate-400">
+        <label className="block text-slate-400 dark:text-gray-300">
           Banner del grupo
-          <div className="mt-2 w-full h-40 bg-white border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
+          <div className="mt-2 w-full h-40 bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
             <input
               type="file"
               accept="image/*"
@@ -464,40 +564,124 @@ const CrearGrupo = () => {
                 className="w-full h-full object-cover absolute top-0 left-0"
               />
             ) : (
-              <span className="text-gray-500 z-0">Subir imagen</span>
+              <span className="text-gray-500 dark:text-gray-400 z-0">Subir imagen</span>
             )}
           </div>
         </label>
 
-        <label className="block relative">
-          Ubicación
+        {/* Búsqueda de profesores */}
+        <label className="block relative text-slate-400 dark:text-gray-300">
+          Asignar profesor
           <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Parque central..."
-            className="w-full px-4 py-4 border shadow-md rounded-[15px]"
+            type="text"
+            value={queryProfesor}
+            onChange={(e) => {
+              const value = e.target.value;
+              setQueryProfesor(value);
+
+              // Filtrar sugerencias localmente
+              const filtered = profes.filter((p) =>
+                p.firstname.toLowerCase().includes(value.toLowerCase())
+              );
+              setProfesorSuggestions(filtered);
+            }}
+            placeholder="Buscar profesor..."
+            className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
-          {suggestions.length > 0 && (
-            <ul className="absolute z-10 bg-white border mt-1 rounded w-full max-h-40 overflow-y-auto">
-              {suggestions.map((item, idx) => (
+          {profesorSuggestions.length > 0 && (
+            <ul className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 border dark:border-gray-600 shadow-md rounded-md max-h-40 overflow-y-auto z-50">
+              {profesorSuggestions.map((p) => (
                 <li
-                  key={idx}
-                  onClick={() => handleSelectSuggestion(item)}
-                  className="px-2 py-1 cursor-pointer hover:bg-gray-100"
+                  key={p._id}
+                  className="px-4 py-2 cursor-pointer hover:bg-orange-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                  onClick={() => {
+                    setGrupo((prev) => ({ ...prev, profesor_id: p._id }));
+                    setQueryProfesor(`${p.firstname} ${p.lastname}`);
+                    setProfesorSuggestions([]);
+                  }}
                 >
-                  {item.display_name}
+                  {p.firstname} {p.lastname}
                 </li>
               ))}
             </ul>
           )}
+          {/* Mostrar preview del profesor seleccionado */}
+          {grupo.profesor_id && queryProfesor && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-[15px] mt-2">
+              {(() => {
+                const selectedProfesor = profes.find(
+                  (p) => p._id === grupo.profesor_id
+                );
+                return selectedProfesor ? (
+                  <div className="flex items-center gap-3">
+                    {selectedProfesor.imagen ? (
+                      <img
+                        src={selectedProfesor.imagen}
+                        alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
+                        className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + ' ' + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`;
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + ' ' + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`}
+                        alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
+                        className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
+                      />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                        👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname}{" "}
+                        {selectedProfesor.lastname}
+                      </p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Este profesor aparecerá como instructor del grupo
+                      </p>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+            </div>
+          )}
         </label>
 
-        <label className="block">
-          <MapWithNoSSR
-            position={markerPos || defaultCoords}
-            onChange={handleCoordsChange}
+        {/* Ubicación con Mapbox */}
+        <div className="flex flex-col gap-2">
+          <label className="block text-slate-400 dark:text-gray-300">Ubicación</label>
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={handleInputLocationChange}
+              placeholder="Buscar ubicación..."
+              className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+            {suggestions.length > 0 && (
+              <ul
+                ref={suggestionsRef}
+                className="absolute z-50 bg-white dark:bg-gray-800 border dark:border-gray-600 mt-1 rounded w-full max-h-40 overflow-y-auto shadow-lg"
+              >
+                {suggestions.map((item, idx) => (
+                  <li
+                    key={idx}
+                    onClick={() => handleSelectSuggestion(item)}
+                    className="px-4 py-2 cursor-pointer hover:bg-orange-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-600 last:border-b-0"
+                  >
+                    {item.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <MapboxMap
+            ref={mapRef}
+            initialCoords={defaultCoords}
+            onLocationSelect={handleLocationSelect}
+            className="w-full h-[300px] border dark:border-gray-600 border-gray-300 rounded"
           />
-        </label>
+        </div>
 
         <button
           className="bg-[#C95100] text-white font-bold px-4 py-2 w-full mt-4 rounded-[20px] flex gap-1 justify-center disabled:opacity-60"

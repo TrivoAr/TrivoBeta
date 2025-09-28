@@ -257,7 +257,7 @@ export class ImageService {
       return await this.uploadImage(
         file,
         `grupos/${groupId}`,
-        "foto_grupo.jpg"
+        "foto_perfil_grupo.jpg"
       );
     } catch (error) {
       console.error("[ImageService] Error saving group image:", error);
@@ -340,7 +340,7 @@ export class ImageService {
       social: `social/${entityId}/foto_salida.jpg`,
       "team-social": `team-social/${entityId}/foto_team.jpg`,
       academia: `academias/${entityId}/foto_academia.jpg`,
-      grupo: `grupos/${entityId}/foto_grupo.jpg`,
+      grupo: `grupos/${entityId}/foto_perfil_grupo.jpg`,
       sponsor: `sponsors/${entityId}/foto_sponsor.jpg`,
       bar: `bares/${entityId}/imagen_1.jpg`,
     };

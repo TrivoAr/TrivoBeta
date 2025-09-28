@@ -233,6 +233,11 @@ export interface AnimatedModalProps {
    * @default 50
    */
   zIndex?: number;
+  /**
+   * Whether to use night theme
+   * @default false
+   */
+  isNight?: boolean;
 }
 
 /**
@@ -279,6 +284,7 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
   header,
   footer,
   zIndex = 50,
+  isNight = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -431,7 +437,8 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
           <motion.div
             ref={modalRef}
             className={cn(
-              "bg-white rounded-xl shadow-xl w-full max-h-[90vh] overflow-auto",
+              "rounded-xl shadow-xl w-full max-h-[90vh] overflow-auto",
+              isNight ? "theme-bg-primary" : "bg-white",
               sizeClasses[size],
               className
             )}
@@ -441,11 +448,21 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
             initial="initial"
             animate="animate"
             exit="exit"
-            style={{ willChange: "transform, opacity" }}
+            style={
+              isNight
+                ? {
+                    willChange: "transform, opacity",
+                    backgroundColor: "#2d3748"
+                  }
+                : { willChange: "transform, opacity" }
+            }
           >
             {/* Header */}
             {(header || title || description || showCloseButton) && (
-              <div className="flex items-start justify-between p-6 border-b border-border">
+              <div className={cn(
+                "flex items-start justify-between p-6 border-b",
+                isNight ? "border-gray-600" : "border-border"
+              )}>
                 <div className="flex-1">
                   {header ? (
                     header
@@ -454,7 +471,10 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
                       {title && (
                         <h2
                           id="modal-title"
-                          className="text-lg font-semibold text-foreground"
+                          className={cn(
+                            "text-lg font-semibold",
+                            isNight ? "theme-text-primary" : "text-foreground"
+                          )}
                         >
                           {title}
                         </h2>
@@ -462,7 +482,10 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
                       {description && (
                         <p
                           id="modal-description"
-                          className="mt-1 text-sm text-muted-foreground"
+                          className={cn(
+                            "mt-1 text-sm",
+                            isNight ? "theme-text-secondary" : "text-muted-foreground"
+                          )}
                         >
                           {description}
                         </p>
@@ -474,7 +497,12 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="ml-4 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
+                    className={cn(
+                      "ml-4 p-2 transition-colors rounded-lg",
+                      isNight
+                        ? "theme-text-secondary hover:theme-text-primary hover:bg-gray-700"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
                     aria-label="Close modal"
                   >
                     <svg
@@ -500,7 +528,12 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
 
             {/* Footer */}
             {footer && (
-              <div className="px-6 py-4 border-t border-border bg-muted rounded-b-xl">
+              <div className={cn(
+                "px-6 py-4 border-t rounded-b-xl",
+                isNight
+                  ? "border-gray-600 bg-gray-700"
+                  : "border-border bg-muted"
+              )}>
                 {footer}
               </div>
             )}

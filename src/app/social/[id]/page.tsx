@@ -1035,6 +1035,7 @@ export default function EventPage({ params }: PageProps) {
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
+          isNight={isNight}
         />
 
         <div className="pb-[200px]" />
@@ -1053,6 +1054,7 @@ export default function EventPage({ params }: PageProps) {
         userId={session?.user.id}
         eventName={event.nombre}
         onProcessingChange={setIsProcessingPayment}
+        isNight={isNight}
       />
 
       {showFullMap && (
