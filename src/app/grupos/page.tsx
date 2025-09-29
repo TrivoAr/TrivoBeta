@@ -3,8 +3,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import Academia from "@/models/academia";
 import { useSession } from "next-auth/react";
@@ -151,12 +149,6 @@ const CrearGrupo = () => {
     }));
   };
 
-  const uploadImageAndGetUrl = async (file: File): Promise<string> => {
-    const imageRef = ref(storage, `grupos/${file.name}-${Date.now()}`);
-    await uploadBytes(imageRef, file);
-    const url = await getDownloadURL(imageRef);
-    return url;
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -167,7 +159,7 @@ const CrearGrupo = () => {
     }
 
     try {
-      const grupoConProfesor = { ...grupo, profesor_id: session.user.id };
+      const grupoConProfesor = { ...grupo, profesor_id: grupo.profesor_id || null };
 
       const res = await fetch("/api/grupos", {
         method: "POST",

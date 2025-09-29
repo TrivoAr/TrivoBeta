@@ -155,6 +155,7 @@ export default function GrupoDetailPage({
       try {
         // Si el usuario tiene acceso, cargamos los detalles del grupo
         const response = await axios.get(`/api/grupos/${params.id}`);
+
         const alumnosData = response.data.alumnos.map(
           (item: any) => item.user_id
         );
@@ -193,6 +194,8 @@ export default function GrupoDetailPage({
           })
         );
 
+        console.log("Alumnos con imágenes:", response.data.grupo);
+
         setGrupo(response.data.grupo);
         setAlumnos(alumnosWithImages);
       } catch (error) {
@@ -206,25 +209,7 @@ export default function GrupoDetailPage({
      fetchGrupo();
   }, [isAuthorized, params.id]);
 
-  const handleAssignEntrenamiento = async () => {
-    try {
-      await axios.post(`/api/entrenamientos`, entrenamientoData);
-      alert("Entrenamiento asignado con éxito.");
-      setIsAssigning(false);
-      setEntrenamientoData({
-        alumno_id: "",
-        grupo_id: params.id,
-        fecha: "",
-        descripcion: "",
-        objetivo: "",
-        estado: "gris", // Restablecer valor fijo
-      });
-      setSelectedAlumno(null);
-    } catch (error) {
-      console.error("Error al asignar el entrenamiento:", error);
-      alert("Hubo un problema al asignar el entrenamiento.");
-    }
-  };
+ 
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

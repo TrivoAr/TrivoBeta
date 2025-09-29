@@ -104,6 +104,7 @@ export default function DashboardPage() {
   // Extract data from queries
   const miMatchSalidas = matchesData?.salidas || [];
   const miMatchTeams = matchesData?.teams || [];
+  const miMatchAcademias = matchesData?.academias || [];
   const favoritosAcademias = favoritosData?.academias || [];
   const favoritosSalidas = favoritosData?.salidas || [];
   const favoritosTeams = favoritosData?.teams || [];
@@ -393,7 +394,25 @@ export default function DashboardPage() {
               />
             ))}
 
-            {miMatchSalidas.length === 0 && miMatchTeams.length === 0 && (
+            {/* Academias donde soy miembro */}
+            {miMatchAcademias.map((academia) => (
+              <DashboardCard
+                key={academia._id}
+                id={academia._id}
+                title={academia.nombre_academia}
+                image={academia.imagenUrl}
+                category={academia.tipo_disciplina}
+                location=""
+                localidad={academia.localidad}
+                price={academia.precio}
+                teacher={academia.dueño_id}
+                type="academia"
+                onClick={() => router.push(`/academias/${academia._id}`)}
+                showActions={false}
+              />
+            ))}
+
+            {miMatchSalidas.length === 0 && miMatchTeams.length === 0 && miMatchAcademias.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <div className="mb-4">
                   <svg
@@ -412,7 +431,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-lg font-medium">No tienes matches activos</p>
                 <p className="text-sm mt-2">
-                  Únete a salidas y teams para ver tus matches aquí
+                  Únete a salidas, teams y academias para ver tus matches aquí
                 </p>
                 <button
                   onClick={() => router.push("/home")}

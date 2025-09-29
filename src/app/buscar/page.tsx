@@ -138,8 +138,8 @@ export default function BuscarPage() {
 
   const getFilteredResults = () => {
     const query = searchQuery.toLowerCase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Configurar a inicio del día
+    const _today = new Date();
+    _today.setHours(0, 0, 0, 0); // Configurar a inicio del día
 
     return allResults.filter((result) => {
       // Filtro de tipo de evento

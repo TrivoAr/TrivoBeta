@@ -256,7 +256,7 @@ export class ImageService {
     try {
       return await this.uploadImage(
         file,
-        `grupos/${groupId}`,
+        `groups/${groupId}`,
         "foto_perfil_grupo.jpg"
       );
     } catch (error) {

@@ -80,7 +80,7 @@ export function useMyAcademias() {
         filteredAcademias.map(async (academia: Academia) => {
           try {
             const imagenUrl = await getAcademyImage(
-              "profile-image.jpg",
+              "foto_academia.jpg",
               academia._id
             );
             return { ...academia, imagenUrl };
@@ -173,6 +173,41 @@ export function useMyTeamSocials(userId?: string) {
   });
 }
 
+// Hook para obtener las academias donde soy miembro
+export function useMyAcademiaMatches() {
+  return useQuery({
+    queryKey: ["my-academia-matches"],
+    queryFn: async (): Promise<Academia[]> => {
+      const response = await fetch("/api/academias/mis");
+      if (!response.ok) {
+        throw new Error("Error al cargar academias donde soy miembro");
+      }
+      const data = await response.json();
+
+      // Procesar imágenes para cada academia
+      const academiasConImagenes = await Promise.all(
+        data.map(async (academia: Academia) => {
+          try {
+            const imagenUrl = await getAcademyImage(
+              "foto_academia.jpg",
+              academia._id
+            );
+            return { ...academia, imagenUrl };
+          } catch (error) {
+            return {
+              ...academia,
+              imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`,
+            };
+          }
+        })
+      );
+
+      return academiasConImagenes;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+}
+
 // Hook para obtener los matches del usuario (salidas donde es miembro)
 export function useMyMatches() {
   return useQuery({
@@ -180,17 +215,20 @@ export function useMyMatches() {
     queryFn: async (): Promise<{
       salidas: SalidaSocialMatch[];
       teams: TeamSocial[];
+      academias: Academia[];
     }> => {
       // Obtener salidas donde soy miembro
       const salidasResponse = await fetch("/api/social/mis-match");
       const teamsResponse = await fetch("/api/team-social/mis");
+      const academiasResponse = await fetch("/api/academias/mis");
 
-      if (!salidasResponse.ok || !teamsResponse.ok) {
+      if (!salidasResponse.ok || !teamsResponse.ok || !academiasResponse.ok) {
         throw new Error("Error al cargar matches");
       }
 
       const salidasData = await salidasResponse.json();
       const teamsData = await teamsResponse.json();
+      const academiasData = await academiasResponse.json();
 
       // Procesar salidas
       const salidas = Array.isArray(salidasData)
@@ -222,7 +260,27 @@ export function useMyMatches() {
           )
         : [];
 
-      return { salidas, teams };
+      // Procesar academias - obtener imágenes de Firebase
+      const academias = Array.isArray(academiasData)
+        ? await Promise.all(
+            academiasData.map(async (academia: Academia) => {
+              try {
+                const imagenUrl = await getAcademyImage(
+                  "foto_academia.jpg",
+                  academia._id
+                );
+                return { ...academia, imagenUrl };
+              } catch (error) {
+                return {
+                  ...academia,
+                  imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`,
+                };
+              }
+            })
+          )
+        : [];
+
+      return { salidas, teams, academias };
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
@@ -308,13 +366,22 @@ export function useMyFavorites(userId?: string) {
             try {
               const res = await fetch(`/api/academias/${academiaId}`);
               if (!res.ok) return null;
-              const academia = await res.json();
-              return {
-                ...academia,
-                imagenUrl:
-                  academia.imagenUrl ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`,
-              };
+              const response = await res.json();
+              const academia = response.academia; // Acceder a la propiedad 'academia' de la respuesta
+
+              // Intentar obtener imagen de Firebase
+              try {
+                const imagenUrl = await getAcademyImage(
+                  "foto_academia.jpg",
+                  academia._id
+                );
+                return { ...academia, imagenUrl };
+              } catch (error) {
+                return {
+                  ...academia,
+                  imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia || 'Academia')}&background=C95100&color=fff&size=310x115`,
+                };
+              }
             } catch {
               return null;
             }
