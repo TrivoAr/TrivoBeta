@@ -138,8 +138,8 @@ export default function BuscarPage() {
 
   const getFilteredResults = () => {
     const query = searchQuery.toLowerCase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Configurar a inicio del día
+    const _today = new Date();
+    _today.setHours(0, 0, 0, 0); // Configurar a inicio del día
 
     return allResults.filter((result) => {
       // Filtro de tipo de evento
@@ -153,14 +153,14 @@ export default function BuscarPage() {
         if (salida.fecha) {
           const eventDate = new Date(salida.fecha);
           eventDate.setHours(0, 0, 0, 0); // Configurar a inicio del día
-          matchesDate = eventDate >= today; // Solo eventos de hoy en adelante
+          matchesDate = eventDate >= _today; // Solo eventos de hoy en adelante
         }
       } else if (result.type === "team-social") {
         const team = result.data as TeamSocial;
         if (team.fecha) {
           const eventDate = new Date(team.fecha);
           eventDate.setHours(0, 0, 0, 0); // Configurar a inicio del día
-          matchesDate = eventDate >= today; // Solo eventos de hoy en adelante
+          matchesDate = eventDate >= _today; // Solo eventos de hoy en adelante
         }
       }
 

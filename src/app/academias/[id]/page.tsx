@@ -835,7 +835,6 @@ export default function AcademiaDetailPage({
                 ></g>
                 <g id="SVGRepo_iconCarrier">
                   {" "}
-                  <rect width="10" height="10" fill="white"></rect>{" "}
                   <path
                     d="M9.5 7L14.5 12L9.5 17"
                     stroke="currentColor"

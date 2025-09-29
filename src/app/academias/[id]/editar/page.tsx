@@ -148,7 +148,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="w-[390px] flex flex-col items-center gap-5">
+    <div className="w-[390px] flex flex-col items-center gap-5 bg-[#FEFBF9] dark:bg-gray-900 min-h-screen">
       <Toaster position="top-center" /> {/* Para mostrar los toasts */}
       <div className="relative w-full h-[30px] flex">
         <button
@@ -170,17 +170,17 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
           </svg>
         </button>
       </div>
-      <p className="text-xl font-medium mt-3 justify-self-center">
+      <p className="text-xl font-medium mt-3 justify-self-center text-gray-900 dark:text-white">
         Editar Academia
       </p>
       <form
         onSubmit={handleSubmit}
-        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9]"
+        className="max-w-sm mx-auto p-4 space-y-5 rounded-xl  mb-[80px] bg-[#FEFBF9] dark:bg-gray-900"
       >
         <input
           type="text"
           name="nombre_academia"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           placeholder=" "
           value={formData.nombre_academia}
           onChange={handleChange}
@@ -189,7 +189,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
         <input
           type="text"
           name="precio"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           placeholder=" "
           value={formData.precio}
           onChange={handleChange}
@@ -198,7 +198,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
 
         <select
           name="pais"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
           value={formData.pais}
           onChange={handleChange}
         >
@@ -211,7 +211,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
 
         <select
           name="provincia"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
           value={formData.provincia}
           onChange={handleChange}
         >
@@ -224,7 +224,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
 
         <select
           name="localidad"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-slate-400"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
           value={formData.localidad}
           onChange={handleChange}
         >
@@ -241,14 +241,14 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
           value={formData.descripcion}
           onChange={handleChange}
           required
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         />
 
         <select
           name="tipo_disciplina"
           value={formData.tipo_disciplina}
           onChange={handleChange}
-          className="w-full p-4  border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="w-full p-4  border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         >
           <option value="Running">Running</option>
           <option value="Ciclismo">Ciclismo</option>
@@ -269,7 +269,9 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
               }))
             }
           />
-          <span className="text-gray-700">¿Primera clase gratis?</span>
+          <span className="text-gray-700 dark:text-gray-300">
+            ¿Primera clase gratis?
+          </span>
         </label>
 
         <div>
@@ -284,7 +286,7 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
             ) : (
               <div
                 onClick={() => document.getElementById("fileInput")?.click()}
-                className="w-full h-48 border-2 border-dashed border-orange-300 rounded-xl flex flex-col items-center justify-center cursor-pointer text-orange-400 hover:bg-orange-50 transition"
+                className="w-full h-48 border-2 border-dashed border-orange-300 dark:border-orange-500 rounded-xl flex flex-col items-center justify-center cursor-pointer text-orange-400 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-gray-800 transition"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -306,7 +308,9 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
                     d="M12 11v6m0 0l3-3m-3 3l-3-3"
                   />
                 </svg>
-                <span>Agregar imagen</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  Agregar imagen
+                </span>
               </div>
             )}
             <input

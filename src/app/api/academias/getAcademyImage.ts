@@ -7,11 +7,19 @@ export const getAcademyImage = async (
   academyId: string
 ): Promise<string> => {
   try {
+    // Primero intentar con la nueva estructura: academias/{academyId}/foto_academia.jpg
     const fileRef = ref(storage, `academias/${academyId}/${fileName}`);
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error) {
-    console.error("Error al obtener la imagen del perfil:", error);
-    throw error;
+    try {
+      // Si falla, intentar con estructura anterior: academias/{academyId}/profile-image.jpg
+      const fallbackRef = ref(storage, `academias/${academyId}/profile-image.jpg`);
+      const downloadUrl = await getDownloadURL(fallbackRef);
+      return downloadUrl;
+    } catch (fallbackError) {
+      console.error("Error al obtener la imagen de la academia:", error);
+      throw error;
+    }
   }
 };
