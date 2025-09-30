@@ -12,6 +12,28 @@ export default function Signin() {
   const { data: session, status } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detectar dark mode del sistema
+  useEffect(() => {
+    // Verificar si hay clase dark en el HTML
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    // Check inicial
+    checkDarkMode();
+
+    // Observer para cambios en la clase dark
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Redirigir si ya hay una sesión activa
   useEffect(() => {
@@ -78,10 +100,15 @@ export default function Signin() {
         {/* Logo */}
         <div className="flex flex-col justify-center items-center pt-6 mb-[52px]">
           <Image
-            src="/assets/Logo/trivo_negro-removebg-preview.png"
-            alt="Klubo Logo"
+            src={
+              isDarkMode
+                ? "/assets/Logo/trivoModoOScuro.png"
+                : "/assets/Logo/trivo_negro-removebg-preview.png"
+            }
+            alt="Trivo Logo"
             width={180}
             height={160}
+            priority
           />
           <h1 className="text-xl font-bold text-[#C95100]">Iniciar Sesion</h1>
         </div>
