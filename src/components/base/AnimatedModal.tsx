@@ -421,9 +421,9 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
           ref={backdropRef}
           className={cn(
             "fixed inset-0 bg-black/50 flex items-center justify-center p-4",
-            `z-${zIndex}`,
             backdropClassName
           )}
+          style={{ zIndex }}
           onClick={handleBackdropClick}
           role="dialog"
           aria-modal="true"
@@ -437,8 +437,7 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
           <motion.div
             ref={modalRef}
             className={cn(
-              "rounded-xl shadow-xl w-full max-h-[90vh] overflow-auto",
-              isNight ? "theme-bg-primary" : "bg-white",
+              "rounded-xl shadow-xl w-full max-h-[90vh] overflow-auto bg-white dark:bg-gray-900",
               sizeClasses[size],
               className
             )}
@@ -448,14 +447,7 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
             initial="initial"
             animate="animate"
             exit="exit"
-            style={
-              isNight
-                ? {
-                    willChange: "transform, opacity",
-                    backgroundColor: "#2d3748"
-                  }
-                : { willChange: "transform, opacity" }
-            }
+            style={{ willChange: "transform, opacity" }}
           >
             {/* Header */}
             {(header || title || description || showCloseButton) && (
@@ -543,7 +535,11 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
     </AnimatePresence>
   );
 
-  // Render in portal
+  // Render in portal (only on client-side)
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   return createPortal(modalContent, document.body);
 };
 
