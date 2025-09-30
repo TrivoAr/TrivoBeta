@@ -28,7 +28,11 @@ interface Academia {
   imagenUrl: string;
   precio: string;
   tipo_disciplina: string;
-  dueño_id: string;
+  dueño_id: string | {
+    _id: string;
+    firstname: string;
+    lastname: string;
+  };
 }
 
 interface SalidaSocial {
@@ -405,7 +409,11 @@ export default function DashboardPage() {
                 location=""
                 localidad={academia.localidad}
                 price={academia.precio}
-                teacher={academia.dueño_id}
+                teacher={
+                  typeof academia.dueño_id === "string"
+                    ? academia.dueño_id
+                    : `${(academia.dueño_id as { firstname: string; lastname: string })?.firstname || ""} ${(academia.dueño_id as { firstname: string; lastname: string })?.lastname || ""}`.trim()
+                }
                 type="academia"
                 onClick={() => router.push(`/academias/${academia._id}`)}
                 showActions={false}

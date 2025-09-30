@@ -1,50 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import TopContainer from "@/components/TopContainer";
 import EventModal from "@/components/EventModal";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
-import EventCard from "@/components/EventCard";
 import EmptyState from "@/components/EmptyState";
 import { Toaster } from "react-hot-toast";
-
-const categories = [
-  { label: "Running", icon: "/assets/icons/directions_run_40dp_FFB86A.svg" },
-  { label: "Ciclismo", icon: "/assets/icons/directions_bike_40dp_FFB86A.svg" },
-  { label: "Trekking", icon: "/assets/icons/hiking_40dp_FFB86A.svg" },
-  { label: "Otros", icon: "/assets/icons/terrain_40dp_FFB86A.svg" },
-];
-
-type EventType = {
-  _id: string;
-  title: string;
-  date: string;
-  time: string;
-  price: string;
-  image: string;
-  location: string;
-  creadorId: string;
-  localidad: string;
-  category: string;
-  locationCoords: {
-    lat: number;
-    lng: number;
-  };
-  teacher: string;
-  dificultad?: string;
-  stravaMap?: {
-    id: string;
-    summary_polyline: string;
-    polyline: string;
-    resource_state: number;
-  };
-  cupo: number;
-};
+import { ClubDelTrekking } from "@/components/ClubDelTrekking";
+import AirbnbCard from "@/components/AirbnbCard";
+import EventCard from "@/components/EventCard";
+import FilterModal, {
+  FilterConfig,
+  FilterValues,
+} from "@/components/FilterModal";
+import { Filter, MapPin, TrendingUp, Trash2 } from "lucide-react";
+import { useAcademias, useSalidas } from "@/hooks/useHome";
 
 type ModalEvent = {
-  id: any;
+  id: string;
   title: string;
   date: string;
   time: string;
@@ -59,169 +33,214 @@ type ModalEvent = {
   };
 };
 
-type Academia = {
-  _id: string;
-  nombre_academia: string;
-  descripcion: string;
-  tipo_disciplina: string;
-  telefono: string;
-  imagen: string;
-  imagenUrl: string;
-};
+// Filter configurations
+const salidasFilterConfig: FilterConfig[] = [
+  {
+    key: "deporte",
+    label: "Deporte",
+    type: "select",
+    options: [
+      { value: "", label: "Todos los deportes" },
+      { value: "Running", label: "Running" },
+      { value: "Ciclismo", label: "Ciclismo" },
+      { value: "Otros", label: "Otros" },
+    ],
+  },
+  {
+    key: "dificultad",
+    label: "Dificultad",
+    type: "select",
+    options: [
+      { value: "", label: "Todas las dificultades" },
+      { value: "facil", label: "Facil" },
+      { value: "media", label: "Media" },
+      { value: "dificil", label: "Dificil" },
+    ],
+  },
+  {
+    key: "localidad",
+    label: "Ubicación",
+    type: "select",
+    icon: <MapPin size={14} />,
+    options: [
+      { value: "", label: "Todas las localidades" },
+      { value: "San Miguel de Tucuman", label: "San Miguel de Tucumán" },
+      { value: "Yerba Buena", label: "Yerba Buena" },
+      { value: "Tafi Viejo", label: "Tafí Viejo" },
+      { value: "Las Talitas", label: "Las Talitas" },
+      { value: "Banda del Rio Sali", label: "Banda del Río Salí" },
+    ],
+  },
+  {
+    key: "ordenPrecio",
+    label: "Ordenar por precio",
+    type: "select",
+    icon: <TrendingUp size={14} />,
+    options: [
+      { value: "", label: "Sin ordenar" },
+      { value: "asc", label: "Menor a mayor" },
+      { value: "desc", label: "Mayor a menor" },
+    ],
+  },
+];
+
+const academiasFilterConfig: FilterConfig[] = [
+  {
+    key: "deporte",
+    label: "Disciplina",
+    type: "select",
+    options: [
+      { value: "", label: "Todas las disciplinas" },
+      { value: "Running", label: "Running" },
+      { value: "Ciclismo", label: "Ciclismo" },
+      { value: "Trekking", label: "Trekking" },
+      { value: "Otros", label: "Otros" },
+    ],
+  },
+  {
+    key: "localidad",
+    label: "Ubicación",
+    type: "select",
+    icon: <MapPin size={14} />,
+    options: [
+      { value: "", label: "Todas las localidades" },
+      { value: "San Miguel de Tucuman", label: "San Miguel de Tucumán" },
+      { value: "Yerba Buena", label: "Yerba Buena" },
+      { value: "Tafi Viejo", label: "Tafí Viejo" },
+      { value: "Las Talitas", label: "Las Talitas" },
+      { value: "Banda del Rio Sali", label: "Banda del Río Salí" },
+    ],
+  },
+  {
+    key: "ordenPrecio",
+    label: "Ordenar por precio",
+    type: "select",
+    icon: <TrendingUp size={14} />,
+    options: [
+      { value: "", label: "Sin ordenar" },
+      { value: "asc", label: "Menor a mayor" },
+      { value: "desc", label: "Mayor a menor" },
+    ],
+  },
+];
 
 export default function Home() {
   const router = useRouter();
-  const { data: session } = useSession();
-  const [selectedCategory, setSelectedCategory] = useState("Running");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<ModalEvent | null>(null);
-  const [yaUnido, setYaUnido] = useState(false);
-  const [events, setEvents] = useState<EventType[]>([]);
-  const [teamSocialEvents, setTeamSocialEvents] = useState<EventType[]>([]);
+  const [selectedEvent] = useState<ModalEvent | null>(null);
+  const [contentFilter, setContentFilter] = useState<"salidas" | "academias">(
+    "academias"
+  );
   const [selectedLocalidad, setSelectedLocalidad] = useState(
     "San Miguel de Tucuman"
   );
-  const [academias, setAcademias] = useState<Academia[]>([]);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    firstname: session?.user.firstname || "",
-    lastname: session?.user.lastname || "",
-    email: session?.user.email || "",
-    rol: session?.user.rol || "",
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [salidasFilters, setSalidasFilters] = useState<FilterValues>({
+    deporte: "",
+    dificultad: "",
+    localidad: "",
+    ordenPrecio: "",
+  });
+  const [academiasFilters, setAcademiasFilters] = useState<FilterValues>({
+    deporte: "",
+    localidad: "",
+    ordenPrecio: "",
   });
 
-  useEffect(() => {
-    const fetchSalidas = async () => {
-      try {
-        const res = await fetch("/api/social");
-        const rawData = await res.json();
-        console.log(rawData);
+  // Fetch data with TanStack Query
+  const { data: academiasData = [], isLoading: loadingAcademias } =
+    useAcademias();
+  const { data: salidasData = [], isLoading: loadingSalidas } = useSalidas();
 
-        const mappedData = rawData.map((item: any) => ({
-          _id: item._id,
-          title: item.nombre,
-          date: item.fecha,
-          time: item.hora,
-          price: item.precio,
-          image: item.imagen,
-          category: item.deporte,
-          creadorId: item.creador_id._id,
-          localidad: item.localidad,
-          location: item.ubicacion,
-          locationCoords: item.locationCoords,
-          highlighted: false,
-          dificultad: item.dificultad,
-          teacher: item.creador_id?.firstname || "Sin profe",
-          cupo: item.cupo,
-          stravaMap: item.stravaMap,
-        }));
+  // Apply filters and sorting
+  const filteredSalidas = useMemo(() => {
+    let filtered = [...salidasData];
 
-        setEvents(mappedData);
-      } catch (error) {
-        console.error("Error al obtener salidas:", error);
-      }
-    };
+    // Apply filters
+    if (salidasFilters.deporte) {
+      filtered = filtered.filter((s) => s.deporte === salidasFilters.deporte);
+    }
+    if (
+      salidasFilters.dificultad &&
+      typeof salidasFilters.dificultad === "string"
+    ) {
+      filtered = filtered.filter(
+        (s) =>
+          s.dificultad?.toLowerCase() ===
+          (salidasFilters.dificultad as string).toLowerCase()
+      );
+    }
+    if (salidasFilters.localidad) {
+      filtered = filtered.filter(
+        (s) => s.localidad === salidasFilters.localidad
+      );
+    }
 
-    fetchSalidas();
-  }, []);
+    // Apply sorting
+    if (salidasFilters.ordenPrecio === "asc") {
+      filtered.sort((a, b) => Number(a.precio) - Number(b.precio));
+    } else if (salidasFilters.ordenPrecio === "desc") {
+      filtered.sort((a, b) => Number(b.precio) - Number(a.precio));
+    }
 
-  useEffect(() => {
-    const fetchTeamSocial = async () => {
-      try {
-        const res = await fetch("/api/team-social");
-        const rawData = await res.json();
-        console.log("Raw team-social data:", rawData);
+    return filtered;
+  }, [salidasData, salidasFilters]);
 
-        const mappedData = rawData.map((item: any) => ({
-          _id: item._id,
-          title: item.nombre,
-          date: item.fecha,
-          time: item.hora,
-          price: item.precio,
-          image: item.imagen,
-          localidad: item.localidad,
-          category: item.deporte,
-          location: item.ubicacion,
-          locationCoords: item.locationCoords,
-        }));
+  const filteredAcademias = useMemo(() => {
+    let filtered = [...academiasData];
 
-        setTeamSocialEvents(mappedData);
-      } catch (error) {
-        console.error("Error al obtener eventos de Team Social:", error);
-      }
-    };
+    // Apply filters
+    if (academiasFilters.deporte) {
+      filtered = filtered.filter(
+        (a) => a.tipo_disciplina === academiasFilters.deporte
+      );
+    }
+    if (academiasFilters.localidad) {
+      filtered = filtered.filter(
+        (a) => a.localidad === academiasFilters.localidad
+      );
+    }
 
-    fetchTeamSocial();
-  }, []);
+    // Apply sorting
+    if (academiasFilters.ordenPrecio === "asc") {
+      filtered.sort((a, b) => Number(a.precio) - Number(b.precio));
+    } else if (academiasFilters.ordenPrecio === "desc") {
+      filtered.sort((a, b) => Number(b.precio) - Number(a.precio));
+    }
 
-  useEffect(() => {
-    const fetchAcademias = async () => {
-      try {
-        const res = await fetch("/api/academias");
-        const data = await res.json();
+    return filtered;
+  }, [academiasData, academiasFilters]);
 
-        // 🔥 Nuevo paso: obtener las URLs desde Firebase
-        const academiasConImagenes = await Promise.all(
-          data.map(async (academia) => {
-            try {
-              // Intentamos traer la URL de Firebase
-              const url = await getAcademyImage(
-                "profile-image.jpg",
-                academia._id
-              );
-              return { ...academia, imagenUrl: url };
-            } catch (error) {
-              console.error("Error al obtener imagen de Firebase:", error);
-              // En caso de error, ponemos una imagen por defecto
-              return {
-                ...academia,
-                imagenUrl:
-                  "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg",
-              };
-            }
-          })
-        );
+  const handleFilterApply = (filters: FilterValues) => {
+    if (contentFilter === "salidas") {
+      setSalidasFilters(filters);
+    } else {
+      setAcademiasFilters(filters);
+    }
+  };
 
-        setAcademias(academiasConImagenes);
-      } catch (error) {
-        console.error("Error al obtener academias:", error);
-      }
-    };
+  const getActiveFilterCount = () => {
+    const currentFilters =
+      contentFilter === "salidas" ? salidasFilters : academiasFilters;
+    return Object.values(currentFilters).filter((value) => value !== "").length;
+  };
 
-    fetchAcademias();
-  }, []);
-
-  const filteredEvents = events.filter(
-    (event) =>
-      event.category === selectedCategory &&
-      event.localidad === selectedLocalidad
-  );
-
-  const filteredTeamSocial = teamSocialEvents.filter(
-    (event) => event.category === selectedCategory
-  );
-
-  const social = filteredEvents;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  console.log(academias);
-
-  const futureEvents = events.filter((event) => {
-    if (!event.date) return false;
-
-    const [year, month, day] = event.date.split("-").map(Number);
-    const eventDate = new Date(year, month - 1, day);
-    return eventDate >= today;
-  });
-
-  const futureTeamSocialEvents = filteredTeamSocial.filter((event) => {
-    if (!event.date) return false;
-
-    const [year, month, day] = event.date.split("-").map(Number);
-    const eventDate = new Date(year, month - 1, day);
-    return eventDate >= today;
-  });
+  const handleClearFilters = () => {
+    if (contentFilter === "salidas") {
+      setSalidasFilters({
+        deporte: "",
+        dificultad: "",
+        localidad: "",
+        ordenPrecio: "",
+      });
+    } else {
+      setAcademiasFilters({
+        deporte: "",
+        localidad: "",
+        ordenPrecio: "",
+      });
+    }
+  };
 
   return (
     <>
@@ -232,26 +251,151 @@ export default function Home() {
           setSelectedLocalidad={setSelectedLocalidad}
         />
 
-        <section className="flex flex-col gap-3">
-          <h1 className="text-xl font-medium">Proximas salidas</h1>
+        {/* Banner del Club del Trekking */}
+        <ClubDelTrekking />
 
-          {futureEvents.length > 0 ? (
-            futureEvents.map((event) => (
-              <EventCard
-                key={event._id}
-                event={event}
-                onJoin={(e) => console.log("Unido a:", e.title)}
-                onMap={(coords) =>
-                  console.log("Abrir mapa en:", coords.lat, coords.lng)
-                }
-              />
-            ))
-          ) : (
-            <EmptyState
-              title="Sin salidas disponibles"
-              description="Una vez que carguemos salidas, las vas a ver acá."
-              imageSrc="/assets/icons/emptyTrekking.png"
-            ></EmptyState>
+        {/* Filter Tabs */}
+        <div className="flex gap-3 p-1 bg-muted rounded-xl">
+          <button
+            onClick={() => setContentFilter("salidas")}
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              contentFilter === "salidas"
+                ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Salidas Sociales
+          </button>
+          <button
+            onClick={() => setContentFilter("academias")}
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              contentFilter === "academias"
+                ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Academias
+          </button>
+        </div>
+
+        {/* Content Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-xl font-semibold text-foreground">
+              {contentFilter === "salidas"
+                ? "Próximas salidas"
+                : "Academias destacadas"}
+            </h1>
+            <div className="flex items-center gap-2">
+              {/* Clear Filters Button - Solo visible cuando hay filtros activos */}
+              {getActiveFilterCount() > 0 && (
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium transition-all duration-200 border border-red-200 dark:border-red-800 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  title="Limpiar filtros"
+                >
+                  <Trash2 size={16} />
+                  <span className="text-xs font-bold">
+                    {getActiveFilterCount()}
+                  </span>
+                </button>
+              )}
+
+              {/* Filter Button */}
+              <button
+                onClick={() => setIsFilterModalOpen(true)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all duration-200 ${
+                  getActiveFilterCount() > 0
+                    ? "bg-[#C95100] text-white hover:bg-[#A03D00]"
+                    : "border border-border bg-background text-foreground hover:bg-accent"
+                }`}
+              >
+                <Filter
+                  size={16}
+                  className={
+                    getActiveFilterCount() > 0 ? "text-white" : "text-[#C95100]"
+                  }
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {(loadingSalidas || loadingAcademias) && (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C95100] border-t-transparent"></div>
+            </div>
+          )}
+
+          {/* Salidas List */}
+          {contentFilter === "salidas" && !loadingSalidas && (
+            <>
+              {filteredSalidas.length > 0 ? (
+                <div className="flex flex-col gap-4 items-center">
+                  {filteredSalidas.map((salida) => (
+                    <EventCard
+                      key={salida._id}
+                      event={{
+                        _id: salida._id,
+                        title: salida.nombre,
+                        date: salida.fecha,
+                        time: salida.hora,
+                        price: salida.precio,
+                        image: salida.imagen,
+                        location: salida.ubicacion,
+                        creadorId:
+                          typeof salida.creador_id === "string"
+                            ? salida.creador_id
+                            : salida.creador_id._id,
+                        localidad: salida.localidad,
+                        category: salida.deporte,
+                        dificultad: salida.dificultad,
+                        teacher:
+                          typeof salida.creador_id === "string"
+                            ? ""
+                            : `${salida.creador_id.firstname} ${salida.creador_id.lastname}`,
+                        cupo: salida.cupo,
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Sin salidas disponibles"
+                  description="Una vez que carguemos salidas, las vas a ver acá."
+                  imageSrc="/assets/icons/emptyTrekking.png"
+                />
+              )}
+            </>
+          )}
+
+          {/* Academias Grid */}
+          {contentFilter === "academias" && !loadingAcademias && (
+            <>
+              {filteredAcademias.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {filteredAcademias.map((academia) => (
+                    <AirbnbCard
+                      key={academia._id}
+                      id={academia._id}
+                      title={academia.nombre_academia}
+                      image={academia.imagenUrl}
+                      category={academia.tipo_disciplina}
+                      localidad={academia.localidad}
+                      price={academia.precio}
+                      onClick={() => router.push(`/academias/${academia._id}`)}
+                      type="academia"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Sin academias disponibles"
+                  description="Próximamente agregaremos academias en tu zona."
+                  imageSrc="/assets/icons/emptyTrekking.png"
+                />
+              )}
+            </>
           )}
         </section>
         <div className="pb-[200px]"></div>
@@ -260,6 +404,25 @@ export default function Home() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           event={selectedEvent}
+        />
+
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleFilterApply}
+          title={
+            contentFilter === "salidas"
+              ? "Filtrar salidas"
+              : "Filtrar academias"
+          }
+          filters={
+            contentFilter === "salidas"
+              ? salidasFilterConfig
+              : academiasFilterConfig
+          }
+          currentValues={
+            contentFilter === "salidas" ? salidasFilters : academiasFilters
+          }
         />
       </main>
     </>
