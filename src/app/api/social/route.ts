@@ -4,8 +4,6 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
 import { nanoid } from "nanoid";
-export const runtime = "nodejs";
-export const preferredRegion = ["gru1"];
 
 async function generateUniqueShortId() {
   // Intentos para evitar colisiones

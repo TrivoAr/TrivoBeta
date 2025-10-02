@@ -1,7 +1,9 @@
 {
+  "regions": ["gru1"],
   "functions": {
     "api/**": {
-      "regions": ["gru1"]
+      "maxDuration": 15,
+      "memory": 1024
     }
   }
 }
