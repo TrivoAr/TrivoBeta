@@ -153,9 +153,27 @@ export const subscriptionService = {
   ): Promise<{ puedeAsistir: boolean; razon?: string; suscripcion?: any }> {
     await connectDB();
 
+    // Obtener el grupo y su academia
+    const Grupo = (await import("@/models/grupo")).default;
+    const grupo = await Grupo.findById(grupoId);
+
+    if (!grupo) {
+      return {
+        puedeAsistir: false,
+        razon: "Grupo no encontrado",
+      };
+    }
+
+    const academiaId =
+      typeof grupo.academia_id === "string"
+        ? grupo.academia_id
+        : grupo.academia_id._id.toString();
+
+    // Buscar suscripción por academiaId (no por grupoId)
+    // porque la suscripción es a nivel de academia, no de grupo
     const suscripcion = await Suscripcion.findOne({
       userId,
-      grupoId,
+      academiaId,
       estado: {
         $in: [
           SUBSCRIPTION_CONFIG.ESTADOS.TRIAL,
