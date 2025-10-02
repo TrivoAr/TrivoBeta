@@ -39,7 +39,14 @@
       "mcp__context7__get-library-docs",
       "Bash(del /S /Q \".next\")",
       "Bash(rm:*)",
-      "Bash(PORT=3001 npm run dev)"
+      "Bash(PORT=3001 npm run dev)",
+      "WebFetch(domain:airbnb.design)",
+      "WebSearch",
+      "Bash(git restore:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_close"
     ],
     "deny": [],
     "ask": []

@@ -12,7 +12,6 @@ import toast, { Toaster } from "react-hot-toast";
 import MapComponent from "@/components/MapComponent";
 import GrupoDetailSkeletonV2 from "@/components/GrupoDetailSkeletonV2";
 
-
 // Tipos
 type Grupo = {
   _id: string;
@@ -82,7 +81,7 @@ export default function GrupoDetailPage({
     "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
   );
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
-      useState(false);
+    useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null); // Para controlar el acceso del usuario
@@ -204,12 +203,10 @@ export default function GrupoDetailPage({
     };
 
     // if (isAuthorized === true) {
-     
-    // }
-     fetchGrupo();
-  }, [isAuthorized, params.id]);
 
- 
+    // }
+    fetchGrupo();
+  }, [isAuthorized, params.id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -504,7 +501,9 @@ export default function GrupoDetailPage({
                 ></path>{" "}
               </g>
             </svg>
-            <p className="font-regular text-gray-700 dark:text-gray-300">{extraerLocalidad(grupo.ubicacion)}</p>
+            <p className="font-regular text-gray-700 dark:text-gray-300">
+              {extraerLocalidad(grupo.ubicacion)}
+            </p>
           </p>
         </div>
         <div className="w-[90%] border-b border-b-[#ccc] dark:border-b-gray-600"></div>
@@ -537,7 +536,9 @@ export default function GrupoDetailPage({
                   <polyline points="40 44 32 32 32 16"></polyline>
                 </g>
               </svg>
-              <p className="font-light text-gray-700 dark:text-gray-300">Tiempo de Entreamiento</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">
+                Tiempo de Entreamiento
+              </p>
             </div>
             <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {grupo.tiempo_promedio}
@@ -596,9 +597,13 @@ export default function GrupoDetailPage({
                   </g>{" "}
                 </g>
               </svg>
-              <p className="font-light text-gray-700 dark:text-gray-300">Dificultad</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">
+                Dificultad
+              </p>
             </div>
-            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">{grupo.nivel}</p>
+            <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
+              {grupo.nivel}
+            </p>
           </div>
         </div>
 
@@ -633,7 +638,9 @@ export default function GrupoDetailPage({
                   ></path>
                 </g>
               </svg>
-              <p className="font-light text-gray-700 dark:text-gray-300">Dirección</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">
+                Dirección
+              </p>
             </div>
             <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {grupo.ubicacion.split(",")[0]}
@@ -667,7 +674,9 @@ export default function GrupoDetailPage({
                   ></path>{" "}
                 </g>
               </svg>
-              <p className="font-light text-gray-700 dark:text-gray-300">Dias y horario</p>
+              <p className="font-light text-gray-700 dark:text-gray-300">
+                Dias y horario
+              </p>
             </div>
             <p className="text-[#666666] dark:text-gray-400 ml-6 font-extralight">
               {formatDias(grupo.dias)}, {grupo.horario}hs
@@ -679,7 +688,9 @@ export default function GrupoDetailPage({
 
       <div className="flex flex-col w-[390px] mt-3">
         <div className="flex flex-col">
-          <h2 className="ml-6 font-regular text-[22px] text-gray-900 dark:text-white">Descripción</h2>
+          <h2 className="ml-6 font-regular text-[22px] text-gray-900 dark:text-white">
+            Descripción
+          </h2>
           <p className="text-sm  font-extralight text-[#666666] dark:text-gray-400 p-2 ml-5 mb-3">
             {grupo.descripcion || "El Profe no agrego una descripción"}
           </p>
@@ -697,7 +708,9 @@ export default function GrupoDetailPage({
         </div>
 
         <div className="flex flex-col">
-          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">Punto de Encuentro</h2>
+          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">
+            Punto de Encuentro
+          </h2>
           <p className="text-sm  font-light text-[#666666] dark:text-gray-400 p-2 ml-6 flex gap-1 items-center">
             <svg
               height="13px"
@@ -761,13 +774,14 @@ export default function GrupoDetailPage({
 
           <hr className="border-t border-[#ccc] dark:border-gray-600 mb-3 mt-5 w-[90%] self-center" />
         </div>
-        <div>      
-        </div>
+        <div></div>
 
         <hr className="border-t border-gray-300 dark:border-gray-600 w-[90%] mb-2 mt-4 self-center" />
 
         <div className="">
-          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">Profesor</h2>
+          <h2 className="ml-6 mt-2 font-light text-xl text-gray-900 dark:text-white">
+            Profesor
+          </h2>
           <div className="flex flex-col items-center gap-2">
             <div className="self-center mt-2">
               <div className="w-[300px] h-[176px] bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-[20px] flex flex-col items-center gap-1">
@@ -783,7 +797,9 @@ export default function GrupoDetailPage({
                 <p className="text-gray-900 dark:text-white">
                   {grupo.profesor_id.firstname} {grupo.profesor_id.lastname}
                 </p>
-                <p className="text-xs text-[#666666] dark:text-gray-400">Profesor</p>
+                <p className="text-xs text-[#666666] dark:text-gray-400">
+                  Profesor
+                </p>
               </div>
             </div>
             <p className="text-xs text-[#666666] dark:text-gray-400 text-justify self-center mt-2 w-[300px]">
@@ -794,27 +810,27 @@ export default function GrupoDetailPage({
       </div>
 
       {showFullMapPuntoDeEncuntro && grupo.locationCoords && (
-              <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
-                <button
-                  className="absolute top-4 right-4 z-50 rounded-full bg-card dark:bg-gray-800 text-foreground dark:text-white font-bold w-[35px] h-[35px] shadow hover:opacity-80 transition-opacity"
-                  onClick={() => setShowFullMapPuntoDeEncuntro(false)}
-                >
-                  ✕
-                </button>
-                <div className="w-full h-full">
-                  <MapComponent
-                    position={{
-                      lat: grupo.locationCoords.lat,
-                      lng: grupo.locationCoords.lng,
-                    }}
-                    onChange={() => {}}
-                    editable={false}
-                    showControls={true}
-                    style="mapbox://styles/mapbox/streets-v12"
-                  />
-                </div>
-              </div>
-            )}
+        <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">
+          <button
+            className="absolute top-4 right-4 z-50 rounded-full bg-card dark:bg-gray-800 text-foreground dark:text-white font-bold w-[35px] h-[35px] shadow hover:opacity-80 transition-opacity"
+            onClick={() => setShowFullMapPuntoDeEncuntro(false)}
+          >
+            ✕
+          </button>
+          <div className="w-full h-full">
+            <MapComponent
+              position={{
+                lat: grupo.locationCoords.lat,
+                lng: grupo.locationCoords.lng,
+              }}
+              onChange={() => {}}
+              editable={false}
+              showControls={true}
+              style="mapbox://styles/mapbox/streets-v12"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="pb-[200px]"></div>
     </div>

@@ -6,7 +6,7 @@ import LoadingSkeleton, {
   SkeletonText,
   SkeletonAvatar,
   SkeletonButton,
-  SkeletonImage
+  SkeletonImage,
 } from "./LoadingSkeleton";
 
 const FormCreationSkeleton: React.FC = () => {
@@ -24,7 +24,6 @@ const FormCreationSkeleton: React.FC = () => {
 
       {/* Formulario */}
       <div className="max-w-sm mx-auto p-4 space-y-5 rounded-xl mb-[80px] bg-[#FEFBF9] dark:bg-gray-900 w-full">
-
         {/* Campo select (Academia) */}
         <LoadingSkeleton height={56} width="100%" borderRadius="15px" />
 

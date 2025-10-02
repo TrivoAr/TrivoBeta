@@ -78,7 +78,9 @@ export default function AirbnbCard({
           <button
             onClick={handleFavoriteClick}
             className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-md transition-all duration-200 hover:scale-110"
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
           >
             <Heart
               size={18}
@@ -139,9 +141,7 @@ export default function AirbnbCard({
         {price && (
           <div className="flex items-center gap-1 pt-1">
             <DollarSign size={16} className="text-[#C95100]" />
-            <span className="font-semibold text-foreground">
-              {price}
-            </span>
+            <span className="font-semibold text-foreground">{price}</span>
             <span className="text-sm text-muted-foreground">
               {type === "academia" ? "/ mes" : ""}
             </span>

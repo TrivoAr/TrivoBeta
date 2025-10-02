@@ -13,6 +13,24 @@ const StravaSchema = new Schema({
   athlete_id: { type: Number },
 });
 
+const TrialConfigSchema = new Schema({
+  haUsadoTrial: {
+    type: Boolean,
+    default: false,
+  },
+  tipoTrial: {
+    type: String,
+    enum: ["global", "por-academia"],
+    default: "global",
+  },
+  academiasConTrial: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Academia",
+    },
+  ],
+});
+
 const UserSchema = new Schema(
   {
     email: {
@@ -74,6 +92,8 @@ const UserSchema = new Schema(
     strava: StravaSchema,
 
     favoritos: FavoritosSchema,
+
+    trialConfig: TrialConfigSchema,
 
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },

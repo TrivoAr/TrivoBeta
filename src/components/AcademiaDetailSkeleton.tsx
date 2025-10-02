@@ -6,7 +6,7 @@ import LoadingSkeleton, {
   SkeletonText,
   SkeletonAvatar,
   SkeletonButton,
-  SkeletonImage
+  SkeletonImage,
 } from "./LoadingSkeleton";
 
 const AcademiaDetailSkeleton: React.FC = () => {
@@ -14,11 +14,7 @@ const AcademiaDetailSkeleton: React.FC = () => {
     <div className="flex flex-col w-[390px] items-center bg-background min-h-screen">
       {/* Header con imagen de fondo */}
       <div className="relative w-full h-[190px]">
-        <SkeletonImage
-          height={190}
-          width="100%"
-          className="w-full h-full"
-        />
+        <SkeletonImage height={190} width="100%" className="w-full h-full" />
 
         {/* Botones overlay */}
         <div className="absolute top-2 left-2">
@@ -132,10 +128,18 @@ const AcademiaDetailSkeleton: React.FC = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <SkeletonAvatar size={40} />
                     <div>
-                      <LoadingSkeleton height={16} width={100} className="mb-1" />
+                      <LoadingSkeleton
+                        height={16}
+                        width={100}
+                        className="mb-1"
+                      />
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((_, starIndex) => (
-                          <LoadingSkeleton key={starIndex} height={12} width={12} />
+                          <LoadingSkeleton
+                            key={starIndex}
+                            height={12}
+                            width={12}
+                          />
                         ))}
                       </div>
                     </div>

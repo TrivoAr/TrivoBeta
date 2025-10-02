@@ -14,7 +14,10 @@ export const getAcademyImage = async (
   } catch (error) {
     try {
       // Si falla, intentar con estructura anterior: academias/{academyId}/profile-image.jpg
-      const fallbackRef = ref(storage, `academias/${academyId}/profile-image.jpg`);
+      const fallbackRef = ref(
+        storage,
+        `academias/${academyId}/profile-image.jpg`
+      );
       const downloadUrl = await getDownloadURL(fallbackRef);
       return downloadUrl;
     } catch (fallbackError) {

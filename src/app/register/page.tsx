@@ -17,7 +17,7 @@ function Signup() {
   useEffect(() => {
     // Verificar si hay clase dark en el HTML
     const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
+      const isDark = document.documentElement.classList.contains("dark");
       setIsDarkMode(isDark);
     };
 
@@ -28,7 +28,7 @@ function Signup() {
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();

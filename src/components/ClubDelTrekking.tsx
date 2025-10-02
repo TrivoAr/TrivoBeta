@@ -75,7 +75,9 @@ export const ClubDelTrekking = ({ className = "" }: ClubDelTrekkingProps) => {
 
             {/* Badge de llamada a la acción */}
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 transition-all duration-300 group-hover:bg-white/30">
-              <span className="text-white text-xs font-semibold">Explorar ahora</span>
+              <span className="text-white text-xs font-semibold">
+                Explorar ahora
+              </span>
               <svg
                 width="16"
                 height="16"
@@ -137,4 +139,3 @@ export const ClubDelTrekking = ({ className = "" }: ClubDelTrekkingProps) => {
     </div>
   );
 };
-

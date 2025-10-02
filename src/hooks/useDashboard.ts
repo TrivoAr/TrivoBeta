@@ -379,7 +379,7 @@ export function useMyFavorites(userId?: string) {
               } catch (error) {
                 return {
                   ...academia,
-                  imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia || 'Academia')}&background=C95100&color=fff&size=310x115`,
+                  imagenUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia || "Academia")}&background=C95100&color=fff&size=310x115`,
                 };
               }
             } catch {
