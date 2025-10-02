@@ -1,0 +1,7 @@
+{
+  "regions": ["gru1"],
+  "functions": {
+    "app/**/route.ts": { "maxDuration": 15, "memory": 1024 },
+    "app/**/route.js": { "maxDuration": 15, "memory": 1024 }
+  }
+}
