@@ -6,7 +6,7 @@ import LoadingSkeleton, {
   SkeletonText,
   SkeletonAvatar,
   SkeletonButton,
-  SkeletonImage
+  SkeletonImage,
 } from "./LoadingSkeleton";
 
 const GrupoDetailSkeletonV2: React.FC = () => {
@@ -14,11 +14,7 @@ const GrupoDetailSkeletonV2: React.FC = () => {
     <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9] dark:bg-gray-900 min-h-screen">
       {/* Header con imagen de fondo */}
       <div className="relative w-full h-[190px]">
-        <SkeletonImage
-          height={190}
-          width="100%"
-          className="w-full h-full"
-        />
+        <SkeletonImage height={190} width="100%" className="w-full h-full" />
 
         {/* Botones overlay */}
         <div className="absolute top-2 left-2">
@@ -60,7 +56,11 @@ const GrupoDetailSkeletonV2: React.FC = () => {
             </div>
           ))}
 
-          <LoadingSkeleton height={1} width="90%" className="self-center mt-4" />
+          <LoadingSkeleton
+            height={1}
+            width="90%"
+            className="self-center mt-4"
+          />
         </div>
 
         {/* Descripción */}
@@ -93,7 +93,11 @@ const GrupoDetailSkeletonV2: React.FC = () => {
             </div>
           </div>
 
-          <LoadingSkeleton height={1} width="90%" className="self-center mt-5" />
+          <LoadingSkeleton
+            height={1}
+            width="90%"
+            className="self-center mt-5"
+          />
         </div>
 
         {/* Miembros de la tribu */}
@@ -104,7 +108,11 @@ const GrupoDetailSkeletonV2: React.FC = () => {
               <SkeletonAvatar key={index} size={75} />
             ))}
           </div>
-          <LoadingSkeleton height={1} width="90%" className="self-center mt-4" />
+          <LoadingSkeleton
+            height={1}
+            width="90%"
+            className="self-center mt-4"
+          />
         </div>
 
         {/* Profesor */}

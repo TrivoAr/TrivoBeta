@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Filter,
-  MapPin,
-  Calendar,
-  Search,
-  ChevronLeft,
-} from "lucide-react";
+import { Filter, MapPin, Calendar, Search, ChevronLeft } from "lucide-react";
 import EventCard from "@/components/EventCard";
 import EventModal from "@/components/EventModal";
 import EmptyState from "@/components/EmptyState";

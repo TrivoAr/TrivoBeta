@@ -7,7 +7,6 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { usePaymentStatusAcademia } from "@/hooks/usePaymentStatusAcademia";
-import PaymentModal from "@/components/PaymentModal";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import { getGroupImage } from "@/app/api/grupos/getGroupImage";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
@@ -20,6 +19,8 @@ import AcademiaDetailSkeleton from "@/components/AcademiaDetailSkeleton";
 import LoginModal from "@/components/Modals/LoginModal";
 import ReviewButtonWithModal from "@/components/ReviewButtonWithModal";
 import ReviewCard from "@/components/ReviewCard";
+import AsistenciasModal from "@/components/AsistenciasModal";
+import HistorialAsistenciasModal from "@/components/HistorialAsistenciasModal";
 
 type Grupo = {
   _id: string;
@@ -32,6 +33,7 @@ type Grupo = {
   tipo_grupo?: string;
   imagen?: string;
   dias?: string[];
+  profesor_id?: string | { _id: string };
 };
 
 type Review = {
@@ -84,8 +86,10 @@ export default function AcademiaDetailPage({
   const [esFavorito, setEsFavorito] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showAsistenciasModal, setShowAsistenciasModal] = useState(false);
+  const [showHistorialModal, setShowHistorialModal] = useState(false);
+  const [selectedGrupo, setSelectedGrupo] = useState<Grupo | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -441,8 +445,47 @@ export default function AcademiaDetailPage({
     if (Number(academia?.precio) === 0) {
       joinFreeAcademiaMutation.mutate();
     } else {
-      // Si tiene precio, mostrar modal de pago
-      setShowPaymentModal(true);
+      // Si tiene precio, crear suscripción con sistema de trial
+      try {
+        setIsProcessingPayment(true);
+
+        const response = await fetch("/api/subscriptions/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            academiaId: params.id,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Error al crear suscripción");
+        }
+
+        // Si puede usar trial, se creó con trial gratuito
+        if (data.elegibilidad?.puedeUsarTrial) {
+          toast.success(
+            "¡Te uniste exitosamente! Tienes 1 clase gratis o 7 días de prueba."
+          );
+          queryClient.invalidateQueries({
+            queryKey: ["payment-status-academia", params.id],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["miembro-academia", params.id, session.user.id],
+          });
+          setHasActiveRequest(true);
+        } else if (data.mercadoPago?.initPoint) {
+          // Si no puede usar trial, redirigir a MercadoPago para configurar suscripción
+          toast.success("Redirigiendo a configurar tu suscripción...");
+          window.location.href = data.mercadoPago.initPoint;
+        }
+      } catch (error: any) {
+        console.error("Error:", error);
+        toast.error(error.message || "Error al unirse a la academia");
+      } finally {
+        setIsProcessingPayment(false);
+      }
     }
   };
 
@@ -458,6 +501,26 @@ export default function AcademiaDetailPage({
     if (dias.length === 1) return dias[0];
     if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
     return `${dias.slice(0, -1).join(", ")} y ${dias[dias.length - 1]}`;
+  };
+
+  const handleOpenAsistencias = (grupo: Grupo) => {
+    setSelectedGrupo(grupo);
+    setShowAsistenciasModal(true);
+  };
+
+  const puedeGestionarAsistencias = (grupo: Grupo) => {
+    if (!session?.user?.id) return false;
+    // Es dueño de la academia
+    if (academia?.dueño_id._id === session.user.id) return true;
+    // Es profesor del grupo
+    if (grupo.profesor_id) {
+      const profesorId =
+        typeof grupo.profesor_id === "string"
+          ? grupo.profesor_id
+          : grupo.profesor_id._id;
+      if (profesorId === session.user.id) return true;
+    }
+    return false;
   };
 
   return (
@@ -770,6 +833,55 @@ export default function AcademiaDetailPage({
                         {grupo.ubicacion ? grupo.ubicacion.split(",")[0] : ""}
                       </p>
                     </div>
+
+                    {/* Botón de asistencias solo para dueño/profesor */}
+                    {puedeGestionarAsistencias(grupo) && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenAsistencias(grupo);
+                          }}
+                          className="flex-1 h-[26px] bg-card border border-border text-muted-foreground text-xs font-light rounded-[15px] hover:bg-muted transition-colors flex items-center justify-center gap-1 shadow-sm"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                          </svg>
+                          Registrar
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedGrupo(grupo);
+                            setShowHistorialModal(true);
+                          }}
+                          className="h-[26px] px-3 bg-card border border-border text-muted-foreground text-xs font-light rounded-[15px] hover:bg-muted transition-colors flex items-center justify-center gap-1 shadow-sm"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          Historial
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1029,18 +1141,29 @@ export default function AcademiaDetailPage({
         onClose={() => setShowLoginModal(false)}
       />
 
-      {/* Modal de pago */}
-      {academia && (
-        <PaymentModal
-          isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          academiaId={params.id}
-          precio={academia.precio}
-          cbu={academia.cbu || ""}
-          alias={academia.alias || ""}
-          userId={session?.user?.id || ""}
-          eventName={academia.nombre_academia}
-          onProcessingChange={setIsProcessingPayment}
+      {/* Modal de asistencias */}
+      {selectedGrupo && (
+        <AsistenciasModal
+          isOpen={showAsistenciasModal}
+          onClose={() => {
+            setShowAsistenciasModal(false);
+            setSelectedGrupo(null);
+          }}
+          grupoId={selectedGrupo._id}
+          grupoNombre={selectedGrupo.nombre_grupo}
+        />
+      )}
+
+      {/* Modal de historial de asistencias */}
+      {selectedGrupo && (
+        <HistorialAsistenciasModal
+          isOpen={showHistorialModal}
+          onClose={() => {
+            setShowHistorialModal(false);
+            setSelectedGrupo(null);
+          }}
+          grupoId={selectedGrupo._id}
+          grupoNombre={selectedGrupo.nombre_grupo}
         />
       )}
 

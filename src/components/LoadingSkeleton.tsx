@@ -48,7 +48,8 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     const hasNightTheme = dataTheme === "night";
 
     // Verificar CSS media query como fallback
-    const prefersDark = window.matchMedia &&
+    const prefersDark =
+      window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     return hasDarkClass || hasNightTheme || prefersDark;
@@ -57,12 +58,15 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   const currentTheme = detectDarkMode() ? darkTheme : lightTheme;
 
   // Configuraciones predefinidas por variante
-  const variantConfigs: Record<string, {
-    height?: string | number;
-    width?: string | number;
-    borderRadius?: string | number;
-    circle?: boolean;
-  }> = {
+  const variantConfigs: Record<
+    string,
+    {
+      height?: string | number;
+      width?: string | number;
+      borderRadius?: string | number;
+      circle?: boolean;
+    }
+  > = {
     default: {},
     card: {
       height: height || 120,
@@ -111,9 +115,9 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 export default LoadingSkeleton;
 
 // Componentes específicos para casos comunes
-export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <LoadingSkeleton variant="card" className={className} />
-);
+export const SkeletonCard: React.FC<{ className?: string }> = ({
+  className,
+}) => <LoadingSkeleton variant="card" className={className} />;
 
 export const SkeletonText: React.FC<{
   lines?: number;
@@ -138,11 +142,7 @@ export const SkeletonButton: React.FC<{
   width?: number | string;
   className?: string;
 }> = ({ width, className }) => (
-  <LoadingSkeleton
-    variant="button"
-    width={width}
-    className={className}
-  />
+  <LoadingSkeleton variant="button" width={width} className={className} />
 );
 
 export const SkeletonImage: React.FC<{

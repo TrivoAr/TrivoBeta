@@ -333,7 +333,9 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
           </svg>
         </button>
       </div>
-      <h2 className="text-center font-medium text-xl text-gray-900 dark:text-white">Editar grupo</h2>
+      <h2 className="text-center font-medium text-xl text-gray-900 dark:text-white">
+        Editar grupo
+      </h2>
 
       <form
         onSubmit={handleSubmit}

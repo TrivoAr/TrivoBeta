@@ -9,7 +9,11 @@ interface LoginModalProps {
   isNight?: boolean;
 }
 
-export default function LoginModal({ isOpen, onClose, isNight = false }: LoginModalProps) {
+export default function LoginModal({
+  isOpen,
+  onClose,
+  isNight = false,
+}: LoginModalProps) {
   return (
     <ScaleModal
       isOpen={isOpen}
@@ -19,9 +23,11 @@ export default function LoginModal({ isOpen, onClose, isNight = false }: LoginMo
       isNight={isNight}
     >
       <div className="space-y-4">
-        <p className={`text-sm ${
-          isNight ? "theme-text-secondary" : "text-muted-foreground"
-        }`}>
+        <p
+          className={`text-sm ${
+            isNight ? "theme-text-secondary" : "text-muted-foreground"
+          }`}
+        >
           Debes estar logueado para realizar esta acción.
         </p>
         <button

@@ -451,10 +451,12 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
           >
             {/* Header */}
             {(header || title || description || showCloseButton) && (
-              <div className={cn(
-                "flex items-start justify-between p-6 border-b",
-                isNight ? "border-gray-600" : "border-border"
-              )}>
+              <div
+                className={cn(
+                  "flex items-start justify-between p-6 border-b",
+                  isNight ? "border-gray-600" : "border-border"
+                )}
+              >
                 <div className="flex-1">
                   {header ? (
                     header
@@ -476,7 +478,9 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
                           id="modal-description"
                           className={cn(
                             "mt-1 text-sm",
-                            isNight ? "theme-text-secondary" : "text-muted-foreground"
+                            isNight
+                              ? "theme-text-secondary"
+                              : "text-muted-foreground"
                           )}
                         >
                           {description}
@@ -520,12 +524,14 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
 
             {/* Footer */}
             {footer && (
-              <div className={cn(
-                "px-6 py-4 border-t rounded-b-xl",
-                isNight
-                  ? "border-gray-600 bg-gray-700"
-                  : "border-border bg-muted"
-              )}>
+              <div
+                className={cn(
+                  "px-6 py-4 border-t rounded-b-xl",
+                  isNight
+                    ? "border-gray-600 bg-gray-700"
+                    : "border-border bg-muted"
+                )}
+              >
                 {footer}
               </div>
             )}
@@ -536,7 +542,7 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
   );
 
   // Render in portal (only on client-side)
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 

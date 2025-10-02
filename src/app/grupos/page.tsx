@@ -25,7 +25,6 @@ interface LatLng {
   lng: number;
 }
 
-
 const CrearGrupo = () => {
   const router = useRouter();
   const [academias, setAcademias] = useState<any[]>([]);
@@ -110,17 +109,20 @@ const CrearGrupo = () => {
   }, []);
 
   // Manejar selección de ubicación desde el mapa
-  const handleLocationSelect = useCallback(async (newCoords: LatLng, address: string) => {
-    setCoords(newCoords);
-    setMarkerPos(newCoords);
-    setQuery(address);
-    setSuggestions([]); // Limpiar sugerencias cuando se selecciona desde el mapa
-    setGrupo((prev) => ({
-      ...prev,
-      ubicacion: address,
-      locationCoords: newCoords,
-    }));
-  }, []);
+  const handleLocationSelect = useCallback(
+    async (newCoords: LatLng, address: string) => {
+      setCoords(newCoords);
+      setMarkerPos(newCoords);
+      setQuery(address);
+      setSuggestions([]); // Limpiar sugerencias cuando se selecciona desde el mapa
+      setGrupo((prev) => ({
+        ...prev,
+        ubicacion: address,
+        locationCoords: newCoords,
+      }));
+    },
+    []
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -149,7 +151,6 @@ const CrearGrupo = () => {
     }));
   };
 
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -159,7 +160,10 @@ const CrearGrupo = () => {
     }
 
     try {
-      const grupoConProfesor = { ...grupo, profesor_id: grupo.profesor_id || null };
+      const grupoConProfesor = {
+        ...grupo,
+        profesor_id: grupo.profesor_id || null,
+      };
 
       const res = await fetch("/api/grupos", {
         method: "POST",
@@ -222,7 +226,11 @@ const CrearGrupo = () => {
     const coords = { lat: parseFloat(item.lat), lng: parseFloat(item.lon) };
     setMarkerPos(coords);
     setCoords(coords);
-    setGrupo((prev) => ({ ...prev, locationCoords: coords, ubicacion: item.display_name }));
+    setGrupo((prev) => ({
+      ...prev,
+      locationCoords: coords,
+      ubicacion: item.display_name,
+    }));
     setQuery(item.display_name);
 
     // Actualizar mapa usando la referencia
@@ -254,7 +262,9 @@ const CrearGrupo = () => {
     }
   };
 
-  const handleInputLocationChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputLocationChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = e.target.value;
     setQuery(value);
     setGrupo((prev) => ({ ...prev, ubicacion: value }));
@@ -282,13 +292,12 @@ const CrearGrupo = () => {
     setGrupo((prev) => ({
       ...prev,
       ubicacion: s.display_name,
-      locationCoords: coords
+      locationCoords: coords,
     }));
     setSuggestions([]);
   };
 
   const debouncedFetch = useMemo(() => debounce(fetchSuggestions, 300), []);
-
 
   // Cleanup para evitar memory leaks
   useEffect(() => {
@@ -310,9 +319,9 @@ const CrearGrupo = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -323,7 +332,9 @@ const CrearGrupo = () => {
   if (!Array.isArray(academias) || academias.length === 0) {
     return (
       <div className="text-center mt-10 p-4 bg-white dark:bg-gray-800 rounded shadow border dark:border-gray-600">
-        <h1 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">No tienes academias creadas</h1>
+        <h1 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+          No tienes academias creadas
+        </h1>
         <p className="text-gray-700 dark:text-gray-300">
           Crea una academia primero para poder gestionar grupos.
         </p>
@@ -371,11 +382,12 @@ const CrearGrupo = () => {
           className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
           <option value="">Academia</option>
-          {Array.isArray(academias) && academias.map((academia) => (
-            <option key={academia._id} value={academia._id}>
-              {academia.nombre_academia}
-            </option>
-          ))}
+          {Array.isArray(academias) &&
+            academias.map((academia) => (
+              <option key={academia._id} value={academia._id}>
+                {academia.nombre_academia}
+              </option>
+            ))}
         </select>
 
         <input
@@ -511,7 +523,9 @@ const CrearGrupo = () => {
           onChange={handleInputChange}
           className="w-full px-4 py-4 border dark:border-gray-600 shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white dark:bg-gray-800 text-slate-400 dark:text-gray-300"
         >
-          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Ciclismo" ? (
+          {Array.isArray(academias) &&
+          academias.length > 0 &&
+          academias[0]?.tipo_disciplina === "Ciclismo" ? (
             <>
               <option value="">Selecciona una diciplina</option>
               <option value="Ruta">Ruta</option>
@@ -519,7 +533,9 @@ const CrearGrupo = () => {
               <option value="Otros">Otros</option>
             </>
           ) : null}
-          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Running" ? (
+          {Array.isArray(academias) &&
+          academias.length > 0 &&
+          academias[0]?.tipo_disciplina === "Running" ? (
             <>
               <option value="">Selecciona una diciplina</option>
               <option value="Urbano">Urbano</option>
@@ -528,7 +544,9 @@ const CrearGrupo = () => {
               <option value="Otros">Otros</option>
             </>
           ) : null}
-          {Array.isArray(academias) && academias.length > 0 && academias[0]?.tipo_disciplina === "Trekking" ? (
+          {Array.isArray(academias) &&
+          academias.length > 0 &&
+          academias[0]?.tipo_disciplina === "Trekking" ? (
             <>
               <option value="">Selecciona una diciplina</option>
               <option value="de dia">De día</option>
@@ -556,7 +574,9 @@ const CrearGrupo = () => {
                 className="w-full h-full object-cover absolute top-0 left-0"
               />
             ) : (
-              <span className="text-gray-500 dark:text-gray-400 z-0">Subir imagen</span>
+              <span className="text-gray-500 dark:text-gray-400 z-0">
+                Subir imagen
+              </span>
             )}
           </div>
         </label>
@@ -612,12 +632,12 @@ const CrearGrupo = () => {
                         alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
                         className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
                         onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + ' ' + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`;
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + " " + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`;
                         }}
                       />
                     ) : (
                       <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + ' ' + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`}
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedProfesor.firstname + " " + selectedProfesor.lastname)}&background=3b82f6&color=fff&size=128`}
                         alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
                         className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
                       />
@@ -640,7 +660,9 @@ const CrearGrupo = () => {
 
         {/* Ubicación con Mapbox */}
         <div className="flex flex-col gap-2">
-          <label className="block text-slate-400 dark:text-gray-300">Ubicación</label>
+          <label className="block text-slate-400 dark:text-gray-300">
+            Ubicación
+          </label>
           <div className="relative">
             <input
               ref={inputRef}

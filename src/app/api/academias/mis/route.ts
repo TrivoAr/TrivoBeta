@@ -12,10 +12,7 @@ export async function GET() {
     // Verificar sesión del usuario
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { message: "No autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
     }
 
     const userId = session.user.id;
@@ -29,8 +26,8 @@ export async function GET() {
         path: "academia_id",
         populate: {
           path: "dueño_id",
-          select: "firstname lastname"
-        }
+          select: "firstname lastname",
+        },
       })
       .lean();
 
@@ -52,7 +49,7 @@ export async function GET() {
         // Para compatibilidad con el dashboard
         teacher: academia.dueño_id
           ? `${academia.dueño_id.firstname} ${academia.dueño_id.lastname}`
-          : "Instructor"
+          : "Instructor",
       }));
 
     return NextResponse.json(academias, { status: 200 });
