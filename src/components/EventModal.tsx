@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import "leaflet/dist/leaflet.css";
 import polyline from "@mapbox/polyline";
 import StravaMap from "./StravaMap"; // tu componente
 

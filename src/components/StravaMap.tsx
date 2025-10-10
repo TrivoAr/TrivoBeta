@@ -1,14 +1,11 @@
 // export default StravaMap;
 "use client";
 
-import { useEffect, useRef } from "react";
-import mapboxgl, {
-  Map as MapboxMap,
-  GeoJSONSource,
-  LngLatLike,
-} from "mapbox-gl";
+import { useEffect, useRef, useState } from "react";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+// Lazy loading for better performance
+let mapboxgl: any = null;
+let mapboxLoaded = false;
 
 type StravaMapProps = {
   coords: [number, number][];
@@ -16,8 +13,9 @@ type StravaMapProps = {
 
 export default function StravaMap({ coords }: StravaMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapboxMap | null>(null);
-  const finishMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<any>(null);
+  const finishMarkerRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // helpers
   const makeRoute = (c: [number, number][]) =>
@@ -34,7 +32,7 @@ export default function StravaMap({ coords }: StravaMapProps) {
       properties: {},
     }) as GeoJSON.Feature<GeoJSON.Point>;
 
-  const fitToBounds = (map: MapboxMap, c: [number, number][]) => {
+  const fitToBounds = (map: any, c: [number, number][]) => {
     if (!c.length) return;
     const bounds = new mapboxgl.LngLatBounds(c[0], c[0]);
     for (let i = 1; i < c.length; i++) bounds.extend(c[i]);
@@ -43,15 +41,36 @@ export default function StravaMap({ coords }: StravaMapProps) {
 
   // Init map (una sola vez)
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    const initMap = async () => {
+      if (!mapContainerRef.current || mapRef.current) return;
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/navigation-night-v1",
-      center: coords[0] ?? [0, 0],
-      zoom: 12,
-    });
-    mapRef.current = map;
+      try {
+        // Lazy load mapbox-gl library and CSS
+        if (!mapboxLoaded) {
+          const mapboxModule = await import("mapbox-gl");
+          mapboxgl = mapboxModule.default;
+
+          // Dynamically load CSS
+          if (!document.querySelector('link[href*="mapbox-gl.css"]')) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "https://api.mapbox.com/mapbox-gl-js/v3.1.0/mapbox-gl.css";
+            document.head.appendChild(link);
+          }
+
+          mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+          mapboxLoaded = true;
+        }
+
+        setIsLoading(false);
+
+        const map = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: "mapbox://styles/mapbox/navigation-night-v1",
+          center: coords[0] ?? [0, 0],
+          zoom: 12,
+        });
+        mapRef.current = map;
 
     map.on("load", () => {
       // Ruta
@@ -87,7 +106,7 @@ export default function StravaMap({ coords }: StravaMapProps) {
         finishEl.style.lineHeight = "13px";
 
         const finishMarker = new mapboxgl.Marker({ element: finishEl })
-          .setLngLat(coords[coords.length - 1] as LngLatLike)
+          .setLngLat(coords[coords.length - 1])
           .setPopup(new mapboxgl.Popup().setText("Fin"))
           .addTo(map);
 
@@ -96,6 +115,14 @@ export default function StravaMap({ coords }: StravaMapProps) {
         fitToBounds(map, coords);
       }
     });
+
+      } catch (error) {
+        console.error("Error initializing Mapbox:", error);
+        setIsLoading(false);
+      }
+    };
+
+    initMap();
 
     return () => {
       finishMarkerRef.current?.remove();
@@ -111,22 +138,32 @@ export default function StravaMap({ coords }: StravaMapProps) {
     if (!map) return;
 
     // route
-    const routeSource = map.getSource("route") as GeoJSONSource | undefined;
+    const routeSource = map.getSource("route");
     if (routeSource) routeSource.setData(makeRoute(coords));
 
     // start point
-    const startSrc = map.getSource("start-point") as GeoJSONSource | undefined;
+    const startSrc = map.getSource("start-point");
     if (startSrc && coords.length > 0) startSrc.setData(makePoint(coords[0]));
 
     // finish marker
     if (finishMarkerRef.current && coords.length > 0) {
-      finishMarkerRef.current.setLngLat(
-        coords[coords.length - 1] as LngLatLike
-      );
+      finishMarkerRef.current.setLngLat(coords[coords.length - 1]);
     }
 
     if (coords.length > 0) fitToBounds(map, coords);
   }, [coords]);
 
-  return <div ref={mapContainerRef} className="w-full h-full" />;
+  return (
+    <div className="w-full h-full relative">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">Cargando mapa...</p>
+          </div>
+        </div>
+      )}
+      <div ref={mapContainerRef} className="w-full h-full" />
+    </div>
+  );
 }

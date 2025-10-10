@@ -2,24 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import polyline from "polyline";
-import StravaMap from "@/components/StravaMap";
-import MapComponent from "@/components/MapComponent";
-import { getProfileImage } from "@/app/api/profile/getProfileImage";
-import PaymentModal from "@/components/PaymentModal";
-import "leaflet/dist/leaflet.css";
 import Skeleton from "react-loading-skeleton";
-import LoginModal from "@/components/Modals/LoginModal";
 import "react-loading-skeleton/dist/skeleton.css";
-import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { isNightEvent } from "@/lib/theme";
 import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { useSearchParams } from "next/navigation";
+
+// Dynamic imports for better code splitting
+const StravaMap = dynamic(() => import("@/components/StravaMap"), {
+  loading: () => <div className="w-full h-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />,
+  ssr: false,
+});
+
+const MapComponent = dynamic(() => import("@/components/MapComponent"), {
+  loading: () => <div className="w-full h-[300px] bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />,
+  ssr: false,
+});
+
+const PaymentModal = dynamic(() => import("@/components/PaymentModal"), {
+  ssr: false,
+});
+
+const LoginModal = dynamic(() => import("@/components/Modals/LoginModal"), {
+  ssr: false,
+});
+
+const DescriptionMarkdown = dynamic(() => import("@/components/DescriptionMarkdown"), {
+  loading: () => <Skeleton count={3} />,
+});
 
 interface PageProps {
   params: {
