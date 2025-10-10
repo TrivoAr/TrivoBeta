@@ -290,7 +290,7 @@ export function useNotifications(options: NotificationOptions = {}) {
       toast.info(notification.message, {
         duration: 5000,
         position: "top-center",
-        action: {
+        action: notification.actionUrl ? {
           label: "Ver",
           onClick: () => {
             if (notification.actionUrl) {
@@ -298,16 +298,7 @@ export function useNotifications(options: NotificationOptions = {}) {
             }
             notificationEmitter.emit("notification:click", notification);
           },
-        },
-        onClick: () => {
-          if (notification.actionUrl) {
-            window.location.href = notification.actionUrl;
-          }
-          notificationEmitter.emit("notification:click", notification);
-        },
-        style: {
-          cursor: "pointer",
-        },
+        } : undefined,
       });
 
       notificationEmitter.emit("notification:received", notification);
