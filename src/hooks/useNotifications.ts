@@ -14,8 +14,13 @@ export interface Notification {
     lastname: string;
   };
   salidaId?: string;
+  academiaId?: string;
+  teamSocialId?: string;
   type: string;
   message: string;
+  actionUrl?: string;
+  actionType?: "navigate" | "modal" | "action";
+  metadata?: Record<string, any>;
   read: boolean;
   readAt?: string;
   createdAt: string;
