@@ -1,5 +1,5 @@
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -13,6 +13,7 @@ export async function saveBarLogo(
   barId?: string
 ): Promise<string> {
   try {
+    const storage = await getStorageInstance();
     const id = barId || uuidv4();
     const fileExtension = logoFile.name.split(".").pop() || "jpg";
     const fileName = `logo.${fileExtension}`;
@@ -44,6 +45,7 @@ export async function saveBarCarouselImages(
   barId?: string
 ): Promise<string[]> {
   try {
+    const storage = await getStorageInstance();
     const id = barId || uuidv4();
     const uploadPromises: Promise<string>[] = [];
 
@@ -126,6 +128,7 @@ export async function saveAllBarImages(
  */
 export async function deleteBarImages(barId: string): Promise<void> {
   try {
+    const storage = await getStorageInstance();
     const { deleteObject, listAll } = await import("firebase/storage");
 
     // Listar y eliminar todas las imágenes del bar
@@ -164,6 +167,7 @@ export async function updateCarouselImage(
   imageIndex: number
 ): Promise<string> {
   try {
+    const storage = await getStorageInstance();
     const fileExtension = newImageFile.name.split(".").pop() || "jpg";
     const fileName = `carousel_${imageIndex + 1}.${fileExtension}`;
 

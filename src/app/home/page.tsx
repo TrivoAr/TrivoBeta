@@ -374,7 +374,7 @@ export default function Home() {
             <>
               {filteredAcademias.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
-                  {filteredAcademias.map((academia) => (
+                  {filteredAcademias.map((academia, index) => (
                     <AirbnbCard
                       key={academia._id}
                       id={academia._id}
@@ -385,6 +385,7 @@ export default function Home() {
                       price={academia.precio}
                       onClick={() => router.push(`/academias/${academia._id}`)}
                       type="academia"
+                      priority={index < 2} // Priorizar las primeras 2 imágenes para LCP
                     />
                   ))}
                 </div>

@@ -1,10 +1,10 @@
 import Providers from "./Providers";
 import Navbar from "../components/Navbar";
 import { Toaster } from "sonner";
+import Script from "next/script";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
-import "leaflet/dist/leaflet.css";
-import "mapbox-gl/dist/mapbox-gl.css";
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+// Map CSS imports removed - now loaded dynamically in map components for better performance
 
 export const metadata = {
   title: "Trivo app",
@@ -19,25 +19,27 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
-        {/* Google Analytics */}
-
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-2C913CYW7H"
-        ></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-2C913CYW7H');
-            `,
-          }}
-        />
+        {/* Preconnect to Firebase Storage for faster image loading */}
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body className="flex flex-col items-center w-full">
-        <Toaster richColors position="top-right" />
+        {/* Google Analytics - Loaded after page is interactive */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-2C913CYW7H"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-2C913CYW7H');
+          `}
+        </Script>
+
+        <Toaster richColors position="top-center" expand={true} />
+        <ServiceWorkerRegistration />
         <Providers>
           <div className="">{children}</div>
           <Navbar />

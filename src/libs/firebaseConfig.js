@@ -1,13 +1,4 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import {
-  getMessaging,
-  getToken,
-  onMessage,
-  isSupported,
-} from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -21,14 +12,44 @@ const firebaseConfig = {
 // Inicializa Firebase solo si no está ya inicializado
 const app =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+
+// Lazy initialization para cada servicio de Firebase
+let authInstance = null;
+let dbInstance = null;
+let storageInstance = null;
+
+export const getAuthInstance = async () => {
+  if (!authInstance) {
+    const { getAuth } = await import("firebase/auth");
+    authInstance = getAuth(app);
+  }
+  return authInstance;
+};
+
+export const getDbInstance = async () => {
+  if (!dbInstance) {
+    const { getFirestore } = await import("firebase/firestore");
+    dbInstance = getFirestore(app);
+  }
+  return dbInstance;
+};
+
+export const getStorageInstance = async () => {
+  if (!storageInstance) {
+    const { getStorage } = await import("firebase/storage");
+    storageInstance = getStorage(app);
+  }
+  return storageInstance;
+};
+
+// IMPORTANTE: No usar auth, db, storage directamente
+// Usar getAuthInstance(), getDbInstance(), getStorageInstance() para lazy loading
 
 // Función para obtener el messaging instance
 export const getMessagingInstance = async () => {
   if (typeof window === "undefined") return null;
 
+  const { getMessaging, isSupported } = await import("firebase/messaging");
   const supported = await isSupported();
   if (!supported) return null;
 
@@ -64,6 +85,7 @@ export const getFCMToken = async () => {
     await registerFirebaseSW();
 
     // Obtener token
+    const { getToken } = await import("firebase/messaging");
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
     if (!vapidKey) {
       throw new Error("FIREBASE_VAPID_KEY no configurada");
@@ -91,15 +113,15 @@ export const getFCMToken = async () => {
 
 // Función para escuchar mensajes en primer plano
 export const onMessageListener = () =>
-  new Promise((resolve) => {
-    getMessagingInstance().then((messaging) => {
-      if (messaging) {
-        onMessage(messaging, (payload) => {
-          console.log("📬 Mensaje recibido en primer plano:", payload);
-          resolve(payload);
-        });
-      }
-    });
+  new Promise(async (resolve) => {
+    const messaging = await getMessagingInstance();
+    if (messaging) {
+      const { onMessage } = await import("firebase/messaging");
+      onMessage(messaging, (payload) => {
+        console.log("📬 Mensaje recibido en primer plano:", payload);
+        resolve(payload);
+      });
+    }
   });
 
-export { app, auth, db, storage };
+export { app };

@@ -1,11 +1,12 @@
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 
 export const getSocialImage = async (
   fileName: string,
   salidaId: string
 ): Promise<string> => {
   try {
+    const storage = await getStorageInstance();
     const fileRef = ref(storage, `social/${salidaId}/${fileName}`);
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
