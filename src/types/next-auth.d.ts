@@ -27,6 +27,7 @@ declare module "next-auth" {
       };
       dni?: string;
     } & DefaultSession["user"];
+    accessToken?: any; // JWT token para Socket.IO
   }
 
   interface User extends DefaultUser {
