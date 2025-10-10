@@ -5,6 +5,8 @@ import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { v4 as uuidv4 } from "uuid";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
 import { set } from "mongoose";
@@ -202,6 +204,7 @@ export default function CrearSalidaPage() {
     setIsSubmitting(true);
 
     if (imagen) {
+      const storage = await getStorageInstance();
       const imageRef = ref(storage, `salidas/${uuidv4()}`);
       await uploadBytes(imageRef, imagen);
       imageUrl = await getDownloadURL(imageRef);
