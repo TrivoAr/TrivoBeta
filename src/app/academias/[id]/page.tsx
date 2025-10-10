@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import { toast } from "sonner";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { usePaymentStatusAcademia } from "@/hooks/usePaymentStatusAcademia";
 import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
@@ -465,15 +465,30 @@ export default function AcademiaDetailPage({
 
         // Si puede usar trial, se creó con trial gratuito
         if (data.elegibilidad?.puedeUsarTrial) {
+          // Toast instantáneo para el usuario que se une
           toast.success(
-            "¡Te uniste exitosamente! Tienes 1 clase gratis o 7 días de prueba."
+            "¡Te uniste exitosamente! Tienes 1 clase gratis o 7 días de prueba.",
+            {
+              duration: 5000,
+              position: "top-center",
+            }
           );
-          queryClient.invalidateQueries({
+
+          console.log("[ACADEMIA] Usuario unido con trial, invalidando queries...");
+
+          // Invalidar y hacer refetch inmediato
+          await queryClient.invalidateQueries({
+            queryKey: ["payment-status-academia", params.id],
+            refetchType: "active",
+          });
+          await queryClient.refetchQueries({
             queryKey: ["payment-status-academia", params.id],
           });
-          queryClient.invalidateQueries({
+          await queryClient.invalidateQueries({
             queryKey: ["miembro-academia", params.id, session.user.id],
           });
+
+          console.log("[ACADEMIA] Queries invalidadas y refetcheadas");
           setHasActiveRequest(true);
         } else if (data.mercadoPago?.initPoint) {
           // Si no puede usar trial, redirigir a MercadoPago para configurar suscripción
@@ -525,7 +540,6 @@ export default function AcademiaDetailPage({
 
   return (
     <div className="flex flex-col w-[390px] items-center bg-background">
-      <Toaster position="top-center" />
       <div
         className="relative w-full h-[190px] flex"
         style={{
@@ -1059,15 +1073,24 @@ export default function AcademiaDetailPage({
               <div>
                 {(() => {
                   // Lógica del estado final del botón
+                  // NOTA: El estado "trial_expirado" debe mostrar botón para configurar pago
+                  const suscripcion = paymentStatus?.suscripcion;
+
                   if (esMiembro) return "miembro";
                   if (hasActiveRequest) return "pendiente";
-                  if (isApproved) return "miembro";
+                  // PRIORIDAD: Si trial expiró, siempre mostrar botón de configurar pago
+                  if (suscripcion?.estado === "trial_expirado") {
+                    return "configurar-pago";
+                  }
+                  if (isApproved && suscripcion?.estado !== "trial_expirado")
+                    return "miembro";
                   if (
                     isPending ||
                     paymentStatus?.isPending ||
                     isProcessingPayment
-                  )
+                  ) {
                     return "pendiente";
+                  }
                   return "unirse";
                 })() === "miembro" && (
                   <button
@@ -1079,16 +1102,23 @@ export default function AcademiaDetailPage({
                 )}
 
                 {(() => {
+                  const suscripcion = paymentStatus?.suscripcion;
                   const estadoFinal = (() => {
                     if (esMiembro) return "miembro";
                     if (hasActiveRequest) return "pendiente";
-                    if (isApproved) return "miembro";
+                    // PRIORIDAD: Si trial expiró, siempre mostrar botón de configurar pago
+                    if (suscripcion?.estado === "trial_expirado") {
+                      return "configurar-pago";
+                    }
+                    if (isApproved && suscripcion?.estado !== "trial_expirado")
+                      return "miembro";
                     if (
                       isPending ||
                       paymentStatus?.isPending ||
                       isProcessingPayment
-                    )
+                    ) {
                       return "pendiente";
+                    }
                     return "unirse";
                   })();
                   return estadoFinal === "pendiente";
@@ -1106,16 +1136,63 @@ export default function AcademiaDetailPage({
                 )}
 
                 {(() => {
+                  const suscripcion = paymentStatus?.suscripcion;
                   const estadoFinal = (() => {
                     if (esMiembro) return "miembro";
                     if (hasActiveRequest) return "pendiente";
-                    if (isApproved) return "miembro";
+                    // PRIORIDAD: Si trial expiró, siempre mostrar botón de configurar pago
+                    if (suscripcion?.estado === "trial_expirado") {
+                      return "configurar-pago";
+                    }
+                    if (isApproved && suscripcion?.estado !== "trial_expirado")
+                      return "miembro";
                     if (
                       isPending ||
                       paymentStatus?.isPending ||
                       isProcessingPayment
-                    )
+                    ) {
                       return "pendiente";
+                    }
+                    return "unirse";
+                  })();
+                  return estadoFinal === "configurar-pago";
+                })() && (
+                  <button
+                    onClick={() => {
+                      const mercadoPagoLink =
+                        paymentStatus?.suscripcion?.mercadoPago?.initPoint;
+                      if (mercadoPagoLink) {
+                        window.location.href = mercadoPagoLink;
+                      } else {
+                        toast.error(
+                          "No hay un link de pago disponible. Contacta al dueño de la academia."
+                        );
+                      }
+                    }}
+                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Activar suscripción
+                  </button>
+                )}
+
+                {(() => {
+                  const suscripcion = paymentStatus?.suscripcion;
+                  const estadoFinal = (() => {
+                    if (esMiembro) return "miembro";
+                    if (hasActiveRequest) return "pendiente";
+                    // PRIORIDAD: Si trial expiró, siempre mostrar botón de configurar pago
+                    if (suscripcion?.estado === "trial_expirado") {
+                      return "configurar-pago";
+                    }
+                    if (isApproved && suscripcion?.estado !== "trial_expirado")
+                      return "miembro";
+                    if (
+                      isPending ||
+                      paymentStatus?.isPending ||
+                      isProcessingPayment
+                    ) {
+                      return "pendiente";
+                    }
                     return "unirse";
                   })();
                   return estadoFinal === "unirse";

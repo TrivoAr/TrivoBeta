@@ -18,8 +18,24 @@ interface PaymentStatus {
     id: string;
     estado: string;
   } | null;
+  suscripcion: {
+    id: string;
+    estado: string;
+    trial?: {
+      estaEnTrial: boolean;
+      clasesAsistidas: number;
+      fechaFin: string;
+    };
+    mercadoPago?: {
+      preapprovalId: string;
+      initPoint: string;
+      status: string;
+      payerEmail: string;
+    };
+  } | null;
   isApproved: boolean;
   isPending: boolean;
+  tipoSistema?: "suscripcion" | "viejo";
 }
 
 export function usePaymentStatusAcademia(academiaId: string, enabled = true) {
@@ -29,13 +45,19 @@ export function usePaymentStatusAcademia(academiaId: string, enabled = true) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["payment-status-academia", academiaId],
     queryFn: async (): Promise<PaymentStatus> => {
-      const response = await fetch(`/api/pagos/academia/${academiaId}`);
+      const response = await fetch(`/api/pagos/academia/${academiaId}`, {
+        cache: 'no-store', // Forzar a no usar cache del navegador
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (!response.ok) {
         throw new Error("Error obteniendo estado de pago de academia");
       }
       return response.json();
     },
     enabled,
+    staleTime: 0, // Siempre considerar datos como stale
     refetchInterval: (query) => {
       // Si está pendiente, consultar cada 3 segundos
       if (query.state.data?.isPending) return 3000;
@@ -46,6 +68,19 @@ export function usePaymentStatusAcademia(academiaId: string, enabled = true) {
     },
     refetchIntervalInBackground: true,
   });
+
+  // Logging para debug
+  useEffect(() => {
+    if (data) {
+      console.log("[usePaymentStatusAcademia] Estado actual:", {
+        isPending: data.isPending,
+        isApproved: data.isApproved,
+        suscripcionEstado: data.suscripcion?.estado,
+        miembroEstado: data.miembro?.estado,
+        pagoEstado: data.pago?.estado,
+      });
+    }
+  }, [data]);
 
   // Detectar cambios de estado y mostrar notificaciones
   useEffect(() => {
