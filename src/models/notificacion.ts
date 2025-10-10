@@ -31,6 +31,10 @@ const NotificacionSchema = new mongoose.Schema({
       "nuevo_team",
       "solicitud_academia",
       "solicitud_team",
+      "nuevo_suscriptor_trial", // Dueño: nuevo user con trial
+      "asistencia_registrada", // Alumno: le marcaron asistencia
+      "trial_expirado", // Alumno: su trial expiró
+      "suscripcion_vencida", // Alumno: su suscripción venció
     ],
     required: true,
   },

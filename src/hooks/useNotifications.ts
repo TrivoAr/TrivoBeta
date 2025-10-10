@@ -77,6 +77,11 @@ class NotificationEventEmitter {
 // Instancia global del event emitter
 const notificationEmitter = new NotificationEventEmitter();
 
+// Singleton para el socket - solo una instancia global
+let globalSocketInstance: Socket | null = null;
+let globalSocketUserId: string | null = null;
+let isConnecting: boolean = false; // Flag para evitar conexiones simultáneas
+
 export function useNotifications(options: NotificationOptions = {}) {
   const { data: session } = useSession();
   const [state, setState] = useState<NotificationState>({
@@ -93,22 +98,84 @@ export function useNotifications(options: NotificationOptions = {}) {
   const maxReconnectAttempts = 5;
 
   // Función para conectar al socket
-  const connectSocket = useCallback(() => {
-    if (!session?.user?.id || socketRef.current?.connected) return;
+  const connectSocket = useCallback(async () => {
+    if (!session?.user?.id) return;
 
-    console.log("[NOTIFICATIONS] Conectando socket...");
+    const currentUserId = session.user.id;
 
+    // Si ya existe un socket global para este usuario y está conectado, reutilizarlo
+    if (globalSocketInstance?.connected && globalSocketUserId === currentUserId) {
+      console.log("[NOTIFICATIONS] Reutilizando socket global existente");
+      socketRef.current = globalSocketInstance;
+      setState((prev) => ({ ...prev, isConnected: true }));
+      return;
+    }
+
+    // Si ya está conectando, no iniciar otra conexión
+    if (isConnecting) {
+      console.log("[NOTIFICATIONS] Ya hay una conexión en progreso, esperando...");
+      return;
+    }
+
+    // Si hay un socket pero es de otro usuario, desconectarlo
+    if (globalSocketInstance && globalSocketUserId !== currentUserId) {
+      console.log("[NOTIFICATIONS] Desconectando socket de usuario anterior");
+      globalSocketInstance.removeAllListeners();
+      globalSocketInstance.disconnect();
+      globalSocketInstance = null;
+      globalSocketUserId = null;
+    }
+
+    // Si ya hay un socket para este usuario pero desconectado, limpiarlo
+    if (globalSocketInstance && !globalSocketInstance.connected) {
+      console.log("[NOTIFICATIONS] Limpiando socket desconectado");
+      globalSocketInstance.removeAllListeners();
+      globalSocketInstance.disconnect();
+      globalSocketInstance = null;
+      globalSocketUserId = null;
+    }
+
+    isConnecting = true; // Marcar que estamos conectando
+    console.log("[NOTIFICATIONS] Creando nueva conexión socket...");
+
+    // Obtener token JWT para Socket.IO
+    let socketToken: string;
+    try {
+      console.log("[NOTIFICATIONS] Solicitando token de Socket.IO...");
+      const response = await fetch("/api/auth/socket-token");
+      if (!response.ok) {
+        console.error("[NOTIFICATIONS] ❌ Error obteniendo token, status:", response.status);
+        isConnecting = false;
+        return;
+      }
+      const data = await response.json();
+      socketToken = data.token;
+      console.log("[NOTIFICATIONS] ✅ Token obtenido exitosamente");
+    } catch (error) {
+      console.error("[NOTIFICATIONS] ❌ Error obteniendo token:", error);
+      isConnecting = false;
+      return;
+    }
+
+    console.log("[NOTIFICATIONS] Creando socket con token...");
     const socket = io("/", {
+      query: {
+        token: socketToken,
+      },
       auth: {
-        token: session.user.id, // En un caso real, usarías el JWT token
+        token: socketToken, // Fallback por compatibilidad
       },
       transports: ["websocket", "polling"],
       timeout: 20000,
-      forceNew: false,
+      forceNew: true, // Forzar nueva conexión para evitar reutilizar sockets viejos
+      reconnection: false, // Desactivar reconexión automática, la manejamos manualmente
     });
+
+    console.log("[NOTIFICATIONS] Socket creado, esperando conexión...");
 
     socket.on("connect", () => {
       console.log("[NOTIFICATIONS] Socket conectado");
+      isConnecting = false; // Liberar flag
       setState((prev) => ({ ...prev, isConnected: true }));
       reconnectAttempts.current = 0;
 
@@ -133,6 +200,7 @@ export function useNotifications(options: NotificationOptions = {}) {
 
     socket.on("connect_error", (error) => {
       console.error("[NOTIFICATIONS] Error de conexión:", error);
+      isConnecting = false; // Liberar flag en caso de error
       setState((prev) => ({ ...prev, isConnected: false }));
 
       // Reconexión exponencial
@@ -186,14 +254,28 @@ export function useNotifications(options: NotificationOptions = {}) {
         };
       });
 
-      // Mostrar toast para nuevas notificaciones
+      // Mostrar toast para nuevas notificaciones (desde arriba, clickeable)
       notifications.forEach((notification) => {
         toast.info(notification.message, {
-          duration: 4000,
+          duration: 5000,
+          position: "top-center",
           action: {
             label: "Ver",
-            onClick: () =>
-              notificationEmitter.emit("notification:click", notification),
+            onClick: () => {
+              if (notification.actionUrl) {
+                window.location.href = notification.actionUrl;
+              }
+              notificationEmitter.emit("notification:click", notification);
+            },
+          },
+          onClick: () => {
+            if (notification.actionUrl) {
+              window.location.href = notification.actionUrl;
+            }
+            notificationEmitter.emit("notification:click", notification);
+          },
+          style: {
+            cursor: "pointer",
           },
         });
       });
@@ -208,13 +290,27 @@ export function useNotifications(options: NotificationOptions = {}) {
         unreadCount: prev.unreadCount + 1,
       }));
 
-      // Toast para notificación nueva
+      // Toast para notificación nueva (desde arriba, clickeable)
       toast.info(notification.message, {
-        duration: 4000,
+        duration: 5000,
+        position: "top-center",
         action: {
           label: "Ver",
-          onClick: () =>
-            notificationEmitter.emit("notification:click", notification),
+          onClick: () => {
+            if (notification.actionUrl) {
+              window.location.href = notification.actionUrl;
+            }
+            notificationEmitter.emit("notification:click", notification);
+          },
+        },
+        onClick: () => {
+          if (notification.actionUrl) {
+            window.location.href = notification.actionUrl;
+          }
+          notificationEmitter.emit("notification:click", notification);
+        },
+        style: {
+          cursor: "pointer",
         },
       });
 
@@ -260,8 +356,11 @@ export function useNotifications(options: NotificationOptions = {}) {
       toast.error(`Error: ${error.message}`);
     });
 
+    // Guardar en las referencias globales
+    globalSocketInstance = socket;
+    globalSocketUserId = session.user.id;
     socketRef.current = socket;
-  }, [session?.user?.id, options]);
+  }, [session?.user?.id]); // Remover 'options' de las dependencias para evitar re-renders
 
   // Función para desconectar
   const disconnect = useCallback(() => {
@@ -269,34 +368,36 @@ export function useNotifications(options: NotificationOptions = {}) {
       clearTimeout(reconnectTimeoutRef.current);
     }
 
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
+    // No desconectar el socket global, solo quitar la referencia local
+    // El socket global se mantiene para otros componentes
+    socketRef.current = null;
 
     setState((prev) => ({ ...prev, isConnected: false }));
   }, []);
 
   // Función para marcar como leída
   const markAsRead = useCallback((notificationId: string) => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit("notification:mark-read", notificationId);
+    const socket = globalSocketInstance || socketRef.current;
+    if (socket?.connected) {
+      socket.emit("notification:mark-read", notificationId);
     }
   }, []);
 
   // Función para marcar todas como leídas
   const markAllAsRead = useCallback(() => {
-    if (socketRef.current?.connected) {
-      socketRef.current.emit("notifications:mark-all-read");
+    const socket = globalSocketInstance || socketRef.current;
+    if (socket?.connected) {
+      socket.emit("notifications:mark-all-read");
     }
   }, []);
 
   // Función para recargar notificaciones
   const reload = useCallback(
     (newOptions?: NotificationOptions) => {
-      if (socketRef.current?.connected) {
+      const socket = globalSocketInstance || socketRef.current;
+      if (socket?.connected) {
         setState((prev) => ({ ...prev, isLoading: true }));
-        socketRef.current.emit("get:notifications", {
+        socket.emit("get:notifications", {
           ...options,
           ...newOptions,
         });
@@ -307,34 +408,53 @@ export function useNotifications(options: NotificationOptions = {}) {
 
   // Función para cargar más notificaciones
   const loadMore = useCallback(() => {
-    if (socketRef.current?.connected && state.hasMore && !state.isLoading) {
+    const socket = globalSocketInstance || socketRef.current;
+    if (socket?.connected && state.hasMore && !state.isLoading) {
       setState((prev) => ({ ...prev, isLoading: true }));
-      socketRef.current.emit("get:notifications", {
+      socket.emit("get:notifications", {
         ...options,
         offset: state.notifications.length,
       });
     }
   }, [options, state.hasMore, state.isLoading, state.notifications.length]);
 
-  // Efecto para conectar/desconectar
+  // Efecto para conectar/desconectar (sin dependencias de funciones para evitar bucles)
   useEffect(() => {
     if (session?.user?.id) {
       connectSocket();
-    } else {
-      disconnect();
     }
 
     return () => {
-      disconnect();
+      // Cleanup local: solo limpiar timeouts y referencias locales
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      // No desconectar el socket global, solo limpiar la referencia local
+      socketRef.current = null;
     };
-  }, [session?.user?.id, connectSocket, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]); // Solo depende de session.user.id
 
-  // Cleanup al desmontar
+  // Sincronizar estado de conexión con socket global
   useEffect(() => {
-    return () => {
-      disconnect();
+    const checkConnection = () => {
+      const socket = globalSocketInstance || socketRef.current;
+      if (socket) {
+        setState((prev) => ({
+          ...prev,
+          isConnected: socket.connected,
+        }));
+      }
     };
-  }, [disconnect]);
+
+    // Revisar inmediatamente
+    checkConnection();
+
+    // Revisar periódicamente
+    const interval = setInterval(checkConnection, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return {
     // Estado

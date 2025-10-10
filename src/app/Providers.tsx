@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { ThemeProvider as CustomThemeProvider } from "@/providers/ThemeProvider";
+import { NotificationProvider } from "@/components/NotificationProvider";
 import { useState } from "react";
 
 interface Props {
@@ -31,7 +32,10 @@ export default function Providers({ children }: Props) {
           enableSystem
           disableTransitionOnChange
         >
-          <CustomThemeProvider>{children}</CustomThemeProvider>
+          <CustomThemeProvider>
+            <NotificationProvider />
+            {children}
+          </CustomThemeProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>
