@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getStorageInstance } from "@/libs/firebaseConfig";
+import mapboxgl from "mapbox-gl";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
 import { set } from "mongoose";
