@@ -50,6 +50,16 @@ export async function POST(request: NextRequest) {
       case "created":
         // Suscripción creada y autorizada por el usuario
         suscripcion.mercadoPago.status = "authorized";
+
+        // Si la suscripción estaba en trial_expirado, activarla
+        if (suscripcion.estado === SUBSCRIPTION_CONFIG.ESTADOS.TRIAL_EXPIRADO) {
+          suscripcion.estado = SUBSCRIPTION_CONFIG.ESTADOS.ACTIVA;
+          suscripcion.fechaActivacion = new Date();
+          suscripcion.trial.estaEnTrial = false;
+          suscripcion.trial.fueUsado = true;
+          console.log("Suscripción activada post-trial:", suscripcion._id);
+        }
+
         await suscripcion.save();
         console.log("Suscripción autorizada:", suscripcion._id);
         break;

@@ -59,14 +59,25 @@ export function initializeSocketServer(httpServer: HttpServer) {
         socket.handshake.headers.authorization?.replace("Bearer ", "");
 
       if (!token) {
+        console.error("[SOCKET] Token de autenticación no proporcionado");
         return next(new Error("Token de autenticación requerido"));
       }
 
       // Verificar JWT
-      const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!) as any;
+      let decoded: any;
+      try {
+        decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET!);
+      } catch (jwtError: any) {
+        console.error("[SOCKET] Error verificando JWT:", jwtError.message);
+        if (jwtError.name === "TokenExpiredError") {
+          return next(new Error("Token expirado"));
+        }
+        return next(new Error("Token inválido"));
+      }
 
       if (!decoded.sub) {
-        return next(new Error("Token inválido"));
+        console.error("[SOCKET] Token no contiene subject (sub)");
+        return next(new Error("Token inválido - sin subject"));
       }
 
       // Conectar a DB y verificar usuario
@@ -74,6 +85,7 @@ export function initializeSocketServer(httpServer: HttpServer) {
       const user = await User.findById(decoded.sub);
 
       if (!user) {
+        console.error(`[SOCKET] Usuario no encontrado: ${decoded.sub}`);
         return next(new Error("Usuario no encontrado"));
       }
 
@@ -258,20 +270,30 @@ export function initializeSocketServer(httpServer: HttpServer) {
   }
 
   // Función para emitir notificación a usuario específico
-  async function emitToUser(userId: string, event: string, data: any) {
+  async function emitToUser(userId: string, event: string, data: any): Promise<boolean> {
     try {
       const room = `user:${userId}`;
+
+      // Verificar si hay sockets conectados ANTES de emitir
+      const sockets = await io.in(room).fetchSockets();
+
+      if (sockets.length === 0) {
+        console.log(
+          `[SOCKET] Usuario ${userId} no está conectado. Notificación guardada en DB pero no enviada en tiempo real.`
+        );
+        return false;
+      }
+
+      // Emitir a la sala del usuario
       io.to(room).emit(event, data);
 
-      // Log solo si hay sockets conectados en esa sala
-      const sockets = await io.in(room).fetchSockets();
-      if (sockets.length > 0) {
-        console.log(
-          `[SOCKET] Emitido '${event}' a ${sockets.length} cliente(s) del usuario ${userId}`
-        );
-      }
+      console.log(
+        `[SOCKET] ✅ Emitido '${event}' a ${sockets.length} cliente(s) del usuario ${userId}`
+      );
+      return true;
     } catch (error) {
-      console.error(`[SOCKET] Error emitiendo a usuario ${userId}:`, error);
+      console.error(`[SOCKET] ❌ Error emitiendo a usuario ${userId}:`, error);
+      return false;
     }
   }
 
@@ -307,18 +329,27 @@ let socketServerInstance: SocketServer | null = null;
 
 export function setSocketServerInstance(server: SocketServer) {
   socketServerInstance = server;
-  console.log("[SOCKET_SINGLETON] Instancia del servidor registrada");
+  // TAMBIÉN guardar en global para acceso cruzado entre procesos
+  if (typeof global !== "undefined") {
+    (global as any).socketServer = server;
+  }
+  console.log("[SOCKET_SINGLETON] Instancia del servidor registrada en singleton y global");
 }
 
 export function getSocketServerInstance(): SocketServer | null {
+  // Intentar obtener de global primero (para acceso desde API routes)
+  if (typeof global !== "undefined" && (global as any).socketServer) {
+    return (global as any).socketServer;
+  }
   return socketServerInstance;
 }
 
 export function isSocketServerReady(): boolean {
+  const instance = getSocketServerInstance();
   return (
-    socketServerInstance !== null &&
-    socketServerInstance.io !== null &&
-    typeof socketServerInstance.emitToUser === "function"
+    instance !== null &&
+    instance.io !== null &&
+    typeof instance.emitToUser === "function"
   );
 }
 
@@ -329,15 +360,64 @@ export async function emitNotificationToUser(
   data: any
 ): Promise<boolean> {
   try {
-    if (!isSocketServerReady()) {
-      console.error("[SOCKET_SINGLETON] Servidor no disponible");
-      return false;
+    console.log(`[SOCKET_EMIT] 🔍 Intentando emitir '${event}' a usuario ${userId}`);
+
+    // Opción 1: Intentar con el global primero (server.js - mismo proceso)
+    if (typeof global !== "undefined" && (global as any).socketServer) {
+      const globalSocket = (global as any).socketServer;
+      console.log(`[SOCKET_EMIT] ✅ global.socketServer encontrado`);
+
+      if (globalSocket && typeof globalSocket.emitToUser === "function") {
+        const enviado = await globalSocket.emitToUser(userId, event, data);
+        console.log(
+          `[SOCKET_GLOBAL] Notificación ${enviado ? '✅ ENVIADA' : '❌ NO ENVIADA'} via global instance a ${userId}`
+        );
+        return enviado;
+      } else {
+        console.warn(`[SOCKET_EMIT] ⚠️ global.socketServer existe pero no tiene emitToUser`);
+      }
+    } else {
+      console.warn(`[SOCKET_EMIT] ❌ global.socketServer NO está disponible`);
     }
 
-    await socketServerInstance!.emitToUser(userId, event, data);
-    return true;
+    // Opción 2: Fallback con singleton
+    if (isSocketServerReady()) {
+      console.log(`[SOCKET_EMIT] 🔄 Usando singleton instance...`);
+      await socketServerInstance!.emitToUser(userId, event, data);
+      return true;
+    }
+
+    // Opción 3: NUEVO - Llamar al endpoint HTTP interno
+    console.log(`[SOCKET_EMIT] 🌐 Intentando vía endpoint HTTP interno...`);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const response = await fetch(`${baseUrl}/api/internal/socket/emit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, event, data }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(
+          `[SOCKET_EMIT] ${result.enviado ? '✅ ENVIADA' : '⚠️ Usuario offline'} vía HTTP a ${userId}`
+        );
+        return result.enviado;
+      } else {
+        console.error(`[SOCKET_EMIT] ❌ Error HTTP ${response.status}:`, await response.text());
+      }
+    } catch (fetchError) {
+      console.error(`[SOCKET_EMIT] ❌ Error en fetch:`, fetchError);
+    }
+
+    console.error(
+      `[SOCKET_EMIT] ❌ NINGÚN método disponible. Notificación guardada pero NO enviada en tiempo real.`
+    );
+    return false;
   } catch (error) {
-    console.error("[SOCKET_SINGLETON] Error emitiendo notificación:", error);
+    console.error("[SOCKET] ❌ Error emitiendo notificación:", error);
     return false;
   }
 }

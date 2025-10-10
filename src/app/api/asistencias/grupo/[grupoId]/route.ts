@@ -10,6 +10,8 @@ import Asistencia from "@/models/Asistencia";
 import Grupo from "@/models/grupo";
 import Academia from "@/models/academia";
 import UsuarioAcademia from "@/models/users_academia";
+import Suscripcion from "@/models/Suscripcion";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
 import connectDB from "@/libs/mongodb";
 
 export async function GET(
@@ -64,6 +66,8 @@ export async function GET(
     const finDia = new Date(fecha);
     finDia.setHours(23, 59, 59, 999);
 
+    console.log(`[ASISTENCIAS_API] Buscando asistencias para grupo ${params.grupoId} entre ${inicioDia.toISOString()} y ${finDia.toISOString()}`);
+
     const asistencias = await Asistencia.find({
       grupoId: params.grupoId,
       fecha: {
@@ -74,25 +78,82 @@ export async function GET(
       .populate("userId", "firstname lastname imagen")
       .populate("suscripcionId", "estado trial");
 
-    // Obtener TODOS los miembros de la academia (estado aceptado)
+    console.log(`[ASISTENCIAS_API] Asistencias encontradas: ${asistencias.length}`, asistencias.map(a => ({
+      _id: a._id,
+      userId: a.userId?._id,
+      asistio: a.asistio,
+      fecha: a.fecha,
+      esTrial: a.esTrial
+    })));
+
+    // Obtener TODOS los miembros de la academia
+    // Combinar sistema viejo (UsuarioAcademia) y nuevo (Suscripcion)
     let todosLosMiembros = [];
+
+    // 1. Miembros del sistema viejo (tabla users_academia)
     const miembrosAcademia = await UsuarioAcademia.find({
       academia_id: academiaId,
-      estado: "aceptado", // Solo miembros aceptados
+      estado: "aceptado",
     }).populate({
       path: "user_id",
       select: "firstname lastname email imagen",
     });
 
-    todosLosMiembros = miembrosAcademia
-      .filter((m) => m.user_id) // Filtrar usuarios válidos
+    const miembrosViejos = miembrosAcademia
+      .filter((m) => m.user_id)
       .map((m) => ({
-        userId: m.user_id._id,
+        userId: m.user_id._id.toString(),
         nombre: `${m.user_id.firstname} ${m.user_id.lastname}`,
         email: m.user_id.email,
         imagen: m.user_id.imagen,
         fechaIngreso: m.createdAt || new Date(),
+        origen: "viejo",
       }));
+
+    // 2. Miembros del sistema nuevo (tabla suscripciones)
+    // Incluir trial, activa Y trial_expirado (para poder marcar asistencia aunque expire)
+    const suscripcionesActivas = await Suscripcion.find({
+      academiaId: academiaId,
+      estado: {
+        $in: [
+          SUBSCRIPTION_CONFIG.ESTADOS.TRIAL,
+          SUBSCRIPTION_CONFIG.ESTADOS.ACTIVA,
+          SUBSCRIPTION_CONFIG.ESTADOS.TRIAL_EXPIRADO, // ✅ INCLUIR TRIAL EXPIRADO
+        ],
+      },
+    }).populate({
+      path: "userId",
+      select: "firstname lastname email imagen",
+    });
+
+    const miembrosNuevos = suscripcionesActivas
+      .filter((s) => s.userId)
+      .map((s) => ({
+        userId: s.userId._id.toString(),
+        nombre: `${s.userId.firstname} ${s.userId.lastname}`,
+        email: s.userId.email,
+        imagen: s.userId.imagen,
+        fechaIngreso: s.createdAt || new Date(),
+        origen: "nuevo",
+        suscripcionId: s._id,
+        estado: s.estado,
+        trial: s.trial,
+      }));
+
+    // 3. Combinar ambos sistemas, evitando duplicados
+    const usuariosUnicos = new Map();
+
+    // Primero agregar miembros viejos
+    miembrosViejos.forEach((m) => {
+      usuariosUnicos.set(m.userId, m);
+    });
+
+    // Luego sobrescribir/agregar miembros nuevos (tienen prioridad)
+    miembrosNuevos.forEach((m) => {
+      usuariosUnicos.set(m.userId, m);
+    });
+
+    todosLosMiembros = Array.from(usuariosUnicos.values());
 
     return NextResponse.json({
       grupo: {

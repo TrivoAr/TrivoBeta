@@ -153,9 +153,27 @@ export const subscriptionService = {
   ): Promise<{ puedeAsistir: boolean; razon?: string; suscripcion?: any }> {
     await connectDB();
 
+    // Obtener el grupo y su academia
+    const Grupo = (await import("@/models/grupo")).default;
+    const grupo = await Grupo.findById(grupoId);
+
+    if (!grupo) {
+      return {
+        puedeAsistir: false,
+        razon: "Grupo no encontrado",
+      };
+    }
+
+    const academiaId =
+      typeof grupo.academia_id === "string"
+        ? grupo.academia_id
+        : grupo.academia_id._id.toString();
+
+    // Buscar suscripción por academiaId (no por grupoId)
+    // porque la suscripción es a nivel de academia, no de grupo
     const suscripcion = await Suscripcion.findOne({
       userId,
-      grupoId,
+      academiaId,
       estado: {
         $in: [
           SUBSCRIPTION_CONFIG.ESTADOS.TRIAL,
@@ -211,12 +229,34 @@ export const subscriptionService = {
       registradoPor,
     } = params;
 
+    // Normalizar la fecha al inicio del día para evitar duplicados por diferencias de hora
+    const fechaNormalizada = new Date(fecha);
+    fechaNormalizada.setHours(0, 0, 0, 0);
+
+    console.log(`[SUBSCRIPTION_SERVICE] Registrando asistencia para ${userId} en fecha normalizada: ${fechaNormalizada.toISOString()}`);
+
     // Verificar si puede asistir
     const { puedeAsistir, razon, suscripcion } =
       await this.verificarPuedeAsistir(userId, grupoId);
 
     if (!puedeAsistir) {
       throw new Error(razon || "No puede asistir a esta clase");
+    }
+
+    // Verificar si ya existe asistencia para hoy
+    const asistenciaExistente = await Asistencia.findOne({
+      userId,
+      grupoId,
+      fecha: fechaNormalizada,
+    });
+
+    if (asistenciaExistente) {
+      console.log(`[SUBSCRIPTION_SERVICE] Asistencia ya existe para ${userId} en ${fechaNormalizada.toISOString()}, devolviendo existente`);
+      return {
+        asistencia: asistenciaExistente,
+        requiereActivacion: false,
+        suscripcion,
+      };
     }
 
     // Registrar la asistencia
@@ -226,11 +266,13 @@ export const subscriptionService = {
       academiaId,
       grupoId,
       suscripcionId: suscripcion._id,
-      fecha,
+      fecha: fechaNormalizada,
       asistio: true,
       esTrial,
       registradoPor,
     });
+
+    console.log(`[SUBSCRIPTION_SERVICE] Asistencia creada exitosamente con ID: ${asistencia._id}`);
 
     // Si está en trial, actualizar contador
     let requiereActivacion = false;

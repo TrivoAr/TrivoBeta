@@ -20,6 +20,10 @@ const nextConfig = {
       },
     ],
     domains: ["firebasestorage.googleapis.com", "ui-avatars.com"],
+    formats: ["image/avif", "image/webp"], // Optimizar imágenes a formatos modernos
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60, // Cache de imágenes optimizadas por 60 segundos
   },
   eslint: {
     ignoreDuringBuilds: true,

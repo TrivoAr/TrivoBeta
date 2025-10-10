@@ -4,6 +4,8 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import Pagos from "@/models/pagos";
 import UsuarioAcademia from "@/models/users_academia";
+import Suscripcion from "@/models/Suscripcion";
+import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
 
 export async function GET(
   request: NextRequest,
@@ -20,13 +22,47 @@ export async function GET(
 
     await connectDB();
 
-    // Buscar el pago más reciente para esta academia y usuario
+    // PRIORIDAD 1: Verificar sistema nuevo (Suscripciones)
+    const suscripcion = await Suscripcion.findOne({
+      userId,
+      academiaId,
+    }).sort({ createdAt: -1 });
+
+    if (suscripcion) {
+      // Si existe suscripción, usar ese estado
+      const estadosSuscripcionActivos = [
+        SUBSCRIPTION_CONFIG.ESTADOS.TRIAL,
+        SUBSCRIPTION_CONFIG.ESTADOS.ACTIVA,
+      ];
+
+      const isApproved = estadosSuscripcionActivos.includes(suscripcion.estado);
+      const isPending = suscripcion.estado === SUBSCRIPTION_CONFIG.ESTADOS.PENDIENTE;
+      // NO marcar trial_expirado como pending - necesita mostrar botón de activación
+
+      return NextResponse.json({
+        pago: null,
+        miembro: {
+          id: suscripcion._id,
+          estado: suscripcion.estado,
+        },
+        suscripcion: {
+          id: suscripcion._id,
+          estado: suscripcion.estado,
+          trial: suscripcion.trial,
+          mercadoPago: suscripcion.mercadoPago,
+        },
+        isApproved,
+        isPending,
+        tipoSistema: "suscripcion", // Para debugging
+      });
+    }
+
+    // FALLBACK: Sistema viejo (Pagos + UsuarioAcademia)
     const pago = await Pagos.findOne({
-      academiaId, // Nota: necesitaremos actualizar el modelo Pagos para incluir academiaId
+      academiaId,
       userId,
     }).sort({ createdAt: -1 });
 
-    // Buscar el estado del miembro en la academia
     const miembro = await UsuarioAcademia.findOne({
       academia_id: academiaId,
       user_id: userId,
@@ -50,10 +86,12 @@ export async function GET(
             estado: miembro.estado,
           }
         : null,
+      suscripcion: null,
       isApproved: miembro?.estado === "aceptado" && pago?.estado === "aprobado",
       isPending:
         pago?.estado === "pendiente" ||
         (pago?.estado === "aprobado" && miembro?.estado === "pendiente"),
+      tipoSistema: "viejo", // Para debugging
     });
   } catch (error) {
     console.error("Error obteniendo estado de pago de academia:", error);

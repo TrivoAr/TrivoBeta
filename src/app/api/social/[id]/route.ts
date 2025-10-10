@@ -12,7 +12,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  console.log("API GET /social/[id] called with ID:", params.id);
+
 
   try {
     const repository = new SalidaSocialRepository();
@@ -20,11 +20,11 @@ export async function GET(
     console.log("ID recibido:", id);
 
     const salida = await repository.findWithPopulatedData(id);
-    console.log("Salida social encontrada y preparada:", salida.nombre);
+
 
     return NextResponse.json(salida, { status: 200 });
   } catch (error) {
-    console.error("[GET_SALIDA_BY_ID] Error:", error);
+   
 
     if (error instanceof NotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });

@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { subscriptionService } from "@/services/subscriptionService";
 import { mercadopagoService } from "@/services/mercadopagoService";
+import { notificationService } from "@/services/notificationService";
 import Academia from "@/models/academia";
 import Suscripcion from "@/models/Suscripcion";
 import connectDB from "@/libs/mongodb";
@@ -111,6 +112,28 @@ export async function POST(request: NextRequest) {
           { error: "Error al configurar método de pago: " + error.message },
           { status: 500 }
         );
+      }
+    }
+
+    // Si el usuario se unió con trial, notificar al dueño de la academia
+    if (elegibilidad.puedeUsarTrial) {
+      try {
+        await notificationService.notificarNuevoSuscriptorTrial({
+          dueñoId: academia.dueño_id._id.toString(),
+          userId: session.user.id,
+          userName: `${session.user.firstname} ${session.user.lastname}`,
+          academiaId: academia._id.toString(),
+          academiaNombre: academia.nombre_academia,
+        });
+        console.log(
+          `[SUBSCRIPTIONS] Notificación enviada al dueño ${academia.dueño_id._id} sobre nuevo trial`
+        );
+      } catch (notifError) {
+        console.error(
+          "[SUBSCRIPTIONS] Error enviando notificación:",
+          notifError
+        );
+        // No fallar la suscripción si falla la notificación
       }
     }
 

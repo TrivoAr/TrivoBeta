@@ -1,8 +1,9 @@
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 
 export async function saveSponsorImage(file: File, sponsorId: string) {
   try {
+    const storage = await getStorageInstance();
     const fileName = "sponsor-image.jpg";
     const fileRef = ref(storage, `sponsors/${sponsorId}/${fileName}`);
 

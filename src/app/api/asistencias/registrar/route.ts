@@ -9,8 +9,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import { subscriptionService } from "@/services/subscriptionService";
 import { mercadopagoService } from "@/services/mercadopagoService";
+import { notificationService } from "@/services/notificationService";
 import Grupo from "@/models/grupo";
 import Academia from "@/models/academia";
+import User from "@/models/user";
 import connectDB from "@/libs/mongodb";
 
 export async function POST(request: NextRequest) {
@@ -55,6 +57,8 @@ export async function POST(request: NextRequest) {
 
     // Registrar asistencia usando el servicio
     const fechaAsistencia = fecha ? new Date(fecha) : new Date();
+    console.log(`[ASISTENCIAS] Registrando asistencia para usuario ${userId} en grupo ${grupoId}, fecha: ${fechaAsistencia.toISOString()}`);
+
     const resultado = await subscriptionService.registrarAsistencia({
       userId,
       academiaId: grupo.academia_id._id.toString(),
@@ -63,8 +67,48 @@ export async function POST(request: NextRequest) {
       registradoPor: session.user.id,
     });
 
-    // Si se requiere activación (trial expirado), crear preapproval
+    console.log(`[ASISTENCIAS] Asistencia registrada exitosamente:`, {
+      asistenciaId: resultado.asistencia._id,
+      userId: resultado.asistencia.userId,
+      grupoId: resultado.asistencia.grupoId,
+      fecha: resultado.asistencia.fecha,
+      asistio: resultado.asistencia.asistio,
+      esTrial: resultado.asistencia.esTrial,
+      requiereActivacion: resultado.requiereActivacion,
+    });
+
+    // Enviar notificación al alumno
+    try {
+      console.log(`[ASISTENCIAS] Enviando notificación al alumno ${userId}...`);
+      await notificationService.notificarAsistenciaRegistrada({
+        alumnoId: userId,
+        profesorId: session.user.id,
+        profesorNombre: `${session.user.firstname} ${session.user.lastname}`,
+        grupoNombre: grupo.nombre_grupo,
+        academiaId: grupo.academia_id._id.toString(),
+        academiaNombre: academia.nombre_academia,
+        esTrial: resultado.asistencia.esTrial,
+      });
+      console.log(
+        `[ASISTENCIAS] ✅ Notificación enviada al alumno ${userId} sobre asistencia`
+      );
+    } catch (notifError) {
+      console.error(
+        "[ASISTENCIAS] ❌ Error enviando notificación:",
+        notifError
+      );
+      // No fallar el registro si falla la notificación
+    }
+
+    // Si se requiere activación (trial expirado), marcar suscripción y crear preapproval
     if (resultado.requiereActivacion) {
+      // PRIMERO: Marcar suscripción como trial_expirado SIEMPRE
+      resultado.suscripcion.estado = "trial_expirado";
+      await resultado.suscripcion.save();
+      console.log(`[ASISTENCIAS] Suscripción marcada como trial_expirado`);
+
+      // SEGUNDO: Intentar crear preapproval de MercadoPago (puede fallar si no hay credenciales)
+      let mercadoPagoLink = null;
       try {
         const externalReference = mercadopagoService.generarExternalReference(
           userId,
@@ -95,33 +139,51 @@ export async function POST(request: NextRequest) {
           payerEmail: user.userId.email,
         };
         await resultado.suscripcion.save();
+        mercadoPagoLink = mpResult.initPoint;
 
-        // Activar la suscripción
-        await subscriptionService.activarSuscripcionPostTrial(
-          resultado.suscripcion._id.toString()
+        console.log(
+          `[ASISTENCIAS] Preapproval de MercadoPago creado exitosamente`
         );
-
-        return NextResponse.json({
-          success: true,
-          asistencia: resultado.asistencia,
-          trialExpirado: true,
-          suscripcion: resultado.suscripcion,
-          mercadoPago: {
-            initPoint: mpResult.initPoint,
-            preapprovalId: mpResult.preapprovalId,
-          },
-          message:
-            "Asistencia registrada. Trial expirado, se requiere configurar pago.",
-        });
       } catch (mpError: any) {
-        console.error("Error creando preapproval post-trial:", mpError);
-        return NextResponse.json({
-          success: true,
-          asistencia: resultado.asistencia,
-          trialExpirado: true,
-          error: "Asistencia registrada pero error al configurar pago",
-        });
+        console.error(
+          "[ASISTENCIAS] Error creando preapproval post-trial:",
+          mpError.message
+        );
+        // Continuar sin MercadoPago - el dueño debe configurar credenciales
       }
+
+      // Notificar al alumno que su trial expiró
+      try {
+        await notificationService.notificarTrialExpirado({
+          alumnoId: userId,
+          academiaId: grupo.academia_id._id.toString(),
+          academiaNombre: academia.nombre_academia,
+          mercadoPagoLink,
+        });
+        console.log(
+          `[ASISTENCIAS] Notificación de trial expirado enviada al alumno ${userId}`
+        );
+      } catch (notifError) {
+        console.error(
+          "[ASISTENCIAS] Error enviando notificación de trial expirado:",
+          notifError
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        asistencia: resultado.asistencia,
+        trialExpirado: true,
+        suscripcion: resultado.suscripcion,
+        mercadoPago: mercadoPagoLink
+          ? {
+              initPoint: mercadoPagoLink,
+            }
+          : null,
+        message: mercadoPagoLink
+          ? "Asistencia registrada. Trial expirado, se requiere configurar pago."
+          : "Asistencia registrada. Trial expirado. El dueño debe configurar MercadoPago para continuar.",
+      });
     }
 
     return NextResponse.json({

@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { storage } from "../lib/firebaseConfig";
+import { getStorageInstance } from "../lib/firebaseConfig";
 
 const UploadImage = ({ folder, onUploadComplete }) => {
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) {
       setError("No file selected");
       return;
     }
 
     setError(""); // Reset error
+    const storage = await getStorageInstance();
     const storageRef = ref(storage, `${folder}/${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 

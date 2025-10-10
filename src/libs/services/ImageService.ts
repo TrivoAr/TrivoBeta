@@ -1,5 +1,5 @@
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 
 export interface ImageUploadOptions {
   maxRetries?: number;
@@ -97,6 +97,7 @@ export class ImageService {
     fileName: string
   ): Promise<string> {
     try {
+      const storage = await getStorageInstance();
       const fileRef = ref(storage, `${path}/${fileName}`);
       const snapshot = await uploadBytes(fileRef, file);
       return await getDownloadURL(snapshot.ref);
@@ -134,6 +135,7 @@ export class ImageService {
     fileName: string
   ): Promise<string> {
     try {
+      const storage = await getStorageInstance();
       const fileRef = ref(storage, `${path}/${fileName}`);
       return await getDownloadURL(fileRef);
     } catch (error) {

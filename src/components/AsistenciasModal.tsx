@@ -7,18 +7,36 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ImageService } from "@/libs/services/ImageService";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Miembro {
   userId: string;
   nombre: string;
   email: string;
   imagen?: string;
+  suscripcionId?: string;
+  estado?: string;
+  trial?: {
+    estaEnTrial: boolean;
+    clasesAsistidas: number;
+    fechaFin: string;
+  };
 }
 
 interface Asistencia {
@@ -55,38 +73,55 @@ export default function AsistenciasModal({
   grupoNombre,
   fecha = new Date(),
 }: AsistenciasModalProps) {
-  const [loading, setLoading] = useState(false);
-  const [miembros, setMiembros] = useState<Miembro[]>([]);
-  const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
+  const queryClient = useQueryClient();
   const [procesando, setProcesando] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(fecha);
   const [imagenesUsuarios, setImagenesUsuarios] = useState<
     Record<string, string>
   >({});
+  const [trialExpiradoModal, setTrialExpiradoModal] = useState<{
+    open: boolean;
+    nombre: string;
+    mercadoPagoLink?: string;
+  }>({ open: false, nombre: "" });
 
-  // Cargar datos al abrir el modal
-  useEffect(() => {
-    if (isOpen) {
-      cargarDatos();
-    }
-  }, [isOpen, grupoId, selectedDate]);
+  // Usar TanStack Query para cargar datos con cache control
+  const fechaParam = format(selectedDate, "yyyy-MM-dd");
+  const { data, isLoading: loading, refetch } = useQuery({
+    queryKey: ["asistencias-grupo", grupoId, fechaParam],
+    queryFn: async () => {
+      console.log(
+        `[ASISTENCIAS_MODAL] Cargando datos para grupo ${grupoId}, fecha: ${fechaParam}`
+      );
 
-  const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      const fechaParam = format(selectedDate, "yyyy-MM-dd");
       const response = await axios.get(
         `/api/asistencias/grupo/${grupoId}?fecha=${fechaParam}`
       );
 
-      const miembrosData = response.data.miembros || [];
-      setMiembros(miembrosData);
-      setAsistencias(response.data.asistencias || []);
+      console.log(
+        "[ASISTENCIAS_MODAL] Datos recibidos:",
+        response.data.miembros?.length,
+        "miembros,",
+        response.data.asistencias?.length,
+        "asistencias"
+      );
 
-      // Cargar imágenes de perfil de Firebase
+      return response.data;
+    },
+    enabled: isOpen,
+    staleTime: 0, // Siempre considerar datos como stale
+    gcTime: 0, // No mantener en cache
+  });
+
+  const miembros = data?.miembros || [];
+  const asistencias = data?.asistencias || [];
+
+  // Cargar imágenes cuando cambien los miembros
+  useEffect(() => {
+    const cargarImagenes = async () => {
       const imagenesMap: Record<string, string> = {};
       await Promise.all(
-        miembrosData.map(async (miembro: Miembro) => {
+        miembros.map(async (miembro: Miembro) => {
           try {
             const imageUrl = await ImageService.getProfileImageWithFallback(
               miembro.userId,
@@ -94,7 +129,6 @@ export default function AsistenciasModal({
             );
             imagenesMap[miembro.userId] = imageUrl;
           } catch (error) {
-            // Fallback a ui-avatars si falla
             imagenesMap[miembro.userId] = ImageService.generateAvatarUrl(
               miembro.nombre
             );
@@ -102,38 +136,56 @@ export default function AsistenciasModal({
         })
       );
       setImagenesUsuarios(imagenesMap);
-    } catch (error: any) {
-      console.error("Error cargando asistencias:", error);
-      toast.error(error.response?.data?.error || "Error al cargar datos");
-    } finally {
-      setLoading(false);
+    };
+
+    if (miembros.length > 0) {
+      cargarImagenes();
     }
-  };
+  }, [miembros]);
 
   const registrarAsistencia = async (userId: string, nombre: string) => {
     setProcesando(userId);
     try {
+      console.log("[ASISTENCIAS_MODAL] Registrando asistencia para:", nombre);
+
       const response = await axios.post("/api/asistencias/registrar", {
         userId,
         grupoId,
         fecha: selectedDate.toISOString(),
       });
 
-      if (response.data.trialExpirado) {
-        toast.warning(
-          `Trial de ${nombre} expirado. Se ha creado la suscripción de pago.`,
-          { duration: 5000 }
-        );
-      } else {
-        toast.success(`Asistencia de ${nombre} registrada`);
-      }
+      console.log("[ASISTENCIAS_MODAL] Respuesta del servidor:", response.data);
 
-      // Recargar datos
-      await cargarDatos();
+      // Invalidar query y refetch INMEDIATAMENTE
+      console.log("[ASISTENCIAS_MODAL] Invalidando queries y refetcheando...");
+      await queryClient.invalidateQueries({
+        queryKey: ["asistencias-grupo", grupoId, fechaParam],
+      });
+      await refetch();
+
+      if (response.data.trialExpirado) {
+        console.log("[ASISTENCIAS_MODAL] Trial expirado, mostrando modal");
+        setTrialExpiradoModal({
+          open: true,
+          nombre,
+          mercadoPagoLink: response.data.mercadoPago?.initPoint,
+        });
+      } else {
+        console.log(
+          "[ASISTENCIAS_MODAL] Mostrando toast de asistencia registrada"
+        );
+        toast.success(`✅ Asistencia de ${nombre} registrada`, {
+          duration: 3000,
+          position: "top-center",
+        });
+      }
     } catch (error: any) {
-      console.error("Error registrando asistencia:", error);
+      console.error("[ASISTENCIAS_MODAL] Error registrando asistencia:", error);
       toast.error(
-        error.response?.data?.error || "Error al registrar asistencia"
+        error.response?.data?.error || "Error al registrar asistencia",
+        {
+          position: "top-center",
+        }
       );
     } finally {
       setProcesando(null);
@@ -141,7 +193,13 @@ export default function AsistenciasModal({
   };
 
   const verificarAsistencia = (userId: string): Asistencia | undefined => {
-    return asistencias.find((a) => a.userId._id === userId && a.asistio);
+    const asistencia = asistencias.find((a) => a.userId._id === userId && a.asistio);
+    console.log(`[ASISTENCIAS_MODAL] verificarAsistencia para ${userId}:`, {
+      encontrada: !!asistencia,
+      totalAsistencias: asistencias.length,
+      asistenciasIds: asistencias.map(a => a.userId._id),
+    });
+    return asistencia;
   };
 
   const cambiarFecha = (dias: number) => {
@@ -160,8 +218,9 @@ export default function AsistenciasModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             <div className="flex flex-col gap-2">
@@ -242,12 +301,20 @@ export default function AsistenciasModal({
               return (
                 <div
                   key={miembro.userId}
-                  className="flex items-center justify-between p-3 bg-card border rounded-lg hover:bg-muted/50 transition-colors"
+                  className={`flex items-center justify-between p-3 bg-card border rounded-lg transition-all duration-300 ${
+                    yaAsistio
+                      ? "border-green-500 bg-green-50 dark:bg-green-950/20"
+                      : "hover:bg-muted/50"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     {/* Imagen del miembro */}
                     <div
-                      className="w-10 h-10 rounded-full bg-muted bg-cover bg-center"
+                      className={`w-10 h-10 rounded-full bg-muted bg-cover bg-center transition-all ${
+                        yaAsistio
+                          ? "ring-2 ring-green-500 ring-offset-2"
+                          : ""
+                      }`}
                       style={{
                         backgroundImage: `url(${
                           imagenesUsuarios[miembro.userId] ||
@@ -258,13 +325,22 @@ export default function AsistenciasModal({
 
                     {/* Información del miembro */}
                     <div className="flex flex-col">
-                      <span className="font-medium text-sm">
-                        {miembro.nombre}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">
+                          {miembro.nombre}
+                        </span>
+                        {/* Mostrar "Clase gratis" si está en trial */}
+                        {miembro.estado === "trial" &&
+                          miembro.trial?.estaEnTrial && (
+                            <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">
+                              Clase gratis
+                            </span>
+                          )}
+                      </div>
                       {yaAsistio && (
-                        <div className="flex gap-1 items-center">
+                        <div className="flex gap-1 items-center mt-1">
                           {esTrial && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                            <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 px-2 py-0.5 rounded">
                               Trial
                             </span>
                           )}
@@ -272,10 +348,10 @@ export default function AsistenciasModal({
                             <span
                               className={`text-xs px-2 py-0.5 rounded ${
                                 estadoSuscripcion === "activa"
-                                  ? "bg-green-100 text-green-700"
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
                                   : estadoSuscripcion === "trial"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-gray-100 text-gray-700"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                               }`}
                             >
                               {estadoSuscripcion}
@@ -288,19 +364,20 @@ export default function AsistenciasModal({
 
                   {/* Botón de asistencia */}
                   {yaAsistio ? (
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 animate-in fade-in zoom-in duration-300">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
+                        width="24"
+                        height="24"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
+                        strokeWidth="3"
+                        className="drop-shadow-sm"
                       >
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span className="text-sm font-medium">Asistió</span>
+                      <span className="text-sm font-semibold">Asistió</span>
                     </div>
                   ) : (
                     <Button
@@ -310,6 +387,7 @@ export default function AsistenciasModal({
                       }
                       disabled={procesando === miembro.userId}
                       variant="outline"
+                      className="hover:bg-green-100 dark:hover:bg-green-950/30"
                     >
                       {procesando === miembro.userId ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -335,5 +413,61 @@ export default function AsistenciasModal({
         </div>
       </DialogContent>
     </Dialog>
+
+      {/* Modal de trial expirado */}
+      <AlertDialog
+        open={trialExpiradoModal.open}
+        onOpenChange={(open) =>
+          setTrialExpiradoModal({ ...trialExpiradoModal, open })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>✅ Asistencia registrada</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                La asistencia de{" "}
+                <span className="font-semibold">{trialExpiradoModal.nombre}</span>{" "}
+                ha sido registrada exitosamente.
+              </p>
+              <p className="text-amber-600 dark:text-amber-500 font-medium">
+                ⚠️ Su clase gratis ha sido utilizada.
+              </p>
+              {trialExpiradoModal.mercadoPagoLink ? (
+                <p>
+                  Para seguir asistiendo a las clases, el alumno debe activar su
+                  suscripción mensual.
+                </p>
+              ) : (
+                <p className="text-red-600 dark:text-red-500 font-medium">
+                  ⚠️ Debes configurar tus credenciales de MercadoPago en tu perfil
+                  para que el alumno pueda activar su suscripción.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() =>
+                setTrialExpiradoModal({ open: false, nombre: "" })
+              }
+            >
+              Cerrar
+            </AlertDialogCancel>
+            {trialExpiradoModal.mercadoPagoLink && (
+              <AlertDialogAction
+                onClick={() => {
+                  window.open(trialExpiradoModal.mercadoPagoLink, "_blank");
+                  setTrialExpiradoModal({ open: false, nombre: "" });
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Configurar pago
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

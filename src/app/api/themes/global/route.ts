@@ -5,15 +5,33 @@ import { connectDB } from "@/libs/mongodb";
 import Theme from "@/models/theme";
 import type { ThemeFlags } from "@/lib/theme/types";
 
+// Cache for theme data - revalidate every 5 minutes
+let themeCache: { data: ThemeFlags; timestamp: number } | null = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export async function GET() {
   try {
+    // Check if we have valid cached data
+    const now = Date.now();
+    if (themeCache && now - themeCache.timestamp < CACHE_TTL) {
+      return NextResponse.json(themeCache.data, {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      });
+    }
+
     await connectDB();
 
     const theme = await (Theme as any).findById("global");
 
     if (!theme) {
       const fallback = await import("../../../../../config/themes.json");
-      return NextResponse.json(fallback.default);
+      return NextResponse.json(fallback.default, {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      });
     }
 
     const flags: ThemeFlags = {
@@ -22,11 +40,22 @@ export async function GET() {
       dateRanges: theme.dateRanges,
     };
 
-    return NextResponse.json(flags);
+    // Update cache
+    themeCache = { data: flags, timestamp: now };
+
+    return NextResponse.json(flags, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
   } catch (error) {
     console.error("Error fetching theme flags:", error);
     const fallback = await import("../../../../../config/themes.json");
-    return NextResponse.json(fallback.default);
+    return NextResponse.json(fallback.default, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      },
+    });
   }
 }
 
@@ -70,6 +99,9 @@ export async function PUT(request: NextRequest) {
       enabled: theme.enabled,
       dateRanges: theme.dateRanges,
     };
+
+    // Invalidate cache when theme is updated
+    themeCache = { data: flags, timestamp: Date.now() };
 
     return NextResponse.json(flags);
   } catch (error) {

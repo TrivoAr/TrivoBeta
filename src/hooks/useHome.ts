@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 
 export interface Academia {
   _id: string;
@@ -49,11 +49,13 @@ const getAcademyImage = async (
 ): Promise<string> => {
   try {
     // Try new structure: academias/{academyId}/foto_academia.jpg
+    const storage = await getStorageInstance();
     const fileRef = ref(storage, `academias/${academyId}/foto_academia.jpg`);
     return await getDownloadURL(fileRef);
   } catch (error) {
     try {
       // Fallback: academias/{academyId}/profile-image.jpg
+      const storage = await getStorageInstance();
       const fallbackRef = ref(
         storage,
         `academias/${academyId}/profile-image.jpg`

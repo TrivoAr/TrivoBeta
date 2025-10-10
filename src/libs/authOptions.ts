@@ -108,7 +108,9 @@ export const authOptions: AuthOptions = {
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // Only query DB when user is signing in (user exists)
+      // For subsequent requests, just return the existing token
       if (user) {
         await connectDB();
         const dbUser = await User.findOne({ email: user.email });
@@ -128,15 +130,20 @@ export const authOptions: AuthOptions = {
             favoritos: dbUser.favoritos,
             strava: dbUser.strava,
           };
+          // Agregar el sub (subject) para que sea usado por Socket.IO
+          token.sub = dbUser._id.toString();
         } else {
           token.user = user;
         }
       }
+      // For token refresh/update, return existing token without DB query
       return token;
     },
 
     async session({ session, token }) {
       session.user = token.user as any;
+      // Exponer el token JWT para uso con Socket.IO
+      session.accessToken = token;
       return session;
     },
   },

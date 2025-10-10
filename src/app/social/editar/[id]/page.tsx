@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 import DescriptionEditor from "@/components/DescriptionEditor";
 import dynamic from "next/dynamic";
 import debounce from "lodash.debounce";
@@ -205,6 +205,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
     let imageUrl = salida.imagen || "";
     if (imagen) {
+      const storage = await getStorageInstance();
       const imageRef = ref(storage, `salidas/${uuidv4()}`);
       await uploadBytes(imageRef, imagen);
       imageUrl = await getDownloadURL(imageRef);

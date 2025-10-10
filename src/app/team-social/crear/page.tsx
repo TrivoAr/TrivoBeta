@@ -6,7 +6,7 @@ import debounce from "lodash.debounce";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
 import { useSession, signOut } from "next-auth/react";
 import toast, { Toaster } from "react-hot-toast";
 import mapboxgl from "mapbox-gl";
@@ -389,6 +389,7 @@ export default function CrearTeamPage() {
 
       let imageUrl = "";
       if (imagen) {
+        const storage = await getStorageInstance();
         const imageRef = ref(storage, `team-social/${uuidv4()}`);
         await uploadBytes(imageRef, imagen);
         imageUrl = await getDownloadURL(imageRef);

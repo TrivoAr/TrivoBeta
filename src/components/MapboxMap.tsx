@@ -56,8 +56,13 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
           // Dynamic import to avoid SSR issues
           mapboxgl = (await import("mapbox-gl")).default;
 
-          // Import CSS dynamically
-          await import("mapbox-gl/dist/mapbox-gl.css" as any);
+          // Dynamically load CSS
+          if (!document.querySelector('link[href*="mapbox-gl.css"]')) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "https://api.mapbox.com/mapbox-gl-js/v3.1.0/mapbox-gl.css";
+            document.head.appendChild(link);
+          }
 
           if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
             console.error("Mapbox access token not found");

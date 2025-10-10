@@ -25,6 +25,8 @@ export const SUBSCRIPTION_CONFIG = {
   // Estados posibles de una suscripción
   ESTADOS: {
     TRIAL: "trial", // En período de prueba gratuito
+    TRIAL_EXPIRADO: "trial_expirado", // Trial expirado, esperando configuración de pago
+    PENDIENTE: "pendiente", // Esperando aprobación de pago
     ACTIVA: "activa", // Suscripción activa y pagada
     VENCIDA: "vencida", // Pago rechazado o vencido
     PAUSADA: "pausada", // Usuario pausó la suscripción

@@ -21,6 +21,7 @@ export interface AirbnbCardProps {
   onClick?: () => void;
   type: "academia" | "salida";
   className?: string;
+  priority?: boolean; // Para optimizar LCP en las primeras imágenes
 }
 
 /**
@@ -49,6 +50,7 @@ export default function AirbnbCard({
   onClick,
   type,
   className,
+  priority = false,
 }: AirbnbCardProps) {
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -69,6 +71,7 @@ export default function AirbnbCard({
           src={image || "/assets/placeholder-image.jpg"}
           alt={title}
           fill
+          priority={priority}
           className="object-cover group-hover:scale-105 transition-transform duration-300"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />

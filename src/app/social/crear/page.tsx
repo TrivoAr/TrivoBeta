@@ -3,14 +3,13 @@ import { useState, useCallback, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/libs/firebaseConfig";
+import { getStorageInstance } from "@/libs/firebaseConfig";
+import mapboxgl from "mapbox-gl";
 import debounce from "lodash.debounce";
 import toast, { Toaster } from "react-hot-toast";
-import mapboxgl from "mapbox-gl";
-import DescriptionEditor from "@/components/DescriptionEditor";
-import DescriptionMarkdown from "@/components/DescriptionMarkdown";
 import { set } from "mongoose";
 import {
   useProvinces,
@@ -19,7 +18,14 @@ import {
 } from "@/hooks/useArgentinaLocations";
 import { useSponsors } from "@/hooks/useSponsors";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN as string;
+// Dynamic imports for code splitting
+const DescriptionEditor = dynamic(() => import("@/components/DescriptionEditor"), {
+  ssr: false,
+});
+
+const DescriptionMarkdown = dynamic(() => import("@/components/DescriptionMarkdown"), {
+  ssr: false,
+});
 
 interface Coords {
   lat: number;
@@ -199,6 +205,7 @@ export default function CrearSalidaPage() {
     setIsSubmitting(true);
 
     if (imagen) {
+      const storage = await getStorageInstance();
       const imageRef = ref(storage, `salidas/${uuidv4()}`);
       await uploadBytes(imageRef, imagen);
       imageUrl = await getDownloadURL(imageRef);
