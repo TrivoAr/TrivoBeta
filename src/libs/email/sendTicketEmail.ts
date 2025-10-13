@@ -2,10 +2,9 @@ import { Resend } from "resend";
 import User from "@/models/user";
 import SalidaSocial from "@/models/salidaSocial";
 import { buildQrPdf } from "@/libs/pdf";
+import { EmailService } from "@/services/emailService";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-type LeanUser = { email?: string } | null;
-type LeanSalida = { nombre?: string } | null;
+const emailService = new EmailService();
 
 function dataUrlToBase64(dataUrl: string) {
   const i = dataUrl.indexOf(",");
@@ -40,30 +39,16 @@ export async function sendTicketEmail({
       !!process.env.RESEND_API_KEY
     );
 
-    const user = (await User.findById(userId).lean()) as LeanUser & {
-      firstname?: string;
-      lastname?: string;
-    };
-    const salida = (await SalidaSocial.findById(
-      salidaId
-    ).lean()) as LeanSalida & {
-      ubicacion?: string;
-      fecha?: string;
-      hora?: string;
-      precio?: string;
-    };
+     const user = await User.findById(userId).lean();
+     const salida = await SalidaSocial.findById(salidaId).lean();
 
-    if (!user) {
+    if (!user || Array.isArray(user)) {
       throw new Error(`User not found with ID: ${userId}`);
     }
 
-    if (!user.email) {
-      throw new Error(`User ${userId} has no email address`);
-    }
+    if (!user?.email) throw new Error(`El usuario ${userId} no tiene email`);
 
-    if (!salida) {
-      throw new Error(`SalidaSocial not found with ID: ${salidaId}`);
-    }
+    if (!salida || Array.isArray(salida) || !salida.nombre) throw new Error(`Salida no encontrada: ${salidaId}`);
 
     console.log(
       "[SEND_TICKET_EMAIL] User found:",
@@ -160,43 +145,28 @@ export async function sendTicketEmail({
       user.email.split("@")[1]
     );
 
-    const resp = await resend.emails.send({
-      from: process.env.RESEND_FROM ?? "Soporte Trivo <noreply@trivo.com.ar>",
-      to: user.email,
-      subject: `Tu QR para ${titulo}`,
-      html,
-      attachments: [
-        {
-          filename: "entrada.pdf",
-          content: pdfBase64,
-          contentType: "application/pdf",
-        },
-        {
-          filename: "qr-code.png",
-          content: qrBase64,
-          contentType: "image/png",
-          cid: "qr-image",
-        } as any,
-      ],
-    });
+     const emailResponse = await emailService.sendEmail({
+    to: user.email,
+    subject: `Tu QR para ${titulo}`,
+    html,
+    attachments: [
+      {
+        filename: "entrada.pdf",
+        content: pdfBase64,
+        contentType: "application/pdf",
+      },
+      {
+        filename: "qr-code.png",
+        content: qrBase64,
+        contentType: "image/png",
+        cid: "qr-image",
+      },
+    ],
+  });
 
-    console.log(
-      "[SEND_TICKET_EMAIL] Resend response:",
-      JSON.stringify(resp, null, 2)
-    );
-
-    const id = (resp as any)?.data?.id;
-    const error = (resp as any)?.error;
-    if (error) {
-      console.error("[RESEND][ERROR]", error);
-      throw new Error(
-        typeof error === "string" ? error : JSON.stringify(error)
-      );
-    }
-    console.log("[RESEND] Email sent successfully. ID:", id);
-    return id || "";
+  return emailResponse.id ?? "Email sent";
   } catch (error) {
-    console.error("[SEND_TICKET_EMAIL] Fatal error:", error);
+    console.error("[SEND_TICKET_EMAIL] Error sending ticket email:", error);
     throw error;
   }
 }

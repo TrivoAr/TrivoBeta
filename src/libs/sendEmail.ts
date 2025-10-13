@@ -1,6 +1,6 @@
-import { Resend } from "resend";
+import { EmailService } from "@/services/emailService";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const emailService = new EmailService();
 
 export async function sendEmail({
   to,
@@ -11,22 +11,5 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: "Soporte Trivo <noreply@trivo.com.ar>",
-      to,
-      subject,
-      html,
-    });
-
-    if (error) {
-      console.error("Error al enviar correo con Resend:", error);
-      throw new Error("Fallo al enviar el correo");
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Error al usar Resend:", err);
-    throw err;
-  }
+  return await emailService.sendEmail({ to, subject, html });
 }
