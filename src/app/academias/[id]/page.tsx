@@ -1158,20 +1158,64 @@ export default function AcademiaDetailPage({
                   return estadoFinal === "configurar-pago";
                 })() && (
                   <button
-                    onClick={() => {
-                      const mercadoPagoLink =
-                        paymentStatus?.suscripcion?.mercadoPago?.initPoint;
+                    onClick={async () => {
+                      const suscripcion = paymentStatus?.suscripcion;
+                      const mercadoPagoLink = suscripcion?.mercadoPago?.initPoint;
+
+                      // Si ya existe el link, redirigir directamente
                       if (mercadoPagoLink) {
                         window.location.href = mercadoPagoLink;
-                      } else {
+                        return;
+                      }
+
+                      // Si no existe, generar el link de pago
+                      if (!suscripcion?.id) {
+                        toast.error("Error: No se encontró la suscripción");
+                        return;
+                      }
+
+                      try {
+                        setIsProcessingPayment(true);
+                        toast.loading("Generando link de pago...");
+
+                        const response = await fetch("/api/subscriptions/activate", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            suscripcionId: suscripcion.id,
+                          }),
+                        });
+
+                        const data = await response.json();
+
+                        toast.dismiss();
+
+                        if (!response.ok) {
+                          throw new Error(data.error || "Error al generar link de pago");
+                        }
+
+                        if (data.mercadoPago?.initPoint) {
+                          toast.success("Redirigiendo a MercadoPago...");
+                          // Pequeño delay para que el usuario vea el mensaje
+                          setTimeout(() => {
+                            window.location.href = data.mercadoPago.initPoint;
+                          }, 500);
+                        } else {
+                          throw new Error("No se pudo generar el link de pago");
+                        }
+                      } catch (error: any) {
+                        console.error("Error activando suscripción:", error);
                         toast.error(
-                          "No hay un link de pago disponible. Contacta al dueño de la academia."
+                          error.message || "Error al generar link de pago. Contacta al dueño de la academia."
                         );
+                      } finally {
+                        setIsProcessingPayment(false);
                       }
                     }}
-                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-blue-600 text-white hover:bg-blue-700"
+                    disabled={isProcessingPayment}
+                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Activar suscripción
+                    {isProcessingPayment ? "Procesando..." : "Activar suscripción"}
                   </button>
                 )}
 

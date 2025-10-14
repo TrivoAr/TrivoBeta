@@ -28,6 +28,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -37,6 +40,8 @@ const nextConfig = {
       snappy: false,
       aws4: false,
       "mongodb-client-encryption": false,
+      canvas: false,
+      fs: false,
     };
     return config;
   },

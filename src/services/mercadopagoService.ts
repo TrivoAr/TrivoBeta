@@ -1,12 +1,11 @@
 /**
  * Servicio para interactuar con la API de Mercado Pago
  * Maneja la creación de suscripciones (preapprovals) y procesamiento de pagos
+ * NOTA: Usa credenciales centralizadas de la plataforma (no por dueño de academia)
  */
 
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
-import MercadoPagoCredentials from "@/models/mercadoPagoCredentials";
 import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
-import connectDB from "@/libs/mongodb";
 
 export interface CrearPreapprovalParams {
   userId: string;
@@ -21,23 +20,22 @@ export interface CrearPreapprovalParams {
 
 export const mercadopagoService = {
   /**
-   * Obtiene las credenciales de Mercado Pago del dueño de la academia
+   * Obtiene las credenciales centralizadas de Mercado Pago de la plataforma
    */
-  async obtenerCredencialesAcademia(duenioId: string) {
-    await connectDB();
+  obtenerCredencialesPlataforma() {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const publicKey = process.env.MERCADOPAGO_PUBLIC_KEY;
 
-    const credentials = await MercadoPagoCredentials.findOne({
-      userId: duenioId,
-      hasCredentials: true,
-    });
-
-    if (!credentials) {
+    if (!accessToken || !publicKey) {
       throw new Error(
-        "El dueño de la academia no ha configurado sus credenciales de Mercado Pago"
+        "Las credenciales de MercadoPago no están configuradas en las variables de entorno. Por favor, configura MERCADOPAGO_ACCESS_TOKEN y MERCADOPAGO_PUBLIC_KEY."
       );
     }
 
-    return credentials;
+    return {
+      accessToken,
+      publicKey,
+    };
   },
 
   /**
@@ -57,11 +55,11 @@ export const mercadopagoService = {
   /**
    * Crea un preapproval (suscripción) en Mercado Pago
    */
-  async crearPreapproval(duenioId: string, params: CrearPreapprovalParams) {
+  async crearPreapproval(params: CrearPreapprovalParams) {
     const { userEmail, razon, monto, conTrial, externalReference } = params;
 
-    // Obtener credenciales del dueño de la academia
-    const credentials = await this.obtenerCredencialesAcademia(duenioId);
+    // Obtener credenciales centralizadas de la plataforma
+    const credentials = this.obtenerCredencialesPlataforma();
 
     // Inicializar cliente de Mercado Pago
     const preApprovalClient = this.inicializarCliente(credentials.accessToken);
@@ -111,8 +109,8 @@ export const mercadopagoService = {
   /**
    * Obtiene información de un preapproval
    */
-  async obtenerPreapproval(duenioId: string, preapprovalId: string) {
-    const credentials = await this.obtenerCredencialesAcademia(duenioId);
+  async obtenerPreapproval(preapprovalId: string) {
+    const credentials = this.obtenerCredencialesPlataforma();
     const preApprovalClient = this.inicializarCliente(credentials.accessToken);
 
     try {
@@ -128,11 +126,10 @@ export const mercadopagoService = {
    * Actualiza el estado de un preapproval
    */
   async actualizarPreapproval(
-    duenioId: string,
     preapprovalId: string,
     status: "paused" | "cancelled"
   ) {
-    const credentials = await this.obtenerCredencialesAcademia(duenioId);
+    const credentials = this.obtenerCredencialesPlataforma();
     const preApprovalClient = this.inicializarCliente(credentials.accessToken);
 
     try {
@@ -150,19 +147,15 @@ export const mercadopagoService = {
   /**
    * Cancela un preapproval
    */
-  async cancelarPreapproval(duenioId: string, preapprovalId: string) {
-    return await this.actualizarPreapproval(
-      duenioId,
-      preapprovalId,
-      "cancelled"
-    );
+  async cancelarPreapproval(preapprovalId: string) {
+    return await this.actualizarPreapproval(preapprovalId, "cancelled");
   },
 
   /**
    * Pausa un preapproval
    */
-  async pausarPreapproval(duenioId: string, preapprovalId: string) {
-    return await this.actualizarPreapproval(duenioId, preapprovalId, "paused");
+  async pausarPreapproval(preapprovalId: string) {
+    return await this.actualizarPreapproval(preapprovalId, "paused");
   },
 
   /**
