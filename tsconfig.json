@@ -40,5 +40,5 @@
     "src/components/SkeletonCard.jsx",
     "src/app/social/notificaciones/page.jsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "scripts/**/*"]
 }

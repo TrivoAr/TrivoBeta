@@ -117,19 +117,16 @@ export async function POST(request: NextRequest) {
 
         const user = await resultado.suscripcion.populate("userId");
 
-        const mpResult = await mercadopagoService.crearPreapproval(
-          academia.dueño_id.toString(),
-          {
-            userId,
-            academiaId: grupo.academia_id._id.toString(),
-            grupoId,
-            userEmail: user.userId.email,
-            razon: `Suscripción a ${academia.nombre_academia}`,
-            monto: Number(academia.precio),
-            conTrial: false,
-            externalReference,
-          }
-        );
+        const mpResult = await mercadopagoService.crearPreapproval({
+          userId,
+          academiaId: grupo.academia_id._id.toString(),
+          grupoId,
+          userEmail: user.userId.email,
+          razon: `Suscripción a ${academia.nombre_academia}`,
+          monto: Number(academia.precio),
+          conTrial: false,
+          externalReference,
+        });
 
         // Actualizar suscripción con info de Mercado Pago
         resultado.suscripcion.mercadoPago = {

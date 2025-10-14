@@ -97,16 +97,13 @@ export async function PUT(
 
     // Actualizar en Mercado Pago si tiene preapproval
     if (suscripcion.mercadoPago?.preapprovalId) {
-      const academia = await Academia.findById(suscripcion.academiaId);
       try {
         if (action === "pause") {
           await mercadopagoService.pausarPreapproval(
-            academia.dueño_id.toString(),
             suscripcion.mercadoPago.preapprovalId
           );
         } else if (action === "cancel") {
           await mercadopagoService.cancelarPreapproval(
-            academia.dueño_id.toString(),
             suscripcion.mercadoPago.preapprovalId
           );
         }

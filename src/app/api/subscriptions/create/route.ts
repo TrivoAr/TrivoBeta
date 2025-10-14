@@ -33,8 +33,17 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // Verificar que la academia existe
-    const academia = await Academia.findById(academiaId).populate("dueño_id");
+    const academia = await Academia.findById(academiaId);
     if (!academia) {
+      return NextResponse.json(
+        { error: "Academia no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    // Obtener información del dueño para notificaciones
+    const academiaConDuenio = await Academia.findById(academiaId).populate("dueño_id");
+    if (!academiaConDuenio) {
       return NextResponse.json(
         { error: "Academia no encontrada" },
         { status: 404 }
@@ -82,19 +91,16 @@ export async function POST(request: NextRequest) {
           academiaId
         );
 
-        mercadoPagoData = await mercadopagoService.crearPreapproval(
-          academia.dueño_id._id.toString(),
-          {
-            userId: session.user.id,
-            academiaId,
-            grupoId,
-            userEmail: session.user.email,
-            razon: `Suscripción a ${academia.nombre_academia}`,
-            monto: Number(academia.precio),
-            conTrial: false,
-            externalReference,
-          }
-        );
+        mercadoPagoData = await mercadopagoService.crearPreapproval({
+          userId: session.user.id,
+          academiaId,
+          grupoId,
+          userEmail: session.user.email,
+          razon: `Suscripción a ${academia.nombre_academia}`,
+          monto: Number(academia.precio),
+          conTrial: false,
+          externalReference,
+        });
 
         // Actualizar suscripción con datos de Mercado Pago
         suscripcion.mercadoPago = {
@@ -119,14 +125,14 @@ export async function POST(request: NextRequest) {
     if (elegibilidad.puedeUsarTrial) {
       try {
         await notificationService.notificarNuevoSuscriptorTrial({
-          dueñoId: academia.dueño_id._id.toString(),
+          dueñoId: academiaConDuenio.dueño_id._id.toString(),
           userId: session.user.id,
           userName: `${session.user.firstname} ${session.user.lastname}`,
           academiaId: academia._id.toString(),
           academiaNombre: academia.nombre_academia,
         });
         console.log(
-          `[SUBSCRIPTIONS] Notificación enviada al dueño ${academia.dueño_id._id} sobre nuevo trial`
+          `[SUBSCRIPTIONS] Notificación enviada al dueño ${academiaConDuenio.dueño_id._id} sobre nuevo trial`
         );
       } catch (notifError) {
         console.error(
