@@ -20,6 +20,7 @@ export const SUBSCRIPTION_CONFIG = {
     FREQUENCY: 1, // Frecuencia de cobro
     FREQUENCY_TYPE: "months" as "months" | "days", // Tipo de frecuencia
     CURRENCY: "ARS", // Moneda
+    MIN_AMOUNT: 15, // Monto mínimo requerido por MercadoPago para suscripciones
   },
 
   // Estados posibles de una suscripción

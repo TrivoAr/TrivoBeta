@@ -87,6 +87,13 @@ export const subscriptionService = {
 
     const { userId, academiaId, grupoId, monto } = params;
 
+    // Validar monto mínimo requerido por MercadoPago
+    if (monto < SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT) {
+      throw new Error(
+        `El monto de la suscripción ($${monto}) es menor al mínimo requerido por MercadoPago ($${SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT})`
+      );
+    }
+
     // Verificar elegibilidad para trial
     const { puedeUsarTrial } = await this.verificarElegibilidadTrial(
       userId,
