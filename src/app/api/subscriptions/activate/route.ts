@@ -83,19 +83,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar monto mínimo requerido por MercadoPago
-    const montoSuscripcion = suscripcion.pagos.monto;
-    const montoMinimo = SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT;
+    // Actualizar el monto de la suscripción con el precio actual de la academia
+    // Esto es necesario porque el precio pudo haber cambiado desde que se creó el trial
+    const precioActualAcademia = Number(academia.precio);
+    const montoAnterior = suscripcion.pagos.monto;
 
     console.log(
-      `[ACTIVATE_SUBSCRIPTION] Monto de la suscripción: ${montoSuscripcion} (tipo: ${typeof montoSuscripcion}), Mínimo: ${montoMinimo}`
+      `[ACTIVATE_SUBSCRIPTION] Precio actual de academia: ${academia.precio} (tipo: ${typeof academia.precio})`
+    );
+    console.log(
+      `[ACTIVATE_SUBSCRIPTION] Monto anterior de suscripción: ${montoAnterior} (tipo: ${typeof montoAnterior})`
+    );
+    console.log(
+      `[ACTIVATE_SUBSCRIPTION] Precio convertido: ${precioActualAcademia} (tipo: ${typeof precioActualAcademia})`
     );
 
-    if (montoSuscripcion < montoMinimo) {
+    // Actualizar el monto de la suscripción
+    suscripcion.pagos.monto = precioActualAcademia;
+
+    if (montoAnterior !== precioActualAcademia) {
+      console.log(
+        `[ACTIVATE_SUBSCRIPTION] Actualizando monto de suscripción de $${montoAnterior} a $${precioActualAcademia}`
+      );
+    }
+
+    // Validar monto mínimo requerido por MercadoPago
+    const montoMinimo = SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT;
+
+    if (precioActualAcademia < montoMinimo) {
       return NextResponse.json(
         {
-          error: `El monto de la suscripción ($${montoSuscripcion}) es menor al mínimo requerido por MercadoPago ($${montoMinimo}). Por favor, contacta al organizador de la academia.`,
-          monto: montoSuscripcion,
+          error: `El precio de la academia ($${precioActualAcademia}) es menor al mínimo requerido por MercadoPago ($${montoMinimo}). Por favor, contacta al organizador de la academia para que actualice el precio.`,
+          monto: precioActualAcademia,
           montoMinimo: montoMinimo,
         },
         { status: 400 }
@@ -117,7 +136,7 @@ export async function POST(request: NextRequest) {
         grupoId: suscripcion.grupoId?.toString(),
         userEmail: session.user.email,
         razon: `Suscripción a ${academia.nombre_academia}`,
-        monto: suscripcion.pagos.monto,
+        monto: precioActualAcademia,
         conTrial: false, // Ya no tiene trial
         externalReference,
       });
@@ -142,7 +161,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: `El monto de la suscripción es menor al mínimo permitido por MercadoPago ($${SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT}). Por favor, contacta al organizador de la academia.`,
-            monto: suscripcion.pagos.monto,
+            monto: precioActualAcademia,
             montoMinimo: SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT,
           },
           { status: 400 }
