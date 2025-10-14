@@ -73,13 +73,19 @@ export async function POST(request: NextRequest) {
       academiaId
     );
 
+    // Convertir precio a número
+    const precioNumerico = Number(academia.precio);
+    console.log(
+      `[CREATE_SUBSCRIPTION] Precio de academia: ${academia.precio} (tipo: ${typeof academia.precio}), convertido a: ${precioNumerico} (tipo: ${typeof precioNumerico})`
+    );
+
     // Crear suscripción
     const { suscripcion, requiereConfiguracionPago } =
       await subscriptionService.crearSuscripcion({
         userId: session.user.id,
         academiaId,
         grupoId,
-        monto: Number(academia.precio) || 0,
+        monto: precioNumerico,
       });
 
     // Si requiere configuración de pago, crear preapproval en Mercado Pago
@@ -97,7 +103,7 @@ export async function POST(request: NextRequest) {
           grupoId,
           userEmail: session.user.email,
           razon: `Suscripción a ${academia.nombre_academia}`,
-          monto: Number(academia.precio),
+          monto: precioNumerico,
           conTrial: false,
           externalReference,
         });

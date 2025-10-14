@@ -59,6 +59,23 @@ export const mercadopagoService = {
   async crearPreapproval(params: CrearPreapprovalParams) {
     const { userEmail, razon, monto, conTrial, externalReference } = params;
 
+    // Convertir monto a número (por si viene como string)
+    const montoNumerico = typeof monto === "string" ? parseFloat(monto) : monto;
+
+    // Validar que el monto sea un número válido
+    if (isNaN(montoNumerico) || montoNumerico <= 0) {
+      throw new Error(`Monto inválido: ${monto}`);
+    }
+
+    // Validar monto mínimo
+    if (montoNumerico < SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT) {
+      throw new Error(
+        `El monto ($${montoNumerico}) es menor al mínimo requerido por MercadoPago ($${SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT})`
+      );
+    }
+
+    console.log(`[MERCADOPAGO_SERVICE] Creando preapproval con monto: ${montoNumerico} (tipo: ${typeof montoNumerico})`);
+
     // Obtener credenciales centralizadas de la plataforma
     const credentials = this.obtenerCredencialesPlataforma();
 
@@ -74,7 +91,7 @@ export const mercadopagoService = {
       auto_recurring: {
         frequency: SUBSCRIPTION_CONFIG.SUBSCRIPTION.FREQUENCY,
         frequency_type: SUBSCRIPTION_CONFIG.SUBSCRIPTION.FREQUENCY_TYPE,
-        transaction_amount: monto,
+        transaction_amount: montoNumerico,
         currency_id: SUBSCRIPTION_CONFIG.SUBSCRIPTION.CURRENCY,
       },
       status: "pending",

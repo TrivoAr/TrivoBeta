@@ -87,6 +87,10 @@ export async function POST(request: NextRequest) {
     const montoSuscripcion = suscripcion.pagos.monto;
     const montoMinimo = SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT;
 
+    console.log(
+      `[ACTIVATE_SUBSCRIPTION] Monto de la suscripción: ${montoSuscripcion} (tipo: ${typeof montoSuscripcion}), Mínimo: ${montoMinimo}`
+    );
+
     if (montoSuscripcion < montoMinimo) {
       return NextResponse.json(
         {
