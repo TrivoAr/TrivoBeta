@@ -23,12 +23,13 @@ export const mercadopagoService = {
    * Obtiene las credenciales centralizadas de Mercado Pago de la plataforma
    */
   obtenerCredencialesPlataforma() {
-    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-    const publicKey = process.env.MERCADOPAGO_PUBLIC_KEY;
+    // Intentar primero con las variables que están en Vercel
+    const accessToken = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
+    const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || process.env.MERCADOPAGO_PUBLIC_KEY;
 
     if (!accessToken || !publicKey) {
       throw new Error(
-        "Las credenciales de MercadoPago no están configuradas en las variables de entorno. Por favor, configura MERCADOPAGO_ACCESS_TOKEN y MERCADOPAGO_PUBLIC_KEY."
+        "Las credenciales de MercadoPago no están configuradas en las variables de entorno. Por favor, configura MP_ACCESS_TOKEN y NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY."
       );
     }
 
