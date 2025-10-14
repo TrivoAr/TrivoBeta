@@ -83,6 +83,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar monto mínimo requerido por MercadoPago
+    const montoSuscripcion = suscripcion.pagos.monto;
+    const montoMinimo = SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT;
+
+    console.log(
+      `[ACTIVATE_SUBSCRIPTION] Monto de la suscripción: ${montoSuscripcion} (tipo: ${typeof montoSuscripcion}), Mínimo: ${montoMinimo}`
+    );
+
+    if (montoSuscripcion < montoMinimo) {
+      return NextResponse.json(
+        {
+          error: `El monto de la suscripción ($${montoSuscripcion}) es menor al mínimo requerido por MercadoPago ($${montoMinimo}). Por favor, contacta al organizador de la academia.`,
+          monto: montoSuscripcion,
+          montoMinimo: montoMinimo,
+        },
+        { status: 400 }
+      );
+    }
+
     // Generar external reference para el preapproval
     const externalReference = mercadopagoService.generarExternalReference(
       session.user.id,
@@ -115,6 +134,18 @@ export async function POST(request: NextRequest) {
               "Las credenciales de MercadoPago no están configuradas. Por favor, contacta al administrador.",
           },
           { status: 500 }
+        );
+      }
+
+      // Si el error es por monto mínimo
+      if (error.message.includes("Cannot pay an amount lower than")) {
+        return NextResponse.json(
+          {
+            error: `El monto de la suscripción es menor al mínimo permitido por MercadoPago ($${SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT}). Por favor, contacta al organizador de la academia.`,
+            monto: suscripcion.pagos.monto,
+            montoMinimo: SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT,
+          },
+          { status: 400 }
         );
       }
 
