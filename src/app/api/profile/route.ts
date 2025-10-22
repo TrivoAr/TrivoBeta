@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
 import User from "@/models/user";
-import Academia from "@/models/academia"; // Asegúrate de que la ruta sea correcta
-import { getServerSession } from "next-auth"; // Para obtener la sesión del usuario
-import { authOptions } from "../../../libs/authOptions"; // Configuración de NextAuth
+import Academia from "@/models/academia";
+import TeamSocial from "@/models/teamSocial";
+import SalidaSocial from "@/models/salidaSocial";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../libs/authOptions";
 
 // Obtener el perfil del usuario (GET)
 export async function GET(req: Request) {
   try {
     await connectDB();
+
+    // Forzar el registro de los modelos antes del populate
+    TeamSocial;
+    SalidaSocial;
+    Academia;
+
     const session = await getServerSession(authOptions);
     console.log("Session:", session);
     if (!session || !session.user) {

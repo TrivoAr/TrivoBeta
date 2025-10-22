@@ -88,7 +88,7 @@ function EditProfilePage() {
       if (!response.ok) throw new Error("Error al actualizar");
 
       alert("Guardado correctamente. Se cerrará la sesión.");
-      signOut();
+      signOut({ callbackUrl: "/login" });
     } catch (error) {
       alert("Error al guardar los cambios");
     }
@@ -115,7 +115,11 @@ function EditProfilePage() {
       </h1>
 
       <img
-        src={profileImage || "/assets/icons/default-user.png"}
+        src={
+          profileImage ||
+          session?.user?.imagen ||
+          `https://ui-avatars.com/api/?name=${session?.user?.firstname || "User"}&length=1&background=random&color=fff&size=128`
+        }
         alt="Avatar"
         className="w-32 h-32 rounded-full object-cover mb-4"
       />

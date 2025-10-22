@@ -320,7 +320,11 @@ function ProfilePage() {
           onClick={() => setShowPreview(false)}
         >
           <img
-            src={profileImage || "/assets/icons/default-user.png"}
+            src={
+              profileImage ||
+              session?.user?.imagen ||
+              `https://ui-avatars.com/api/?name=${session?.user?.firstname || "User"}&length=1&background=random&color=fff&size=128`
+            }
             alt="Avatar grande"
             className="w-[350px] h-[400px] rounded-2xl object-cover shadow-lg"
           />
