@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const socketServer = (global as any).socketServer;
 
     if (!socketServer || !socketServer.emitToUser) {
-      console.error("[TEST_API] Socket.IO server no disponible");
+
       return NextResponse.json(
         { error: "Socket.IO server no disponible" },
         { status: 503 }
@@ -49,10 +49,6 @@ export async function POST(request: NextRequest) {
       testNotification
     );
 
-    console.log(
-      `[TEST_API] Notificación de prueba enviada a usuario ${userId}: ${message} - Éxito: ${success}`
-    );
-
     return NextResponse.json({
       success: true,
       message: "Notificación de prueba enviada",
@@ -60,7 +56,7 @@ export async function POST(request: NextRequest) {
       clientsReached: success,
     });
   } catch (error) {
-    console.error("[TEST_API] Error enviando notificación de prueba:", error);
+
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }

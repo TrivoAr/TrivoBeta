@@ -81,10 +81,7 @@ export async function GET(req: Request) {
       }
     );
   } catch (error: any) {
-    console.error(
-      "Error al intercambiar token con Strava:",
-      error.response?.data || error.message
-    );
+
     return NextResponse.json(
       { error: "No se pudo conectar con Strava" },
       { status: 500 }

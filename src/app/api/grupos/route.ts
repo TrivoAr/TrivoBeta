@@ -7,12 +7,11 @@ import { authOptions } from "../../../libs/authOptions"; // Ajusta la ruta si ti
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("Datos recibidos en el backend:", body); // ✅ Verifica aquí
 
     const nuevoGrupo = await Grupo.create(body);
     return NextResponse.json(nuevoGrupo, { status: 201 });
   } catch (error) {
-    console.error("Error al crear grupo:", error);
+
     return NextResponse.json(
       { error: "Error al crear el grupo" },
       { status: 500 }
@@ -36,7 +35,7 @@ export async function GET(req: Request) {
     const grupos = await Grupo.find({ academia_id: academiaId });
     return NextResponse.json({ grupos }, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener los grupos:", error);
+
     return NextResponse.json(
       { error: "Error al obtener los grupos" },
       { status: 500 }
@@ -82,7 +81,7 @@ export async function PATCH(req: Request) {
     });
     return NextResponse.json(grupoActualizado, { status: 200 });
   } catch (error) {
-    console.error("Error al editar grupo:", error);
+
     return NextResponse.json(
       { error: "Error al editar el grupo" },
       { status: 500 }
@@ -128,7 +127,7 @@ export async function DELETE(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al eliminar grupo:", error);
+
     return NextResponse.json(
       { error: "Error al eliminar el grupo" },
       { status: 500 }

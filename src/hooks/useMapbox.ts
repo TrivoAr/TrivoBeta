@@ -233,7 +233,7 @@ export const useMapbox = (): UseMapboxReturn => {
           map.addLayer(layerConfig);
         }
       } catch (err) {
-        console.error("Error agregando capa:", err);
+        // Error adding layer
       }
     },
     [map, isLoaded]
@@ -252,7 +252,7 @@ export const useMapbox = (): UseMapboxReturn => {
           map.removeSource(layerId);
         }
       } catch (err) {
-        console.error("Error removiendo capa:", err);
+        // Error removing layer
       }
     },
     [map, isLoaded]
@@ -438,7 +438,7 @@ export const useStravaRoute = () => {
           mapbox.fitBounds(bounds);
         }
       } catch (error) {
-        console.error("Error agregando ruta de Strava:", error);
+        // Error adding Strava route
       }
     },
     []

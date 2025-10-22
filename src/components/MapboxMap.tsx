@@ -65,7 +65,6 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
           }
 
           if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
-            console.error("Mapbox access token not found");
             return;
           }
 
@@ -81,19 +80,6 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
             return;
           }
 
-          console.log(
-            "Initializing Mapbox with token:",
-            !!mapboxgl.accessToken
-          );
-          console.log(
-            "Token value:",
-            process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? "TOKEN_SET" : "TOKEN_NOT_SET"
-          );
-          console.log("Container dimensions:", {
-            width: container.offsetWidth,
-            height: container.offsetHeight,
-          });
-
           map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: "mapbox://styles/mapbox/streets-v11",
@@ -104,7 +90,6 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
           });
 
           map.current.on("load", () => {
-            console.log("Mapbox map loaded successfully");
 
             // Add marker
             marker.current = new mapboxgl.Marker({ draggable: true })
@@ -127,7 +112,6 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
 
                 onLocationSelectRef.current?.(coords, address);
               } catch (error) {
-                console.error("Error getting address:", error);
                 onLocationSelectRef.current?.(
                   coords,
                   `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
@@ -138,25 +122,20 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
             // Handle map click
             map.current.on("click", async (e: any) => {
               const coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
-              console.log("Map clicked at:", coords);
 
               marker.current.setLngLat([coords.lng, coords.lat]);
 
               try {
-                console.log("Fetching address for map click:", coords);
                 const response = await fetch(
                   `/api/search/reverse?lat=${coords.lat}&lon=${coords.lng}`
                 );
                 const data = await response.json();
-                console.log("Address response for map click:", data);
                 const address =
                   data.display_name ||
                   `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`;
-                console.log("Final address for map click:", address);
 
                 onLocationSelectRef.current?.(coords, address);
               } catch (error) {
-                console.error("Error getting address:", error);
                 onLocationSelectRef.current?.(
                   coords,
                   `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
@@ -176,15 +155,12 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
           });
 
           map.current.on("error", (e: any) => {
-            console.error("Mapbox error:", e);
           });
 
           map.current.on("style.load", () => {
-            console.log("Map style loaded");
           });
 
           map.current.on("styledata", () => {
-            console.log("Map style data changed");
           });
 
           map.current.on("render", () => {
@@ -192,7 +168,6 @@ const MapboxMap = forwardRef<MapboxMapRef, MapboxMapProps>(
             // console.log('Map render event');
           });
         } catch (error) {
-          console.error("Error initializing Mapbox:", error);
         }
       };
 

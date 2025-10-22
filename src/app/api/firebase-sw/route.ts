@@ -17,8 +17,6 @@ export async function GET(req: NextRequest) {
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-console.log('🔥 Firebase SW iniciando...');
-
 // Configuración Firebase
 const firebaseConfig = ${JSON.stringify(firebaseConfig, null, 2)};
 
@@ -28,11 +26,8 @@ firebase.initializeApp(firebaseConfig);
 // Obtener instance de messaging
 const messaging = firebase.messaging();
 
-console.log('✅ Firebase SW inicializado con proyecto:', firebaseConfig.projectId);
-
 // Manejar mensajes en background
 messaging.onBackgroundMessage(function(payload) {
-  console.log('📬 Background Message recibido:', payload);
 
   const notificationTitle = payload.notification?.title || 'Trivo Notification';
   const notificationOptions = {
@@ -59,7 +54,7 @@ messaging.onBackgroundMessage(function(payload) {
 
 // Manejar clicks en notificaciones
 self.addEventListener('notificationclick', function(event) {
-  console.log('👆 Click en notificación Firebase');
+
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || '/notificaciones';
@@ -69,7 +64,7 @@ self.addEventListener('notificationclick', function(event) {
       // Si ya hay una ventana/tab abierta, enfocarla
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          console.log('🎯 Enfocando ventana existente');
+
           client.focus();
           return client.navigate(urlToOpen);
         }
@@ -77,16 +72,15 @@ self.addEventListener('notificationclick', function(event) {
       
       // Si no hay ventana abierta, abrir una nueva
       if (clients.openWindow) {
-        console.log('🆕 Abriendo nueva ventana');
+
         return clients.openWindow(urlToOpen);
       }
     }).catch(err => {
-      console.error('❌ Error manejando click:', err);
+
     })
   );
 });
 
-console.log('🎉 Firebase SW configurado completamente');
 `;
 
   return new NextResponse(swContent, {

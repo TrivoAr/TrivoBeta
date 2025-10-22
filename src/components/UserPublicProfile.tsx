@@ -82,7 +82,6 @@ export default function UserPublicProfile({ userId }: Props) {
           setEventosAsistidos(0);
         }
       } catch (error) {
-        console.log("Error loading eventos asistidos:", error);
         setEventosAsistidos(0);
       }
     };
@@ -107,7 +106,6 @@ export default function UserPublicProfile({ userId }: Props) {
           setSalidasComunes(null);
         }
       } catch (error) {
-        console.log("Error loading salidas comunes:", error);
         setSalidasComunes(null);
       }
     };

@@ -1,6 +1,7 @@
 import { connectDB } from "@/libs/mongodb";
 import Notificacion from "@/models/notificacion";
 import Subscription from "@/models/subscription";
+import User from "@/models/user";
 import webPush from "web-push";
 
 // Configurar VAPID para web-push
@@ -35,7 +36,6 @@ async function sendPushNotification(
     const subscriptions = await Subscription.find({ user_id: userId });
 
     if (subscriptions.length === 0) {
-      console.log(`📱 No hay suscripciones push para usuario ${userId}`);
       return;
     }
 
@@ -57,23 +57,17 @@ async function sendPushNotification(
           },
           payload
         );
-        console.log(`📱 Push enviado a usuario ${userId}`);
       } catch (error: any) {
-        console.error(`❌ Error enviando push a ${userId}:`, error);
-
         // Si la suscripción es inválida, eliminarla
         if (error.statusCode === 410 || error.statusCode === 404) {
           await Subscription.findByIdAndDelete(subscription._id);
-          console.log(
-            `🗑️ Suscripción inválida eliminada para usuario ${userId}`
-          );
         }
       }
     });
 
     await Promise.allSettled(sendPromises);
   } catch (error) {
-    console.error("❌ Error enviando notificación push:", error);
+    // Error sending push notification
   }
 }
 
@@ -106,15 +100,12 @@ export async function createNotification({
       read: false,
     });
 
-    console.log(`✅ Notificación creada: ${type} para usuario ${userId}`);
-
     // Enviar notificación push al dispositivo del usuario
     const pushTitle = getPushTitle(type);
     await sendPushNotification(userId, pushTitle, message, actionUrl);
 
     return notification;
   } catch (error) {
-    console.error("❌ Error al crear notificación:", error);
     throw error;
   }
 }
@@ -188,7 +179,7 @@ export async function notifyJoinedEvent(
     type: "joined_event",
     message: `${userName} se unió a tu salida "${salidaNombre}"`,
     salidaId,
-    actionUrl: `/social/${salidaId}`,
+    actionUrl: `/social/miembros/${salidaId}`, // Redirigir a gestión de miembros
   });
 }
 
@@ -208,18 +199,52 @@ export async function notifyNewSalida(
   });
 }
 
+export async function notifyPaymentPending(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  userName: string,
+  salidaNombre: string
+) {
+  return createNotification({
+    userId,
+    fromUserId,
+    type: "payment_pending",
+    message: `${userName} ha enviado el comprobante de pago para tu salida "${salidaNombre}"`,
+    salidaId,
+    actionUrl: `/social/miembros/${salidaId}`, // Redirigir a gestión de miembros
+  });
+}
+
 export async function notifyPaymentApproved(
   userId: string,
   fromUserId: string,
-  paymentInfo: any
+  salidaId: string,
+  salidaNombre: string
 ) {
   return createNotification({
     userId,
     fromUserId,
     type: "pago_aprobado",
-    message: `Tu pago ha sido aprobado y procesado correctamente.`,
-    actionUrl: `/dashboard`,
-    metadata: { paymentInfo },
+    message: `Tu pago para la salida "${salidaNombre}" fue aprobado ✅`,
+    salidaId,
+    actionUrl: `/social/${salidaId}`,
+  });
+}
+
+export async function notifyPaymentRejected(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string
+) {
+  return createNotification({
+    userId,
+    fromUserId,
+    type: "pago_rechazado",
+    message: `Tu pago para la salida "${salidaNombre}" fue rechazado ❌`,
+    salidaId,
+    actionUrl: `/social/${salidaId}`,
   });
 }
 

@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (err) {
-    console.error("[GET_SALIDAS_COMUNES_ERROR]", err);
+
     return new Response(
       JSON.stringify({
         error: "Error interno al obtener salidas en común",

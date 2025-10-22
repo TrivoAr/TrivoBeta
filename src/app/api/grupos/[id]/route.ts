@@ -55,7 +55,7 @@ export async function GET(
 
     return NextResponse.json({ grupo: grupoObj, alumnos }, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener el grupo y sus alumnos:", error);
+
     return NextResponse.json(
       { error: "Error al obtener el grupo y sus alumnos" },
       { status: 500 }
@@ -101,7 +101,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al eliminar el grupo:", error);
+
     return NextResponse.json(
       { error: "Error al eliminar el grupo" },
       { status: 500 }
@@ -152,7 +152,7 @@ export async function PATCH(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al actualizar grupo:", error);
+
     return NextResponse.json(
       { error: "Error al actualizar grupo" },
       { status: 500 }

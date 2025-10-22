@@ -50,7 +50,7 @@ export async function GET(
 
     return NextResponse.json({ suscripcion, estadisticas });
   } catch (error: any) {
-    console.error("Error en GET /api/subscriptions/[id]:", error);
+
     return NextResponse.json(
       { error: error.message || "Error al obtener suscripción" },
       { status: 500 }
@@ -108,7 +108,7 @@ export async function PUT(
           );
         }
       } catch (mpError: any) {
-        console.error("Error actualizando en Mercado Pago:", mpError);
+
         // Continuar con la actualización local aunque falle Mercado Pago
       }
     }
@@ -134,7 +134,7 @@ export async function PUT(
           : "Suscripción cancelada correctamente",
     });
   } catch (error: any) {
-    console.error("Error en PUT /api/subscriptions/[id]:", error);
+
     return NextResponse.json(
       { error: error.message || "Error al actualizar suscripción" },
       { status: 500 }

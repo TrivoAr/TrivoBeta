@@ -85,7 +85,6 @@ const CrearGrupo = () => {
         const data = await res.json();
         setAcademias(data);
       } catch (error) {
-        console.error("Error al cargar academias:", error);
         toast.error("Error al cargar las academias");
       } finally {
         setLoading(false);
@@ -102,7 +101,6 @@ const CrearGrupo = () => {
         const data = await res.json();
         setProfes(data);
       } catch (err) {
-        console.error("Error al obtener los profes", err);
       }
     };
     fetchProfes();
@@ -194,7 +192,6 @@ const CrearGrupo = () => {
       toast.success("Grupo creado exitosamente");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error al crear el grupo:", error);
       setIsSubmitting(false);
       toast.error("Hubo un error al crear el grupo");
     }
@@ -246,7 +243,6 @@ const CrearGrupo = () => {
       .then((res) => res.json())
       .then((data) => setSuggestions(data))
       .catch((err) => {
-        console.error("Error fetching suggestions:", err);
         setSuggestions([]);
       });
   };
@@ -257,7 +253,6 @@ const CrearGrupo = () => {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
       return "";
     }
   };

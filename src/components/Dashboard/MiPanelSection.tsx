@@ -114,7 +114,6 @@ export const MiPanelSection: React.FC = () => {
       setAcademias(academiasData);
       setSalidasSociales(salidasData);
     } catch (error) {
-      console.error("Error loading mi panel data:", error);
       toast.error("Error al cargar datos del panel");
     } finally {
       setIsLoading(false);

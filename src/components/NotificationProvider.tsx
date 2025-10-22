@@ -1,73 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 
 /**
- * Componente que inicializa la conexión de Socket.IO para notificaciones
- * Renderiza un indicador visual de estado de conexión
+ * Componente que inicializa el sistema de notificaciones por polling
+ * Renderiza un indicador visual cuando hay notificaciones nuevas
  */
 export function NotificationProvider() {
-  const { isConnected, on, connect } = useNotifications();
-  const [hasShownDisconnectedToast, setHasShownDisconnectedToast] = useState(false);
+  const { unreadCount, on } = useNotifications();
   const isDevelopment = process.env.NODE_ENV === 'development';
 
-  // Indicador visual de conexión con auto-reconexión
-  useEffect(() => {
-    if (isConnected) {
-      if (isDevelopment) {
-        console.log("🟢 [NOTIFICATIONS] Socket conectado - LISTO para recibir notificaciones");
-      }
-      setHasShownDisconnectedToast(false);
-    } else {
-      if (isDevelopment) {
-        console.log("🔴 [NOTIFICATIONS] Socket desconectado - NO se recibirán notificaciones en tiempo real");
-      }
-
-      // Solo mostrar toast de desconexión una vez
-      if (!hasShownDisconnectedToast) {
-        if (isDevelopment) {
-          console.warn("⚠️ [NOTIFICATIONS] Intentando reconectar...");
-        }
-        setHasShownDisconnectedToast(true);
-
-        // Intentar reconectar después de 2 segundos
-        setTimeout(() => {
-          if (isDevelopment) {
-            console.log("🔄 [NOTIFICATIONS] Reconectando socket...");
-          }
-          connect();
-        }, 2000);
-      }
-    }
-  }, [isConnected, hasShownDisconnectedToast, connect, isDevelopment]);
-
-  // Logs detallados de eventos (solo en desarrollo)
+  // Mostrar indicador cuando hay notificaciones nuevas
   useEffect(() => {
     const unsubscribers = [
       on("notification:received", (notification: any) => {
-        if (isDevelopment) {
-          console.log("📩 [NOTIFICATIONS] Notificación recibida:", {
-            tipo: notification.type,
-            mensaje: notification.message,
-            de: notification.fromUserId,
-          });
-        }
+        // El toast ya se muestra en useNotifications
+        // Este listener es por si necesitamos hacer algo adicional
       }),
-      on("socket:connected", () => {
-        if (isDevelopment) {
-          console.log("✅ [NOTIFICATIONS] Socket conectado exitosamente");
-          toast.success("Conectado a notificaciones en tiempo real", {
-            duration: 2000,
-            position: "bottom-right",
-          });
-        }
-      }),
-      on("socket:disconnected", (reason: any) => {
-        if (isDevelopment) {
-          console.log("❌ [NOTIFICATIONS] Socket desconectado:", reason);
-        }
+      on("notifications:updated", (notifications: any[]) => {
+        // Las notificaciones se actualizaron
       }),
     ];
 
@@ -76,22 +29,15 @@ export function NotificationProvider() {
     };
   }, [on, isDevelopment]);
 
-  // Indicador visual de estado (solo en desarrollo)
+  // Indicador visual de notificaciones no leídas (solo en desarrollo)
   return (
     <>
-      {isDevelopment && (
+      {isDevelopment && unreadCount > 0 && (
         <div className="fixed bottom-20 right-4 z-50">
-          {isConnected ? (
-            <div className="flex items-center gap-2 bg-green-500/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-full text-xs font-medium">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              Online
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 px-3 py-1.5 rounded-full text-xs font-medium">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-              Reconectando...
-            </div>
-          )}
+          <div className="flex items-center gap-2 bg-blue-500/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-xs font-medium">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            {unreadCount} nueva{unreadCount !== 1 ? 's' : ''}
+          </div>
         </div>
       )}
     </>

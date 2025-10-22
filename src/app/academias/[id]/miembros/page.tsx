@@ -56,8 +56,6 @@ export default function AcademiaMiembrosPage({
   } = useQuery({
     queryKey: ["miembros-academia", params.id],
     queryFn: async () => {
-      console.log("[FRONTEND] Fetching miembros for academiaId:", params.id);
-
       const res = await fetch(`/api/academias/${params.id}/miembros`, {
         headers: {
           "Cache-Control": "no-cache",
@@ -66,11 +64,6 @@ export default function AcademiaMiembrosPage({
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("[FRONTEND] API Error:", {
-          status: res.status,
-          error: errorData,
-          academiaId: params.id,
-        });
 
         if (res.status === 500) {
           const errorType = errorData.type || "unknown";
@@ -83,20 +76,10 @@ export default function AcademiaMiembrosPage({
       }
 
       const data = await res.json();
-      console.log(
-        "[FRONTEND] Received miembros data:",
-        Array.isArray(data.miembros) ? data.miembros.length : "not array",
-        data.miembros
-      );
       return Array.isArray(data.miembros) ? data.miembros : [];
     },
     enabled: !!params.id,
     retry: (failureCount, error) => {
-      console.log(
-        "[FRONTEND] Query retry attempt:",
-        failureCount,
-        error.message
-      );
       if (error.message.includes("500") || error.message.includes("timeout")) {
         return failureCount < 1;
       }
@@ -157,7 +140,6 @@ export default function AcademiaMiembrosPage({
       });
     },
     onError: (err: any) => {
-      console.error(err);
       toast.error("❌ No se pudo borrar al miembro");
     },
   });
@@ -179,7 +161,6 @@ export default function AcademiaMiembrosPage({
       setGrupoSeleccionado(null);
     },
     onError: (err: any) => {
-      console.error(err);
       toast.error("❌ No se pudo asignar el grupo");
     },
   });

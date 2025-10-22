@@ -18,7 +18,6 @@ export async function GET(req: Request) {
     Academia;
 
     const session = await getServerSession(authOptions);
-    console.log("Session:", session);
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -37,7 +36,6 @@ export async function GET(req: Request) {
 
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener el perfil:", error);
     return NextResponse.json(
       { error: "Error al obtener el perfil" },
       { status: 500 }
@@ -96,7 +94,6 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
-    console.error("Error al actualizar el perfil:", error);
     return NextResponse.json(
       { error: "Error al actualizar el perfil" },
       { status: 500 }

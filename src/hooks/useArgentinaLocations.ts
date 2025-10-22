@@ -219,8 +219,6 @@ export function useLocationFromCoords() {
           coords,
         };
       } catch (error) {
-        console.error("Error en reverse geocoding:", error);
-
         // Fallback: detectar provincia por coordenadas aproximadas
         const detectedProvince = detectProvinceByCoords(coords);
 

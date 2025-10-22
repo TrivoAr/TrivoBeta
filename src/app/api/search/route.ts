@@ -94,7 +94,7 @@ export async function GET(req: Request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in /api/search:", error);
+
     return new Response(JSON.stringify([]), {
       status: 500,
       headers: { "Content-Type": "application/json" },

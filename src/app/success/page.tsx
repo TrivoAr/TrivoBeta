@@ -38,14 +38,12 @@ const Success = () => {
         !storedFecha ||
         isRegistered
       ) {
-        console.log("Datos faltantes o pago ya registrado. Saliendo...");
         setLoading(false);
         return;
       }
 
       try {
         setIsRegistered(true);
-        console.log("Registrando pago...");
         const response = await fetch("/api/registrar-pago", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -64,10 +62,7 @@ const Success = () => {
         if (!response.ok) {
           throw new Error("Error al registrar el pago");
         }
-
-        console.log("Pago registrado correctamente");
       } catch (error) {
-        console.error("Error al registrar el pago:", error);
         setError(true);
       } finally {
         setLoading(false); // Aseguramos que la carga termine, incluso si hubo un error
@@ -91,13 +86,11 @@ const Success = () => {
 
   // Si estamos en estado de carga
   if (loading) {
-    console.log("Cargando...");
     return <div>Cargando...</div>;
   }
 
   // Si hay error en el registro del pago
   if (error) {
-    console.log("Ocurrió un error al registrar el pago");
     return (
       <div>
         <h1 className="text-3xl font-semibold text-[#333] mt-7">Pago</h1>

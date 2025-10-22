@@ -11,7 +11,7 @@ export const getSocialImage = async (
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error) {
-    console.error("Error al obtener la imagen de salida social:", error);
+
     throw error;
   }
 };

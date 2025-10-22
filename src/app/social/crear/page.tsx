@@ -235,10 +235,8 @@ export default function CrearSalidaPage() {
       setIsSubmitting(false);
       try {
         const errorData = await res.json();
-        console.error("Error al crear salida social:", errorData);
         toast.error(errorData.error || "Error al crear la salida");
       } catch (e) {
-        console.error("Error al crear salida social:", res.status);
         toast.error("Error al crear la salida");
       }
     }
@@ -249,7 +247,6 @@ export default function CrearSalidaPage() {
       .then((res) => res.json())
       .then((data) => setSuggestions(data))
       .catch((err) => {
-        console.error("Error fetching suggestions:", err);
         setSuggestions([]);
       });
   };
@@ -260,7 +257,6 @@ export default function CrearSalidaPage() {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
       return "";
     }
   };
@@ -407,7 +403,6 @@ export default function CrearSalidaPage() {
           );
           setGpsLocationDetected(true);
         } catch (error) {
-          console.error("Error detectando ubicación:", error);
 
           // Limpiar toast de loading y mostrar error
           toast.dismiss("gps-search");
@@ -420,7 +415,6 @@ export default function CrearSalidaPage() {
         }
       },
       (error) => {
-        console.error("Error GPS:", error);
         setLocationDetecting(false);
 
         // Limpiar toast de loading
@@ -563,7 +557,6 @@ export default function CrearSalidaPage() {
         }
       }
     } catch (error) {
-      console.error("Error actualizando posición del mapa:", error);
       // En caso de error, al menos actualizar las coordenadas sin tocar el mapa
       const provinceCenter = provinceCoords[selectedProvince];
       setMarkerPos(provinceCenter);
@@ -636,7 +629,6 @@ export default function CrearSalidaPage() {
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
-      console.error("Error fetching suggestions:", err);
     }
   };
 
@@ -666,7 +658,6 @@ export default function CrearSalidaPage() {
           setActivities(data);
         }
       } catch (err) {
-        console.error("Error cargando actividades:", err);
       } finally {
         setLoading(false);
       }
@@ -679,7 +670,6 @@ export default function CrearSalidaPage() {
         const data = await res.json();
         setprofes(data);
       } catch (err) {
-        console.error("Error al obtener los profes", err);
       } finally {
         setLoading(false);
       }

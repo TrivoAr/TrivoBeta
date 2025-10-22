@@ -46,7 +46,6 @@ export async function POST(request: Request) {
 
     // Guardar el usuario en la base de datos
     const savedUser = await user.save();
-    console.log(savedUser);
 
     // Retornar una respuesta con los datos del usuario
     return NextResponse.json(

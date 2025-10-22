@@ -90,10 +90,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
 
     try {
       // Ensure models are registered
-      console.log("Ensuring models are registered...");
-      console.log("User model:", User.modelName);
-      console.log("Bares model:", Bares.modelName);
-      console.log("Sponsors model:", Sponsors.modelName);
+      // User, Bares, and Sponsors model registration check
 
       const team = await this.model
         .findById(id)
@@ -117,7 +114,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
         try {
           barData = await Bares.findById(team.bar);
         } catch (error) {
-          console.log("Error loading bar:", error);
+          // Error loading bar
         }
       }
 
@@ -125,7 +122,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
         try {
           sponsorsData = await Sponsors.find({ _id: { $in: team.sponsors } });
         } catch (error) {
-          console.log("Error loading sponsors:", error);
+          // Error loading sponsors
         }
       }
 
@@ -137,10 +134,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
           team.creadorId.firstname
         );
       } catch (error) {
-        console.log(
-          `[TeamSocialRepository] Image fetch failed for creator:`,
-          error
-        );
+        // Image fetch failed for creator
         creatorImageUrl = ImageService.generateAvatarUrl(
           team.creadorId.firstname
         );
@@ -379,8 +373,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
           .findByIdAndUpdate(event._id, { imagen: imageUrl }, { new: true })
           .exec()) as ITeamSocial;
       } catch (error) {
-        console.error("[TeamSocialRepository] Failed to upload image:", error);
-        // Return event without image rather than failing completely
+        // Failed to upload image - return event without image
         return event;
       }
     }
@@ -405,8 +398,7 @@ export class TeamSocialRepository extends BaseRepository<ITeamSocial> {
         const imageUrl = await ImageService.saveTeamSocialImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error("[TeamSocialRepository] Failed to upload image:", error);
-        // Continue with update without new image
+        // Failed to upload image - continue with update without new image
       }
     }
 

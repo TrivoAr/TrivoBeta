@@ -29,7 +29,7 @@ export async function POST(
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
   } catch (error) {
-    console.error("Error al marcar como leída:", error);
+
     return new Response("Error al marcar como leída", { status: 500 });
   }
 }

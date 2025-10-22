@@ -166,9 +166,7 @@ export default function GrupoDetailPage({
           );
           setGroupImage(imageUrl);
         } catch {
-          console.log(
-            "No se encontró una imagen para este grupo, usando predeterminada."
-          );
+          // No se encontró una imagen para este grupo, usando predeterminada
         }
 
         const alumnosWithImages = await Promise.all(
@@ -180,10 +178,6 @@ export default function GrupoDetailPage({
               );
               return { ...alumno, profileImage: imageUrl };
             } catch (error) {
-              console.error(
-                `Error al obtener imagen del alumno ${alumno._id}:`,
-                error
-              );
               return {
                 ...alumno,
                 profileImage:
@@ -192,8 +186,6 @@ export default function GrupoDetailPage({
             }
           })
         );
-
-        console.log("Alumnos con imágenes:", response.data.grupo);
 
         setGrupo(response.data.grupo);
         setAlumnos(alumnosWithImages);
@@ -233,7 +225,6 @@ export default function GrupoDetailPage({
       setGroupImage(imageUrl);
       alert("Imagen actualizada con éxito.");
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
       alert("Hubo un problema al subir la imagen del grupo.");
     } finally {
       setUploadingImage(false);
@@ -289,7 +280,6 @@ export default function GrupoDetailPage({
         throw new Error("Error al eliminar el grupo");
       }
     } catch (error) {
-      console.error("Error al eliminar:", error);
       toast.error("Error al eliminar el grupo.");
     }
   };
@@ -307,8 +297,6 @@ export default function GrupoDetailPage({
   if (error) return <div>{error}</div>;
 
   if (!grupo) return <GrupoDetailSkeletonV2 />;
-
-  console.log("datos grupo", grupo.profesor_id);
 
   return (
     <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9] dark:bg-gray-900">

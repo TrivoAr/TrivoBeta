@@ -88,24 +88,8 @@ export async function POST(request: NextRequest) {
     const precioActualAcademia = Number(academia.precio);
     const montoAnterior = suscripcion.pagos.monto;
 
-    console.log(
-      `[ACTIVATE_SUBSCRIPTION] Precio actual de academia: ${academia.precio} (tipo: ${typeof academia.precio})`
-    );
-    console.log(
-      `[ACTIVATE_SUBSCRIPTION] Monto anterior de suscripción: ${montoAnterior} (tipo: ${typeof montoAnterior})`
-    );
-    console.log(
-      `[ACTIVATE_SUBSCRIPTION] Precio convertido: ${precioActualAcademia} (tipo: ${typeof precioActualAcademia})`
-    );
-
     // Actualizar el monto de la suscripción
     suscripcion.pagos.monto = precioActualAcademia;
-
-    if (montoAnterior !== precioActualAcademia) {
-      console.log(
-        `[ACTIVATE_SUBSCRIPTION] Actualizando monto de suscripción de $${montoAnterior} a $${precioActualAcademia}`
-      );
-    }
 
     // Validar monto mínimo requerido por MercadoPago
     const montoMinimo = SUBSCRIPTION_CONFIG.SUBSCRIPTION.MIN_AMOUNT;
@@ -141,8 +125,6 @@ export async function POST(request: NextRequest) {
         externalReference,
       });
     } catch (error: any) {
-      console.error("[ACTIVATE_SUBSCRIPTION] Error creando preapproval:", error);
-
       // Si el error es por falta de credenciales, devolver mensaje específico
       if (
         error.message.includes("no están configuradas en las variables de entorno")
@@ -189,10 +171,6 @@ export async function POST(request: NextRequest) {
 
     await suscripcion.save();
 
-    console.log(
-      `[ACTIVATE_SUBSCRIPTION] Preapproval creado exitosamente para suscripción ${suscripcionId}`
-    );
-
     return NextResponse.json({
       success: true,
       message: "Link de pago generado exitosamente",
@@ -206,7 +184,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error("[ACTIVATE_SUBSCRIPTION] Error:", error);
     return NextResponse.json(
       { error: error.message || "Error al activar suscripción" },
       { status: 500 }

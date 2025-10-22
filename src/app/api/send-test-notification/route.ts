@@ -19,16 +19,10 @@ if (!admin.apps.length) {
         );
         credential = admin.credential.cert(serviceAccount);
         credentialsUsed = "JSON service account";
-        console.log(
-          "🔥 Using Firebase service account JSON, project:",
-          serviceAccount.project_id
-        );
-        console.log("🔥 Service account email:", serviceAccount.client_email);
+
+
       } catch (parseError) {
-        console.error(
-          "❌ Error parsing FIREBASE_SERVICE_ACCOUNT_KEY:",
-          parseError
-        );
+
         throw new Error("Invalid FIREBASE_SERVICE_ACCOUNT_KEY JSON format");
       }
     }
@@ -44,38 +38,21 @@ if (!admin.apps.length) {
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       });
       credentialsUsed = "individual environment variables";
-      console.log(
-        "🔥 Using individual env vars, project:",
-        process.env.FIREBASE_PROJECT_ID
-      );
-      console.log("🔥 Client email:", process.env.FIREBASE_CLIENT_EMAIL);
+
+
     } else {
-      console.error("❌ Firebase credentials not found. Available env vars:");
-      console.error(
-        "- FIREBASE_SERVICE_ACCOUNT_KEY:",
-        !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-      );
-      console.error(
-        "- FIREBASE_PROJECT_ID:",
-        !!process.env.FIREBASE_PROJECT_ID
-      );
-      console.error(
-        "- FIREBASE_CLIENT_EMAIL:",
-        !!process.env.FIREBASE_CLIENT_EMAIL
-      );
-      console.error(
-        "- FIREBASE_PRIVATE_KEY:",
-        !!process.env.FIREBASE_PRIVATE_KEY
-      );
+
+
+
+
+
       throw new Error("Firebase credentials not properly configured");
     }
 
     admin.initializeApp({ credential });
-    console.log(
-      `🔥 Firebase Admin initialized successfully using ${credentialsUsed}`
-    );
+
   } catch (error) {
-    console.error("❌ Error initializing Firebase Admin:", error);
+
     throw error;
   }
 }
@@ -144,7 +121,6 @@ export async function POST(req: Request) {
 
     try {
       const response = await admin.messaging().send(message);
-      console.log("✅ Notificación de prueba enviada:", response);
 
       return NextResponse.json({
         success: true,
@@ -152,7 +128,6 @@ export async function POST(req: Request) {
         messageId: response,
       });
     } catch (fcmError: any) {
-      console.error("❌ Error enviando notificación FCM:", fcmError);
 
       // Check if token is invalid
       if (
@@ -161,7 +136,6 @@ export async function POST(req: Request) {
       ) {
         // Delete invalid token from database
         await FCMToken.deleteOne({ _id: userToken._id });
-        console.log("🗑️ Token inválido eliminado de la base de datos");
 
         return NextResponse.json(
           {
@@ -180,7 +154,7 @@ export async function POST(req: Request) {
       );
     }
   } catch (error: any) {
-    console.error("❌ Error en test notification:", error);
+
     return NextResponse.json(
       {
         error: "Error interno del servidor",

@@ -19,7 +19,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(profesores, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener profesores:", error);
+
     return NextResponse.json(
       { error: "Error al obtener profesores" },
       { status: 500 }

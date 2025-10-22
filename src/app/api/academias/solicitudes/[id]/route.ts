@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ hasActiveRequest: false }, { status: 200 });
   } catch (error) {
-    console.error("Error al verificar solicitud activa:", error);
+
     return NextResponse.json(
       { message: "Hubo un error al verificar la solicitud activa" },
       { status: 500 }

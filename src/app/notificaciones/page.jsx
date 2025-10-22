@@ -105,7 +105,7 @@ const NotificacionesPage = () => {
 
         setNotificaciones(notificacionesRecientes);
       } catch (err) {
-        console.error("Error al cargar notificaciones o solicitudes", err);
+        // Error loading notifications
       } finally {
         setLoading(false);
       }
@@ -126,7 +126,7 @@ const NotificacionesPage = () => {
         new CustomEvent("notificationMarkedAsRead", { detail: { id } })
       );
     } catch (error) {
-      console.error("Error marcando como leída", error);
+      // Error marking as read
     }
   };
 
@@ -136,12 +136,9 @@ const NotificacionesPage = () => {
       await Promise.all(
         ids.map((id) => axios.post(`/api/notificaciones/${id}/markAsRead`))
       );
-      console.log(`${ids.length} notificaciones antiguas marcadas como leídas`);
+      // Notifications marked as read
     } catch (error) {
-      console.error(
-        "Error marcando notificaciones antiguas como leídas",
-        error
-      );
+      // Error marking old notifications as read
     }
   };
 
@@ -172,8 +169,6 @@ const NotificacionesPage = () => {
       </div>
     </div>
   );
-
-  console.log("Notificaciones:", notificaciones);
 
   return (
     <div className="bg-background min-h-screen text-foreground px-4 py-6 w-[390px] mx-auto">

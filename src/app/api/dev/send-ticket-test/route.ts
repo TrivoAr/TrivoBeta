@@ -27,11 +27,6 @@ export async function POST() {
     const redeemUrl = `${process.env.NEXT_PUBLIC_APP_URL}/r/${t.code}`;
     const dataUrl = await qrPngDataUrl(redeemUrl);
 
-    console.log("[DEV TEST] Enviando mail de QR…", {
-      userId: String(t.userId),
-      salidaId: String(t.salidaId),
-      code: t.code,
-    });
 
     const emailId = await sendTicketEmail({
       userId: String(t.userId),
@@ -40,11 +35,9 @@ export async function POST() {
       qrDataUrl: dataUrl,
     });
 
-    console.log("[DEV TEST] Mail OK id:", emailId);
-
     return NextResponse.json({ ok: true, emailId }, { status: 200 });
   } catch (e: any) {
-    console.error("[DEV TEST] ERROR", e);
+
     return NextResponse.json({ error: e?.message ?? "fail" }, { status: 500 });
   }
 }

@@ -58,7 +58,6 @@ export function DashboardWidget() {
 
   React.useEffect(() => {
     if (lastNotification) {
-      console.log("Nueva notificación recibida:", lastNotification);
       // Aquí podrías actualizar el título de la página, reproducir un sonido, etc.
 
       // Reset del contador después de un tiempo
@@ -120,11 +119,6 @@ export function NotificationProvider({
 
   React.useEffect(() => {
     // Listener global para eventos de conexión
-    if (connectionStatus === "connected") {
-      console.log("🔗 Sistema de notificaciones conectado");
-    } else {
-      console.log("❌ Sistema de notificaciones desconectado");
-    }
   }, [connectionStatus]);
 
   return <>{children}</>;

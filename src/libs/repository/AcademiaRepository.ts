@@ -89,10 +89,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
           academia.dueño_id.firstname
         );
       } catch (error) {
-        console.log(
-          `[AcademiaRepository] Image fetch failed for owner:`,
-          error
-        );
+        // Image fetch failed for owner
         ownerImageUrl =
           "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
       }
@@ -339,8 +336,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
           .findByIdAndUpdate(academia._id, { imagen: imageUrl }, { new: true })
           .exec()) as IAcademia;
       } catch (error) {
-        console.error("[AcademiaRepository] Failed to upload image:", error);
-        // Return academia without image rather than failing completely
+        // Failed to upload image - return academia without image
         return academia;
       }
     }
@@ -365,8 +361,7 @@ export class AcademiaRepository extends BaseRepository<IAcademia> {
         const imageUrl = await ImageService.saveAcademyImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error("[AcademiaRepository] Failed to upload image:", error);
-        // Continue with update without new image
+        // Failed to upload image - continue with update without new image
       }
     }
 

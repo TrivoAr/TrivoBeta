@@ -507,7 +507,7 @@ export default function EventPage({ params }: PageProps) {
               navigator.clipboard
                 .writeText(url)
                 .then(() => toast.success("¡Link copiado al portapapeles!"))
-                .catch((err) => console.error("Error al copiar el link:", err));
+                .catch((err) => {});
             }
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"

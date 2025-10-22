@@ -35,7 +35,7 @@ export async function GET(
       try {
         barData = await Bares.findById(team.bar);
       } catch (error) {
-        console.log("Error cargando bar:", error);
+
       }
     }
 
@@ -43,7 +43,7 @@ export async function GET(
       try {
         sponsorsData = await Sponsors.find({ _id: { $in: team.sponsors } });
       } catch (error) {
-        console.log("Error cargando sponsors:", error);
+
       }
     }
 
@@ -74,7 +74,7 @@ export async function GET(
 
     return NextResponse.json(salidaObj, { status: 200 });
   } catch (error) {
-    console.error("Error al buscar TeamSocial:", error);
+
     return NextResponse.json(
       { error: "Error en el servidor" },
       { status: 500 }

@@ -101,7 +101,6 @@ export default function SearchResultCard({
           const imageUrl = await getAcademyImage("profile-image.jpg", data._id);
           setAcademiaImageUrl(imageUrl);
         } catch (error) {
-          console.error("Error al cargar imagen de academia:", error);
           // No hacer nada, se usará la imagen por defecto
         }
       };

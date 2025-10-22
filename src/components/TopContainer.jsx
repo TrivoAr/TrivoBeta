@@ -81,7 +81,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
       ) {
         // Acá deberías llamar a tu API o método de persistencia
         axios.post("/api/locations", { city: detectedCity }).catch(() => {
-          console.log("No se pudo guardar la ubicación detectada");
+          // Failed to save location
         });
       }
     }
@@ -136,32 +136,24 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   // Función separada para cargar imagen de perfil
   const loadProfileImage = useCallback(async () => {
     if (!session?.user?.id) {
-      console.log("No session or user ID available");
       return;
     }
-
-    console.log("Loading profile image for user:", session.user.id);
-    console.log("Session user imagen:", session.user.imagen);
 
     try {
       const imageUrl = await getProfileImage(
         "profile-image.jpg",
         session.user.id
       );
-      console.log("Firebase image URL:", imageUrl);
       if (imageUrl) {
         setProfileImage(imageUrl);
       } else {
         // Si no hay imagen de Firebase, usar la del session
         const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
-        console.log("Using fallback image:", fallbackImage);
         setProfileImage(fallbackImage);
       }
     } catch (error) {
-      console.log("Error cargando imagen de perfil:", error);
       // Fallback: usar imagen del session o imagen por defecto
       const fallbackImage = session.user.imagen || "/assets/logo/Trivo T.png";
-      console.log("Using fallback after error:", fallbackImage);
       setProfileImage(fallbackImage);
     }
   }, [session]);

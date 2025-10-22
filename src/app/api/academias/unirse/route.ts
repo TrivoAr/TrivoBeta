@@ -67,7 +67,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error al crear la solicitud:", error);
+
     return NextResponse.json(
       { message: `Error interno: ${error}` },
       { status: 500 }

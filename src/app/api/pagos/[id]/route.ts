@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
 import Pago from "@/models/pagos";
-import Notificacion from "@/models/notificacion";
 import { sendPaymentStatusEmail } from "@/libs/mailer";
 import SalidaSocial from "@/models/salidaSocial";
 import Academia from "@/models/academia";
@@ -14,6 +13,10 @@ import { qrPngDataUrl } from "@/libs/qr";
 import { sendTicketEmail } from "@/libs/email/sendTicketEmail";
 import { customAlphabet } from "nanoid";
 import MiembroSalida from "@/models/MiembroSalida";
+import {
+  notifyPaymentApproved,
+  notifyPaymentRejected,
+} from "@/libs/notificationHelpers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +42,6 @@ export async function GET(
 
     return NextResponse.json(pago, { status: 200 });
   } catch (error) {
-    console.error("Error obteniendo pago:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
@@ -75,12 +77,6 @@ export async function PATCH(
       );
     }
 
-    // Depuración de IDs
-    console.log("=== DEBUG PAGOS ===");
-    console.log("pago.salidaId:", pago.salidaId);
-    console.log("pago.academiaId:", pago.academiaId);
-    console.log("pago.userId:", pago.userId);
-
     // Detectar si es una salida social o una academia
     const esSalidaSocial = !!pago.salidaId;
     const esAcademia = !!pago.academiaId;
@@ -91,13 +87,10 @@ export async function PATCH(
     } else if (esAcademia) {
       // Lógica para academias
       await procesarAcademia(pago, estado);
-    } else {
-      console.warn("⚠️ Pago sin salidaId ni academiaId válido");
     }
 
     return NextResponse.json({ success: true, pago }, { status: 200 });
   } catch (error) {
-    console.error("Error actualizando pago:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
@@ -109,25 +102,14 @@ async function procesarSalidaSocial(pago: any, estado: string) {
       "creador_id"
     );
     if (!salida) {
-      console.warn("⚠️ Salida no encontrada");
       return;
     }
 
     const organizador = salida.creador_id;
     const miembro = await User.findById(pago.userId);
     if (!miembro) {
-      console.warn("⚠️ Miembro no encontrado");
       return;
     }
-
-    console.log("Salida:", salida._id, salida.nombre);
-    console.log(
-      "Organizador:",
-      organizador._id,
-      organizador.firstname,
-      organizador.lastname
-    );
-    console.log("Miembro:", miembro._id, miembro.firstname, miembro.lastname);
 
     // Notificación para el miembro
     const mensajeMiembro =
@@ -149,10 +131,6 @@ async function procesarSalidaSocial(pago: any, estado: string) {
             { estado: "aprobado" },
             { new: true }
           );
-          console.log(
-            "✅ Estado del miembro actualizado a aprobado:",
-            pago.miembro_id
-          );
         }
 
         // 1) buscar o crear ticket (idempotente)
@@ -171,21 +149,10 @@ async function procesarSalidaSocial(pago: any, estado: string) {
           });
         }
 
-        console.log("[PAGOS][APROBADO] ticket:", {
-          id: String(ticket._id),
-          code: ticket.code,
-          emailSentAt: ticket.emailSentAt || null,
-        });
-
         // 2) enviar mail SOLO si aún no fue enviado
         if (!ticket.emailSentAt) {
           const redeemUrl = `${process.env.NEXT_PUBLIC_APP_URL}/r/${ticket.code}`;
           const dataUrl = await qrPngDataUrl(redeemUrl);
-
-          console.log("[PAGOS][APROBADO] Voy a enviar QR", {
-            to: miembro.email,
-            code: ticket.code,
-          });
 
           const emailId = await sendTicketEmail({
             userId: String(pago.userId),
@@ -198,39 +165,29 @@ async function procesarSalidaSocial(pago: any, estado: string) {
           ticket.emailSentAt = new Date();
           (ticket as any).emailId = emailId;
           await ticket.save();
-
-          console.log("[PAGOS][APROBADO] Email marcado como enviado", {
-            ticketId: String(ticket._id),
-            emailSentAt: ticket.emailSentAt,
-            emailId,
-          });
-        } else {
-          console.log(
-            "[PAGOS][APROBADO] Ya había emailSentAt, no reenvío. code:",
-            ticket.code
-          );
         }
       } catch (qrErr) {
-        console.error("[PAGOS][APROBADO] Error emitiendo/enviando QR:", qrErr);
       }
     }
 
-    await Notificacion.create({
-      userId: miembro._id,
-      fromUserId: organizador._id,
-      salidaId: salida._id,
-      type: "pago_aprobado",
-      message: mensajeMiembro,
-      read: false,
-    });
-
-    if (estado !== "aprobado") {
+    // Notificar con sockets en tiempo real
+    if (estado === "aprobado") {
+      await notifyPaymentApproved(
+        String(miembro._id),
+        String(organizador._id),
+        String(salida._id),
+        salida.nombre
+      );
+    } else {
+      await notifyPaymentRejected(
+        String(miembro._id),
+        String(organizador._id),
+        String(salida._id),
+        salida.nombre
+      );
       await sendPaymentStatusEmail(miembro.email, estado);
     }
-
-    console.log("✅ Notificaciones de salida social creadas con éxito");
   } catch (notifError) {
-    console.error("Error procesando salida social:", notifError);
   }
 }
 
@@ -241,20 +198,14 @@ async function procesarAcademia(pago: any, estado: string) {
       "dueño_id"
     );
     if (!academia) {
-      console.warn("⚠️ Academia no encontrada");
       return;
     }
 
     const dueño = academia.dueño_id;
     const miembro = await User.findById(pago.userId);
     if (!miembro) {
-      console.warn("⚠️ Miembro no encontrado");
       return;
     }
-
-    console.log("Academia:", academia._id, academia.nombre_academia);
-    console.log("Dueño:", dueño._id, dueño.firstname, dueño.lastname);
-    console.log("Miembro:", miembro._id, miembro.firstname, miembro.lastname);
 
     // Notificación para el miembro
     const mensajeMiembro =
@@ -273,35 +224,34 @@ async function procesarAcademia(pago: any, estado: string) {
           { estado: "aceptado" },
           { new: true }
         );
-        console.log(
-          "✅ Estado del miembro de academia actualizado a aceptado:",
-          pago.userId,
-          "en academia:",
-          pago.academiaId
-        );
       } catch (updateErr) {
-        console.error(
-          "Error actualizando estado del miembro de academia:",
-          updateErr
-        );
       }
     }
 
-    await Notificacion.create({
-      userId: miembro._id,
-      fromUserId: dueño._id,
-      academiaId: academia._id,
-      type: "pago_aprobado",
-      message: mensajeMiembro,
-      read: false,
-    });
-
-    if (estado !== "aprobado") {
+    // TODO: Crear funciones notifyPaymentApprovedAcademia/Rejected cuando sea necesario
+    // Por ahora, seguimos usando la estructura anterior
+    if (estado === "aprobado") {
+      const { createNotification } = await import("@/libs/notificationHelpers");
+      await createNotification({
+        userId: String(miembro._id),
+        fromUserId: String(dueño._id),
+        type: "pago_aprobado",
+        message: mensajeMiembro,
+        academiaId: String(academia._id),
+        actionUrl: `/academias/${academia._id}`,
+      });
+    } else {
+      const { createNotification } = await import("@/libs/notificationHelpers");
+      await createNotification({
+        userId: String(miembro._id),
+        fromUserId: String(dueño._id),
+        type: "pago_rechazado",
+        message: mensajeMiembro,
+        academiaId: String(academia._id),
+        actionUrl: `/academias/${academia._id}`,
+      });
       await sendPaymentStatusEmail(miembro.email, estado);
     }
-
-    console.log("✅ Notificaciones de academia creadas con éxito");
   } catch (notifError) {
-    console.error("Error procesando academia:", notifError);
   }
 }

@@ -117,7 +117,6 @@ export default function StravaMap({ coords }: StravaMapProps) {
     });
 
       } catch (error) {
-        console.error("Error initializing Mapbox:", error);
         setIsLoading(false);
       }
     };

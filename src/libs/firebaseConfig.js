@@ -63,10 +63,10 @@ export const registerFirebaseSW = async () => {
       // Usar el SW generado dinámicamente con variables de entorno
       const registration =
         await navigator.serviceWorker.register("/api/firebase-sw");
-      console.log("✅ Firebase SW registrado:", registration);
+      // Firebase SW registered
       return registration;
     } catch (error) {
-      console.error("❌ Error registrando Firebase SW:", error);
+      // Error registering Firebase SW
       throw error;
     }
   }
@@ -98,7 +98,7 @@ export const getFCMToken = async () => {
     });
 
     if (token) {
-      console.log("✅ FCM Token obtenido:", token.substring(0, 20) + "...");
+      // FCM Token obtained
       return token;
     } else {
       throw new Error(
@@ -106,7 +106,7 @@ export const getFCMToken = async () => {
       );
     }
   } catch (error) {
-    console.error("❌ Error obteniendo token FCM:", error);
+    // Error obtaining FCM token
     throw error;
   }
 };
@@ -118,7 +118,7 @@ export const onMessageListener = () =>
     if (messaging) {
       const { onMessage } = await import("firebase/messaging");
       onMessage(messaging, (payload) => {
-        console.log("📬 Mensaje recibido en primer plano:", payload);
+        // Message received in foreground
         resolve(payload);
       });
     }

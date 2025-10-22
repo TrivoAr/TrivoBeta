@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
 
     // Registrar asistencia usando el servicio
     const fechaAsistencia = fecha ? new Date(fecha) : new Date();
-    console.log(`[ASISTENCIAS] Registrando asistencia para usuario ${userId} en grupo ${grupoId}, fecha: ${fechaAsistencia.toISOString()}`);
 
     const resultado = await subscriptionService.registrarAsistencia({
       userId,
@@ -67,19 +66,9 @@ export async function POST(request: NextRequest) {
       registradoPor: session.user.id,
     });
 
-    console.log(`[ASISTENCIAS] Asistencia registrada exitosamente:`, {
-      asistenciaId: resultado.asistencia._id,
-      userId: resultado.asistencia.userId,
-      grupoId: resultado.asistencia.grupoId,
-      fecha: resultado.asistencia.fecha,
-      asistio: resultado.asistencia.asistio,
-      esTrial: resultado.asistencia.esTrial,
-      requiereActivacion: resultado.requiereActivacion,
-    });
-
     // Enviar notificación al alumno
     try {
-      console.log(`[ASISTENCIAS] Enviando notificación al alumno ${userId}...`);
+
       await notificationService.notificarAsistenciaRegistrada({
         alumnoId: userId,
         profesorId: session.user.id,
@@ -89,14 +78,9 @@ export async function POST(request: NextRequest) {
         academiaNombre: academia.nombre_academia,
         esTrial: resultado.asistencia.esTrial,
       });
-      console.log(
-        `[ASISTENCIAS] ✅ Notificación enviada al alumno ${userId} sobre asistencia`
-      );
+
     } catch (notifError) {
-      console.error(
-        "[ASISTENCIAS] ❌ Error enviando notificación:",
-        notifError
-      );
+
       // No fallar el registro si falla la notificación
     }
 
@@ -105,7 +89,6 @@ export async function POST(request: NextRequest) {
       // PRIMERO: Marcar suscripción como trial_expirado SIEMPRE
       resultado.suscripcion.estado = "trial_expirado";
       await resultado.suscripcion.save();
-      console.log(`[ASISTENCIAS] Suscripción marcada como trial_expirado`);
 
       // SEGUNDO: Intentar crear preapproval de MercadoPago (puede fallar si no hay credenciales)
       let mercadoPagoLink = null;
@@ -138,14 +121,8 @@ export async function POST(request: NextRequest) {
         await resultado.suscripcion.save();
         mercadoPagoLink = mpResult.initPoint;
 
-        console.log(
-          `[ASISTENCIAS] Preapproval de MercadoPago creado exitosamente`
-        );
       } catch (mpError: any) {
-        console.error(
-          "[ASISTENCIAS] Error creando preapproval post-trial:",
-          mpError.message
-        );
+
         // Continuar sin MercadoPago - el dueño debe configurar credenciales
       }
 
@@ -157,14 +134,9 @@ export async function POST(request: NextRequest) {
           academiaNombre: academia.nombre_academia,
           mercadoPagoLink,
         });
-        console.log(
-          `[ASISTENCIAS] Notificación de trial expirado enviada al alumno ${userId}`
-        );
+
       } catch (notifError) {
-        console.error(
-          "[ASISTENCIAS] Error enviando notificación de trial expirado:",
-          notifError
-        );
+
       }
 
       return NextResponse.json({
@@ -190,7 +162,7 @@ export async function POST(request: NextRequest) {
       message: "Asistencia registrada correctamente",
     });
   } catch (error: any) {
-    console.error("Error en POST /api/asistencias/registrar:", error);
+
     return NextResponse.json(
       { error: error.message || "Error al registrar asistencia" },
       { status: 500 }

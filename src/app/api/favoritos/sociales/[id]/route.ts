@@ -50,7 +50,7 @@ export async function POST(
       JSON.stringify({ success: true, favorito: !yaAgregado })
     );
   } catch (error) {
-    console.error("Error al actualizar favoritos salidas:", error);
+
     return new Response(JSON.stringify({ message: "Error del servidor" }), {
       status: 500,
     });
@@ -83,7 +83,7 @@ export async function GET(
     const esFavorito = user.favoritos.salidas.includes(salidaId);
     return new Response(JSON.stringify({ favorito: esFavorito }));
   } catch (error) {
-    console.error("Error al consultar favorito salida:", error);
+
     return new Response(JSON.stringify({ message: "Error del servidor" }), {
       status: 500,
     });

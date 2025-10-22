@@ -17,11 +17,6 @@ export default function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
-          console.log(
-            "✅ Service Worker registrado exitosamente:",
-            registration.scope
-          );
-
           // Actualizar SW cuando haya uno nuevo disponible
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
@@ -31,16 +26,12 @@ export default function ServiceWorkerRegistration() {
                   newWorker.state === "installed" &&
                   navigator.serviceWorker.controller
                 ) {
-                  console.log(
-                    "🔄 Nuevo Service Worker disponible. Recarga para actualizar."
-                  );
                 }
               });
             }
           });
         })
         .catch((error) => {
-          console.error("❌ Error registrando Service Worker:", error);
         });
     }
   }, []);

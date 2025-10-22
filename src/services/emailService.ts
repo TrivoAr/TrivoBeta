@@ -34,7 +34,6 @@ export class EmailService {
     });
 
     if (error) {
-      console.error("[EMAIL_SERVICE][ERROR]", error);
       throw new Error("Error al enviar el correo");
     }
 

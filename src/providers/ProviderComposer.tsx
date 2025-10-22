@@ -197,7 +197,6 @@ class ErrorBoundaryProvider extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Provider Error Boundary caught an error:", error, errorInfo);
   }
 
   render() {

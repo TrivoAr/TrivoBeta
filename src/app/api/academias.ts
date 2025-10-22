@@ -35,7 +35,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       res.status(201).json({ message: "Academia creada exitosamente" });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: "Hubo un error al crear la academia" });
     }
   } else {

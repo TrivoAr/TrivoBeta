@@ -33,7 +33,7 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error obteniendo sponsor:", error);
+
     return NextResponse.json(
       {
         success: false,
@@ -89,7 +89,7 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error actualizando sponsor:", error);
+
     return NextResponse.json(
       {
         success: false,
@@ -128,7 +128,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error eliminando sponsor:", error);
+
     return NextResponse.json(
       {
         success: false,

@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("reset/request error:", error);
+
     return NextResponse.json(
       { message: "Error en el servidor" },
       { status: 500 }

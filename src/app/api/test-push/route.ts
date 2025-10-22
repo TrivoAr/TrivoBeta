@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       message: "Notificación push enviada correctamente",
     });
   } catch (error) {
-    console.error("Error enviando notificación de prueba:", error);
+
     return NextResponse.json(
       {
         error: "Error enviando notificación",

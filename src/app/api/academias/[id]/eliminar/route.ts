@@ -34,7 +34,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al eliminar la academia:", error);
+
     return NextResponse.json(
       { message: "Hubo un error al eliminar la academia", error: error },
       { status: 500 }

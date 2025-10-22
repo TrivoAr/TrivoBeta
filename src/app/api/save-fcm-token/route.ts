@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       existingToken.token = token;
       existingToken.device_info = device_info;
       await existingToken.save();
-      console.log("🔄 Token FCM actualizado para usuario:", session.user.id);
+
     } else {
       // Crear nuevo token
       await FCMToken.create({
@@ -82,20 +82,15 @@ export async function POST(req: Request) {
         token: token,
         device_info: device_info,
       });
-      console.log("✅ Nuevo token FCM guardado para usuario:", session.user.id);
+
     }
 
     // Enviar notificación de confirmación usando Firebase Admin
     try {
       // TODO: Implementar envío de notificación de bienvenida
-      console.log(
-        "📱 Token FCM guardado correctamente, listo para recibir notificaciones"
-      );
+
     } catch (notificationError) {
-      console.warn(
-        "⚠️ Error enviando notificación de confirmación:",
-        notificationError
-      );
+
       // No fallar si no se puede enviar la notificación de confirmación
     }
 
@@ -107,7 +102,6 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error guardando token FCM:", error);
 
     if (error.code === 11000) {
       // Error de duplicado - token ya existe

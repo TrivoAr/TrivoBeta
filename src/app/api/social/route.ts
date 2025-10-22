@@ -17,22 +17,20 @@ async function generateUniqueShortId() {
 }
 
 export async function POST(req: Request) {
-  console.log("[CREATE_SALIDA] Starting request");
+
   await connectDB();
-  console.log("[CREATE_SALIDA] DB connected");
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    console.log("[CREATE_SALIDA] No session/user");
+
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const body = await req.json();
-  console.log("[CREATE_SALIDA] Received body:", JSON.stringify(body, null, 2));
 
   // Basic validation
   if (!body.nombre) {
-    console.log("[CREATE_SALIDA] Missing required field: nombre");
+
     return NextResponse.json(
       { error: "El nombre es requerido" },
       { status: 400 }
@@ -41,7 +39,6 @@ export async function POST(req: Request) {
 
   try {
     const shortId = await generateUniqueShortId();
-    console.log("[CREATE_SALIDA] Generated shortId:", shortId);
 
     // Convert string numbers to actual numbers for schema validation
     const processedData = {
@@ -54,17 +51,12 @@ export async function POST(req: Request) {
           ? body.profesorId
           : undefined,
     };
-    console.log(
-      "[CREATE_SALIDA] Processed data:",
-      JSON.stringify(processedData, null, 2)
-    );
 
     const nuevaSalida = await SalidaSocial.create({
       ...processedData,
       creador_id: session.user.id,
       shortId,
     });
-    console.log("[CREATE_SALIDA] Created salida:", nuevaSalida._id);
 
     try {
       const payload = {
@@ -79,17 +71,11 @@ export async function POST(req: Request) {
         body: JSON.stringify(payload),
       });
     } catch (err) {
-      console.error("⚠️ Error al enviar la notificación push:", err);
+
     }
 
     return NextResponse.json(nuevaSalida, { status: 201 });
   } catch (error) {
-    console.error("[CREATE_SALIDA_ERROR]", {
-      error: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString(),
-      userId: session.user.id,
-    });
 
     // Return more specific error information for debugging
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -114,7 +100,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(salidas, { status: 200 });
   } catch (error) {
-    console.error("[GET_SALIDAS]", error);
+
     return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }

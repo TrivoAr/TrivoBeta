@@ -348,7 +348,7 @@ export class ApiHandler {
         // Return success response
         return this.successResponse(result, corsHeaders);
       } catch (error) {
-        console.error("API Handler Error:", error);
+        // API Handler Error
         return this.handleError(error, this.applyCors(req));
       }
     };

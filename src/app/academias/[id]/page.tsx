@@ -132,10 +132,6 @@ export default function AcademiaDetailPage({
               },
             };
           } catch (error) {
-            console.error(
-              `Error al obtener imagen del usuario ${review.author._id}:`,
-              error
-            );
             return {
               ...review,
               author: {
@@ -156,11 +152,9 @@ export default function AcademiaDetailPage({
           (r) => r.author._id === session.user.id
         );
 
-        console.log("Ya existe reseña:", yaExiste);
         setMiReview(yaExiste || null);
       }
     } catch (error) {
-      console.error("Error cargando reseñas:", error);
     } finally {
       setLoadingReviews(false);
     }
@@ -184,9 +178,6 @@ export default function AcademiaDetailPage({
               );
               imageMap[grupo._id] = imageUrl;
             } catch (error) {
-              console.warn(
-                `No se encontró imagen para grupo ${grupo._id}, usando imagen predeterminada.`
-              );
               imageMap[grupo._id] =
                 "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg";
             }
@@ -199,7 +190,6 @@ export default function AcademiaDetailPage({
 
         localStorage.setItem("academia_id", params.id);
         localStorage.setItem("dueño_id", response.data.academia.dueño_id._id);
-        console.log("lo estas guardando?", localStorage);
 
         // Intentar obtener la imagen del perfil
         const loadProfileImage = async () => {
@@ -210,7 +200,6 @@ export default function AcademiaDetailPage({
             );
             setProfileImage(imageUrl);
           } catch (error) {
-            console.error("Error al obtener la imagen del perfil:", error);
             // Puedes agregar una imagen predeterminada en caso de error
             setProfileImage(
               "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
@@ -220,7 +209,6 @@ export default function AcademiaDetailPage({
 
         loadProfileImage();
       } catch (error) {
-        console.error("Error al obtener los datos:", error);
         setError("Hubo un problema al cargar los datos de la academia.");
       }
     };
@@ -240,10 +228,8 @@ export default function AcademiaDetailPage({
             miembro.estado === "aceptado"
         );
 
-        console.log("Usuario es miembro:", usuarioEsMiembro);
         setEsMiembro(usuarioEsMiembro);
       } catch (error) {
-        console.error("Error al verificar membresía:", error);
       }
     };
     if (session?.user) {
@@ -270,7 +256,6 @@ export default function AcademiaDetailPage({
           setHasActiveRequest(true);
         }
       } catch (error) {
-        console.error("Error al verificar solicitud:", error);
       }
     };
 
@@ -298,10 +283,6 @@ export default function AcademiaDetailPage({
                 },
               };
             } catch (error) {
-              console.error(
-                `Error al obtener la imagen del usuario ${review.author._id}:`,
-                error
-              );
               return {
                 ...review,
                 author: {
@@ -325,7 +306,6 @@ export default function AcademiaDetailPage({
           setMiReview(yaExiste || null);
         }
       } catch (error) {
-        console.error("Error cargando reseñas:", error);
       } finally {
         setLoadingReviews(false);
       }
@@ -334,19 +314,12 @@ export default function AcademiaDetailPage({
     const verificarFavorito = async () => {
       if (!session?.user?.id) return;
 
-      console.log(
-        "Verificando si es favorito para el usuario:",
-        session.user.id
-      );
-
       try {
-        console.log("Verificando favoritos para el usuario:", session.user.id);
         const res = await axios.get(`/api/profile`);
         const academiasFavoritas =
           res.data.favoritos?.academias?.map((a: any) => a._id) || [];
         setEsFavorito(academiasFavoritas.includes(params.id));
       } catch (error) {
-        console.error("Error al verificar favoritos:", error);
       }
     };
 
@@ -375,7 +348,6 @@ export default function AcademiaDetailPage({
           : "Academia eliminada de favoritos"
       );
     } catch (error) {
-      console.error("Error al actualizar favoritos:", error);
       toast.error("Hubo un error al actualizar favoritos.");
     }
   };
@@ -429,7 +401,6 @@ export default function AcademiaDetailPage({
       setHasActiveRequest(true);
     },
     onError: (error: any) => {
-      console.error("Error:", error);
       toast.error("Error al unirse a la academia");
     },
   });
@@ -474,8 +445,6 @@ export default function AcademiaDetailPage({
             }
           );
 
-          console.log("[ACADEMIA] Usuario unido con trial, invalidando queries...");
-
           // Invalidar y hacer refetch inmediato
           await queryClient.invalidateQueries({
             queryKey: ["payment-status-academia", params.id],
@@ -488,7 +457,6 @@ export default function AcademiaDetailPage({
             queryKey: ["miembro-academia", params.id, session.user.id],
           });
 
-          console.log("[ACADEMIA] Queries invalidadas y refetcheadas");
           setHasActiveRequest(true);
         } else if (data.mercadoPago?.initPoint) {
           // Si no puede usar trial, redirigir a MercadoPago para configurar suscripción
@@ -496,7 +464,6 @@ export default function AcademiaDetailPage({
           window.location.href = data.mercadoPago.initPoint;
         }
       } catch (error: any) {
-        console.error("Error:", error);
         toast.error(error.message || "Error al unirse a la academia");
       } finally {
         setIsProcessingPayment(false);
@@ -606,9 +573,7 @@ export default function AcademiaDetailPage({
                 // alert("¡Link copiado al portapapeles!");
                 toast.success("¡Link copiado al portapapeles!");
               })
-              .catch((err) => {
-                console.error("Error al copiar el link:", err);
-              });
+              .catch((err) => {});
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
         >
@@ -1204,7 +1169,6 @@ export default function AcademiaDetailPage({
                           throw new Error("No se pudo generar el link de pago");
                         }
                       } catch (error: any) {
-                        console.error("Error activando suscripción:", error);
                         toast.error(
                           error.message || "Error al generar link de pago. Contacta al dueño de la academia."
                         );

@@ -72,7 +72,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
 
       toast.success("Datos cargados con éxito", { id: toastId });
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
       toast.error("Error al cargar los datos del grupo.", { id: toastId });
     } finally {
       setLoading(false);
@@ -84,10 +83,8 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       try {
         const res = await fetch("/api/academias?owner=true");
         const data = await res.json();
-        console.log("que pija", data);
         setAcademias(data);
       } catch (error) {
-        console.error("Error al cargar academias:", error);
         toast.error("Error al cargar las academias");
       } finally {
         setLoading(false);
@@ -110,7 +107,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
         throw new Error("Error al actualizar el grupo");
       }
     } catch (error) {
-      console.error("Error:", error);
       if (error instanceof AxiosError) {
         setIsSubmitting(false);
         const errorMessage =
@@ -160,7 +156,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       setProfileImage(imageUrl);
       alert("Imagen actualizada con éxito.");
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
       alert("Hubo un problema al subir la imagen.");
     } finally {
       setUploadingImage(false);
@@ -277,7 +272,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       .then((res) => res.json())
       .then((data) => setSuggestions(data))
       .catch((err) => {
-        console.error("Error fetching suggestions:", err);
         setSuggestions([]);
       });
   };
@@ -288,7 +282,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
       return "";
     }
   };

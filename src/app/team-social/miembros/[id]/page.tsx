@@ -58,7 +58,6 @@ export default function EventPage({ params }: PageProps) {
         const response = await axios.get(`/api/team-social/${params.id}`);
         setEvent(response.data);
       } catch (err) {
-        console.error("Error al cargar evento", err);
       } finally {
         setLoading(false);
       }
@@ -72,7 +71,6 @@ export default function EventPage({ params }: PageProps) {
         const data = await res.json();
         setMiembros(data);
       } catch (err) {
-        console.error("Error al cargar miembros", err);
       }
     };
 

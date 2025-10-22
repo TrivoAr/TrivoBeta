@@ -240,8 +240,6 @@ export const subscriptionService = {
     const fechaNormalizada = new Date(fecha);
     fechaNormalizada.setHours(0, 0, 0, 0);
 
-    console.log(`[SUBSCRIPTION_SERVICE] Registrando asistencia para ${userId} en fecha normalizada: ${fechaNormalizada.toISOString()}`);
-
     // Verificar si puede asistir
     const { puedeAsistir, razon, suscripcion } =
       await this.verificarPuedeAsistir(userId, grupoId);
@@ -258,7 +256,6 @@ export const subscriptionService = {
     });
 
     if (asistenciaExistente) {
-      console.log(`[SUBSCRIPTION_SERVICE] Asistencia ya existe para ${userId} en ${fechaNormalizada.toISOString()}, devolviendo existente`);
       return {
         asistencia: asistenciaExistente,
         requiereActivacion: false,
@@ -278,8 +275,6 @@ export const subscriptionService = {
       esTrial,
       registradoPor,
     });
-
-    console.log(`[SUBSCRIPTION_SERVICE] Asistencia creada exitosamente con ID: ${asistencia._id}`);
 
     // Si está en trial, actualizar contador
     let requiereActivacion = false;

@@ -300,17 +300,15 @@ export const Middlewares = {
         }
       }
 
-      console.log(`[API ${logLevel.toUpperCase()}] Request:`, logData);
+      // Request logged
 
       try {
         await next();
         const duration = Date.now() - startTime;
-        console.log(
-          `[API ${logLevel.toUpperCase()}] Request completed in ${duration}ms`
-        );
+        // Request completed
       } catch (error) {
         const duration = Date.now() - startTime;
-        console.error(`[API ERROR] Request failed after ${duration}ms:`, error);
+        // Request failed
         throw error;
       }
     };
@@ -448,7 +446,7 @@ export const withMiddleware = (
       await composer.execute(req, context);
       return await handler(req, context);
     } catch (error) {
-      console.error("Middleware execution failed:", error);
+      // Middleware execution failed
       throw error;
     }
   };

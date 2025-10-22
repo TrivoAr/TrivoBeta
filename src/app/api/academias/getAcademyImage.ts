@@ -23,7 +23,7 @@ export const getAcademyImage = async (
       const downloadUrl = await getDownloadURL(fallbackRef);
       return downloadUrl;
     } catch (fallbackError) {
-      console.error("Error al obtener la imagen de la academia:", error);
+
       throw error;
     }
   }

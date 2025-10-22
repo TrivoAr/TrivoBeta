@@ -11,7 +11,7 @@ export async function saveSponsorImage(file: File, sponsorId: string) {
     const downloadUrl = await getDownloadURL(snapshot.ref);
     return downloadUrl;
   } catch (error) {
-    console.error("Error al guardar imagen del sponsor:", error);
+
     throw error;
   }
 }

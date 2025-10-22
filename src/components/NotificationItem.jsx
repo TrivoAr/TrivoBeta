@@ -13,8 +13,6 @@ const NotificationItem = ({ notification, onMarkAsRead, onRemove }) => {
   // Función para manejar el click en la notificación con navegación dinámica
   const handleNotificationClick = async () => {
     try {
-      console.log("Notification clicked:", notification);
-
       // Marcar como leída
       if (!notification.read) {
         await onMarkAsRead(notification._id);
@@ -22,27 +20,22 @@ const NotificationItem = ({ notification, onMarkAsRead, onRemove }) => {
 
       // Navegar según el tipo de notificación
       if (notification.actionUrl) {
-        console.log("Navigating to actionUrl:", notification.actionUrl);
         router.push(notification.actionUrl);
       } else {
         // Fallback a navegación basada en tipo
         const navUrl = getNavigationUrl(notification);
-        console.log("Navigating to navUrl:", navUrl);
         if (navUrl) {
           router.push(navUrl);
-        } else {
-          console.log("No navigation URL found for notification");
         }
       }
     } catch (error) {
-      console.error("Error al manejar click de notificación:", error);
+      // Error handling notification click
     }
   };
 
   // Función para determinar la URL de navegación basada en el tipo
   const getNavigationUrl = (notification) => {
     const type = notification.type || notification.tipo;
-    console.log("Getting navigation URL for type:", type, notification);
 
     switch (type) {
       case "miembro_aprobado":
@@ -81,7 +74,6 @@ const NotificationItem = ({ notification, onMarkAsRead, onRemove }) => {
 
       default:
         // Para tipos legacy o desconocidos, navegar al dashboard como fallback seguro
-        console.log("Unknown notification type:", type);
         return `/dashboard`;
     }
 

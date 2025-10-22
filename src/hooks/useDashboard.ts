@@ -147,7 +147,6 @@ export function useMyTeamSocials(userId?: string) {
         throw new Error("Error al cargar salidas sociales");
       }
       const data = await response.json();
-      console.log("pito", data);
 
       // Filtrar salidas donde el usuario es el creador
       const filteredSalidas = Array.isArray(data)

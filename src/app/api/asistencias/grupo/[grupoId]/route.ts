@@ -66,7 +66,6 @@ export async function GET(
     const finDia = new Date(fecha);
     finDia.setHours(23, 59, 59, 999);
 
-    console.log(`[ASISTENCIAS_API] Buscando asistencias para grupo ${params.grupoId} entre ${inicioDia.toISOString()} y ${finDia.toISOString()}`);
 
     const asistencias = await Asistencia.find({
       grupoId: params.grupoId,
@@ -78,13 +77,6 @@ export async function GET(
       .populate("userId", "firstname lastname imagen")
       .populate("suscripcionId", "estado trial");
 
-    console.log(`[ASISTENCIAS_API] Asistencias encontradas: ${asistencias.length}`, asistencias.map(a => ({
-      _id: a._id,
-      userId: a.userId?._id,
-      asistio: a.asistio,
-      fecha: a.fecha,
-      esTrial: a.esTrial
-    })));
 
     // Obtener TODOS los miembros de la academia
     // Combinar sistema viejo (UsuarioAcademia) y nuevo (Suscripcion)
@@ -171,8 +163,8 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error("Error en GET /api/asistencias/grupo/[grupoId]:", error);
-    console.error("Stack trace:", error.stack);
+
+
     return NextResponse.json(
       {
         error: error.message || "Error al obtener asistencias",

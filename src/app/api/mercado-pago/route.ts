@@ -37,7 +37,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al obtener las credenciales de Mercado Pago:", error);
+
     return NextResponse.json(
       { success: false, message: "Error interno del servidor" },
       { status: 500 }
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al guardar las credenciales de Mercado Pago:", error);
+
     return NextResponse.json(
       { success: false, message: "Error interno del servidor" },
       { status: 500 }

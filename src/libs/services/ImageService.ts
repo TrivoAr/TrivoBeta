@@ -66,11 +66,6 @@ export class ImageService {
 
         return await Promise.race([uploadPromise, timeoutPromise]);
       } catch (error) {
-        console.error(
-          `[ImageService] Upload attempt ${attempt} failed:`,
-          error
-        );
-
         if (attempt === maxRetries) {
           throw new ImageUploadError(
             `Failed to upload image after ${maxRetries} attempts`,
@@ -178,10 +173,6 @@ export class ImageService {
     try {
       return await this.getImageUrl(`profile/${userId}`, fileName, timeout);
     } catch (error) {
-      console.log(
-        `[ImageService] Profile image fetch failed for user ${userId}, using fallback:`,
-        error instanceof Error ? error.message : "unknown error"
-      );
       return this.generateAvatarUrl(userName);
     }
   }
@@ -199,7 +190,6 @@ export class ImageService {
         "foto_salida.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving social image:", error);
       throw new ImageUploadError(
         "Error al guardar la imagen de salida social",
         error
@@ -221,7 +211,6 @@ export class ImageService {
         "foto_team.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving team social image:", error);
       throw new ImageUploadError(
         "Error al guardar la imagen de team social",
         error
@@ -243,7 +232,6 @@ export class ImageService {
         "foto_academia.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving academy image:", error);
       throw new ImageUploadError(
         "Error al guardar la imagen de academia",
         error
@@ -262,7 +250,6 @@ export class ImageService {
         "foto_perfil_grupo.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving group image:", error);
       throw new ImageUploadError("Error al guardar la imagen de grupo", error);
     }
   }
@@ -278,7 +265,6 @@ export class ImageService {
         "profile-image.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving profile image:", error);
       throw new ImageUploadError("Error al guardar la imagen de perfil", error);
     }
   }
@@ -297,7 +283,6 @@ export class ImageService {
         "foto_sponsor.jpg"
       );
     } catch (error) {
-      console.error("[ImageService] Error saving sponsor image:", error);
       throw new ImageUploadError(
         "Error al guardar la imagen de sponsor",
         error
@@ -316,7 +301,6 @@ export class ImageService {
 
       return await Promise.all(uploadPromises);
     } catch (error) {
-      console.error("[ImageService] Error saving bar images:", error);
       throw new ImageUploadError(
         "Error al guardar las imágenes del bar",
         error
@@ -362,9 +346,6 @@ export class ImageService {
     try {
       return await this.getImageUrl(path, fileName);
     } catch (error) {
-      console.log(
-        `[ImageService] ${entityType} image fetch failed for ID ${entityId}, using fallback`
-      );
       return fallbackUrl || this.generateAvatarUrl(entityType);
     }
   }

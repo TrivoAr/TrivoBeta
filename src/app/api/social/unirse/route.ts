@@ -4,8 +4,8 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import SalidaSocial from "@/models/salidaSocial";
-import Notificacion from "@/models/notificacion";
 import User from "@/models/user";
+import { notifyJoinedEvent } from "@/libs/notificationHelpers";
 
 export async function POST(req: Request) {
   await connectDB();
@@ -39,19 +39,17 @@ export async function POST(req: Request) {
 
   await nuevoMiembro.save();
 
-  // ✅ Crear la notificación para el creador
+  // ✅ Notificar al creador en tiempo real (BD + Socket.IO)
   if (String(salida.creador_id) !== String(user._id)) {
     try {
-      await Notificacion.create({
-        userId: salida.creador_id, // el creador recibe
-        fromUserId: user._id,
-        salidaId: salida._id, // el que se unió
-        type: "joined_event",
-        message: `${user.firstname} quiere unirse a tu salida ${salida.nombre}.`,
-      });
-      console.log("✅ Notificación creada");
+      await notifyJoinedEvent(
+        String(salida.creador_id),
+        String(user._id),
+        String(salida._id),
+        `${user.firstname} ${user.lastname}`,
+        salida.nombre
+      );
     } catch (error) {
-      console.error("❌ Error al crear la notificación:", error);
     }
   }
 

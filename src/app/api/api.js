@@ -62,7 +62,6 @@ const api = {
 
         return response.data.init_point;
       } catch (error) {
-        console.error("Error al crear la preferencia:", error);
         throw new Error("Error al crear la preferencia de pago");
       }
     },

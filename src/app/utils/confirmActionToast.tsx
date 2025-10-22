@@ -66,7 +66,6 @@ export function confirmActionToast({
                     toast.dismiss(); // Limpiamos todo por las dudas
                   }, 2000);
                 } catch (error) {
-                  console.error(error);
                   toast.dismiss(toastId);
                   toast.error(errorMessage, { duration: 3000 });
                 }

@@ -13,20 +13,14 @@ import connectDB from "@/libs/mongodb";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log(
-      "Webhook Mercado Pago recibido:",
-      JSON.stringify(body, null, 2)
-    );
 
     // Validar que sea una notificación de preapproval
     if (body.type !== "subscription_preapproval") {
-      console.log("Tipo de notificación ignorada:", body.type);
       return NextResponse.json({ received: true });
     }
 
     const { data } = body;
     if (!data?.id) {
-      console.error("Notificación sin ID:", body);
       return NextResponse.json({ error: "Missing data.id" }, { status: 400 });
     }
 
@@ -38,7 +32,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!suscripcion) {
-      console.error("Suscripción no encontrada para preapprovalId:", data.id);
+
       return NextResponse.json(
         { error: "Subscription not found" },
         { status: 404 }
@@ -57,11 +51,11 @@ export async function POST(request: NextRequest) {
           suscripcion.fechaActivacion = new Date();
           suscripcion.trial.estaEnTrial = false;
           suscripcion.trial.fueUsado = true;
-          console.log("Suscripción activada post-trial:", suscripcion._id);
+
         }
 
         await suscripcion.save();
-        console.log("Suscripción autorizada:", suscripcion._id);
+
         break;
 
       case "payment.created":
@@ -90,17 +84,17 @@ export async function POST(request: NextRequest) {
           }
 
           await suscripcion.save();
-          console.log("Suscripción actualizada:", suscripcion._id, data.status);
+
         }
         break;
 
       default:
-        console.log("Acción no manejada:", body.action);
+
     }
 
     return NextResponse.json({ received: true });
   } catch (error: any) {
-    console.error("Error procesando webhook de Mercado Pago:", error);
+
     return NextResponse.json(
       { error: error.message || "Error processing webhook" },
       { status: 500 }
@@ -119,7 +113,7 @@ async function procesarPago(suscripcion: any, paymentData: any) {
     });
 
     if (pagoExistente) {
-      console.log("Pago ya registrado:", paymentData.payment_id);
+
       return;
     }
 
@@ -156,14 +150,14 @@ async function procesarPago(suscripcion: any, paymentData: any) {
       suscripcion.pagos.proximaFechaPago = proximaFecha;
 
       await suscripcion.save();
-      console.log("Pago aprobado y suscripción actualizada:", pago._id);
+
     } else if (paymentData.status === "rejected") {
       suscripcion.estado = SUBSCRIPTION_CONFIG.ESTADOS.VENCIDA;
       await suscripcion.save();
-      console.log("Pago rechazado, suscripción vencida:", pago._id);
+
     }
   } catch (error) {
-    console.error("Error procesando pago:", error);
+
     throw error;
   }
 }

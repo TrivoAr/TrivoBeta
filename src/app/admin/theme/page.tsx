@@ -61,7 +61,6 @@ export default function AdminThemePage() {
     },
     onError: (error) => {
       toast.error("Error al actualizar configuración");
-      console.error(error);
     },
   });
 

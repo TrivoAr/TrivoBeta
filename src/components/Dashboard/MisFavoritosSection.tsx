@@ -178,7 +178,6 @@ export const MisFavoritosSection: React.FC = () => {
       const data = await fetchFavoritos(session.user.id);
       setFavoritos(data);
     } catch (error) {
-      console.error("Error loading favoritos:", error);
       toast.error("Error al cargar favoritos");
     } finally {
       setIsLoading(false);

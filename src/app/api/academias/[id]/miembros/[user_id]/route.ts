@@ -11,8 +11,6 @@ export async function DELETE(
   const url = new URL(req.url);
   const user_id = url.searchParams.get("user_id");
 
-  console.log("🔍 Eliminando usuario con ID:", user_id);
-
   if (!user_id) {
     return NextResponse.json(
       { message: "ID del usuario no proporcionado" },

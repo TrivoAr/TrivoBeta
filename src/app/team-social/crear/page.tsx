@@ -241,7 +241,6 @@ export default function CrearTeamPage() {
             `📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`
           );
         } catch (error) {
-          console.error("Error detectando ubicación:", error);
           toast.dismiss("gps-search");
           toast.error(
             "Error al detectar ubicación específica, pero coordenadas obtenidas"
@@ -333,7 +332,6 @@ export default function CrearTeamPage() {
         setUbicacionBoth(data.display_name); // <-- sync input + formData
       }
     } catch (err) {
-      console.error("Error reverse geocoding:", err);
     }
   };
 
@@ -353,7 +351,6 @@ export default function CrearTeamPage() {
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
-      console.error("Error fetching suggestions:", err);
     }
   };
 
@@ -417,11 +414,9 @@ export default function CrearTeamPage() {
       } else {
         setIsSubmitting(false);
         const error = await res.json();
-        console.error("Error al crear team social:", error);
         toast.error("Error al crear salida, datos incompletos");
       }
     } catch (err) {
-      console.error("Error inesperado:", err);
       setIsSubmitting(false);
     }
   };
@@ -441,7 +436,6 @@ export default function CrearTeamPage() {
       .then((res) => res.json())
       .then((data) => setSuggestions(data))
       .catch((err) => {
-        console.error("Error fetching suggestions:", err);
         setSuggestions([]);
       });
   };
@@ -452,7 +446,6 @@ export default function CrearTeamPage() {
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
 
       return "";
     }
@@ -487,13 +480,11 @@ export default function CrearTeamPage() {
         const data = await res.json();
 
         if (data.error) {
-          console.error("Error al traer actividades:", data.error);
           return;
         }
 
         setActivities(data);
       } catch (err) {
-        console.error("Error cargando actividades:", err);
       } finally {
         setLoading(false);
       }
