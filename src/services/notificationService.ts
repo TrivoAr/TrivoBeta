@@ -1,10 +1,9 @@
 /**
  * Servicio centralizado para envío de notificaciones
- * Maneja la creación de notificaciones en DB y emisión vía Socket.IO
+ * Maneja la creación de notificaciones en DB (recuperadas por polling)
  */
 
 import Notificacion from "@/models/notificacion";
-import { emitNotificationToUser } from "@/libs/socketServer";
 import connectDB from "@/libs/mongodb";
 
 export interface NotificacionData {
@@ -22,7 +21,8 @@ export interface NotificacionData {
 
 export const notificationService = {
   /**
-   * Crea una notificación y la envía via Socket.IO
+   * Crea una notificación en la base de datos
+   * Será recuperada automáticamente por el sistema de polling cada 20 segundos
    */
   async crearYEnviar(data: NotificacionData) {
     try {
@@ -46,13 +46,7 @@ export const notificationService = {
       // Poblar fromUserId para enviar datos completos
       await notificacion.populate("fromUserId", "firstname lastname imagen");
 
-      // Intentar enviar via Socket.IO
-      const enviado = await emitNotificationToUser(
-        data.userId,
-        "notification:new",
-        notificacion.toObject()
-      );
-
+      // La notificación será recuperada por polling automáticamente
       return notificacion;
     } catch (error: any) {
       throw error;

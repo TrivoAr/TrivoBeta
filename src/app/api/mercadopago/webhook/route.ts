@@ -315,34 +315,11 @@ async function notificarCreadorPagoAprobado(
   }
 }
 
-// Función para enviar notificación via Socket.IO
+// Función legacy mantenida por compatibilidad
+// Las notificaciones ahora se recuperan automáticamente por polling
 async function enviarNotificacionSocketIO(userId: string, notificacion: any) {
-  try {
-    // Acceder al servidor Socket.IO global
-    const socketServer = (global as any).socketServer;
-
-    if (!socketServer || !socketServer.emitToUser) {
-
-      return;
-    }
-
-    // Poblar la información del usuario que envió la notificación
-    const populatedNotification = await Notificacion.findById(notificacion._id)
-      .populate("fromUserId", "firstname lastname")
-      .lean();
-
-    if (populatedNotification) {
-      // Emitir notificación en tiempo real al usuario específico
-      await socketServer.emitToUser(
-        userId,
-        "notification:new",
-        populatedNotification
-      );
-
-    }
-  } catch (error) {
-
-  }
+  // No se requiere acción - el sistema de polling recuperará la notificación automáticamente
+  return;
 }
 
 // Función para enviar push notification al creador
