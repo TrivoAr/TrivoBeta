@@ -21,6 +21,7 @@ function EditProfilePage() {
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [phoneHelper, setPhoneHelper] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -58,6 +59,57 @@ function EditProfilePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Función para formatear el número de teléfono antes de guardar
+  const formatPhoneNumber = (phone: string): string => {
+    // Eliminar todo lo que no sea dígito
+    let cleaned = phone.replace(/\D/g, "");
+
+    // Caso 1: Ya tiene +549 al inicio
+    if (phone.startsWith("+549")) {
+      return phone.replace(/\D/g, "").substring(0, 13); // +549 + 10 dígitos = 13
+    }
+
+    // Caso 2: Tiene 549 al inicio (sin +)
+    if (cleaned.startsWith("549")) {
+      return `+${cleaned.substring(0, 13)}`;
+    }
+
+    // Caso 3: Empieza con 15 (sin código de área)
+    if (cleaned.startsWith("15")) {
+      // Necesitamos el código de área, asumir el más común o pedir al usuario
+      // Por ahora, remover el 15 y agregar +549
+      cleaned = cleaned.substring(2); // Quitar el 15
+      return `+549${cleaned}`;
+    }
+
+    // Caso 4: Número de 10 dígitos sin código de país
+    if (cleaned.length === 10) {
+      return `+549${cleaned}`;
+    }
+
+    // Caso 5: Número de 8 o 9 dígitos (sin 15 y sin código de área completo)
+    if (cleaned.length === 8 || cleaned.length === 9) {
+      return `+549${cleaned}`;
+    }
+
+    // Caso default: agregar +549 al inicio
+    return `+549${cleaned}`;
+  };
+
+  // Handler especial para el campo de teléfono con preview
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, telnumber: value });
+
+    // Mostrar preview del formato que se guardará
+    if (value.trim()) {
+      const formatted = formatPhoneNumber(value);
+      setPhoneHelper(`Se guardará como: ${formatted}`);
+    } else {
+      setPhoneHelper("");
+    }
+  };
+
   const handleSave = async () => {
     const confirmation = confirm("¿Guardar los cambios?");
     if (!confirmation) return;
@@ -83,9 +135,8 @@ function EditProfilePage() {
         return;
       }
 
-      const fullTelNumber = telnumber.startsWith("+549")
-        ? telnumber
-        : `+549${telnumber}`;
+      // Formatear el número de teléfono correctamente
+      const formattedPhone = formatPhoneNumber(telnumber);
 
       const response = await fetch("/api/profile", {
         method: "PUT",
@@ -93,7 +144,7 @@ function EditProfilePage() {
         body: JSON.stringify({
           firstname: formData.firstname.trim(),
           lastname: formData.lastname.trim(),
-          telnumber: fullTelNumber,
+          telnumber: formattedPhone,
           email: formData.email.trim(),
           dni: formData.dni?.trim() || "",
           instagram: formData.instagram?.trim() || "",
@@ -207,11 +258,17 @@ function EditProfilePage() {
           type="tel"
           name="telnumber"
           value={formData.telnumber}
-          onChange={handleChange}
-          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="3814859697 (sin +549)"
+          onChange={handlePhoneChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-1"
+          placeholder="Número de teléfono"
           required
         />
+        {phoneHelper && (
+          <p className="text-xs text-green-600 mb-2 ml-1">✓ {phoneHelper}</p>
+        )}
+        <p className="text-xs text-muted-foreground mb-3 ml-1">
+          Ejemplos: 3814859697, 1534567890, +5493814859697
+        </p>
       </label>
 
       <label className="block w-full">
@@ -252,7 +309,7 @@ function EditProfilePage() {
         </label>
       ) : null}
 
-      <div className="w-full text-sm text-gray-500 mb-4 p-3 bg-gray-50 rounded-lg">
+      <div className="w-full text-sm text-muted-foreground mb-4 p-3 border border-border rounded-lg">
         <p className="font-semibold mb-1">⚠️ Campos requeridos (*)</p>
         <p>Los campos marcados con asterisco son obligatorios. Asegúrate de completarlos antes de guardar.</p>
       </div>
