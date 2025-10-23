@@ -175,8 +175,24 @@ function EditProfilePage() {
         return;
       }
 
-      alert("✅ Perfil actualizado correctamente\n\nSe cerrará la sesión para aplicar los cambios.");
-      signOut({ callbackUrl: "/login" });
+      // Verificar si hay una URL de retorno guardada
+      const returnUrl = typeof window !== "undefined"
+        ? sessionStorage.getItem("returnUrl")
+        : null;
+
+      // Limpiar la URL de retorno del sessionStorage
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("returnUrl");
+      }
+
+      alert("✅ Perfil actualizado correctamente");
+
+      // Redirigir a la URL guardada o al home
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push("/home");
+      }
     } catch (error: any) {
       alert(`❌ Error al guardar los cambios\n\n${error.message || "Error de conexión"}`);
     }

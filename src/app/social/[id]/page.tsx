@@ -304,6 +304,10 @@ export default function EventPage({ params }: PageProps) {
     }
     if (!profile?.dni || !profile?.telnumber) {
       toast.error("Completa tu perfil con DNI y teléfono");
+      // Guardar la URL actual para volver después de completar el perfil
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("returnUrl", window.location.pathname);
+      }
       router.push("/dashboard/profile/editar");
       return;
     }
