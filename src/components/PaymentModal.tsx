@@ -225,6 +225,71 @@ export default function PaymentModal({
     }
   };
 
+  /**
+   * Maneja la confirmación de transferencia a CVU de MercadoPago
+   * Crea el pago pendiente ANTES de que el usuario transfiera
+   */
+  const handleConfirmarTransferenciaMP = async () => {
+    try {
+      setIsLoading(true);
+      onProcessingChange?.(true);
+
+      // 1. Crear pago pendiente en BD
+      const response = await fetch("/api/pagos/pending-transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          salidaId,
+          academiaId,
+          amount: Number(precio),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al registrar pago");
+      }
+
+      const data = await response.json();
+
+      console.log("✅ Pago pendiente creado:", data.pagoId);
+      console.log("📌 External Reference:", data.externalReference);
+
+      // 2. Invalidar queries para actualizar UI
+      queryClient.invalidateQueries({
+        queryKey: ["payment-status", salidaId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["unido", salidaId, userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["miembros", salidaId]
+      });
+
+      // 3. Mostrar mensaje de éxito
+      toast.success(
+        "Pago registrado correctamente. Ahora transfiere al CVU mostrado y recibirás notificación automática cuando se apruebe.",
+        { duration: 7000 }
+      );
+
+      // 4. Cerrar modal
+      onClose();
+
+    } catch (error) {
+      console.error("❌ Error al registrar pago pendiente:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al registrar el pago. Intenta de nuevo."
+      );
+    } finally {
+      setIsLoading(false);
+      onProcessingChange?.(false);
+    }
+  };
+
   return (
     <SlideUpModal
       isOpen={isOpen}
@@ -244,17 +309,11 @@ export default function PaymentModal({
           // Footer para transferencia MP automática
           <div className="flex flex-col gap-2">
             <Button
-              onClick={() => {
-                toast.success(
-                  "Realiza la transferencia con los datos mostrados. Te notificaremos cuando el pago sea aprobado automáticamente.",
-                  { duration: 6000 }
-                );
-                // Opcional: Marcar en BD que el usuario vio las instrucciones
-                onClose();
-              }}
+              onClick={handleConfirmarTransferenciaMP}
+              disabled={isLoading}
               className="w-full"
             >
-              Entendido, voy a transferir
+              {isLoading ? "Registrando pago..." : "Entendido, voy a transferir"}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
               Recibirás notificación automática al completar la transferencia
@@ -659,38 +718,6 @@ export default function PaymentModal({
                   ${Number(precio).toLocaleString("es-AR")}
                 </span>
               </div>
-            </div>
-
-            <div className="text-center pt-2">
-              <p
-                className={`text-xs mb-3 ${
-                  isNight ? "theme-text-secondary" : "text-muted-foreground"
-                }`}
-              >
-                O escanea este QR desde tu app bancaria:
-              </p>
-              <div className="flex justify-center">
-                <div className="p-3 bg-white rounded-lg">
-                  <div
-                    className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded"
-                    style={{
-                      backgroundImage: `url("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                        process.env.NEXT_PUBLIC_MP_CVU ||
-                          process.env.NEXT_PUBLIC_MP_ALIAS ||
-                          ""
-                      )}")`,
-                      backgroundSize: "cover",
-                    }}
-                  />
-                </div>
-              </div>
-              <p
-                className={`text-xs mt-2 ${
-                  isNight ? "theme-text-secondary" : "text-muted-foreground"
-                }`}
-              >
-                Transferencia instantánea desde cualquier banco
-              </p>
             </div>
 
             <div

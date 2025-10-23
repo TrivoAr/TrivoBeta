@@ -86,23 +86,67 @@ export async function POST(req: NextRequest) {
     if (!pago && paymentDetails.external_reference) {
       console.log(`🔎 Buscando por external_reference: ${paymentDetails.external_reference}`);
 
-      // External reference puede tener formato: "salida_ID_user_ID" o "pago_ID"
-      const matches = paymentDetails.external_reference.match(/pago_([a-f0-9]+)/);
-      if (matches && matches[1]) {
-        const pagoId = matches[1];
-        pago = await Pago.findById(pagoId).populate("userId salidaId academiaId");
+      // Buscar directamente por externalReference
+      pago = await Pago.findOne({
+        externalReference: paymentDetails.external_reference,
+        estado: "pendiente"
+      }).populate("userId salidaId academiaId");
 
-        if (pago && !pago.mercadopagoId) {
-          // Asociar el mercadopagoId
-          pago.mercadopagoId = paymentId.toString();
-          await pago.save();
-          console.log(`✅ Pago asociado con MP ID ${paymentId}`);
+      if (pago && !pago.mercadopagoId) {
+        // Asociar el mercadopagoId
+        pago.mercadopagoId = paymentId.toString();
+        await pago.save();
+        console.log(`✅ Pago asociado con MP ID ${paymentId}`);
+      }
+    }
+
+    // Si aún no se encontró, buscar por monto + fecha (FALLBACK)
+    if (!pago) {
+      console.log(`🔎 Buscando por monto + fecha (fallback)...`);
+
+      const paymentDate = new Date(paymentDetails.date_created || new Date());
+      const oneDayBefore = new Date(paymentDate);
+      oneDayBefore.setDate(oneDayBefore.getDate() - 1);
+
+      const oneDayAfter = new Date(paymentDate);
+      oneDayAfter.setDate(oneDayAfter.getDate() + 1);
+
+      // Buscar pagos pendientes con el mismo monto en un rango de ±1 día
+      const pagosCandidatos = await Pago.find({
+        amount: paymentDetails.transaction_amount,
+        estado: "pendiente",
+        tipoPago: "mercadopago_automatico",
+        createdAt: {
+          $gte: oneDayBefore,
+          $lte: oneDayAfter
+        }
+      }).populate("userId salidaId academiaId")
+        .sort({ createdAt: -1 }) // Más reciente primero
+        .limit(5);
+
+      if (pagosCandidatos.length > 0) {
+        console.log(`📋 Encontrados ${pagosCandidatos.length} pagos candidatos`);
+
+        // Tomar el más reciente que coincida
+        pago = pagosCandidatos[0];
+
+        // Asociar el mercadopagoId
+        pago.mercadopagoId = paymentId.toString();
+        await pago.save();
+
+        console.log(`✅ Match por monto+fecha. Pago: ${pago._id}`);
+
+        if (pagosCandidatos.length > 1) {
+          console.warn(`⚠️ ALERTA: Hay ${pagosCandidatos.length} pagos con el mismo monto. Tomando el más reciente.`);
         }
       }
     }
 
     if (!pago) {
       console.warn(`⚠️ Pago ${paymentId} no encontrado en BD`);
+      console.warn(`   Monto: ${paymentDetails.transaction_amount}`);
+      console.warn(`   Fecha: ${paymentDetails.date_created}`);
+      console.warn(`   External Ref: ${paymentDetails.external_reference || "ninguna"}`);
       return NextResponse.json({ received: true }, { status: 200 });
     }
 
