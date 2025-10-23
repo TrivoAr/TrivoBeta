@@ -4,7 +4,7 @@ import Pago from "@/models/pagos";
 import MiembroSalida from "@/models/MiembroSalida";
 import Ticket from "@/models/ticket";
 import SalidaSocial from "@/models/salidaSocial";
-import User from "@/models/User";
+import User from "@/models/user";
 import { notifyPaymentApproved } from "@/libs/notificationHelpers";
 import { sendTicketEmail } from "@/libs/sendEmail";
 import crypto from "crypto";
