@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`📊 Estado del pago MP: ${paymentDetails.status}`);
     console.log(`💰 Monto: ${paymentDetails.transaction_amount}`);
+    console.log(`📧 Email del pagador: ${paymentDetails.payer?.email}`);
     console.log(`🔗 External Reference: ${paymentDetails.external_reference}`);
 
     // 4. BUSCAR EL PAGO EN NUESTRA BD
@@ -82,27 +83,57 @@ export async function POST(req: NextRequest) {
       mercadopagoId: paymentId.toString()
     }).populate("userId salidaId academiaId");
 
-    // Si no existe, intentar buscar por external_reference
+    // ESTRATEGIA 1: Buscar por EMAIL del pagador + MONTO (MÁS PRECISO)
+    if (!pago && paymentDetails.payer?.email) {
+      console.log(`🔎 Buscando por email del pagador: ${paymentDetails.payer.email}`);
+
+      // Buscar el usuario por email
+      const user = await User.findOne({ email: paymentDetails.payer.email });
+
+      if (user) {
+        console.log(`✅ Usuario encontrado: ${user._id} (${user.name})`);
+
+        // Buscar pago pendiente de este usuario con el mismo monto
+        pago = await Pago.findOne({
+          userId: user._id,
+          amount: paymentDetails.transaction_amount,
+          estado: "pendiente",
+          tipoPago: "mercadopago_automatico"
+        }).populate("userId salidaId academiaId")
+          .sort({ createdAt: -1 }); // Más reciente primero
+
+        if (pago) {
+          // Asociar el mercadopagoId
+          pago.mercadopagoId = paymentId.toString();
+          await pago.save();
+          console.log(`✅ Match por EMAIL + MONTO. Pago: ${pago._id}`);
+        } else {
+          console.log(`⚠️ Usuario encontrado pero no tiene pagos pendientes con monto ${paymentDetails.transaction_amount}`);
+        }
+      } else {
+        console.log(`⚠️ No se encontró usuario con email ${paymentDetails.payer.email}`);
+      }
+    }
+
+    // ESTRATEGIA 2: Buscar por external_reference (si el usuario agregó referencia)
     if (!pago && paymentDetails.external_reference) {
       console.log(`🔎 Buscando por external_reference: ${paymentDetails.external_reference}`);
 
-      // Buscar directamente por externalReference
       pago = await Pago.findOne({
         externalReference: paymentDetails.external_reference,
         estado: "pendiente"
       }).populate("userId salidaId academiaId");
 
       if (pago && !pago.mercadopagoId) {
-        // Asociar el mercadopagoId
         pago.mercadopagoId = paymentId.toString();
         await pago.save();
-        console.log(`✅ Pago asociado con MP ID ${paymentId}`);
+        console.log(`✅ Match por EXTERNAL_REFERENCE. Pago: ${pago._id}`);
       }
     }
 
-    // Si aún no se encontró, buscar por monto + fecha (FALLBACK)
+    // ESTRATEGIA 3: Buscar por monto + fecha (FALLBACK - menos preciso)
     if (!pago) {
-      console.log(`🔎 Buscando por monto + fecha (fallback)...`);
+      console.log(`🔎 Buscando por monto + fecha (fallback menos preciso)...`);
 
       const paymentDate = new Date(paymentDetails.date_created || new Date());
       const oneDayBefore = new Date(paymentDate);
@@ -111,7 +142,6 @@ export async function POST(req: NextRequest) {
       const oneDayAfter = new Date(paymentDate);
       oneDayAfter.setDate(oneDayAfter.getDate() + 1);
 
-      // Buscar pagos pendientes con el mismo monto en un rango de ±1 día
       const pagosCandidatos = await Pago.find({
         amount: paymentDetails.transaction_amount,
         estado: "pendiente",
@@ -121,20 +151,17 @@ export async function POST(req: NextRequest) {
           $lte: oneDayAfter
         }
       }).populate("userId salidaId academiaId")
-        .sort({ createdAt: -1 }) // Más reciente primero
+        .sort({ createdAt: -1 })
         .limit(5);
 
       if (pagosCandidatos.length > 0) {
         console.log(`📋 Encontrados ${pagosCandidatos.length} pagos candidatos`);
 
-        // Tomar el más reciente que coincida
         pago = pagosCandidatos[0];
-
-        // Asociar el mercadopagoId
         pago.mercadopagoId = paymentId.toString();
         await pago.save();
 
-        console.log(`✅ Match por monto+fecha. Pago: ${pago._id}`);
+        console.log(`✅ Match por MONTO+FECHA (fallback). Pago: ${pago._id}`);
 
         if (pagosCandidatos.length > 1) {
           console.warn(`⚠️ ALERTA: Hay ${pagosCandidatos.length} pagos con el mismo monto. Tomando el más reciente.`);

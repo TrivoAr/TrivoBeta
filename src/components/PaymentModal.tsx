@@ -723,6 +723,24 @@ export default function PaymentModal({
             <div
               className={`rounded-lg p-3 border ${
                 isNight
+                  ? "bg-blue-900/20 border-blue-500/50"
+                  : "bg-blue-50 border-blue-200"
+              }`}
+            >
+              <p
+                className={`text-xs ${
+                  isNight ? "text-blue-200" : "text-blue-800"
+                }`}
+              >
+                <strong>✅ Requisito:</strong> Debes transferir desde una cuenta
+                de MercadoPago registrada con el email <strong>{session?.user?.email}</strong>.
+                Esto permite la verificación automática.
+              </p>
+            </div>
+
+            <div
+              className={`rounded-lg p-3 border ${
+                isNight
                   ? "bg-yellow-900/20 border-yellow-500/50"
                   : "bg-yellow-50 border-yellow-200"
               }`}
