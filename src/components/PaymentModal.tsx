@@ -80,7 +80,7 @@ export default function PaymentModal({
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<
-    "transferencia" | "mercadopago"
+    "transferencia" | "mercadopago" | "transferencia_mp"
   >("mercadopago");
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [loadingPreference, setLoadingPreference] = useState(false);
@@ -233,12 +233,32 @@ export default function PaymentModal({
       size="default"
       isNight={isNight}
       footer={
-        // Footer para transferencia (solo salidas sociales)
+        // Footer para transferencia manual (solo salidas sociales)
         paymentMethod === "transferencia" && salidaId ? (
           <div className="flex justify-end">
             <Button onClick={handleEnviarPago} disabled={isLoading}>
               {isLoading ? "Enviando..." : "Enviar comprobante"}
             </Button>
+          </div>
+        ) : paymentMethod === "transferencia_mp" && salidaId ? (
+          // Footer para transferencia MP automática
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => {
+                toast.success(
+                  "Realiza la transferencia con los datos mostrados. Te notificaremos cuando el pago sea aprobado automáticamente.",
+                  { duration: 6000 }
+                );
+                // Opcional: Marcar en BD que el usuario vio las instrucciones
+                onClose();
+              }}
+              className="w-full"
+            >
+              Entendido, voy a transferir
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Recibirás notificación automática al completar la transferencia
+            </p>
           </div>
         ) : (
           // Footer para MercadoPago (salidas sociales y academias)
@@ -360,6 +380,56 @@ export default function PaymentModal({
               </button>
 
               <button
+                onClick={() => setPaymentMethod("transferencia_mp")}
+                className={`w-full p-3 rounded-lg border text-left transition-colors ${
+                  paymentMethod === "transferencia_mp"
+                    ? isNight
+                      ? "border-orange-400 bg-orange-400/10"
+                      : "border-primary bg-primary/5"
+                    : isNight
+                      ? "border-gray-600 hover:bg-gray-700"
+                      : "border-border hover:bg-muted"
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      paymentMethod === "transferencia_mp"
+                        ? isNight
+                          ? "border-orange-400 bg-orange-400"
+                          : "border-primary bg-primary"
+                        : isNight
+                          ? "border-gray-400"
+                          : "border-muted-foreground"
+                    }`}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={`font-medium ${
+                          isNight ? "theme-text-primary" : "text-foreground"
+                        }`}
+                      >
+                        Transferencia a CVU MercadoPago
+                      </p>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 font-semibold">
+                        ⚡ Automático
+                      </span>
+                    </div>
+                    <p
+                      className={`text-xs mt-0.5 ${
+                        isNight
+                          ? "theme-text-secondary"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      Aprobación instantánea sin comprobante
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
                 onClick={() => setPaymentMethod("transferencia")}
                 className={`w-full p-3 rounded-lg border text-left transition-colors ${
                   paymentMethod === "transferencia"
@@ -389,7 +459,7 @@ export default function PaymentModal({
                         isNight ? "theme-text-primary" : "text-foreground"
                       }`}
                     >
-                      Transferencia Bancaria
+                      Transferencia Bancaria Tradicional
                     </p>
                     <p
                       className={`text-xs ${
@@ -398,7 +468,7 @@ export default function PaymentModal({
                           : "text-muted-foreground"
                       }`}
                     >
-                      CBU/Alias + comprobante
+                      CBU/Alias + comprobante (aprobación manual)
                     </p>
                   </div>
                 </div>
@@ -454,6 +524,196 @@ export default function PaymentModal({
           </div>
         )}
 
+        {/* Transferencia a CVU de MercadoPago (NUEVO - Automático) */}
+        {paymentMethod === "transferencia_mp" && (
+          <>
+            <div
+              className={`rounded-lg p-4 border-2 ${
+                isNight
+                  ? "bg-green-900/20 border-green-500/50"
+                  : "bg-green-50 border-green-200"
+              }`}
+            >
+              <div className="flex items-start gap-3 mb-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4
+                    className={`font-bold text-sm mb-1 ${
+                      isNight ? "text-green-300" : "text-green-800"
+                    }`}
+                  >
+                    ⚡ Aprobación Automática
+                  </h4>
+                  <p
+                    className={`text-xs ${
+                      isNight ? "text-green-200" : "text-green-700"
+                    }`}
+                  >
+                    Al transferir al CVU de MercadoPago, tu pago será aprobado
+                    automáticamente en segundos. No necesitas subir comprobante.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p
+              className={`text-sm font-medium ${
+                isNight ? "theme-text-primary" : "text-foreground"
+              }`}
+            >
+              Transfiere ${precio} a la siguiente cuenta de MercadoPago:
+            </p>
+
+            <div
+              className={`rounded-lg p-4 space-y-3 border ${
+                isNight
+                  ? "bg-gray-700 border-gray-600"
+                  : "bg-blue-50 border-blue-200"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  className={`text-sm font-medium ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}
+                >
+                  CVU MercadoPago:
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    handleCopy(
+                      process.env.NEXT_PUBLIC_MP_CVU || "CVU_NO_CONFIGURADO"
+                    )
+                  }
+                  className={isNight ? "border-gray-500 hover:bg-gray-600" : ""}
+                >
+                  📋 Copiar
+                </Button>
+              </div>
+              <p
+                className={`text-sm break-all font-mono font-bold ${
+                  isNight ? "text-blue-300" : "text-blue-700"
+                }`}
+              >
+                {process.env.NEXT_PUBLIC_MP_CVU || "CVU_NO_CONFIGURADO"}
+              </p>
+
+              <div className="flex items-center justify-between mt-2">
+                <span
+                  className={`text-sm font-medium ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}
+                >
+                  Alias MercadoPago:
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    handleCopy(
+                      process.env.NEXT_PUBLIC_MP_ALIAS || "ALIAS_NO_CONFIGURADO"
+                    )
+                  }
+                  className={isNight ? "border-gray-500 hover:bg-gray-600" : ""}
+                >
+                  📋 Copiar
+                </Button>
+              </div>
+              <p
+                className={`text-sm break-all font-bold ${
+                  isNight ? "text-blue-300" : "text-blue-700"
+                }`}
+              >
+                {process.env.NEXT_PUBLIC_MP_ALIAS || "ALIAS_NO_CONFIGURADO"}
+              </p>
+
+              <div className="flex items-center justify-between mt-2">
+                <span
+                  className={`text-sm font-medium ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}
+                >
+                  Monto:
+                </span>
+                <span
+                  className={`text-lg font-bold ${
+                    isNight ? "text-green-400" : "text-green-600"
+                  }`}
+                >
+                  ${Number(precio).toLocaleString("es-AR")}
+                </span>
+              </div>
+            </div>
+
+            <div className="text-center pt-2">
+              <p
+                className={`text-xs mb-3 ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}
+              >
+                O escanea este QR desde tu app bancaria:
+              </p>
+              <div className="flex justify-center">
+                <div className="p-3 bg-white rounded-lg">
+                  <div
+                    className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded"
+                    style={{
+                      backgroundImage: `url("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        process.env.NEXT_PUBLIC_MP_CVU ||
+                          process.env.NEXT_PUBLIC_MP_ALIAS ||
+                          ""
+                      )}")`,
+                      backgroundSize: "cover",
+                    }}
+                  />
+                </div>
+              </div>
+              <p
+                className={`text-xs mt-2 ${
+                  isNight ? "theme-text-secondary" : "text-muted-foreground"
+                }`}
+              >
+                Transferencia instantánea desde cualquier banco
+              </p>
+            </div>
+
+            <div
+              className={`rounded-lg p-3 border ${
+                isNight
+                  ? "bg-yellow-900/20 border-yellow-500/50"
+                  : "bg-yellow-50 border-yellow-200"
+              }`}
+            >
+              <p
+                className={`text-xs ${
+                  isNight ? "text-yellow-200" : "text-yellow-800"
+                }`}
+              >
+                <strong>📌 Importante:</strong> Una vez que realices la
+                transferencia, recibirás una notificación de aprobación en
+                segundos. El pago se procesará automáticamente.
+              </p>
+            </div>
+          </>
+        )}
+
+        {/* Transferencia Bancaria Tradicional (Manual) */}
         {paymentMethod === "transferencia" && (
           <>
             <p
@@ -517,6 +777,23 @@ export default function PaymentModal({
                 }`}
               >
                 {alias}
+              </p>
+            </div>
+
+            <div
+              className={`rounded-lg p-3 border ${
+                isNight
+                  ? "bg-yellow-900/20 border-yellow-500/50"
+                  : "bg-yellow-50 border-yellow-200"
+              }`}
+            >
+              <p
+                className={`text-xs ${
+                  isNight ? "text-yellow-200" : "text-yellow-800"
+                }`}
+              >
+                ⚠️ Este método requiere aprobación manual del organizador.
+                Puede demorar horas o días.
               </p>
             </div>
 
