@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/libs/mongodb";
 import Pago from "@/models/pagos";
 import MiembroSalida from "@/models/MiembroSalida";
-import Ticket from "@/models/Ticket";
-import SalidaSocial from "@/models/SalidaSocial";
+import Ticket from "@/models/ticket";
+import SalidaSocial from "@/models/salidaSocial";
 import User from "@/models/User";
 import { notifyPaymentApproved } from "@/libs/notificationHelpers";
-import { sendTicketEmail } from "@/libs/email";
+import { sendTicketEmail } from "@/libs/sendEmail";
 import crypto from "crypto";
 import { nanoid } from "nanoid";
 
@@ -287,7 +287,7 @@ async function procesarSalidaSocial(pago: any) {
 async function procesarAcademia(pago: any) {
   try {
     // Importar modelo dinámicamente para evitar circular dependencies
-    const UsuarioAcademia = (await import("@/models/UsuarioAcademia")).default;
+    const UsuarioAcademia = (await import("@/models/users_academia")).default;
 
     const usuarioAcademia = await UsuarioAcademia.findOne({
       usuario_id: pago.userId._id,
