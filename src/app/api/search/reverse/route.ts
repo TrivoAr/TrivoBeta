@@ -72,7 +72,7 @@ export async function GET(req: Request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error in /api/search/reverse:", error);
+
     return new Response(JSON.stringify({ display_name: "" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

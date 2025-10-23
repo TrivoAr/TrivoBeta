@@ -107,7 +107,6 @@ function Signup() {
 
       if (res?.ok) return router.push("/home");
     } catch (error) {
-      console.log(error);
       if (error instanceof AxiosError) {
         const errorMessage = error.response?.data.message;
         setError(errorMessage);

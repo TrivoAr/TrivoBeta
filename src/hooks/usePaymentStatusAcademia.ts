@@ -69,18 +69,6 @@ export function usePaymentStatusAcademia(academiaId: string, enabled = true) {
     refetchIntervalInBackground: true,
   });
 
-  // Logging para debug
-  useEffect(() => {
-    if (data) {
-      console.log("[usePaymentStatusAcademia] Estado actual:", {
-        isPending: data.isPending,
-        isApproved: data.isApproved,
-        suscripcionEstado: data.suscripcion?.estado,
-        miembroEstado: data.miembro?.estado,
-        pagoEstado: data.pago?.estado,
-      });
-    }
-  }, [data]);
 
   // Detectar cambios de estado y mostrar notificaciones
   useEffect(() => {

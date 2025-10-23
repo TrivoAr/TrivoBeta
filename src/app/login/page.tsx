@@ -1,7 +1,7 @@
 "use client";
 import { FormEvent, useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast, { Toaster } from "react-hot-toast";
 import lock from "../../../public/assets/icons/Group 2.svg";
@@ -9,10 +9,14 @@ import user from "../../../public/assets/icons/User.svg";
 
 export default function Signin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Obtener callbackUrl de los query params o usar default
+  const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
   // Detectar dark mode del sistema
   useEffect(() => {
@@ -38,9 +42,9 @@ export default function Signin() {
   // Redirigir si ya hay una sesión activa
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/home");
+      router.push(callbackUrl);
     }
-  }, [status, router]);
+  }, [status, router, callbackUrl]);
 
   // Mostrar loading mientras se verifica la sesión
   if (status === "loading") {
@@ -84,7 +88,7 @@ export default function Signin() {
       {
         loading: "Autenticando...",
         success: () => {
-          router.push("/home");
+          router.push(callbackUrl);
           return "¡Inicio de sesión exitoso!";
         },
         error: (msg) => `Error: ${msg}`,
@@ -239,7 +243,7 @@ export default function Signin() {
             <button
               type="button"
               onClick={() =>
-                toast.promise(signIn("google", { callbackUrl: "/home" }), {
+                toast.promise(signIn("google", { callbackUrl }), {
                   loading: "Conectando con Google...",
                   success: "¡Listo!",
                   error: "No se pudo conectar con Google.",

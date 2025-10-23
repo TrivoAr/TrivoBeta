@@ -28,12 +28,11 @@ export default function PushManager() {
         if (response.ok) {
           const data = await response.json();
           if (data.subscribed) {
-            console.log("✅ Suscripción FCM encontrada en backend");
             setSubscribed(true);
           }
         }
       } catch (err) {
-        console.warn("⚠️ Error verificando estado FCM:", err);
+        // Error verificando estado FCM
       }
     };
 
@@ -44,7 +43,6 @@ export default function PushManager() {
   useEffect(() => {
     const unsubscribe = onMessageListener()
       .then((payload: any) => {
-        console.log("📬 Mensaje recibido:", payload);
         // Mostrar notificación personalizada si es necesario
         if (payload.notification) {
           toast.success(
@@ -52,7 +50,9 @@ export default function PushManager() {
           );
         }
       })
-      .catch((err) => console.log("Error listening to messages: ", err));
+      .catch((err) => {
+        // Error listening to messages
+      });
 
     return () => {
       // Cleanup si es necesario
@@ -62,12 +62,10 @@ export default function PushManager() {
   const subscribeUser = useCallback(async () => {
     // Evitar ejecuciones múltiples
     if (busy || currentProcess) {
-      console.log("⚠️ Proceso ya en ejecución, ignorando click");
       return;
     }
 
     setBusy(true);
-    console.log("🔥 Iniciando suscripción Firebase FCM...");
 
     const processPromise = (async () => {
       try {
@@ -77,13 +75,9 @@ export default function PushManager() {
           return;
         }
 
-        console.log("✅ Usuario autenticado:", session.user.id);
-
         // 1) Pedir permiso de notificaciones
-        console.log("🔐 Pidiendo permisos para notificaciones...");
         if (Notification.permission === "default") {
           const permission = await Notification.requestPermission();
-          console.log("📋 Permiso:", permission);
           if (permission !== "granted") {
             toast.error("❌ Necesitamos permisos para enviar notificaciones");
             return;
@@ -96,17 +90,13 @@ export default function PushManager() {
         }
 
         // 2) Obtener token de Firebase FCM
-        console.log("🔥 Obteniendo token Firebase FCM...");
         const fcmToken = await getFCMToken();
 
         if (!fcmToken) {
           throw new Error("No se pudo obtener el token FCM");
         }
 
-        console.log("✅ Token FCM obtenido correctamente");
-
         // 3) Guardar token en el backend
-        console.log("💾 Guardando token FCM en backend...");
         const response = await fetch("/api/save-fcm-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,17 +108,13 @@ export default function PushManager() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("❌ Error del backend:", response.status, errorText);
           throw new Error(
             `Error del servidor (${response.status}): ${errorText}`
           );
         }
-
-        console.log("🎉 Firebase FCM configurado exitosamente");
         setSubscribed(true);
         toast.success("🔥 Notificaciones Firebase activadas");
       } catch (err: any) {
-        console.error("❌ Error Firebase FCM:", err);
 
         const errorMessage = String(err?.message || err);
 
@@ -164,8 +150,6 @@ export default function PushManager() {
 
     setBusy(true);
     try {
-      console.log("🧪 Enviando notificación de prueba...");
-
       const response = await fetch("/api/send-test-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -175,9 +159,7 @@ export default function PushManager() {
 
       if (response.ok) {
         toast.success("🧪 Notificación de prueba enviada");
-        console.log("✅ Respuesta:", data);
       } else {
-        console.error("❌ Error:", data);
         if (data.tokenRemoved) {
           setSubscribed(false);
           toast.error("Token inválido - reactiva las notificaciones");
@@ -186,7 +168,6 @@ export default function PushManager() {
         }
       }
     } catch (error) {
-      console.error("❌ Error enviando prueba:", error);
       toast.error("Error enviando notificación de prueba");
     } finally {
       setBusy(false);

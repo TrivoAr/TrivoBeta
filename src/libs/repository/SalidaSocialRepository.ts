@@ -98,9 +98,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
 
     try {
       // Ensure models are registered
-      console.log("Ensuring models are registered...");
-      console.log("User model:", User.modelName);
-      console.log("Sponsors model:", Sponsors.modelName);
+      // User model and Sponsors model registration check
 
       // Find with all populations
       const salida = await this.model
@@ -128,10 +126,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
           salida.creador_id.firstname
         );
       } catch (error) {
-        console.log(
-          `[SalidaSocialRepository] Image fetch failed for creator:`,
-          error
-        );
+        // Image fetch failed for creator
         creatorImageUrl = ImageService.generateAvatarUrl(
           salida.creador_id.firstname
         );
@@ -155,10 +150,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
             salida.profesorId.firstname
           );
         } catch (error) {
-          console.log(
-            `[SalidaSocialRepository] Image fetch failed for professor:`,
-            error
-          );
+          // Image fetch failed for professor
           professorImageUrl = ImageService.generateAvatarUrl(
             salida.profesorId.firstname
           );
@@ -397,11 +389,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
           .findByIdAndUpdate(event._id, { imagen: imageUrl }, { new: true })
           .exec()) as ISalidaSocial;
       } catch (error) {
-        console.error(
-          "[SalidaSocialRepository] Failed to upload image:",
-          error
-        );
-        // Return event without image rather than failing completely
+        // Failed to upload image - return event without image
         return event;
       }
     }
@@ -426,11 +414,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
         const imageUrl = await ImageService.saveSocialImage(imageFile, id);
         updatedData.imagen = imageUrl;
       } catch (error) {
-        console.error(
-          "[SalidaSocialRepository] Failed to upload image:",
-          error
-        );
-        // Continue with update without new image
+        // Failed to upload image - continue with update without new image
       }
     }
 

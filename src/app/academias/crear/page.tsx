@@ -87,7 +87,6 @@ function CrearAcademia() {
         throw new Error("Error al crear la academia");
       }
     } catch (error) {
-      console.error("Error:", error);
       if (error instanceof AxiosError) {
         const errorMessage =
           error.response?.data?.message || "Error en la solicitud";

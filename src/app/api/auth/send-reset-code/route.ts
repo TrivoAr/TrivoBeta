@@ -93,7 +93,6 @@ export async function POST(req: Request) {
         html: resetPasswordTemplate(resetCode),
       });
     } catch (err) {
-      console.error("Fallo al enviar email:", err);
 
       // DEV: devolver el código si activás debug (no lo hagas en prod)
       if (
@@ -117,7 +116,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (e) {
-    console.error("send-reset-code error:", e);
+
     return NextResponse.json(
       { message: "Error en el servidor" },
       { status: 500 }

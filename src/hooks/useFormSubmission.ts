@@ -249,12 +249,6 @@ export const useSocialEventSubmission = () => {
         validateBeforeSubmit: validateEventData,
         transformData: transformEventData,
         redirectOnSuccess: "/dashboard",
-        onSuccess: (data) => {
-          console.log("Evento creado exitosamente:", data);
-        },
-        onError: (error) => {
-          console.error("Error creando evento:", error);
-        },
       });
     },
     [baseSubmission]
@@ -264,9 +258,6 @@ export const useSocialEventSubmission = () => {
     async (eventId: string, eventData: any) => {
       return baseSubmission.submitForm(`/api/social/${eventId}`, eventData, {
         method: "PUT",
-        onSuccess: (data) => {
-          console.log("Evento actualizado exitosamente:", data);
-        },
       });
     },
     [baseSubmission]
@@ -279,9 +270,6 @@ export const useSocialEventSubmission = () => {
         {},
         {
           method: "DELETE",
-          onSuccess: () => {
-            console.log("Evento eliminado exitosamente");
-          },
         }
       );
     },

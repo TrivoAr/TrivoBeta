@@ -63,7 +63,6 @@ export default function FilterModal({
   // Initialize filter values with current values only when modal opens
   React.useEffect(() => {
     if (isOpen) {
-      console.log("Modal opened, current values:", currentValues);
       const initialValues: FilterValues = {};
       filters.forEach((filter) => {
         // Use current values if available, otherwise use default
@@ -71,28 +70,23 @@ export default function FilterModal({
           currentValues[filter.key] ||
           (filter.type === "multiselect" ? [] : "");
       });
-      console.log("Setting initial values in modal:", initialValues);
       setFilterValues(initialValues);
       setHasChanges(false); // Reset changes when modal opens
     }
   }, [isOpen, currentValues, filters]); // Include all dependencies
 
   const handleFilterChange = (key: string, value: string | string[]) => {
-    console.log("Filter changed:", key, "=", value);
     setFilterValues((prev) => {
       const newValues = {
         ...prev,
         [key]: value,
       };
-      console.log("New filter values:", newValues);
       return newValues;
     });
     setHasChanges(true); // Mark as changed when any filter is modified
-    console.log("hasChanges set to true");
   };
 
   const handleApply = () => {
-    console.log("FilterModal handleApply called with values:", filterValues);
     onApply(filterValues);
     setHasChanges(false);
     onClose();

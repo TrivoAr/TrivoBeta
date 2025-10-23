@@ -87,8 +87,6 @@ export async function GET(
       })
       .lean()) as TicketWithSalida | null;
 
-    console.log("[VERIFY POPULATED TICKET]", t);
-
     if (!t) {
       return NextResponse.json({ status: "invalid" }, { status: 404 });
     }
@@ -106,7 +104,7 @@ export async function GET(
           : null,
     });
   } catch (err) {
-    console.error("[VERIFY ERROR]", err);
+
     return NextResponse.json(
       { status: "invalid", error: "server_error" },
       { status: 500 }

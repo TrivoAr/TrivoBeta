@@ -2,18 +2,30 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { ScaleModal } from "@/components/base/AnimatedModal";
+import { usePathname } from "next/navigation";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   isNight?: boolean;
+  callbackUrl?: string; // URL a la que redirigir después del login
 }
 
 export default function LoginModal({
   isOpen,
   onClose,
   isNight = false,
+  callbackUrl,
 }: LoginModalProps) {
+  const pathname = usePathname();
+
+  // Usar callbackUrl si se proporciona, sino usar la ruta actual
+  const redirectUrl = callbackUrl || pathname || "/home";
+
+  const handleLogin = () => {
+    signIn("google", { callbackUrl: redirectUrl });
+  };
+
   return (
     <ScaleModal
       isOpen={isOpen}
@@ -31,7 +43,7 @@ export default function LoginModal({
           Debes estar logueado para realizar esta acción.
         </p>
         <button
-          onClick={() => signIn("google")}
+          onClick={handleLogin}
           className={`w-full py-2 rounded-[20px] font-medium transition ${
             isNight
               ? "seasonal-gradient text-white hover:opacity-90"

@@ -13,24 +13,21 @@ export async function GET(req: NextRequest) {
   let salidaId: string | null = null;
 
   try {
-    console.log("[GET_MIEMBROS] Starting request");
+
     await connectDB();
 
     // Ensure Pago model is registered
     Pago;
 
-    console.log("[GET_MIEMBROS] DB connected");
-
     const session = await getServerSession(authOptions);
     if (!session) {
-      console.log("[GET_MIEMBROS] No session");
+
       return new Response(JSON.stringify({ error: "No autorizado" }), {
         status: 401,
       });
     }
 
     salidaId = req.nextUrl.searchParams.get("salidaId");
-    console.log("[GET_MIEMBROS] salidaId:", salidaId);
 
     if (!salidaId) {
       return new Response(JSON.stringify({ error: "Falta salidaId" }), {
@@ -39,13 +36,11 @@ export async function GET(req: NextRequest) {
     }
 
     if (!mongoose.isValidObjectId(salidaId)) {
-      console.log("[GET_MIEMBROS] Invalid ObjectId:", salidaId);
+
       return new Response(JSON.stringify({ error: "salidaId inválido" }), {
         status: 400,
       });
     }
-
-    console.log("[GET_MIEMBROS] Querying miembros for salidaId:", salidaId);
 
     // Add timeout for database query in production
     const queryTimeout = process.env.NODE_ENV === "production" ? 8000 : 15000;
@@ -57,18 +52,13 @@ export async function GET(req: NextRequest) {
         .select("_id")
         .maxTimeMS(3000);
       salidaExists = !!salida;
-      console.log("[GET_MIEMBROS] SalidaSocial exists:", salidaExists);
+
     } catch (salidaError) {
-      console.log(
-        "[GET_MIEMBROS] Error checking salida existence:",
-        salidaError.message
-      );
+
     }
 
     if (!salidaExists) {
-      console.log(
-        "[GET_MIEMBROS] SalidaSocial not found, returning empty array"
-      );
+
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -81,22 +71,17 @@ export async function GET(req: NextRequest) {
       .maxTimeMS(queryTimeout);
 
     const miembros = await dbQueryPromise;
-    console.log("[GET_MIEMBROS] Found", miembros.length, "miembros");
 
     // Process miembros with additional error handling
     const miembrosResults = await Promise.allSettled(
       miembros.map(async (m, index) => {
         try {
-          console.log(
-            `[GET_MIEMBROS] Processing member ${index + 1}/${miembros.length}:`,
-            m._id
-          );
 
           const usuario = m.usuario_id;
           const pago = m.pago_id;
 
           if (!usuario) {
-            console.log(`[GET_MIEMBROS] Member ${index + 1} has no usuario_id`);
+
             return {
               _id: m._id,
               usuarioId: null,
@@ -129,12 +114,7 @@ export async function GET(req: NextRequest) {
               timeoutPromise,
             ]);
           } catch (imageError) {
-            console.log(
-              "[GET_MIEMBROS] Image fetch failed for user:",
-              usuario._id,
-              imageError?.message || "unknown error",
-              "using fallback"
-            );
+
             imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
               usuario.firstname || "U"
             )}&length=1&background=random&color=fff&size=128`;
@@ -153,7 +133,7 @@ export async function GET(req: NextRequest) {
             pago_id: pago ? { _id: pago._id, estado: pago.estado || "" } : null,
           };
         } catch (e) {
-          console.error("[GET_MIEMBROS] Error processing member:", m._id, e);
+
           return {
             _id: m._id,
             nombre: "Error interno",
@@ -174,11 +154,7 @@ export async function GET(req: NextRequest) {
         if (result.status === "fulfilled") {
           return result.value;
         } else {
-          console.error(
-            "[GET_MIEMBROS] Promise failed for member at index:",
-            index,
-            result.reason
-          );
+
           // Return a safe fallback member
           return {
             _id: miembros[index]?._id || `error_${index}`,
@@ -200,12 +176,6 @@ export async function GET(req: NextRequest) {
       })
       .filter(Boolean); // Remove any null/undefined results
 
-    console.log(
-      "[GET_MIEMBROS] Returning",
-      miembrosConImagen.length,
-      "processed members"
-    );
-
     return new Response(
       JSON.stringify(Array.isArray(miembrosConImagen) ? miembrosConImagen : []),
       {
@@ -214,20 +184,11 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (err) {
-    console.error("[GET_MIEMBROS_ERROR]", {
-      salidaId,
-      environment: process.env.NODE_ENV,
-      error: err instanceof Error ? err.message : err,
-      stack: err instanceof Error ? err.stack : undefined,
-      timestamp: new Date().toISOString(),
-    });
 
     // NEVER return 500 in production - always return valid empty array
     // This prevents the UI from breaking completely
     if (process.env.NODE_ENV === "production") {
-      console.log(
-        "[GET_MIEMBROS] Production fallback: returning empty array instead of error"
-      );
+
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },

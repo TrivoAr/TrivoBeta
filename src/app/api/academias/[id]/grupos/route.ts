@@ -15,7 +15,7 @@ export async function GET(
     const grupos = await Grupo.find({ academia_id: params.id });
     return NextResponse.json(grupos);
   } catch (error) {
-    console.error("Error al obtener grupos:", error);
+
     return NextResponse.json(
       { error: "Error al obtener grupos" },
       { status: 500 }
@@ -93,7 +93,7 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al asignar grupo:", error);
+
     return NextResponse.json(
       { message: "Error al asignar grupo", error },
       { status: 500 }

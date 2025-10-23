@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import Notificacion from "@/models/notificacion";
+import connectDB from "@/libs/mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,55 +14,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Acceder al servidor Socket.IO global
-    const socketServer = (global as any).socketServer;
+    await connectDB();
 
-    if (!socketServer || !socketServer.emitToUser) {
-      console.error("[TEST_API] Socket.IO server no disponible");
-      return NextResponse.json(
-        { error: "Socket.IO server no disponible" },
-        { status: 503 }
-      );
-    }
-
-    // Crear una notificación de prueba
-    const testNotification = {
-      _id: `test-${Date.now()}`,
+    // Crear una notificación de prueba en la base de datos
+    // Será recuperada automáticamente por el sistema de polling
+    const testNotification = await Notificacion.create({
       userId: userId,
-      fromUserId: {
-        _id: "system",
-        firstname: "Sistema",
-        lastname: "Prueba",
-      },
+      fromUserId: userId, // Auto-notificación de prueba
       type: "test",
       message: message,
       read: false,
-      createdAt: new Date().toISOString(),
-      data: {
+      metadata: {
         test: true,
         timestamp: Date.now(),
       },
-    };
-
-    // Emitir notificación en tiempo real al usuario específico
-    const success = await socketServer.emitToUser(
-      userId,
-      "notification:new",
-      testNotification
-    );
-
-    console.log(
-      `[TEST_API] Notificación de prueba enviada a usuario ${userId}: ${message} - Éxito: ${success}`
-    );
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Notificación de prueba enviada",
+      message: "Notificación de prueba creada (será detectada por polling)",
       notification: testNotification,
-      clientsReached: success,
     });
   } catch (error) {
-    console.error("[TEST_API] Error enviando notificación de prueba:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }

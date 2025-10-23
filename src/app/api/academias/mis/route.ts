@@ -54,7 +54,7 @@ export async function GET() {
 
     return NextResponse.json(academias, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener academias donde soy miembro:", error);
+
     return NextResponse.json(
       { message: "Error al obtener las academias", error: error.message },
       { status: 500 }

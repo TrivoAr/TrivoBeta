@@ -166,7 +166,7 @@ export async function PATCH(
         );
       }
     } catch (notificationError) {
-      console.error("Error al crear notificación:", notificationError);
+
       // No fallar la operación principal por error de notificación
     }
 

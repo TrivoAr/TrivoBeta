@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(nuevoTeam, { status: 201 });
   } catch (error) {
-    console.error("Error al crear el team social:", error);
+
     return NextResponse.json(
       { error: "Error en el servidor" },
       { status: 500 }
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(teams, { status: 200 });
   } catch (error) {
-    console.error("[GET_TEAM_SOCIAL]", error);
+
     return NextResponse.json({ message: "Server Error" }, { status: 500 });
   }
 }

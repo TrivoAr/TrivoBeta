@@ -90,20 +90,9 @@ export default function AsistenciasModal({
   const { data, isLoading: loading, refetch } = useQuery({
     queryKey: ["asistencias-grupo", grupoId, fechaParam],
     queryFn: async () => {
-      console.log(
-        `[ASISTENCIAS_MODAL] Cargando datos para grupo ${grupoId}, fecha: ${fechaParam}`
-      );
 
       const response = await axios.get(
         `/api/asistencias/grupo/${grupoId}?fecha=${fechaParam}`
-      );
-
-      console.log(
-        "[ASISTENCIAS_MODAL] Datos recibidos:",
-        response.data.miembros?.length,
-        "miembros,",
-        response.data.asistencias?.length,
-        "asistencias"
       );
 
       return response.data;
@@ -146,7 +135,6 @@ export default function AsistenciasModal({
   const registrarAsistencia = async (userId: string, nombre: string) => {
     setProcesando(userId);
     try {
-      console.log("[ASISTENCIAS_MODAL] Registrando asistencia para:", nombre);
 
       const response = await axios.post("/api/asistencias/registrar", {
         userId,
@@ -154,33 +142,25 @@ export default function AsistenciasModal({
         fecha: selectedDate.toISOString(),
       });
 
-      console.log("[ASISTENCIAS_MODAL] Respuesta del servidor:", response.data);
-
       // Invalidar query y refetch INMEDIATAMENTE
-      console.log("[ASISTENCIAS_MODAL] Invalidando queries y refetcheando...");
       await queryClient.invalidateQueries({
         queryKey: ["asistencias-grupo", grupoId, fechaParam],
       });
       await refetch();
 
       if (response.data.trialExpirado) {
-        console.log("[ASISTENCIAS_MODAL] Trial expirado, mostrando modal");
         setTrialExpiradoModal({
           open: true,
           nombre,
           mercadoPagoLink: response.data.mercadoPago?.initPoint,
         });
       } else {
-        console.log(
-          "[ASISTENCIAS_MODAL] Mostrando toast de asistencia registrada"
-        );
         toast.success(`✅ Asistencia de ${nombre} registrada`, {
           duration: 3000,
           position: "top-center",
         });
       }
     } catch (error: any) {
-      console.error("[ASISTENCIAS_MODAL] Error registrando asistencia:", error);
       toast.error(
         error.response?.data?.error || "Error al registrar asistencia",
         {
@@ -194,11 +174,6 @@ export default function AsistenciasModal({
 
   const verificarAsistencia = (userId: string): Asistencia | undefined => {
     const asistencia = asistencias.find((a) => a.userId._id === userId && a.asistio);
-    console.log(`[ASISTENCIAS_MODAL] verificarAsistencia para ${userId}:`, {
-      encontrada: !!asistencia,
-      totalAsistencias: asistencias.length,
-      asistenciasIds: asistencias.map(a => a.userId._id),
-    });
     return asistencia;
   };
 

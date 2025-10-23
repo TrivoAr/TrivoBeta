@@ -48,24 +48,16 @@ import Pago from "@/models/pagos";
 import SalidaSocial from "@/models/salidaSocial";
 import Academia from "@/models/academia";
 import User from "@/models/user";
-import Notificacion from "@/models/notificacion";
+import { notifyPaymentPending } from "@/libs/notificationHelpers";
 
 export async function POST(req: Request) {
   try {
-    console.log("Iniciando POST /api/pagos");
     await connectDB();
     const body = await req.json();
-    console.log("Body recibido:", body);
 
     const { salidaId, academiaId, userId, comprobanteUrl } = body;
 
     if (!userId || !comprobanteUrl || (!salidaId && !academiaId)) {
-      console.log("Faltan campos obligatorios:", {
-        userId,
-        comprobanteUrl,
-        salidaId,
-        academiaId,
-      });
       return NextResponse.json(
         {
           error:
@@ -87,11 +79,8 @@ export async function POST(req: Request) {
       pagoData.academiaId = new Types.ObjectId(academiaId);
     }
 
-    console.log("Datos para crear pago:", pagoData);
-
     // Validación manual: debe tener al menos salidaId o academiaId
     if (!pagoData.salidaId && !pagoData.academiaId) {
-      console.log("Error: Debe tener al menos salidaId o academiaId");
       return NextResponse.json(
         { error: "Debe especificar salidaId o academiaId" },
         { status: 400 }
@@ -99,7 +88,6 @@ export async function POST(req: Request) {
     }
 
     const pago = await Pago.create(pagoData);
-    console.log("Pago creado exitosamente:", pago._id);
 
     // Notificar al creador sobre el comprobante recibido
     // Solo si no es un evento gratuito (que usa "EVENTO_GRATUITO" como comprobanteUrl)
@@ -116,7 +104,6 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creando pago:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }
@@ -130,72 +117,46 @@ async function notificarCreadorComprobante(
   try {
     const usuario = await User.findById(userId);
     if (!usuario) {
-      console.error("No se encontró el usuario para notificar");
       return;
     }
-
-    let creadorId: string;
-    let nombre: string;
-    let mensaje: string;
 
     if (tipo === "salida") {
       const salida = await SalidaSocial.findById(entidadId);
       if (!salida) {
-        console.error("No se encontró la salida para notificar");
         return;
       }
 
-      creadorId = salida.creador_id;
-      nombre = salida.nombre;
+      const creadorId = salida.creador_id;
 
       // No notificar si el creador es el mismo usuario
       if (String(creadorId) === String(userId)) {
         return;
       }
 
-      mensaje = `${usuario.firstname} ha enviado el comprobante de pago para tu salida "${nombre}". Revisa y aprueba su participación.`;
-
-      await Notificacion.create({
-        userId: creadorId,
-        fromUserId: userId,
-        salidaId: salida._id,
-        type: "payment_pending",
-        message: mensaje,
-      });
+      // Usar la función helper que maneja BD + Socket.IO
+      await notifyPaymentPending(
+        String(creadorId),
+        String(userId),
+        String(salida._id),
+        `${usuario.firstname} ${usuario.lastname}`,
+        salida.nombre
+      );
     } else if (tipo === "academia") {
       const academia = await Academia.findById(entidadId);
       if (!academia) {
-        console.error("No se encontró la academia para notificar");
         return;
       }
 
-      creadorId = academia.dueño_id;
-      nombre = academia.nombre_academia;
+      const creadorId = academia.dueño_id;
 
       // No notificar si el dueño es el mismo usuario
       if (String(creadorId) === String(userId)) {
         return;
       }
 
-      mensaje = `${usuario.firstname} ha enviado el comprobante de pago para tu academia "${nombre}". Revisa y aprueba su participación.`;
-
-      await Notificacion.create({
-        userId: creadorId,
-        fromUserId: userId,
-        academiaId: academia._id,
-        type: "payment_pending",
-        message: mensaje,
-      });
+      // TODO: Crear función notifyPaymentPendingAcademia cuando sea necesario
     }
-
-    console.log(
-      `Notificación enviada al creador (${creadorId}) sobre comprobante recibido de transferencia`
-    );
   } catch (error) {
-    console.error(
-      "Error enviando notificación al creador sobre comprobante:",
-      error
-    );
   }
 }
 
@@ -205,7 +166,6 @@ export async function GET() {
     const pagos = await Pago.find().populate("salidaId").populate("userId");
     return NextResponse.json(pagos, { status: 200 });
   } catch (error) {
-    console.error("Error obteniendo pagos:", error);
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

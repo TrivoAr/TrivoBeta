@@ -51,7 +51,7 @@ export default function AcademiasPage() {
     fetch("/api/academias")
       .then((res) => res.json())
       .then((data: Academia[]) => setAcademias(data))
-      .catch(console.error);
+      .catch(() => {});
   }, []);
 
   const filtered = academias.filter((a) => {

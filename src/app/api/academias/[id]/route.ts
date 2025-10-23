@@ -64,7 +64,7 @@ export async function GET(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al obtener la academia y sus grupos:", error);
+
     return NextResponse.json(
       { message: "Hubo un error al obtener los datos", error },
       { status: 500 }

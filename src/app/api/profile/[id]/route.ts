@@ -31,7 +31,7 @@ export async function GET(
 
     return NextResponse.json(user, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener el perfil público:", error);
+
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }

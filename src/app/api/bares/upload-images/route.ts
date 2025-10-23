@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
-    console.error("[UPLOAD_BAR_IMAGES_ERROR]", error);
+
     return NextResponse.json(
       { error: "Error al subir imágenes" },
       { status: 500 }

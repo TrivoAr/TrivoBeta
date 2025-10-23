@@ -52,7 +52,6 @@ export default function SolicitudesPage() {
         prevSolicitudes.filter((solicitud) => solicitud._id !== id)
       );
     } catch (err) {
-      console.error("Error al actualizar la solicitud", err);
       setError("Error al actualizar la solicitud");
     }
   };

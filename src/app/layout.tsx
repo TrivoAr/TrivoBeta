@@ -38,7 +38,20 @@ export default function RootLayout({
           `}
         </Script>
 
-        <Toaster richColors position="top-center" expand={true} />
+        <Toaster
+          richColors
+          position="top-center"
+          expand={true}
+          toastOptions={{
+            duration: 10000,
+            style: {
+              background: 'transparent',
+              border: 'none',
+              boxShadow: 'none',
+              padding: 0,
+            },
+          }}
+        />
         <ServiceWorkerRegistration />
         <Providers>
           <div className="">{children}</div>

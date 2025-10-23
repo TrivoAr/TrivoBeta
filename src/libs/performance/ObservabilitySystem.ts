@@ -636,7 +636,7 @@ export class ObservabilitySystem {
         entryTypes: ["navigation", "resource", "measure", "mark"],
       });
     } catch (error) {
-      console.warn("Performance Observer not supported:", error);
+      // Performance Observer not supported
     }
   }
 
@@ -686,7 +686,7 @@ export class ObservabilitySystem {
         body: JSON.stringify(data),
       });
     } catch (error) {
-      console.warn(`Failed to send observability data to ${endpoint}:`, error);
+      // Failed to send observability data
     }
   }
 }

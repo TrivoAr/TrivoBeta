@@ -21,15 +21,13 @@ export async function saveBarLogo(
     // Referencia en Firebase Storage: bares/{barId}/logo.jpg
     const logoRef = ref(storage, `bares/${id}/${fileName}`);
 
-    console.log(`[FIREBASE] Subiendo logo para bar ${id}...`);
     const snapshot = await uploadBytes(logoRef, logoFile);
 
     const downloadURL = await getDownloadURL(snapshot.ref);
-    console.log(`[FIREBASE] Logo subido exitosamente: ${downloadURL}`);
 
     return downloadURL;
   } catch (error) {
-    console.error("[FIREBASE] Error al subir logo:", error);
+
     throw new Error("Error al subir logo del bar");
   }
 }
@@ -49,10 +47,6 @@ export async function saveBarCarouselImages(
     const id = barId || uuidv4();
     const uploadPromises: Promise<string>[] = [];
 
-    console.log(
-      `[FIREBASE] Subiendo ${imageFiles.length} imágenes del carrusel para bar ${id}...`
-    );
-
     imageFiles.forEach((file, index) => {
       const fileExtension = file.name.split(".").pop() || "jpg";
       const fileName = `carousel_${index + 1}.${fileExtension}`;
@@ -63,7 +57,7 @@ export async function saveBarCarouselImages(
       const uploadPromise = uploadBytes(imageRef, file)
         .then((snapshot) => getDownloadURL(snapshot.ref))
         .then((url) => {
-          console.log(`[FIREBASE] Imagen ${index + 1} subida: ${url}`);
+
           return url;
         });
 
@@ -71,13 +65,10 @@ export async function saveBarCarouselImages(
     });
 
     const imageUrls = await Promise.all(uploadPromises);
-    console.log(
-      `[FIREBASE] ${imageUrls.length} imágenes del carrusel subidas exitosamente`
-    );
 
     return imageUrls;
   } catch (error) {
-    console.error("[FIREBASE] Error al subir imágenes del carrusel:", error);
+
     throw new Error("Error al subir imágenes del carrusel");
   }
 }
@@ -97,19 +88,11 @@ export async function saveAllBarImages(
   try {
     const id = barId || uuidv4();
 
-    console.log(
-      `[FIREBASE] Iniciando subida de todas las imágenes para bar ${id}...`
-    );
-
     // Subir logo y carrusel en paralelo
     const [logoUrl, carouselUrls] = await Promise.all([
       saveBarLogo(logoFile, id),
       saveBarCarouselImages(carouselFiles, id),
     ]);
-
-    console.log(
-      `[FIREBASE] Todas las imágenes subidas exitosamente para bar ${id}`
-    );
 
     return {
       logo: logoUrl,
@@ -117,7 +100,7 @@ export async function saveAllBarImages(
       barId: id,
     };
   } catch (error) {
-    console.error("[FIREBASE] Error al subir todas las imágenes:", error);
+
     throw new Error("Error al subir imágenes del bar");
   }
 }
@@ -147,9 +130,9 @@ export async function deleteBarImages(barId: string): Promise<void> {
     }
 
     await Promise.all(deletePromises);
-    console.log(`[FIREBASE] Todas las imágenes del bar ${barId} eliminadas`);
+
   } catch (error) {
-    console.error("[FIREBASE] Error al eliminar imágenes:", error);
+
     throw new Error("Error al eliminar imágenes del bar");
   }
 }
@@ -173,19 +156,12 @@ export async function updateCarouselImage(
 
     const imageRef = ref(storage, `bares/${barId}/carousel/${fileName}`);
 
-    console.log(
-      `[FIREBASE] Actualizando imagen ${imageIndex + 1} del carrusel para bar ${barId}...`
-    );
-
     const snapshot = await uploadBytes(imageRef, newImageFile);
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    console.log(
-      `[FIREBASE] Imagen ${imageIndex + 1} actualizada: ${downloadURL}`
-    );
     return downloadURL;
   } catch (error) {
-    console.error("[FIREBASE] Error al actualizar imagen del carrusel:", error);
+
     throw new Error("Error al actualizar imagen del carrusel");
   }
 }

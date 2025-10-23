@@ -46,9 +46,9 @@ export async function POST(req: Request) {
     if (!existingSubscription) {
       // Guardar la suscripción en la base de datos
       await Subscription.create(newSubscription);
-      console.log("Nueva suscripción guardada para usuario:", session.user.id);
+
     } else {
-      console.log("Suscripción ya existe para usuario:", session.user.id);
+
     }
 
     // Enviar una notificación push de bienvenida
@@ -67,10 +67,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error(
-      "Error al guardar la suscripción o enviar la notificación:",
-      error
-    );
+
     return NextResponse.json(
       { error: "Error al guardar la suscripción o enviar la notificación" },
       { status: 500 }

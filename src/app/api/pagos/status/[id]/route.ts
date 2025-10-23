@@ -56,7 +56,7 @@ export async function GET(
         (pago?.estado === "aprobado" && miembro?.estado === "pendiente"),
     });
   } catch (error) {
-    console.error("Error obteniendo estado de pago:", error);
+
     return NextResponse.json(
       {
         error: "Error interno del servidor",

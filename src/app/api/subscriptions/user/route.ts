@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ suscripciones });
   } catch (error: any) {
-    console.error("Error en GET /api/subscriptions/user:", error);
+
     return NextResponse.json(
       { error: error.message || "Error al obtener suscripciones" },
       { status: 500 }

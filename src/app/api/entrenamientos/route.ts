@@ -72,15 +72,15 @@ export async function POST(req: Request) {
 
       try {
         await webPush.sendNotification(subscription, payload);
-        console.log("Notificación enviada correctamente.");
+
       } catch (error) {
-        console.error("Error al enviar la notificación:", error);
+
       }
     }*/
 
     return NextResponse.json(entrenamiento, { status: 201 });
   } catch (error) {
-    console.error("Error al asignar entrenamiento:", error);
+
     return NextResponse.json(
       { error: "Hubo un problema al asignar el entrenamiento" },
       { status: 500 }
@@ -115,7 +115,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(entrenamientos, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener entrenamientos:", error);
+
     return NextResponse.json(
       { error: "Hubo un problema al obtener los entrenamientos" },
       { status: 500 }

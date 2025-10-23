@@ -23,7 +23,7 @@ export async function GET() {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error obteniendo sponsors:", error);
+
     return NextResponse.json(
       {
         success: false,
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creando sponsor:", error);
+
     return NextResponse.json(
       {
         success: false,

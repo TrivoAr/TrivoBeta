@@ -75,9 +75,6 @@ export async function POST(request: NextRequest) {
 
     // Convertir precio a número
     const precioNumerico = Number(academia.precio);
-    console.log(
-      `[CREATE_SUBSCRIPTION] Precio de academia: ${academia.precio} (tipo: ${typeof academia.precio}), convertido a: ${precioNumerico} (tipo: ${typeof precioNumerico})`
-    );
 
     // Crear suscripción
     const { suscripcion, requiereConfiguracionPago } =
@@ -117,7 +114,7 @@ export async function POST(request: NextRequest) {
         };
         await suscripcion.save();
       } catch (error: any) {
-        console.error("Error creando preapproval:", error);
+
         // Si falla Mercado Pago, eliminar la suscripción creada
         await Suscripcion.findByIdAndDelete(suscripcion._id);
         return NextResponse.json(
@@ -137,14 +134,9 @@ export async function POST(request: NextRequest) {
           academiaId: academia._id.toString(),
           academiaNombre: academia.nombre_academia,
         });
-        console.log(
-          `[SUBSCRIPTIONS] Notificación enviada al dueño ${academiaConDuenio.dueño_id._id} sobre nuevo trial`
-        );
+
       } catch (notifError) {
-        console.error(
-          "[SUBSCRIPTIONS] Error enviando notificación:",
-          notifError
-        );
+
         // No fallar la suscripción si falla la notificación
       }
     }
@@ -159,7 +151,7 @@ export async function POST(request: NextRequest) {
         : "Suscripción creada, completa el pago para activarla",
     });
   } catch (error: any) {
-    console.error("Error en POST /api/subscriptions/create:", error);
+
     return NextResponse.json(
       { error: error.message || "Error al crear suscripción" },
       { status: 500 }

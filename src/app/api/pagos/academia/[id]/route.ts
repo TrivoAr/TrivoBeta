@@ -94,7 +94,7 @@ export async function GET(
       tipoSistema: "viejo", // Para debugging
     });
   } catch (error) {
-    console.error("Error obteniendo estado de pago de academia:", error);
+
     return NextResponse.json(
       {
         error: "Error interno del servidor",

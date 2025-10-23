@@ -45,7 +45,6 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
 
       toast.success("Datos cargados con éxito");
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
       toast.error("Error al cargar los datos de la academia.");
     } finally {
       setLoading(false);
@@ -75,7 +74,6 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
         throw new Error("Error al actualizar la academia");
       }
     } catch (error) {
-      console.error("Error:", error);
       if (error instanceof AxiosError) {
         const errorMessage =
           error.response?.data?.message || "Error en la solicitud";
@@ -115,7 +113,6 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
         throw new Error("Error al eliminar la academia");
       }
     } catch (error) {
-      console.error("Error al eliminar:", error);
       toast.error("Error al eliminar la academia.");
     }
   };
@@ -136,7 +133,6 @@ export default function EditarAcademia({ params }: { params: { id: string } }) {
       setProfileImage(imageUrl);
       toast.success("Imagen subida con éxito");
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
       toast.error("Hubo un problema al subir la imagen.");
     } finally {
       setUploadingImage(false);

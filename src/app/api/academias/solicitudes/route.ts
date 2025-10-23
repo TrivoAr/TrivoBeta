@@ -72,7 +72,7 @@ export async function GET(_req: Request) {
 
     return NextResponse.json(enrichedSolicitudes, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener solicitudes:", error);
+
     return NextResponse.json(
       { message: "Hubo un error al obtener las solicitudes" },
       { status: 500 }
@@ -129,11 +129,7 @@ export async function PATCH(req: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error(
-      "Error al actualizar solicitud / crear notificación:",
-      error?.message,
-      error?.errors
-    );
+
     return NextResponse.json(
       { message: "Error interno", detalle: error?.message },
       { status: 500 }

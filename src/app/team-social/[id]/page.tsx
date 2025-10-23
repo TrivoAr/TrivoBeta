@@ -115,11 +115,8 @@ export default function TeamEventPage({ params }: PageProps) {
               bio: data.bio || "",
               dni: data.dni || "",
             });
-          } else {
-            console.error(data.error);
           }
         } catch (error) {
-          console.error(error);
         }
       };
 
@@ -130,10 +127,8 @@ export default function TeamEventPage({ params }: PageProps) {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`/api/team-social/${params.id}`);
-        console.log("Evento:", response.data);
         setEvent(response.data);
       } catch (err) {
-        console.error("Error al cargar evento", err);
         setError("Error al cargar el evento");
       } finally {
         setLoading(false);
@@ -148,7 +143,7 @@ export default function TeamEventPage({ params }: PageProps) {
         const data = await res.json();
         setMiembros(data);
       } catch (err) {
-        console.error("Error al cargar miembros", err);
+        // Error al cargar miembros
       }
     };
 
@@ -156,8 +151,6 @@ export default function TeamEventPage({ params }: PageProps) {
       try {
         const res = await fetch(`/api/social/miembros/${event._id}`);
         const data = await res.json();
-
-        console.log("que japi 2", data);
 
         const miMiembro = data.find(
           (m: any) => m.usuario_id?._id === session?.user?.id
@@ -173,7 +166,7 @@ export default function TeamEventPage({ params }: PageProps) {
           setYaUnido("si");
         }
       } catch (err) {
-        console.error("Error en checkUnido:", err);
+        // Error en checkUnido
       }
     };
 
@@ -219,7 +212,7 @@ export default function TeamEventPage({ params }: PageProps) {
       const data = await res.json();
       setFavorito(data.favorito);
     } catch (err) {
-      console.error("Error al verificar favorito:", err);
+      // Error al verificar favorito
     }
   };
 
@@ -244,7 +237,7 @@ export default function TeamEventPage({ params }: PageProps) {
           : "Academia eliminada de favoritos"
       );
     } catch (err) {
-      console.error("Error al hacer toggle de favorito:", err);
+      // Error al hacer toggle de favorito
     }
   };
 
@@ -366,11 +359,10 @@ export default function TeamEventPage({ params }: PageProps) {
             navigator.clipboard
               .writeText(window.location.href)
               .then(() => {
-                // alert("¡Link copiado al portapapeles!");
                 toast.success("¡Link copiado al portapapeles!");
               })
               .catch((err) => {
-                console.error("Error al copiar el link:", err);
+                // Error al copiar el link
               });
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"

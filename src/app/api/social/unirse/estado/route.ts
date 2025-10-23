@@ -68,7 +68,7 @@ export async function GET() {
 
     return NextResponse.json({ salidas });
   } catch (error) {
-    console.error(error);
+
     return NextResponse.json(
       { message: "Error al obtener salidas" },
       { status: 500 }

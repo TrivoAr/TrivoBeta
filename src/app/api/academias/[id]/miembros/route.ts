@@ -41,13 +41,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    console.log("[ACADEMIA-MIEMBROS] Iniciando GET con academiaId:", params.id);
+
     await connectDB();
 
     const { id } = params;
 
     if (!id) {
-      console.error("[ACADEMIA-MIEMBROS] ID no proporcionado");
+
       return NextResponse.json(
         { message: "ID no proporcionado" },
         { status: 400 }
@@ -55,17 +55,12 @@ export async function GET(
     }
 
     // Buscar los miembros de la academia (tanto aceptados como pendientes)
-    console.log("[ACADEMIA-MIEMBROS] Buscando miembros de academia:", id);
+
     const miembrosAcademia = await UsuarioAcademia.find({
       academia_id: id,
     })
       .populate("user_id") // Incluye información del usuario
       .lean();
-
-    console.log(
-      "[ACADEMIA-MIEMBROS] Miembros encontrados:",
-      miembrosAcademia.length
-    );
 
     // Buscar pagos para estos miembros si tienen pago_id
     const pagoIds = miembrosAcademia
@@ -79,12 +74,9 @@ export async function GET(
         pagos.forEach((pago) => {
           pagosMap.set(String(pago._id), pago);
         });
-        console.log("[ACADEMIA-MIEMBROS] Pagos encontrados:", pagos.length);
+
       } catch (pagoError) {
-        console.warn(
-          "[ACADEMIA-MIEMBROS] Error al buscar pagos:",
-          pagoError.message
-        );
+
         // Continuar sin datos de pago si hay error
       }
     }
@@ -93,7 +85,7 @@ export async function GET(
     /*
     // Mapear IDs de los usuarios para buscar sus grupos, pero filtrar por esta academia
     const userIds = miembrosAcademia.map((miembro) => {
-      console.log("[ACADEMIA-MIEMBROS] Procesando miembro:", miembro._id, "usuario:", miembro.user_id?._id || "SIN USER_ID");
+
       return miembro.user_id?._id;
     }).filter(Boolean);
 
@@ -113,7 +105,7 @@ export async function GET(
       miembrosAcademia.map(async (miembro) => {
         // Validar que el usuario existe y tiene los campos necesarios
         if (!miembro.user_id) {
-          console.error("Miembro sin user_id:", miembro._id);
+
           return null;
         }
 
@@ -158,18 +150,10 @@ export async function GET(
     // Filtrar elementos null
     const miembrosValidados = miembrosConGrupos.filter(Boolean);
 
-    console.log(
-      "[ACADEMIA-MIEMBROS] Enviando respuesta con",
-      miembrosValidados.length,
-      "miembros procesados"
-    );
     return NextResponse.json({ miembros: miembrosValidados }, { status: 200 });
   } catch (error) {
-    console.error(
-      "[ACADEMIA-MIEMBROS] Error al obtener los miembros y sus grupos:",
-      error
-    );
-    console.error("[ACADEMIA-MIEMBROS] Stack trace:", error.stack);
+
+
     return NextResponse.json(
       {
         message: "Hubo un error al obtener los miembros y sus grupos",
@@ -225,7 +209,7 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al asignar grupo:", error);
+
     return NextResponse.json(
       { message: "Error al asignar grupo", error },
       { status: 500 }
@@ -240,8 +224,6 @@ export async function DELETE(
 ) {
   const url = new URL(req.url);
   const user_id = url.searchParams.get("user_id");
-
-  console.log("🔍 Eliminando usuario con ID:", user_id);
 
   if (!user_id) {
     return NextResponse.json(
@@ -274,9 +256,7 @@ export async function DELETE(
     });
 
     if (eliminarUsuarioGrupo.deletedCount === 0) {
-      console.log(
-        `El usuario ${user_id} no tiene grupo asignado o no se encontró.`
-      );
+
     }
 
     return NextResponse.json(
@@ -284,7 +264,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al eliminar usuario:", error);
+
     return NextResponse.json(
       { message: "Error al eliminar el usuario", error },
       { status: 500 }

@@ -137,7 +137,7 @@ export class InterceptorSystem {
       try {
         return await interceptor.interceptor(context, next);
       } catch (error) {
-        console.error(`Interceptor ${interceptor.name} failed:`, error);
+        // Interceptor failed
         throw error;
       }
     };
@@ -240,7 +240,7 @@ export const BuiltInInterceptors = {
           };
         }
       } catch (error) {
-        console.warn("Authentication interceptor failed:", error);
+        // Authentication interceptor failed
       }
       return next();
     },
@@ -256,9 +256,7 @@ export const BuiltInInterceptors = {
     enabled: true,
     async interceptor(context, next) {
       const { request } = context;
-      console.log(
-        `[${new Date().toISOString()}] ${request.method} ${request.url}`
-      );
+      // Request logged
 
       context.metadata.requestLogged = true;
       context.metadata.method = request.method;
@@ -286,7 +284,7 @@ export const BuiltInInterceptors = {
         result.response.headers.set("X-Response-Time", `${duration}ms`);
       }
 
-      console.log(`Request completed in ${duration}ms`);
+      // Request completed
       return result;
     },
   }),
@@ -303,7 +301,7 @@ export const BuiltInInterceptors = {
       try {
         return await next();
       } catch (error) {
-        console.error("Request error:", error);
+        // Request error
 
         context.error = error as Error;
         context.metadata.hasError = true;

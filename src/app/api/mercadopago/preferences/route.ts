@@ -10,15 +10,8 @@ import SalidaSocial from "@/models/salidaSocial";
 export async function POST(request: NextRequest) {
   try {
     // Debug environment variables
-    console.log("Environment check:");
-    console.log(
-      "MP_ACCESS_TOKEN:",
-      process.env.MP_ACCESS_TOKEN ? "Set ✓" : "Not set ✗"
-    );
-    console.log(
-      "NEXTAUTH_URL:",
-      process.env.NEXTAUTH_URL ? "Set ✓" : "Not set ✗"
-    );
+
+
 
     if (!process.env.MP_ACCESS_TOKEN) {
       return NextResponse.json(
@@ -83,7 +76,7 @@ export async function POST(request: NextRequest) {
         .replace(",", ".")
     );
     if (isNaN(precio) || precio <= 0) {
-      console.error("Precio inválido:", salida.precio, "Convertido a:", precio);
+
       return NextResponse.json(
         {
           error: "Precio inválido",
@@ -145,14 +138,7 @@ export async function POST(request: NextRequest) {
       ).toISOString(),
     };
 
-    console.log(
-      "Creating preference with data:",
-      JSON.stringify(preferenceData, null, 2)
-    );
-
     const response = await preference.create({ body: preferenceData });
-
-    console.log("MercadoPago preference created successfully:", response.id);
 
     return NextResponse.json({
       preferenceId: response.id,
@@ -160,14 +146,8 @@ export async function POST(request: NextRequest) {
       sandboxInitPoint: response.sandbox_init_point,
     });
   } catch (error: any) {
-    console.error("Error creando preferencia MercadoPago:", error);
-
     // Si es un error de MercadoPago, devolver más información
     if (error?.response?.data) {
-      console.error(
-        "MercadoPago API Error:",
-        JSON.stringify(error.response.data, null, 2)
-      );
       return NextResponse.json(
         {
           error: "Error al procesar el pago",
@@ -181,7 +161,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (error instanceof Error) {
-      console.error("Error details:", error.message);
+
       return NextResponse.json(
         {
           error: "Error al procesar el pago",

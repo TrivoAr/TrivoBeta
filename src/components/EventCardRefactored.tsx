@@ -83,7 +83,6 @@ export default function EventCardRefactored({
   } = useFavorites("sociales", event._id, {
     showLoginModal: loginModal.open,
     onFavoriteChange: (isFav, itemId) => {
-      console.log(`Event ${itemId} favorite status changed to:`, isFav);
     },
   });
 

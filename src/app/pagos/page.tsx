@@ -20,8 +20,6 @@ const Mp = () => {
       setNombreGrupo(storedNombreGrupo);
       setMonto(storedMonto);
       setFecha(storedFecha);
-    } else {
-      console.error("Faltan datos de pago");
     }
   }, []);
 
@@ -44,11 +42,6 @@ const Mp = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(
-          "Error en el backend:",
-          errorData.error,
-          errorData.details
-        );
         alert(
           `Hubo un problema al procesar el pago: ${errorData.error}\nDetalles: ${errorData.details}`
         );
@@ -62,7 +55,6 @@ const Mp = () => {
         alert("No se pudo crear la preferencia de pago.");
       }
     } catch (error) {
-      console.error("Error en el pago:", error);
       alert(`Hubo un problema al procesar el pago. Detalles: ${error.message}`);
     }
   };

@@ -178,7 +178,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         setSearchResults(results.slice(0, 5)); // Máximo 5 resultados
       }
     } catch (error) {
-      console.error("Error searching locations:", error);
     } finally {
       setIsSearching(false);
     }

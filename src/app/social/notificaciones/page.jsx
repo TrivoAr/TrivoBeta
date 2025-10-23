@@ -23,7 +23,7 @@ const NotificacionesPage = () => {
         );
         setNotificaciones(res.data);
       } catch (err) {
-        console.error("Error al cargar notificaciones", err);
+        // Error loading notifications
       } finally {
         setLoading(false);
       }
@@ -39,11 +39,9 @@ const NotificacionesPage = () => {
         prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       );
     } catch (error) {
-      console.error("Error marcando como leída", error);
+      // Error marking as read
     }
   };
-
-  console.log("Notificaciones:", notificaciones);
 
   return (
     <div className="p-4 max-w-xl mx-auto">

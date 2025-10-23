@@ -304,6 +304,10 @@ export default function EventPage({ params }: PageProps) {
     }
     if (!profile?.dni || !profile?.telnumber) {
       toast.error("Completa tu perfil con DNI y teléfono");
+      // Guardar la URL actual para volver después de completar el perfil
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("returnUrl", window.location.pathname);
+      }
       router.push("/dashboard/profile/editar");
       return;
     }
@@ -507,7 +511,7 @@ export default function EventPage({ params }: PageProps) {
               navigator.clipboard
                 .writeText(url)
                 .then(() => toast.success("¡Link copiado al portapapeles!"))
-                .catch((err) => console.error("Error al copiar el link:", err));
+                .catch((err) => {});
             }
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"

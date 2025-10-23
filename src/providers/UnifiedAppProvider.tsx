@@ -39,9 +39,6 @@ const createDefaultQueryClient = () =>
       },
       mutations: {
         retry: 1,
-        onError: (error) => {
-          console.error("Mutation error:", error);
-        },
       },
     },
   });
@@ -157,7 +154,6 @@ class GlobalErrorBoundary extends React.Component<
 
     // Log error to monitoring service in production
     if (process.env.NODE_ENV === "production") {
-      console.error("Global Error Boundary:", error, errorInfo);
       // Here you would send to error tracking service like Sentry
     }
   }

@@ -17,7 +17,6 @@ export async function GET(
   try {
     const repository = new SalidaSocialRepository();
     const { id } = params;
-    console.log("ID recibido:", id);
 
     const salida = await repository.findWithPopulatedData(id);
 
@@ -62,7 +61,6 @@ export async function PATCH(
 
     return NextResponse.json(actualizada, { status: 200 });
   } catch (error) {
-    console.error("[PATCH_SALIDA] Error:", error);
 
     if (error instanceof NotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });
@@ -99,7 +97,6 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Salida eliminada" }, { status: 200 });
   } catch (error) {
-    console.error("[DELETE_SALIDA] Error:", error);
 
     if (error instanceof NotFoundError) {
       return NextResponse.json({ message: error.message }, { status: 404 });

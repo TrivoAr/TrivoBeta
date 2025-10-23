@@ -132,7 +132,7 @@ export default function EditarTeamSalida({
           setMarkerPos(defaultCoords);
         }
       } catch (err) {
-        console.error("Error cargando datos:", err);
+        // Error cargando datos
       }
     };
 
@@ -171,7 +171,7 @@ export default function EditarTeamSalida({
       const data = await res.json();
       setSuggestions(data);
     } catch (err) {
-      console.error("Error buscando sugerencias:", err);
+      // Error buscando sugerencias
     }
   };
 
@@ -326,7 +326,6 @@ export default function EditarTeamSalida({
             `📍 Ubicación detectada: ${locationData.province}, ${locationData.locality}`
           );
         } catch (error) {
-          console.error("Error detectando ubicación:", error);
           toast.dismiss("gps-search");
           toast.error(
             "Error al detectar ubicación específica, pero coordenadas obtenidas"
@@ -386,7 +385,6 @@ export default function EditarTeamSalida({
       toast.success("Social team actualizado");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error actualizando:", error);
       toast.error("Error al actualizar");
     } finally {
       setIsSubmitting(false);
@@ -424,7 +422,6 @@ export default function EditarTeamSalida({
       toast.success("¡Salida eliminada con éxito!", { id: toastId });
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error eliminando salida:", error);
       toast.error("Hubo un problema al eliminar la salida.", { id: toastId });
     }
   };
@@ -435,7 +432,6 @@ export default function EditarTeamSalida({
       const data = await res.json();
       return data.display_name as string;
     } catch (error) {
-      console.error("Error al obtener dirección inversa:", error);
       return "";
     }
   };

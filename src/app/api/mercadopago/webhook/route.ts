@@ -30,9 +30,7 @@ if (!admin.apps.length) {
         process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       );
       credential = admin.credential.cert(serviceAccount);
-      console.log(
-        "[MP_WEBHOOK] Firebase Admin initialized with service account"
-      );
+
     } else if (
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
@@ -43,20 +41,16 @@ if (!admin.apps.length) {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
       });
-      console.log(
-        "[MP_WEBHOOK] Firebase Admin initialized with individual vars"
-      );
+
     } else {
-      console.warn(
-        "[MP_WEBHOOK] Firebase credentials not found - push notifications disabled"
-      );
+
     }
 
     if (credential) {
       admin.initializeApp({ credential });
     }
   } catch (error) {
-    console.error("[MP_WEBHOOK] Error initializing Firebase Admin:", error);
+
   }
 }
 
@@ -81,8 +75,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    console.log("Webhook MercadoPago recibido:", body);
-
     // Verificar que es una notificación de pago
     if (body.type !== "payment") {
       return NextResponse.json({
@@ -102,10 +94,8 @@ export async function POST(request: NextRequest) {
     // Obtener información del pago desde MercadoPago
     const paymentData = await payment.get({ id: paymentId });
 
-    console.log("Datos del pago:", paymentData);
-
     if (!paymentData.external_reference) {
-      console.log("No hay external_reference en el pago");
+
       return NextResponse.json({ message: "Sin external_reference" });
     }
 
@@ -153,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: "Webhook procesado correctamente" });
   } catch (error) {
-    console.error("Error procesando webhook MercadoPago:", error);
+
     return NextResponse.json(
       {
         error: "Error interno del servidor",
@@ -207,9 +197,6 @@ async function procesarPagoAprobado(
     }
 
     await miembro.save();
-    console.log(
-      `Pago de MercadoPago aprobado automáticamente para salida ${salidaId}, usuario ${userId}`
-    );
 
     // Generar y enviar QR de acceso por email
     await enviarQRAcceso(salidaId, userId, pagoId);
@@ -217,7 +204,7 @@ async function procesarPagoAprobado(
     // Notificar al creador de la salida
     await notificarCreadorPagoAprobado(salidaId, userId, "mercadopago");
   } catch (error) {
-    console.error("Error procesando pago aprobado:", error);
+
   }
 }
 
@@ -228,9 +215,6 @@ async function enviarQRAcceso(
   pagoId: string
 ) {
   try {
-    console.log(
-      `[MP_WEBHOOK] Generando QR para salida ${salidaId}, usuario ${userId}`
-    );
 
     // Buscar o crear ticket (idempotente)
     let ticket = await Ticket.findOne({
@@ -251,17 +235,13 @@ async function enviarQRAcceso(
         status: "issued",
         issuedAt: new Date(),
       });
-      console.log(`[MP_WEBHOOK] Nuevo ticket creado: ${ticket.code}`);
+
     }
 
     // Enviar email SOLO si aún no fue enviado
     if (!ticket.emailSentAt) {
       const redeemUrl = `${process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL}/r/${ticket.code}`;
       const dataUrl = await qrPngDataUrl(redeemUrl);
-
-      console.log(
-        `[MP_WEBHOOK] Enviando QR por email para ticket: ${ticket.code}`
-      );
 
       const emailId = await sendTicketEmail({
         userId: String(userId),
@@ -275,14 +255,11 @@ async function enviarQRAcceso(
       (ticket as any).emailId = emailId;
       await ticket.save();
 
-      console.log(`[MP_WEBHOOK] QR enviado exitosamente. Email ID: ${emailId}`);
     } else {
-      console.log(
-        `[MP_WEBHOOK] QR ya había sido enviado para ticket: ${ticket.code}`
-      );
+
     }
   } catch (error) {
-    console.error("[MP_WEBHOOK] Error enviando QR de acceso:", error);
+
   }
 }
 
@@ -298,9 +275,7 @@ async function notificarCreadorPagoAprobado(
     const usuario = await User.findById(userId);
 
     if (!salida || !usuario) {
-      console.error(
-        "[MP_WEBHOOK] No se encontró la salida o el usuario para notificar"
-      );
+
       return;
     }
 
@@ -324,9 +299,6 @@ async function notificarCreadorPagoAprobado(
       message: mensaje,
     });
 
-    console.log(
-      `[MP_WEBHOOK] Notificación DB creada para creador (${salida.creador_id})`
-    );
 
     // Enviar notificación en tiempo real via Socket.IO
     await enviarNotificacionSocketIO(salida.creador_id, notificacion);
@@ -339,48 +311,15 @@ async function notificarCreadorPagoAprobado(
       metodoPago
     );
   } catch (error) {
-    console.error(
-      "[MP_WEBHOOK] Error enviando notificación al creador:",
-      error
-    );
+
   }
 }
 
-// Función para enviar notificación via Socket.IO
+// Función legacy mantenida por compatibilidad
+// Las notificaciones ahora se recuperan automáticamente por polling
 async function enviarNotificacionSocketIO(userId: string, notificacion: any) {
-  try {
-    // Acceder al servidor Socket.IO global
-    const socketServer = (global as any).socketServer;
-
-    if (!socketServer || !socketServer.emitToUser) {
-      console.log(
-        "[MP_WEBHOOK] Socket.IO server no disponible - saltando notificación en tiempo real"
-      );
-      return;
-    }
-
-    // Poblar la información del usuario que envió la notificación
-    const populatedNotification = await Notificacion.findById(notificacion._id)
-      .populate("fromUserId", "firstname lastname")
-      .lean();
-
-    if (populatedNotification) {
-      // Emitir notificación en tiempo real al usuario específico
-      await socketServer.emitToUser(
-        userId,
-        "notification:new",
-        populatedNotification
-      );
-      console.log(
-        `[MP_WEBHOOK] Notificación enviada via Socket.IO a usuario ${userId}`
-      );
-    }
-  } catch (error) {
-    console.error(
-      "[MP_WEBHOOK] Error enviando notificación via Socket.IO:",
-      error
-    );
-  }
+  // No se requiere acción - el sistema de polling recuperará la notificación automáticamente
+  return;
 }
 
 // Función para enviar push notification al creador
@@ -393,9 +332,7 @@ async function enviarPushNotificationCreador(
   try {
     // Verificar si Firebase Admin está disponible
     if (!admin.apps.length) {
-      console.log(
-        "[MP_WEBHOOK] Firebase Admin no disponible - saltando push notification"
-      );
+
       return;
     }
 
@@ -403,9 +340,7 @@ async function enviarPushNotificationCreador(
     const fcmToken = await FCMToken.findOne({ user_id: creadorId });
 
     if (!fcmToken) {
-      console.log(
-        `[MP_WEBHOOK] No hay token FCM para el creador ${creadorId} - saltando push notification`
-      );
+
       return;
     }
 
@@ -433,11 +368,8 @@ async function enviarPushNotificationCreador(
 
     // Enviar push notification
     const response = await admin.messaging().send(message);
-    console.log(
-      `[MP_WEBHOOK] Push notification enviada al creador ${creadorId}: ${response}`
-    );
+
   } catch (fcmError: any) {
-    console.error("[MP_WEBHOOK] Error enviando push notification:", fcmError);
 
     // Si el token es inválido, eliminarlo de la DB
     if (
@@ -446,11 +378,9 @@ async function enviarPushNotificationCreador(
     ) {
       try {
         await FCMToken.deleteOne({ user_id: creadorId });
-        console.log(
-          `[MP_WEBHOOK] Token FCM inválido eliminado para usuario ${creadorId}`
-        );
+
       } catch (dbError) {
-        console.error("[MP_WEBHOOK] Error eliminando token inválido:", dbError);
+
       }
     }
   }

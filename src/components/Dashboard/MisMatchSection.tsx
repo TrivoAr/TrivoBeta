@@ -115,7 +115,6 @@ export const MisMatchSection: React.FC = () => {
       setSalidas(salidasData);
       setTeamSocial(teamsData);
     } catch (error) {
-      console.error("Error loading match data:", error);
       toast.error("Error al cargar datos de matches");
     } finally {
       setIsLoading(false);

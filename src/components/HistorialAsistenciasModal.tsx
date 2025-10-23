@@ -104,7 +104,6 @@ export default function HistorialAsistenciasModal({
       );
       setImagenesUsuarios(imagenesMap);
     } catch (error: any) {
-      console.error("Error cargando historial:", error);
       toast.error(error.response?.data?.error || "Error al cargar historial");
     } finally {
       setLoading(false);

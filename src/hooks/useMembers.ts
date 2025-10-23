@@ -149,8 +149,6 @@ export function useMembers(
       if (!onError) {
         toast.error(errorMessage);
       }
-
-      console.error("[useMembers] Load failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +175,6 @@ export function useMembers(
       const errorMessage =
         err instanceof Error ? err.message : "Error al actualizar miembros";
       setError(errorMessage);
-      console.warn("[useMembers] Refresh failed:", err);
     }
   }, [fetchMembers, onMemberUpdate]);
 
@@ -298,7 +295,6 @@ export function useMemberManagement(
         const errorMessage =
           err instanceof Error ? err.message : "Error al actualizar miembro";
         toast.error(errorMessage);
-        console.error("[useMemberManagement] Update failed:", err);
         return false;
       } finally {
         setIsUpdating(null);
@@ -347,7 +343,6 @@ export function useMemberManagement(
         }
       } catch (err) {
         toast.error("Error en actualización masiva");
-        console.error("[useMemberManagement] Bulk update failed:", err);
       } finally {
         setIsUpdating(null);
       }

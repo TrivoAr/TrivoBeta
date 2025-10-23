@@ -54,10 +54,6 @@ export default function ReseñasPage() {
                 },
               };
             } catch (error) {
-              console.error(
-                `Error al obtener la imagen del usuario ${review.author._id}:`,
-                error
-              );
               return {
                 ...review,
                 author: {
@@ -80,7 +76,6 @@ export default function ReseñasPage() {
         setAverageRating(res.data.average);
         setFilteredReviews(sorted);
       } catch (error) {
-        console.error("Error al cargar reseñas:", error);
       } finally {
         setLoading(false);
       }

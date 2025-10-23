@@ -36,10 +36,7 @@ export async function GET() {
             user._id.toString()
           );
         } catch (error) {
-          console.warn(
-            "Error al obtener imagen, usando avatar fallback:",
-            error
-          );
+
           imagen = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             `${user.firstname || "User"}`
           )}&background=random&color=fff&size=128`;
@@ -101,7 +98,7 @@ export async function GET() {
 
     return NextResponse.json(enriched, { status: 200 });
   } catch (error) {
-    console.error("❌ Error al obtener notificaciones:", error);
+
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }

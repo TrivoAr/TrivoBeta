@@ -23,21 +23,10 @@ export async function sendTicketEmail({
   qrDataUrl: string;
 }): Promise<string> {
   try {
-    console.log(
-      "[SEND_TICKET_EMAIL] Starting email process for user:",
-      userId,
-      "salida:",
-      salidaId
-    );
-
     // Check environment variables
     if (!process.env.RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY environment variable is not set");
     }
-    console.log(
-      "[SEND_TICKET_EMAIL] Resend API key is present:",
-      !!process.env.RESEND_API_KEY
-    );
 
      const user = await User.findById(userId).lean();
      const salida = await SalidaSocial.findById(salidaId).lean();
@@ -49,13 +38,6 @@ export async function sendTicketEmail({
     if (!user?.email) throw new Error(`El usuario ${userId} no tiene email`);
 
     if (!salida || Array.isArray(salida) || !salida.nombre) throw new Error(`Salida no encontrada: ${salidaId}`);
-
-    console.log(
-      "[SEND_TICKET_EMAIL] User found:",
-      user.email,
-      "Event:",
-      salida.nombre
-    );
 
     const titulo = salida?.nombre ?? "la salida";
     const qrBase64 = dataUrlToBase64(qrDataUrl);
@@ -73,7 +55,6 @@ export async function sendTicketEmail({
           : undefined,
     };
 
-    console.log("[SEND_TICKET_EMAIL] Generating PDF with info:", ticketInfo);
     const pdfBase64 = await buildQrPdf(
       `QR de acceso — ${titulo}`,
       qrBase64,
@@ -131,20 +112,6 @@ export async function sendTicketEmail({
     </div>
   </div>`;
 
-    console.log("[SEND_TICKET_EMAIL] Sending email to:", user.email);
-    console.log(
-      "[SEND_TICKET_EMAIL] PDF size:",
-      pdfBase64.length,
-      "characters"
-    );
-    console.log("[SEND_TICKET_EMAIL] From address:", process.env.RESEND_FROM);
-
-    // Debug: verificar si hay restricciones por dominio
-    console.log(
-      "[SEND_TICKET_EMAIL] User email domain:",
-      user.email.split("@")[1]
-    );
-
      const emailResponse = await emailService.sendEmail({
     to: user.email,
     subject: `Tu QR para ${titulo}`,
@@ -166,7 +133,6 @@ export async function sendTicketEmail({
 
   return emailResponse.id ?? "Email sent";
   } catch (error) {
-    console.error("[SEND_TICKET_EMAIL] Error sending ticket email:", error);
     throw error;
   }
 }

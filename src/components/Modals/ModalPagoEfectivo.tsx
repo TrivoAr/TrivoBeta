@@ -6,7 +6,6 @@ export default function PaymentModal({ alumnos, grupos, onClose }) {
   const [selectedMes, setSelectedMes] = useState("");
 
   const handleConfirm = () => {
-    console.log(`Alumno: ${selectedAlumno}, Mes: ${selectedMes}`);
     onClose();
   };
 

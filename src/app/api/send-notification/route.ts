@@ -39,10 +39,10 @@ export async function POST(req: Request) {
       } catch (err: any) {
         // Si la suscripción expiró, eliminarla
         if (err.statusCode === 410 || err.statusCode === 404) {
-          console.warn("🗑️ Eliminando suscripción expirada:", sub.endpoint);
+
           await Subscription.deleteOne({ endpoint: sub.endpoint });
         } else {
-          console.error("❌ Error enviando push:", err);
+
         }
       }
     });
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error al enviar notificaciones:", error);
+
     return NextResponse.json(
       { error: "Error al enviar notificaciones" },
       { status: 500 }

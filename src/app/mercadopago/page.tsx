@@ -25,11 +25,8 @@ const Mp = () => {
       if (response.ok) {
         setTokenActual(data.token || "No disponible");
         setHasCredentials(data.hasCredentials || false); // Guardar estado de credenciales
-      } else {
-        console.error("Error al obtener el token:", data.message);
       }
     } catch (error) {
-      console.error("Error en la petición:", error);
     }
   }
 

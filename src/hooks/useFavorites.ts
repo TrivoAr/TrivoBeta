@@ -69,7 +69,6 @@ export function useFavorites(
         setIsFavorite(data.favorito || false);
       }
     } catch (err) {
-      console.warn("[useFavorites] Failed to check favorite status:", err);
       // Silently fail - favorite check is not critical
     }
   }, [session?.user?.id, itemType, itemId]);
@@ -119,7 +118,6 @@ export function useFavorites(
       const message = "Hubo un error al actualizar favoritos.";
       toast.error(message);
       setError(message);
-      console.error("[useFavorites] Toggle failed:", err);
       return isFavorite; // Return current state on error
     } finally {
       setIsLoading(false);
@@ -209,10 +207,6 @@ export function useMultipleFavorites(
           }
           return { itemId, isFavorite: false };
         } catch (err) {
-          console.warn(
-            `[useMultipleFavorites] Failed to check favorite for ${itemId}:`,
-            err
-          );
           return { itemId, isFavorite: false };
         }
       });
@@ -230,7 +224,6 @@ export function useMultipleFavorites(
     } catch (err) {
       const message = "Error al verificar favoritos";
       setError(message);
-      console.error("[useMultipleFavorites] Check failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +268,6 @@ export function useMultipleFavorites(
         const message = "Error al actualizar favoritos";
         toast.error(message);
         setError(message);
-        console.error("[useMultipleFavorites] Toggle failed:", err);
         return favorites[itemId] || false;
       }
     },

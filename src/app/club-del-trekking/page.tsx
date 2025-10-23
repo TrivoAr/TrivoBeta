@@ -151,7 +151,7 @@ export default function ClubDelTrekking() {
         setEvents(trekkingEvents);
         setFilteredEvents(trekkingEvents);
       } catch (error) {
-        console.error("Error al obtener eventos de trekking:", error);
+        // Error al obtener eventos de trekking
       } finally {
         setLoading(false);
       }
@@ -213,13 +213,11 @@ export default function ClubDelTrekking() {
   }, [events, searchTerm, filters]);
 
   const handleApplyFilters = (newFilters: FilterValues) => {
-    console.log("Applying filters:", newFilters);
     setFilters(newFilters);
   };
 
   const getActiveFilterCount = () => {
     const count = Object.values(filters).filter((value) => value !== "").length;
-    console.log("Active filter count:", count, "Filters:", filters);
     return count;
   };
 
@@ -564,10 +562,8 @@ export default function ClubDelTrekking() {
                   <EventCard
                     key={event._id}
                     event={event}
-                    onJoin={(e) => console.log("Unido a:", e.title)}
-                    onMap={(coords) =>
-                      console.log("Abrir mapa en:", coords.lat, coords.lng)
-                    }
+                    onJoin={(e) => {}}
+                    onMap={(coords) => {}}
                   />
                 ))}
               </div>

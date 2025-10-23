@@ -280,10 +280,7 @@ export abstract class BaseRepository<T extends Document> {
    * Handle and standardize errors
    */
   protected handleError(error: any, operation: string): BaseRepositoryError {
-    console.error(
-      `[${this.resourceName.toUpperCase()}_REPOSITORY] Error al ${operation}:`,
-      error
-    );
+    // Error handling in repository
 
     if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
       return error;

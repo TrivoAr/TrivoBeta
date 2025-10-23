@@ -74,8 +74,6 @@ export const mercadopagoService = {
       );
     }
 
-    console.log(`[MERCADOPAGO_SERVICE] Creando preapproval con monto: ${montoNumerico} (tipo: ${typeof montoNumerico})`);
-
     // Obtener credenciales centralizadas de la plataforma
     const credentials = this.obtenerCredencialesPlataforma();
 
@@ -117,7 +115,6 @@ export const mercadopagoService = {
         data: response,
       };
     } catch (error: any) {
-      console.error("Error creando preapproval en Mercado Pago:", error);
       throw new Error(
         `Error al crear suscripción en Mercado Pago: ${error.message}`
       );
@@ -135,7 +132,6 @@ export const mercadopagoService = {
       const response = await preApprovalClient.get({ id: preapprovalId });
       return response;
     } catch (error: any) {
-      console.error("Error obteniendo preapproval:", error);
       throw new Error(`Error al obtener suscripción: ${error.message}`);
     }
   },
@@ -157,7 +153,6 @@ export const mercadopagoService = {
       });
       return response;
     } catch (error: any) {
-      console.error("Error actualizando preapproval:", error);
       throw new Error(`Error al actualizar suscripción: ${error.message}`);
     }
   },

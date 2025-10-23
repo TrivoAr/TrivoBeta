@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error verificando suscripción:", error);
+
     return NextResponse.json(
       {
         error: "Error verificando suscripción",

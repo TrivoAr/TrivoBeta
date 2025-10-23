@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     if (error instanceof mongoose.Error.ValidationError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
-    console.error("Error al crear la academia:", error);
+
     return NextResponse.json(
       { message: "Error interno del servidor" },
       { status: 500 }
@@ -120,7 +120,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(academias, { status: 200 });
   } catch (error) {
-    console.error("Error al obtener academias:", error);
+
     return NextResponse.json(
       { message: "Error al obtener las academias" },
       { status: 500 }

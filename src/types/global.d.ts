@@ -1,14 +1,6 @@
-import { SocketServer } from "@/libs/socketServer";
-
 declare global {
-  // eslint-disable-next-line no-var
-  var socketServer: SocketServer | undefined;
-
-  namespace NodeJS {
-    interface Global {
-      socketServer?: SocketServer;
-    }
-  }
+  // Global type declarations for the application
+  // Socket.IO has been removed - using polling for notifications
 }
 
 export {};

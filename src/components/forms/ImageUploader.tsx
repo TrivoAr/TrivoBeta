@@ -324,7 +324,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
 
       if (errors.length > 0) {
-        console.warn("Errores de validación:", errors);
         // Aquí podrías mostrar los errores al usuario
       }
 

@@ -30,7 +30,7 @@ export async function GET(
 
     return NextResponse.json(bar, { status: 200 });
   } catch (error) {
-    console.error("[GET_BAR_BY_ID_ERROR]", error);
+
     return NextResponse.json(
       { error: "Error al obtener bar" },
       { status: 500 }
@@ -95,7 +95,7 @@ export async function PATCH(
 
     return NextResponse.json(barActualizado, { status: 200 });
   } catch (error) {
-    console.error("[UPDATE_BAR_ERROR]", error);
+
     return NextResponse.json(
       { error: "Error al actualizar bar" },
       { status: 500 }
@@ -146,7 +146,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("[DELETE_BAR_ERROR]", error);
+
     return NextResponse.json(
       { error: "Error al eliminar bar" },
       { status: 500 }

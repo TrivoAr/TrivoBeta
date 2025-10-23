@@ -44,7 +44,6 @@ const EntrenamientoPage = () => {
         setEntrenamientos(response.data);
       }
     } catch (error) {
-      console.error("Error al cargar los entrenamientos:", error);
       setEntrenamientos([]);
     }
   };
@@ -58,7 +57,6 @@ const EntrenamientoPage = () => {
         );
         setProfileImage(imageUrl);
       } catch (error) {
-        console.error("Error al obtener la imagen del perfil:", error);
         setProfileImage(
           "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg"
         );
@@ -77,7 +75,7 @@ const EntrenamientoPage = () => {
         )
       );
     } catch (error) {
-      console.error("Error al actualizar el estado del entrenamiento:", error);
+      // Error al actualizar el estado del entrenamiento
     }
   };
 

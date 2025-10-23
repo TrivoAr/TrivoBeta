@@ -12,7 +12,7 @@ export const getGroupImage = async (
     const downloadUrl = await getDownloadURL(fileRef);
     return downloadUrl;
   } catch (error) {
-    console.error("Error al obtener la imagen del grupo:", error);
+
     throw error;
   }
 };

@@ -31,7 +31,7 @@ export async function PUT(
 
     return NextResponse.json(academia, { status: 200 });
   } catch (error) {
-    console.error("Error al actualizar la academia:", error);
+
     return NextResponse.json(
       { message: "Hubo un error al actualizar la academia", error: error },
       { status: 500 }

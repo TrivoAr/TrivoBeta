@@ -47,7 +47,6 @@ export default function ExportUsuarios({ usuarios }: ExportUsuariosProps) {
 
       toast.success("Archivo Excel generado con éxito");
     } catch (error) {
-      console.error(error);
       toast.error("Error al generar el archivo Excel");
     }
   };

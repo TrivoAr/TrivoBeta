@@ -62,7 +62,6 @@ export default function MercadoPagoCheckout({
       const data = await response.json();
       setPreferenceId(data.preferenceId);
     } catch (error) {
-      console.error("Error:", error);
       toast.error("Error al crear la preferencia de pago");
     } finally {
       setLoading(false);

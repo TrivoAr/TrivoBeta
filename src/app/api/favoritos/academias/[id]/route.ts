@@ -53,7 +53,7 @@ export async function POST(req, { params }) {
 
     return new Response(JSON.stringify({ success: true, favorito }));
   } catch (error) {
-    console.error("Error al actualizar favoritos:", error);
+
     return new Response(JSON.stringify({ message: "Error del servidor" }), {
       status: 500,
     });

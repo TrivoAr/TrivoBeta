@@ -445,7 +445,7 @@ export class NotificationSystem {
         try {
           callback(event);
         } catch (error) {
-          console.error("Event listener error:", error);
+          // Event listener error
         }
       });
     }
@@ -522,7 +522,7 @@ export class NotificationSystem {
         requireInteraction: notification.priority === "critical",
       });
     } catch (error) {
-      console.error("Push notification error:", error);
+      // Push notification error
     }
   }
 
@@ -644,7 +644,7 @@ export class NotificationSystem {
         }),
       });
     } catch (error) {
-      console.error("Push subscription setup error:", error);
+      // Push subscription setup error
     }
   }
 
@@ -701,7 +701,7 @@ export class NotificationSystem {
         }
       });
     } catch (error) {
-      console.error("Service worker registration failed:", error);
+      // Service worker registration failed
     }
   }
 
@@ -730,7 +730,7 @@ export class NotificationSystem {
           const data = JSON.parse(event.data);
           this.emit("realtime:message", data);
         } catch (error) {
-          console.error("WebSocket message parse error:", error);
+          // WebSocket message parse error
         }
       };
 
@@ -740,7 +740,7 @@ export class NotificationSystem {
 
       return true;
     } catch (error) {
-      console.error("WebSocket connection error:", error);
+      // WebSocket connection error
       return false;
     }
   }
@@ -759,7 +759,7 @@ export class NotificationSystem {
           const data = JSON.parse(event.data);
           this.emit("realtime:message", data);
         } catch (error) {
-          console.error("EventSource message parse error:", error);
+          // EventSource message parse error
         }
       };
 
@@ -769,7 +769,7 @@ export class NotificationSystem {
 
       return true;
     } catch (error) {
-      console.error("EventSource connection error:", error);
+      // EventSource connection error
       return false;
     }
   }

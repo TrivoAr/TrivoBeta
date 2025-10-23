@@ -49,7 +49,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching theme flags:", error);
+
     const fallback = await import("../../../../../config/themes.json");
     return NextResponse.json(fallback.default, {
       headers: {
@@ -105,7 +105,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(flags);
   } catch (error) {
-    console.error("Error updating theme flags:", error);
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

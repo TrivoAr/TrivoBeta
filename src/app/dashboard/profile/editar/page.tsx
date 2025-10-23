@@ -21,6 +21,7 @@ function EditProfilePage() {
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [phoneHelper, setPhoneHelper] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -58,6 +59,57 @@ function EditProfilePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Función para formatear el número de teléfono antes de guardar
+  const formatPhoneNumber = (phone: string): string => {
+    // Eliminar todo lo que no sea dígito
+    let cleaned = phone.replace(/\D/g, "");
+
+    // Caso 1: Ya tiene +549 al inicio
+    if (phone.startsWith("+549")) {
+      return phone.replace(/\D/g, "").substring(0, 13); // +549 + 10 dígitos = 13
+    }
+
+    // Caso 2: Tiene 549 al inicio (sin +)
+    if (cleaned.startsWith("549")) {
+      return `+${cleaned.substring(0, 13)}`;
+    }
+
+    // Caso 3: Empieza con 15 (sin código de área)
+    if (cleaned.startsWith("15")) {
+      // Necesitamos el código de área, asumir el más común o pedir al usuario
+      // Por ahora, remover el 15 y agregar +549
+      cleaned = cleaned.substring(2); // Quitar el 15
+      return `+549${cleaned}`;
+    }
+
+    // Caso 4: Número de 10 dígitos sin código de país
+    if (cleaned.length === 10) {
+      return `+549${cleaned}`;
+    }
+
+    // Caso 5: Número de 8 o 9 dígitos (sin 15 y sin código de área completo)
+    if (cleaned.length === 8 || cleaned.length === 9) {
+      return `+549${cleaned}`;
+    }
+
+    // Caso default: agregar +549 al inicio
+    return `+549${cleaned}`;
+  };
+
+  // Handler especial para el campo de teléfono con preview
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, telnumber: value });
+
+    // Mostrar preview del formato que se guardará
+    if (value.trim()) {
+      const formatted = formatPhoneNumber(value);
+      setPhoneHelper(`Se guardará como: ${formatted}`);
+    } else {
+      setPhoneHelper("");
+    }
+  };
+
   const handleSave = async () => {
     const confirmation = confirm("¿Guardar los cambios?");
     if (!confirmation) return;
@@ -65,32 +117,84 @@ function EditProfilePage() {
     try {
       const { firstname, lastname, email, telnumber } = formData;
 
-      const fullTelNumber = telnumber.startsWith("+549")
-        ? telnumber
-        : `+549${telnumber}`;
+      // Validación del lado del cliente
+      if (!firstname?.trim()) {
+        alert("❌ Error: El nombre es requerido");
+        return;
+      }
+      if (!lastname?.trim()) {
+        alert("❌ Error: El apellido es requerido");
+        return;
+      }
+      if (!email?.trim()) {
+        alert("❌ Error: El email es requerido");
+        return;
+      }
+      if (!telnumber?.trim()) {
+        alert("❌ Error: El teléfono es requerido");
+        return;
+      }
+
+      // Formatear el número de teléfono correctamente
+      const formattedPhone = formatPhoneNumber(telnumber);
 
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstname: formData.firstname || "",
-          lastname: formData.lastname || "",
-          telnumber: fullTelNumber,
-          email,
-          dni: formData.dni,
-          instagram: formData.instagram,
-          facebook: formData.facebook,
-          twitter: formData.twitter,
-          bio: formData.bio,
+          firstname: formData.firstname.trim(),
+          lastname: formData.lastname.trim(),
+          telnumber: formattedPhone,
+          email: formData.email.trim(),
+          dni: formData.dni?.trim() || "",
+          instagram: formData.instagram?.trim() || "",
+          facebook: formData.facebook?.trim() || "",
+          twitter: formData.twitter?.trim() || "",
+          bio: formData.bio?.trim() || "",
         }),
       });
 
-      if (!response.ok) throw new Error("Error al actualizar");
+      const data = await response.json();
 
-      alert("Guardado correctamente. Se cerrará la sesión.");
-      signOut({ callbackUrl: "/login" });
-    } catch (error) {
-      alert("Error al guardar los cambios");
+      if (!response.ok) {
+        // Mostrar error detallado del servidor
+        const errorMessage = data.details || data.error || "Error desconocido";
+
+        if (data.missingFields) {
+          alert(`❌ Datos incompletos\n\nFaltan: ${data.missingFields.join(", ")}`);
+        } else if (response.status === 400) {
+          alert(`❌ Error de validación\n\n${errorMessage}`);
+        } else if (response.status === 409) {
+          alert(`❌ Dato duplicado\n\n${errorMessage}`);
+        } else if (response.status === 500) {
+          alert(`❌ Error del servidor\n\n${errorMessage}\n\nPor favor, intenta nuevamente o contacta a soporte.`);
+        } else {
+          alert(`❌ Error ${response.status}\n\n${errorMessage}`);
+        }
+
+        return;
+      }
+
+      // Verificar si hay una URL de retorno guardada
+      const returnUrl = typeof window !== "undefined"
+        ? sessionStorage.getItem("returnUrl")
+        : null;
+
+      // Limpiar la URL de retorno del sessionStorage
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("returnUrl");
+      }
+
+      alert("✅ Perfil actualizado correctamente");
+
+      // Redirigir a la URL guardada o al home
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
+        router.push("/home");
+      }
+    } catch (error: any) {
+      alert(`❌ Error al guardar los cambios\n\n${error.message || "Error de conexión"}`);
     }
   };
 
@@ -128,7 +232,7 @@ function EditProfilePage() {
         onChange={handleImageUpload}
         className="mb-4 text-sm"
       />
-      <label className="block">
+      <label className="block w-full">
         Numero de documento (DNI)
         <input
           type="text"
@@ -136,11 +240,11 @@ function EditProfilePage() {
           value={formData.dni}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Numero de documento"
+          placeholder="Numero de documento (opcional)"
         />
       </label>
       <label className="block w-full">
-        Nombre
+        Nombre <span className="text-red-500">*</span>
         <input
           type="text"
           name="firstname"
@@ -148,10 +252,11 @@ function EditProfilePage() {
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
           placeholder="Nombre"
+          required
         />
       </label>
       <label className="block w-full">
-        Apeliido
+        Apellido <span className="text-red-500">*</span>
         <input
           type="text"
           name="lastname"
@@ -159,30 +264,39 @@ function EditProfilePage() {
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
           placeholder="Apellido"
+          required
         />
       </label>
 
       <label className="block w-full">
-        Numero de Telefono
+        Numero de Telefono <span className="text-red-500">*</span>
         <input
-          type="string"
+          type="tel"
           name="telnumber"
           value={formData.telnumber}
-          onChange={handleChange}
-          className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="3814859697"
+          onChange={handlePhoneChange}
+          className="w-full p-3 rounded-lg border border-gray-300 mb-1"
+          placeholder="Número de teléfono"
+          required
         />
+        {phoneHelper && (
+          <p className="text-xs text-green-600 mb-2 ml-1">✓ {phoneHelper}</p>
+        )}
+        <p className="text-xs text-muted-foreground mb-3 ml-1">
+          Ejemplos: 3814859697, 1534567890, +5493814859697
+        </p>
       </label>
 
       <label className="block w-full">
-        Correo electronico
+        Correo electronico <span className="text-red-500">*</span>
         <input
           type="email"
           name="email"
           value={formData.email}
           onChange={handleChange}
           className="w-full p-3 rounded-lg border border-gray-300 mb-3"
-          placeholder="Correo electrónico"
+          placeholder="correo@ejemplo.com"
+          required
         />
       </label>
       <label className="block w-full">
@@ -206,10 +320,15 @@ function EditProfilePage() {
             value={formData.bio}
             onChange={handleChange}
             placeholder="Dejanos una descripcion de tu trayectoria..."
-            className="w-full p-3 rounded-lg border border-gray-300 mb-6"
+            className="w-full p-3 rounded-lg border border-gray-300 mb-3"
           />
         </label>
       ) : null}
+
+      <div className="w-full text-sm text-muted-foreground mb-4 p-3 border border-border rounded-lg">
+        <p className="font-semibold mb-1">⚠️ Campos requeridos (*)</p>
+        <p>Los campos marcados con asterisco son obligatorios. Asegúrate de completarlos antes de guardar.</p>
+      </div>
 
       <div className="flex gap-3">
         <button

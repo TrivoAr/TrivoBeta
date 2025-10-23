@@ -127,7 +127,6 @@ export default function BuscarPage() {
 
         setAllResults(results);
       } catch (error) {
-        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }

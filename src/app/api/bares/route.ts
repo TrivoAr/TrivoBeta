@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(bares, { status: 200 });
   } catch (error) {
-    console.error("[GET_BARES_ERROR]", error);
+
     return NextResponse.json(
       { error: "Error al obtener bares" },
       { status: 500 }
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(nuevoBar, { status: 201 });
   } catch (error) {
-    console.error("[CREATE_BAR_ERROR]", error);
+
     return NextResponse.json({ error: "Error al crear bar" }, { status: 500 });
   }
 }

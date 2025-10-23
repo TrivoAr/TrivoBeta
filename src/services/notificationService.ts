@@ -1,10 +1,9 @@
 /**
  * Servicio centralizado para envío de notificaciones
- * Maneja la creación de notificaciones en DB y emisión vía Socket.IO
+ * Maneja la creación de notificaciones en DB (recuperadas por polling)
  */
 
 import Notificacion from "@/models/notificacion";
-import { emitNotificationToUser } from "@/libs/socketServer";
 import connectDB from "@/libs/mongodb";
 
 export interface NotificacionData {
@@ -22,17 +21,11 @@ export interface NotificacionData {
 
 export const notificationService = {
   /**
-   * Crea una notificación y la envía via Socket.IO
+   * Crea una notificación en la base de datos
+   * Será recuperada automáticamente por el sistema de polling cada 20 segundos
    */
   async crearYEnviar(data: NotificacionData) {
     try {
-      console.log("[NOTIFICATION_SERVICE] Creando notificación:", {
-        to: data.userId,
-        from: data.fromUserId,
-        type: data.type,
-        message: data.message,
-      });
-
       await connectDB();
 
       // Crear notificación en DB
@@ -50,39 +43,12 @@ export const notificationService = {
         read: false,
       });
 
-      console.log(
-        `[NOTIFICATION_SERVICE] Notificación creada en DB con ID: ${notificacion._id}`
-      );
-
       // Poblar fromUserId para enviar datos completos
       await notificacion.populate("fromUserId", "firstname lastname imagen");
 
-      console.log(
-        `[NOTIFICATION_SERVICE] Intentando enviar via Socket.IO a usuario ${data.userId}...`
-      );
-
-      // Intentar enviar via Socket.IO
-      const enviado = await emitNotificationToUser(
-        data.userId,
-        "notification:new",
-        notificacion.toObject()
-      );
-
-      console.log(
-        `[NOTIFICATION_SERVICE] ${enviado ? "✅ Notificación enviada" : "⚠️ Notificación guardada (usuario offline)"}:`,
-        {
-          to: data.userId,
-          type: data.type,
-          message: data.message,
-        }
-      );
-
+      // La notificación será recuperada por polling automáticamente
       return notificacion;
     } catch (error: any) {
-      console.error(
-        "[NOTIFICATION_SERVICE] ❌ Error creando notificación:",
-        error
-      );
       throw error;
     }
   },

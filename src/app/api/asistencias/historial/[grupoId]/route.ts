@@ -114,8 +114,8 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error("Error en GET /api/asistencias/historial/[grupoId]:", error);
-    console.error("Stack trace:", error.stack);
+
+
     return NextResponse.json(
       {
         error: error.message || "Error al obtener historial",

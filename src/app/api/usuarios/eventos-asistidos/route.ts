@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (err) {
-    console.error("[GET_EVENTOS_ASISTIDOS_ERROR]", err);
+
     return new Response(
       JSON.stringify({
         error: "Error interno al obtener eventos asistidos",

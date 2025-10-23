@@ -86,7 +86,6 @@ export function useReverseGeocode(coords: LocationCoords | null) {
 
         return city;
       } catch (error) {
-        console.error("Error en reverse geocoding:", error);
         return "Ubicación detectada";
       }
     },
@@ -168,7 +167,6 @@ export function useLocationDetection() {
               "Ubicación detectada"
             );
           } catch (error) {
-            console.error("Error en reverse geocoding:", error);
             return "Ubicación detectada";
           }
         },
@@ -176,12 +174,6 @@ export function useLocationDetection() {
       });
 
       return { coords, city };
-    },
-    onSuccess: (data) => {
-      console.log("Ubicación detectada:", data);
-    },
-    onError: (error) => {
-      console.error("Error detectando ubicación:", error);
     },
   });
 

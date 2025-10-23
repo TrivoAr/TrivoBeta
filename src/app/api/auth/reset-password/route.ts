@@ -157,7 +157,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (e: any) {
-    console.error("reset-password error:", e?.message || e);
+
     return NextResponse.json(
       { message: "Error en el servidor" },
       { status: 500 }
