@@ -32,6 +32,10 @@ const PagoSchema = new Schema(
       unique: true,
       sparse: true, // Permite nulls pero únicos
     },
+    mercadopagoId: {
+      type: String, // Alias para compatibilidad con webhook
+      sparse: true,
+    },
     amount: {
       type: Number,
     },
@@ -57,8 +61,12 @@ const PagoSchema = new Schema(
     // Tipo de pago
     tipoPago: {
       type: String,
-      enum: ["transferencia", "mercadopago"],
+      enum: ["transferencia", "mercadopago", "mercadopago_automatico"],
       default: "transferencia",
+    },
+    // Webhook tracking
+    webhookProcessedAt: {
+      type: Date, // Cuándo se procesó el webhook
     },
   },
   { timestamps: true }
