@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { ThemeProvider as CustomThemeProvider } from "@/providers/ThemeProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import MixpanelProvider from "@/components/MixpanelProvider";
 import { useState } from "react";
 
 interface Props {
@@ -33,8 +34,10 @@ export default function Providers({ children }: Props) {
           disableTransitionOnChange
         >
           <CustomThemeProvider>
-            <NotificationProvider />
-            {children}
+            <MixpanelProvider>
+              <NotificationProvider />
+              {children}
+            </MixpanelProvider>
           </CustomThemeProvider>
         </ThemeProvider>
       </QueryClientProvider>
