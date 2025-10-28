@@ -3,7 +3,9 @@
     "allow": [
       "Bash(find:*)",
       "Bash(npx tsc:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npm install:*)",
+      "Bash(npx kill-port:*)"
     ],
     "deny": [],
     "ask": []
