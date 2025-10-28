@@ -7,8 +7,45 @@ import "./globals.css";
 // Map CSS imports removed - now loaded dynamically in map components for better performance
 
 export const metadata = {
-  title: "Trivo app",
-  description: "Encuentra tu tribu de entrenamiento",
+  title: "Trivo - Eventos Deportivos y Sociales",
+  description: "Encuentra tu tribu de entrenamiento. Crea y únete a eventos deportivos, sociales y entrenamientos",
+  applicationName: "Trivo",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Trivo",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Trivo",
+    title: "Trivo - Eventos Deportivos y Sociales",
+    description: "Encuentra tu tribu de entrenamiento",
+  },
+  twitter: {
+    card: "summary",
+    title: "Trivo - Eventos Deportivos y Sociales",
+    description: "Encuentra tu tribu de entrenamiento",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#000000",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    minimumScale: 1,
+    viewportFit: "cover",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/touch-icon-iphone.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

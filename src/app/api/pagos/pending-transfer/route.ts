@@ -4,6 +4,9 @@ import { authOptions } from "@/libs/authOptions";
 import connectDB from "@/libs/mongodb";
 import Pago from "@/models/pagos";
 import MiembroSalida from "@/models/MiembroSalida";
+import SalidaSocial from "@/models/salidaSocial";
+import User from "@/models/user";
+import { notifyJoinedEvent } from "@/libs/notificationHelpers";
 import { nanoid } from "nanoid";
 
 /**
@@ -66,6 +69,10 @@ export async function POST(req: NextRequest) {
 
     // Si es una salida social, crear MiembroSalida pendiente
     if (salidaId) {
+      // Obtener datos de la salida y del usuario
+      const salida = await SalidaSocial.findById(salidaId);
+      const user = await User.findById(session.user.id);
+
       // Verificar si ya existe
       const miembroExistente = await MiembroSalida.findOne({
         usuario_id: session.user.id,
@@ -89,6 +96,23 @@ export async function POST(req: NextRequest) {
         await miembroExistente.save();
 
         console.log(`✅ MiembroSalida actualizado con nuevo pago`);
+      }
+
+      // ✅ Notificar al creador que alguien se unió a su salida
+      if (salida && user && String(salida.creador_id) !== String(user._id)) {
+        try {
+          await notifyJoinedEvent(
+            String(salida.creador_id),
+            String(user._id),
+            String(salida._id),
+            `${user.firstname} ${user.lastname}`,
+            salida.nombre
+          );
+          console.log(`🔔 Notificación enviada al creador de la salida`);
+        } catch (notifError) {
+          console.error("❌ Error enviando notificación:", notifError);
+          // No lanzar error, continuar con el flujo
+        }
       }
     }
 
