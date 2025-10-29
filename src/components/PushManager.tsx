@@ -1,8 +1,14 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { getFCMToken, onMessageListener } from "@/libs/firebaseConfig";
+import {
+  trackNotificationPermissionRequested,
+  trackNotificationPermission,
+  trackNotificationTokenActivated,
+  trackNotificationReceived,
+} from "@/utils/mixpanelEvents";
 
 export default function PushManager() {
   const { data: session } = useSession();
@@ -15,9 +21,13 @@ export default function PushManager() {
   // Verificar estado al cargar el componente
   useEffect(() => {
     const checkSubscriptionStatus = async () => {
-      if (!session?.user) return;
+      if (!session?.user) {
+        console.log("[PushManager] No hay sesión, saltando verificación");
+        return;
+      }
 
       try {
+        console.log("[PushManager] Verificando estado de suscripción FCM...");
         // Verificar si existe una suscripción FCM en el backend
         const response = await fetch("/api/check-fcm-subscription", {
           method: "POST",
@@ -25,14 +35,22 @@ export default function PushManager() {
           body: JSON.stringify({ userId: session.user.id }),
         });
 
+        console.log("[PushManager] Respuesta del servidor:", response.status);
+
         if (response.ok) {
           const data = await response.json();
+          console.log("[PushManager] Datos de suscripción:", data);
           if (data.subscribed) {
+            console.log("[PushManager] Usuario ya tiene notificaciones activas");
             setSubscribed(true);
+          } else {
+            console.log("[PushManager] Usuario NO tiene notificaciones activas");
           }
+        } else {
+          console.error("[PushManager] Error en respuesta:", await response.text());
         }
       } catch (err) {
-        // Error verificando estado FCM
+        console.error("[PushManager] Error verificando estado FCM:", err);
       }
     };
 
@@ -45,8 +63,18 @@ export default function PushManager() {
       .then((payload: any) => {
         // Mostrar notificación personalizada si es necesario
         if (payload.notification) {
-          toast.success(
-            `📱 ${payload.notification.title}: ${payload.notification.body}`
+          // Track notification received
+          trackNotificationReceived(
+            payload.data?.type || "unknown",
+            payload.data?.notificationId
+          );
+
+          toast.info(
+            `${payload.notification.title}: ${payload.notification.body}`,
+            {
+              icon: "📱",
+              duration: 5000,
+            }
           );
         }
       })
@@ -71,23 +99,37 @@ export default function PushManager() {
       try {
         // 0) Chequeos básicos
         if (!session?.user) {
-          toast("Iniciá sesión para activar notificaciones");
+          toast.warning("Iniciá sesión para activar notificaciones");
           return;
         }
 
         // 1) Pedir permiso de notificaciones
-        if (Notification.permission === "default") {
-          const permission = await Notification.requestPermission();
-          if (permission !== "granted") {
-            toast.error("❌ Necesitamos permisos para enviar notificaciones");
-            return;
-          }
-        } else if (Notification.permission === "denied") {
+        if (Notification.permission === "denied") {
           toast.error(
-            "🚫 Las notificaciones están bloqueadas. Ve a configuración del navegador para habilitarlas."
+            "Las notificaciones están bloqueadas. Ve a configuración del navegador para habilitarlas.",
+            { icon: "🚫" }
           );
           return;
         }
+
+        if (Notification.permission === "default") {
+          console.log("[PushManager] Solicitando permisos...");
+          trackNotificationPermissionRequested();
+
+          const permission = await Notification.requestPermission();
+          console.log("[PushManager] Permiso obtenido:", permission);
+
+          trackNotificationPermission(permission === "granted");
+
+          if (permission !== "granted") {
+            toast.error("Necesitamos permisos para enviar notificaciones", {
+              icon: "❌",
+            });
+            return;
+          }
+        }
+
+        console.log("[PushManager] Permisos granted, obteniendo token FCM...");
 
         // 2) Obtener token de Firebase FCM
         const fcmToken = await getFCMToken();
@@ -95,6 +137,8 @@ export default function PushManager() {
         if (!fcmToken) {
           throw new Error("No se pudo obtener el token FCM");
         }
+
+        console.log("[PushManager] Token FCM obtenido, guardando en backend...");
 
         // 3) Guardar token en el backend
         const response = await fetch("/api/save-fcm-token", {
@@ -108,26 +152,43 @@ export default function PushManager() {
 
         if (!response.ok) {
           const errorText = await response.text();
+          console.error("[PushManager] Error guardando token:", errorText);
           throw new Error(
             `Error del servidor (${response.status}): ${errorText}`
           );
         }
+
+        console.log("[PushManager] Token guardado exitosamente, actualizando estado...");
         setSubscribed(true);
-        toast.success("🔥 Notificaciones Firebase activadas");
+        console.log("[PushManager] Estado actualizado a subscribed=true");
+
+        // Track token activation
+        trackNotificationTokenActivated(session.user.id, {
+          platform: typeof navigator !== "undefined" ? navigator.platform : "unknown",
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+        });
+
+        toast.success("Notificaciones Firebase activadas", { icon: "🔥" });
       } catch (err: any) {
 
         const errorMessage = String(err?.message || err);
 
         if (errorMessage.includes("Messaging no soportado")) {
-          toast.error("❌ Este navegador no soporta Firebase Cloud Messaging");
+          toast.error("Este navegador no soporta Firebase Cloud Messaging", {
+            icon: "❌",
+          });
         } else if (errorMessage.includes("FIREBASE_VAPID_KEY")) {
-          toast.error("🔧 Error de configuración - contacta al desarrollador");
+          toast.error("Error de configuración - contacta al desarrollador", {
+            icon: "🔧",
+          });
         } else if (errorMessage.includes("permisos")) {
-          toast.error("🚫 Permisos de notificaciones denegados");
+          toast.error("Permisos de notificaciones denegados", { icon: "🚫" });
         } else if (errorMessage.includes("Error del servidor")) {
-          toast.error("🔧 Error del servidor - intenta más tarde");
+          toast.error("Error del servidor - intenta más tarde", { icon: "🔧" });
         } else {
-          toast.error(`❌ Error: ${errorMessage.substring(0, 80)}...`);
+          toast.error(`Error: ${errorMessage.substring(0, 80)}...`, {
+            icon: "❌",
+          });
         }
       }
     })();
@@ -142,38 +203,6 @@ export default function PushManager() {
     }
   }, [session, busy, currentProcess]);
 
-  const sendTestNotification = useCallback(async () => {
-    if (!session?.user || !subscribed) {
-      toast.error("Activa las notificaciones primero");
-      return;
-    }
-
-    setBusy(true);
-    try {
-      const response = await fetch("/api/send-test-notification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("🧪 Notificación de prueba enviada");
-      } else {
-        if (data.tokenRemoved) {
-          setSubscribed(false);
-          toast.error("Token inválido - reactiva las notificaciones");
-        } else {
-          toast.error(`Error: ${data.error}`);
-        }
-      }
-    } catch (error) {
-      toast.error("Error enviando notificación de prueba");
-    } finally {
-      setBusy(false);
-    }
-  }, [session, subscribed]);
-
   return (
     <div className="space-y-2">
       <button
@@ -187,16 +216,6 @@ export default function PushManager() {
             ? "Activando…"
             : "🔔 Activar notificaciones"}
       </button>
-
-      {subscribed && (
-        <button
-          onClick={sendTestNotification}
-          disabled={busy}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 hover:bg-blue-100 disabled:opacity-60"
-        >
-          {busy ? "Enviando..." : "🧪 Enviar prueba"}
-        </button>
-      )}
     </div>
   );
 }

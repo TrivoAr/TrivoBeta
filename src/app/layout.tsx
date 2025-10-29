@@ -64,14 +64,14 @@ export default function RootLayout({
         <Toaster
           richColors
           position="top-center"
-          expand={true}
+          expand={false}
+          visibleToasts={3}
+          offset="20px"
           toastOptions={{
-            duration: 10000,
+            duration: 5000,
             style: {
-              background: 'transparent',
-              border: 'none',
-              boxShadow: 'none',
-              padding: 0,
+              maxWidth: '390px',
+              width: '100%',
             },
           }}
         />
