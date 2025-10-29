@@ -506,9 +506,9 @@ export default function AcademiaDetailPage({
   };
 
   return (
-    <div className="flex flex-col w-[390px] items-center bg-background">
+    <div className="flex flex-col w-full max-w-app mx-auto items-center bg-background">
       <div
-        className="relative w-full h-[190px] flex"
+        className="relative w-full aspect-cover max-h-[300px] flex"
         style={{
           backgroundImage: `url(${profileImage})`,
           backgroundSize: "cover",
