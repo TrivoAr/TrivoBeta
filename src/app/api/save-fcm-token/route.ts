@@ -2,33 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
-import mongoose from "mongoose";
-
-// Modelo para tokens FCM - usar el mismo esquema
-const FCMTokenSchema = new mongoose.Schema(
-  {
-    user_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
-    token: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    device_info: {
-      userAgent: String,
-      platform: String,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const FCMToken =
-  mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
+import FCMToken from "@/models/FCMToken";
 
 export async function POST(req: Request) {
   try {
@@ -46,8 +20,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Obtener el token y userId desde el request
-    const { token, userId } = await req.json();
+    // Obtener el token y deviceInfo desde el request
+    const { token, deviceInfo } = await req.json();
 
     if (!token) {
       return NextResponse.json(
@@ -56,52 +30,59 @@ export async function POST(req: Request) {
       );
     }
 
-    // Información del dispositivo (opcional)
+    // Información del dispositivo
     const userAgent = req.headers.get("user-agent") || "";
     const device_info = {
       userAgent: userAgent.substring(0, 200), // Limitar longitud
-      platform:
-        typeof navigator !== "undefined" ? navigator.platform : "unknown",
+      platform: deviceInfo?.platform || "unknown",
     };
 
-    // Verificar si ya existe un token para este usuario
-    const existingToken = await FCMToken.findOne({
-      user_id: session.user.id,
-    });
+    // Verificar si ya existe el token
+    const existingToken = await FCMToken.findOne({ token });
 
     if (existingToken) {
       // Actualizar token existente
-      existingToken.token = token;
-      existingToken.device_info = device_info;
+      existingToken.userId = session.user.id;
+      existingToken.isActive = true;
+      existingToken.lastUsed = new Date();
+      if (deviceInfo) {
+        existingToken.deviceInfo = device_info;
+      }
       await existingToken.save();
 
+      console.log("[FCM Token] Updated existing token:", existingToken._id);
+
+      return NextResponse.json(
+        {
+          message: "Token FCM actualizado exitosamente",
+          success: true,
+          tokenId: existingToken._id,
+        },
+        { status: 200 }
+      );
     } else {
       // Crear nuevo token
-      await FCMToken.create({
-        user_id: session.user.id,
+      const newToken = await FCMToken.create({
+        userId: session.user.id,
         token: token,
-        device_info: device_info,
+        deviceInfo: device_info,
+        isActive: true,
+        lastUsed: new Date(),
       });
 
+      console.log("[FCM Token] Created new token:", newToken._id);
+
+      return NextResponse.json(
+        {
+          message: "Token FCM guardado exitosamente",
+          success: true,
+          tokenId: newToken._id,
+        },
+        { status: 200 }
+      );
     }
-
-    // Enviar notificación de confirmación usando Firebase Admin
-    try {
-      // TODO: Implementar envío de notificación de bienvenida
-
-    } catch (notificationError) {
-
-      // No fallar si no se puede enviar la notificación de confirmación
-    }
-
-    return NextResponse.json(
-      {
-        message: "Token FCM guardado exitosamente",
-        success: true,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
+  } catch (error: any) {
+    console.error("[FCM Token] Error:", error);
 
     if (error.code === 11000) {
       // Error de duplicado - token ya existe
@@ -117,6 +98,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "Error guardando token FCM",
+        details: error.message,
       },
       { status: 500 }
     );

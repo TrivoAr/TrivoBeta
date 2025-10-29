@@ -5,6 +5,7 @@ import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import SalidaSocial from "@/models/salidaSocial";
 import User from "@/models/user";
+import { notifyPaymentPending } from "@/libs/notificationHelpers";
 
 export async function POST(
   req: NextRequest,
@@ -50,6 +51,21 @@ export async function POST(
     pago_id: pagoId,
     fecha_union: new Date(),
   });
+
+  // Notificar al creador del evento sobre el pago pendiente
+  try {
+    const userName = `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email;
+    await notifyPaymentPending(
+      salida.creador_id.toString(),
+      user._id.toString(),
+      salidaId,
+      userName,
+      salida.nombre
+    );
+  } catch (notificationError) {
+    console.error("[Pago] Error enviando notificación:", notificationError);
+    // No fallar la operación principal por error de notificación
+  }
 
   return NextResponse.json(miembro, { status: 200 });
 }

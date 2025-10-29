@@ -127,6 +127,10 @@ export const EVENTS = {
     PERMISSION_DENIED: 'Notification Permission Denied',
     CLICKED: 'Notification Clicked',
     RECEIVED: 'Notification Received',
+    SENT: 'Notification Sent',
+    FAILED: 'Notification Failed',
+    TOKEN_ACTIVATED: 'Notification Token Activated',
+    TOKEN_DEACTIVATED: 'Notification Token Deactivated',
   },
 } as const;
 
@@ -555,6 +559,63 @@ export const trackNotificationReceived = (notificationType: string, notification
   trackEvent(EVENTS.NOTIFICATION.RECEIVED, {
     notification_type: notificationType,
     notification_id: notificationId,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando se envía una notificación (backend)
+ */
+export const trackNotificationSent = (
+  notificationType: string,
+  recipientId: string,
+  notificationId?: string,
+  deviceCount?: number
+) => {
+  trackEvent(EVENTS.NOTIFICATION.SENT, {
+    notification_type: notificationType,
+    notification_id: notificationId,
+    recipient_id: recipientId,
+    device_count: deviceCount,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando falla el envío de una notificación
+ */
+export const trackNotificationFailed = (
+  notificationType: string,
+  recipientId: string,
+  reason: string
+) => {
+  trackEvent(EVENTS.NOTIFICATION.FAILED, {
+    notification_type: notificationType,
+    recipient_id: recipientId,
+    reason,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando se activa un token FCM
+ */
+export const trackNotificationTokenActivated = (userId: string, deviceInfo?: any) => {
+  trackEvent(EVENTS.NOTIFICATION.TOKEN_ACTIVATED, {
+    user_id: userId,
+    device_platform: deviceInfo?.platform,
+    device_user_agent: deviceInfo?.userAgent?.substring(0, 100),
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando se desactiva un token FCM
+ */
+export const trackNotificationTokenDeactivated = (userId: string, reason: string) => {
+  trackEvent(EVENTS.NOTIFICATION.TOKEN_DEACTIVATED, {
+    user_id: userId,
+    reason,
     timestamp: new Date().toISOString(),
   });
 };
