@@ -205,8 +205,24 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Error al crear suscripción al Club del Trekking:", error);
+
+    // Proporcionar más detalles del error en producción para debugging
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    const errorDetails = error instanceof Error && 'cause' in error ? error.cause : null;
+
+    console.error("Detalles del error:", {
+      message: errorMessage,
+      details: errorDetails,
+      stack: error instanceof Error ? error.stack : null,
+      tokenConfigured: !!process.env.MERCADOPAGO_ACCESS_TOKEN,
+      tokenType: process.env.MERCADOPAGO_ACCESS_TOKEN?.startsWith('TEST-') ? 'TEST' : process.env.MERCADOPAGO_ACCESS_TOKEN?.startsWith('APP_USR-') ? 'PRODUCTION' : 'INVALID',
+    });
+
     return NextResponse.json(
-      { error: "Error al crear la suscripción" },
+      {
+        error: "Error al crear la suscripción",
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     );
   }
