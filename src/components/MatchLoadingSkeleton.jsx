@@ -1,12 +1,12 @@
 import Skeleton from "react-loading-skeleton";
 import React from "react";
-
-const baseColor = "#e0e0e0";
-const highlightColor = "#f5f5f5";
+import { useSkeletonColors } from "@/hooks/useSkeletonColors";
 
 const AcademiaLoadingSkeleton = () => {
+  const { baseColor, highlightColor } = useSkeletonColors();
+
   return (
-    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9] space-y-6 pb-[230px]">
+    <div className="flex flex-col w-[390px] items-center bg-background space-y-6 pb-[230px]">
       {/* Imagen de portada */}
       <div className="relative w-full h-[190px] flex mb-4">
         <Skeleton
@@ -229,7 +229,7 @@ const AcademiaLoadingSkeleton = () => {
 
       {/* Precio y botón */}
       <div className="fixed bottom-[80px] w-[100%] left-1/2 -translate-x-1/2 z-50">
-        <div className="bg-[#FEFBF9] shadow-md h-[120px] border px-2 flex justify-around items-center gap-6">
+        <div className="bg-background shadow-md h-[120px] border border-border px-2 flex justify-around items-center gap-6">
           <div className="w-[50%] flex flex-col justify-center items-start gap-3 p-4">
             <Skeleton
               width={80}

@@ -454,7 +454,7 @@ export default function EventPage({ params }: PageProps) {
 
   if (loadingEvent || loadingMiembros)
     return (
-      <main className="bg-background min-h-screen px-4 py-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen px-4 py-6 w-full max-w-app mx-auto">
         {/* Back button */}
         <Skeleton circle height={32} width={32} className="mb-4" />
         {/* Título */}
@@ -513,22 +513,20 @@ export default function EventPage({ params }: PageProps) {
 
   return (
     <main
-      className={`min-h-screen w-[390px] mx-auto transition-colors ${
+      className={`min-h-screen w-full max-w-app mx-auto transition-colors ${
         isNight ? "theme-text-primary" : "text-foreground bg-background"
       }`}
       style={isNight ? { backgroundColor: "#2d3748" } : {}}
       data-theme={isNight ? "night" : undefined}
     >
-      <div className="relative w-full h-[176px] ">
+      <div className="relative w-full aspect-cover max-h-[250px]">
         <div
           style={{
             backgroundImage: `url(${event.imagen})`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
-          // width={375}
-          // height={176}
-          className="w-full object-cover h-[176px]"
+          className="w-full h-full object-cover"
         />
 
         {/* Botón volver */}
@@ -536,11 +534,20 @@ export default function EventPage({ params }: PageProps) {
           onClick={() => router.back()}
           className="absolute top-2 left-3 btnFondo shadow-md rounded-full w-9 h-9 flex justify-center items-center"
         >
-          <img
-            src="/assets/icons/Collapse Arrow.svg"
-            alt="callback"
-            className="h-[20px] w-[20px]"
-          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2.5}
+            stroke="black"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
+          </svg>
         </button>
 
         <button

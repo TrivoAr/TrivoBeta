@@ -178,7 +178,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   };
 
   return (
-    <div className="containerTop bg-background h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
+    <div className="containerTop bg-background h-[50px] w-full max-w-app mx-auto flex justify-between items-center mt-0">
       {/* Avatar con indicador de Club del Trekking */}
 
       {session?.user ? (
@@ -374,12 +374,12 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
       {/* Modal de explicación GPS */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg z-[10000]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-app-sm mx-auto shadow-lg z-[10000]">
             <div className="text-center mb-4">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg
-                  className="w-8 h-8 text-[#C95100]"
+                  className="w-8 h-8 text-[#C95100] dark:text-orange-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -398,39 +398,39 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Activar ubicación
               </h3>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Para usar Trivo necesitas permitir el acceso a tu ubicación
               </p>
             </div>
 
             <div className="space-y-3 mb-6">
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-sm text-gray-700">
-                  <strong>Actividades cercanas:</strong> Encuentra eventos y
+                <div className="w-2 h-2 bg-[#C95100] dark:bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <strong className="text-gray-900 dark:text-white">Actividades cercanas:</strong> Encuentra eventos y
                   lugares cerca de ti
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-sm text-gray-700">
-                  <strong>Recomendaciones precisas:</strong> Contenido relevante
+                <div className="w-2 h-2 bg-[#C95100] dark:bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <strong className="text-gray-900 dark:text-white">Recomendaciones precisas:</strong> Contenido relevante
                   para tu zona
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-[#C95100] rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-sm text-gray-700">
-                  <strong>Una sola vez:</strong> Se guarda automáticamente para
+                <div className="w-2 h-2 bg-[#C95100] dark:bg-orange-400 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <strong className="text-gray-900 dark:text-white">Una sola vez:</strong> Se guarda automáticamente para
                   futuros usos
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mb-6 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 text-center">
               Tu ubicación es privada y solo se usa para mejorar tu experiencia
               en la app
             </p>
@@ -438,13 +438,13 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
             <div className="flex gap-3">
               <button
                 onClick={dismissLocationModal}
-                className="flex-1 py-2 px-4 border rounded-[20px] text-muted-foreground hover:bg-muted transition-colors"
+                className="flex-1 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-[20px] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 Más tarde
               </button>
               <button
                 onClick={confirmLocationRequest}
-                className="flex-1 py-2 px-4 bg-[#C95100] text-white rounded-[20px] hover:bg-[#A04400] transition-colors"
+                className="flex-1 py-2 px-4 bg-[#C95100] text-white rounded-[20px] hover:bg-[#A04400] dark:bg-orange-600 dark:hover:bg-orange-700 transition-colors"
               >
                 Activar GPS
               </button>

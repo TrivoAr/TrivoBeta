@@ -192,7 +192,7 @@ export default function DashboardPage() {
   // Redireccionar si no hay sesión
   if (status === "loading") {
     return (
-      <div className="w-[390px] min-h-screen bg-background flex items-center justify-center">
+      <div className="app-container min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C95100]"></div>
       </div>
     );
@@ -599,7 +599,7 @@ export default function DashboardPage() {
     <>
       <Toaster position="top-center" />
 
-      <main className="bg-background min-h-screen text-foreground px-4 py-6 space-y-6 w-[390px] mx-auto">
+      <main className="bg-background min-h-screen text-foreground app-container py-6 space-y-6">
         {/* Header */}
         <TopContainer
           selectedLocalidad={selectedLocalidad}

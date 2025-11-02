@@ -1,10 +1,10 @@
 import Skeleton from "react-loading-skeleton";
 import React from "react";
-
-const baseColor = "#e0e0e0";
-const highlightColor = "#f5f5f5";
+import { useSkeletonColors } from "@/hooks/useSkeletonColors";
 
 const AcademiaMiembrosSkeleton = () => {
+  const { baseColor, highlightColor } = useSkeletonColors();
+
   return (
     <div className="w-[390px] flex flex-col items-center space-y-4">
       {/* Header y botón volver */}

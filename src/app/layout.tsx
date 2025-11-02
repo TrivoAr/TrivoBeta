@@ -70,8 +70,8 @@ export default function RootLayout({
           toastOptions={{
             duration: 5000,
             style: {
-              maxWidth: '390px',
               width: '100%',
+              maxWidth: 'min(640px, 90vw)', // Responsive: 90% del viewport o 640px máximo
             },
           }}
         />
