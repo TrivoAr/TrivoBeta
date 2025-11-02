@@ -174,7 +174,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   };
 
   return (
-    <div className="containerTop bg-background h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
+    <div className="containerTop bg-background h-[50px] w-full max-w-app mx-auto flex justify-between items-center mt-0">
       {/* Avatar */}
 
       {session?.user ? (
@@ -297,7 +297,7 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
       {/* Modal de explicación GPS */}
       {showLocationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-app-sm mx-auto shadow-lg">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg
