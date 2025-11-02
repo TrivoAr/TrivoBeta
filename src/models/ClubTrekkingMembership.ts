@@ -37,8 +37,8 @@ const ClubTrekkingMembershipSchema = new Schema(
     // Estado de la membresía
     estado: {
       type: String,
-      enum: ["activa", "vencida", "cancelada"],
-      default: "activa",
+      enum: ["pendiente", "activa", "vencida", "cancelada"],
+      default: "pendiente",
       required: true,
       index: true,
     },

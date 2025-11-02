@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 
 interface ClubMembership {
   _id: string;
-  estado: "activa" | "vencida" | "cancelada";
+  estado: "pendiente" | "activa" | "vencida" | "cancelada";
   fechaInicio: string;
   fechaFin: string;
   proximaFechaPago: string;

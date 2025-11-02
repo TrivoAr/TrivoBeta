@@ -157,10 +157,10 @@ export async function POST(req: NextRequest) {
 
     const response = await preapproval.create({ body: preapprovalData });
 
-    // Crear la membresía en estado pendiente hasta que se apruebe el pago
+    // Crear la membresía en estado PENDIENTE hasta que se confirme el pago
     const membership = new ClubTrekkingMembership({
       userId: user._id,
-      estado: "activa", // Se activará cuando se confirme el pago
+      estado: "pendiente", // Se activará cuando el webhook confirme el pago
       fechaInicio,
       fechaFin,
       proximaFechaPago,
@@ -179,16 +179,8 @@ export async function POST(req: NextRequest) {
 
     await membership.save();
 
-    // Actualizar el usuario
-    user.clubTrekking = {
-      esMiembro: true,
-      membershipId: membership._id,
-      badge: {
-        activo: true,
-        tipoMiembro: "bronce",
-      },
-    };
-    await user.save();
+    // NO actualizar el usuario aún - se hará cuando el webhook confirme el pago
+    // El webhook activará la membresía y actualizará el usuario
 
     return NextResponse.json(
       {
