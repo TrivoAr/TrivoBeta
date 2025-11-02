@@ -1,13 +1,41 @@
 {
+  "id": "/",
   "name": "Trivo - Eventos Deportivos y Sociales",
   "short_name": "Trivo",
   "description": "Plataforma para crear y unirse a eventos deportivos, sociales y entrenamientos",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
+  "lang": "es-AR",
+  "dir": "ltr",
   "icons": [
+    {
+      "src": "/icons/icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icons/apple-icon-180.png",
       "sizes": "180x180",
@@ -41,7 +69,22 @@
   ],
   "splash_pages": null,
   "categories": ["sports", "social", "lifestyle", "health"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pantalla principal de Trivo"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://trivo.com/manifest.json"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Crear Evento",

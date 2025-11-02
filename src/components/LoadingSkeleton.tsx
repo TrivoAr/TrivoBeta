@@ -3,6 +3,7 @@
 import React from "react";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useSkeletonColors } from "@/hooks/useSkeletonColors";
 
 interface LoadingSkeletonProps {
   variant?: "default" | "card" | "text" | "avatar" | "button" | "image";
@@ -25,37 +26,13 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   circle = false,
   inline = false,
 }) => {
-  // Configuración de colores para tema claro y oscuro
-  const lightTheme = {
-    baseColor: "#ebebeb",
-    highlightColor: "#f5f5f5",
+  // Usar el hook para colores dinámicos según el tema
+  const { baseColor, highlightColor } = useSkeletonColors();
+
+  const currentTheme = {
+    baseColor,
+    highlightColor,
   };
-
-  const darkTheme = {
-    baseColor: "#374151", // gray-700
-    highlightColor: "#4b5563", // gray-600
-  };
-
-  // Función para detectar el modo oscuro
-  const detectDarkMode = (): boolean => {
-    if (typeof window === "undefined") return false;
-
-    // Verificar si hay clase 'dark' en el documento (Tailwind CSS)
-    const hasDarkClass = document.documentElement.classList.contains("dark");
-
-    // Verificar data-theme attribute
-    const dataTheme = document.documentElement.getAttribute("data-theme");
-    const hasNightTheme = dataTheme === "night";
-
-    // Verificar CSS media query como fallback
-    const prefersDark =
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    return hasDarkClass || hasNightTheme || prefersDark;
-  };
-
-  const currentTheme = detectDarkMode() ? darkTheme : lightTheme;
 
   // Configuraciones predefinidas por variante
   const variantConfigs: Record<
