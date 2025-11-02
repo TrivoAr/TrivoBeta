@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { ThemeProvider as CustomThemeProvider } from "@/providers/ThemeProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
 import MixpanelProvider from "@/components/MixpanelProvider";
+import { ConfirmacionAsistenciaProvider } from "@/components/club-trekking/ConfirmacionAsistenciaProvider";
 import { useState } from "react";
 
 interface Props {
@@ -36,7 +37,10 @@ export default function Providers({ children }: Props) {
           <CustomThemeProvider>
             <MixpanelProvider>
               <NotificationProvider />
-              {children}
+              {/* Sistema de confirmación de asistencia para Club del Trekking */}
+              <ConfirmacionAsistenciaProvider>
+                {children}
+              </ConfirmacionAsistenciaProvider>
             </MixpanelProvider>
           </CustomThemeProvider>
         </ThemeProvider>

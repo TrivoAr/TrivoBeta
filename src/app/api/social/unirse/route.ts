@@ -5,6 +5,7 @@ import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import SalidaSocial from "@/models/salidaSocial";
 import User from "@/models/user";
+import Pago from "@/models/pagos";
 import { notifyJoinedEvent } from "@/libs/notificationHelpers";
 
 export async function POST(req: Request) {
@@ -30,11 +31,17 @@ export async function POST(req: Request) {
     return new Response("Ya eres miembro de esta salida", { status: 400 });
   }
 
+  // Verificar el estado del pago para determinar el estado del miembro
+  const pago = await Pago.findById(pago_id);
+  const esClubDelTrekking = pago?.comprobanteUrl === "CLUB_DEL_TREKKING";
+  const estadoMiembro = pago?.estado === "aprobado" ? "aprobado" : "pendiente";
+
   const nuevoMiembro = new MiembroSalida({
     usuario_id: user._id,
     salida_id: salidaId,
-    estado: "pendiente",
+    estado: estadoMiembro,
     pago_id: pago_id,
+    usaMembresiaClub: esClubDelTrekking,
   });
 
   await nuevoMiembro.save();

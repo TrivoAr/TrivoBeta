@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
               pago_id: pago
                 ? { _id: pago._id, estado: pago.estado || "" }
                 : null,
+              usaMembresiaClub: false,
             };
           }
 
@@ -131,6 +132,7 @@ export async function GET(req: NextRequest) {
             imagen: imagenUrl,
             dni: usuario.dni || "",
             pago_id: pago ? { _id: pago._id, estado: pago.estado || "" } : null,
+            usaMembresiaClub: m.usaMembresiaClub || false,
           };
         } catch (e) {
 
@@ -143,6 +145,7 @@ export async function GET(req: NextRequest) {
               "https://ui-avatars.com/api/?name=E&background=ff0000&color=fff&size=128",
             dni: "",
             pago_id: null,
+            usaMembresiaClub: false,
           };
         }
       })
@@ -171,6 +174,7 @@ export async function GET(req: NextRequest) {
                   estado: miembros[index].pago_id.estado || "pendiente",
                 }
               : null,
+            usaMembresiaClub: miembros[index]?.usaMembresiaClub || false,
           };
         }
       })

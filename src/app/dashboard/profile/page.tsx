@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 import PushManager from "@/components/PushManager";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useClubMembership } from "@/hooks/useClubMembership";
+import { Mountain } from "lucide-react";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -24,6 +26,9 @@ function ProfilePage() {
   const [stravaConnected, setStravaConnected] = useState(false);
 
   const router = useRouter();
+
+  // Hook de membresía del Club del Trekking
+  const { membership, isActive: isClubMember } = useClubMembership();
 
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
@@ -81,22 +86,130 @@ function ProfilePage() {
         <ThemeToggle />
       </div>
 
-      {/* Avatar */}
+      {/* Avatar con indicador de Club del Trekking */}
       <div className="w-[90%] bg-card border p-5 shadow-md rounded-[20px] flex flex-col items-center mb-4">
-        <div onClick={() => setShowPreview(true)}>
-          <img
-            src={profileImage || session?.user.imagen}
-            alt="Avatar"
-            className="w-28 h-28 rounded-full object-cover mb-4 shadow-md"
-          />
+        <div onClick={() => setShowPreview(true)} className="relative mb-4">
+          {/* Container con border gradiente si es miembro */}
+          <div
+            className={`relative ${
+              isClubMember
+                ? "p-[4px] rounded-full bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] shadow-lg"
+                : ""
+            }`}
+          >
+            <img
+              src={profileImage || session?.user.imagen}
+              alt="Avatar"
+              className={`w-28 h-28 rounded-full object-cover ${
+                isClubMember ? "" : "shadow-md"
+              }`}
+            />
+          </div>
+
+          {/* Badge del Club del Trekking */}
+          {isClubMember && (
+            <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-[#C95100] to-[#A03D00] rounded-full p-2 shadow-lg border-3 border-card">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="currentColor"
+                  fillOpacity="0.3"
+                />
+                <path
+                  d="M2 20H22"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
         </div>
-        <div className="">
-          <span className="text-2xl w-full text-left ">
-            {session?.user.firstname} {session?.user.lastname}{" "}
+
+        <div className="flex flex-col items-center">
+          <span className="text-2xl w-full text-center font-semibold">
+            {session?.user.firstname} {session?.user.lastname}
           </span>
+          {isClubMember && (
+            <div className="flex items-center gap-1 mt-1 mb-2">
+              <Mountain className="w-3 h-3 text-[#C95100]" />
+              <span className="text-xs font-semibold text-[#C95100]">
+                Miembro del Club
+              </span>
+            </div>
+          )}
         </div>
         <div className="text-sm text-[#666] capitalize">{formData.rol}</div>
       </div>
+
+      {/* Club del Trekking Card */}
+      {isClubMember ? (
+        <div className="w-full mb-6">
+          <div
+            className="bg-gradient-to-r from-[#C95100] to-[#A03D00] rounded-[30px] p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-200"
+            onClick={() => router.push("/club-del-trekking/mi-membresia")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-full">
+                  <Mountain className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold text-sm">
+                    Club del Trekking
+                  </span>
+                  <span className="text-white/80 text-xs">
+                    Membresía activa
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <div className="text-white text-xs font-semibold">
+                    {membership?.usoMensual?.salidasRealizadas || 0} salidas
+                  </div>
+                  <div className="text-white/70 text-[10px]">este mes</div>
+                </div>
+                <span className="text-white text-[28px]">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full mb-6">
+          <div
+            className="bg-gradient-to-r from-[#C95100] to-[#A03D00] rounded-[30px] p-4 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-200"
+            onClick={() => router.push("/club-del-trekking/suscribirse")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-full">
+                  <Mountain className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold text-sm">
+                    Club del Trekking
+                  </span>
+                  <span className="text-white/80 text-xs">
+                    Trekkings ilimitados por $25.000/mes
+                  </span>
+                </div>
+              </div>
+              <span className="text-white text-[28px]">›</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-sm text-[#989898]  mb-2 w-full text-left">
         Datos personales

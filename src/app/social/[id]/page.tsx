@@ -13,6 +13,7 @@ import { isNightEvent } from "@/lib/theme";
 import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { useSearchParams } from "next/navigation";
+import { useClubMembership } from "@/hooks/useClubMembership";
 
 // Dynamic imports for better code splitting
 const StravaMap = dynamic(() => import("@/components/StravaMap"), {
@@ -113,6 +114,7 @@ interface Miembro {
     _id: string;
   };
   dni: string;
+  usaMembresiaClub?: boolean;
 }
 
 export default function EventPage({ params }: PageProps) {
@@ -123,6 +125,7 @@ export default function EventPage({ params }: PageProps) {
   const [showFullMap, setShowFullMap] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showClubConfirmModal, setShowClubConfirmModal] = useState(false);
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -132,6 +135,9 @@ export default function EventPage({ params }: PageProps) {
     params.id,
     !!session?.user?.id
   );
+
+  // Hook del Club del Trekking
+  const { isActive: isClubMember, puedeReservar } = useClubMembership();
 
   // Manejar parámetros de retorno de MercadoPago
   useEffect(() => {
@@ -282,6 +288,58 @@ export default function EventPage({ params }: PageProps) {
     },
   });
 
+  // Mutación para unirse con membresía del Club del Trekking
+  const joinWithClubMutation = useMutation({
+    mutationFn: async () => {
+      // Crear el pago marcado como del Club del Trekking
+      const pagoRes = await fetch("/api/pagos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          salidaId: params.id,
+          userId: session?.user?.id,
+          comprobanteUrl: "CLUB_DEL_TREKKING", // Marcador para membresía
+          estado: "aprobado", // Pre-aprobado por membresía
+        }),
+      });
+
+      if (!pagoRes.ok) throw new Error("No se pudo crear el registro de pago");
+      const pagoData = await pagoRes.json();
+      const pago = pagoData.pago;
+
+      // Unirse con el pago_id creado
+      const res = await fetch(`/api/social/unirse`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          salidaId: params.id,
+          pago_id: pago._id,
+        }),
+      });
+      if (!res.ok) throw new Error("No se pudo unirse al evento");
+      return res.json();
+    },
+    onSuccess: () => {
+      // Invalidar queries para actualizar la UI
+      queryClient.invalidateQueries({
+        queryKey: ["unido", params.id, session?.user?.id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
+      queryClient.setQueryData(
+        ["unido", params.id, session?.user?.id],
+        "si"
+      );
+      toast.success("¡Te has unido exitosamente usando tu membresía del Club del Trekking!");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Error al unirse al evento");
+    },
+  });
+
   const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ["profile", session?.user?.id],
     enabled: !!session?.user?.id,
@@ -316,10 +374,26 @@ export default function EventPage({ params }: PageProps) {
       return;
     }
 
+    // Verificar si es evento gratuito
     if (event.precio == 0 || event.precio === "0") {
       joinFreeMutation.mutate();
       return;
     }
+
+    // Verificar si el usuario tiene membresía activa del Club del Trekking y el evento es elegible
+    const isEligibleForClub =
+      isClubMember &&
+      event.deporte.toLowerCase().includes("trekking") &&
+      Number(event.precio) > 0 &&
+      Number(event.precio) <= Number(process.env.NEXT_PUBLIC_CLUB_TREKKING_MAX_SALIDA_PRICE || 10000);
+
+    if (isEligibleForClub) {
+      // Mostrar modal de confirmación del club
+      setShowClubConfirmModal(true);
+      return;
+    }
+
+    // Si no cumple con las condiciones anteriores, mostrar modal de pago
     setShowPaymentModal(true);
   };
 
@@ -877,17 +951,57 @@ export default function EventPage({ params }: PageProps) {
               {miembros.length > 0 ? (
                 <>
                   {miembros.slice(0, 4).map((m) => (
-                    <img
-                      key={m._id}
-                      src={m.imagen}
-                      alt={m.firstname}
-                      className="h-24 w-24 rounded-full object-cover border shadow-md"
-                      // title={m.}
-                      onError={(e) =>
-                        ((e.target as HTMLImageElement).src =
-                          "/assets/icons/person_24dp_E8EAED.svg")
-                      }
-                    />
+                    <div key={m._id} className="relative">
+                      {m.usaMembresiaClub ? (
+                        <div className="relative p-[3px] rounded-full bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] shadow-lg">
+                          <img
+                            src={m.imagen}
+                            alt={m.firstname}
+                            className="h-24 w-24 rounded-full object-cover"
+                            onError={(e) =>
+                              ((e.target as HTMLImageElement).src =
+                                "/assets/icons/person_24dp_E8EAED.svg")
+                            }
+                          />
+                          {/* Badge del Club del Trekking */}
+                          <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-[#C95100] to-[#A03D00] rounded-full p-1.5 shadow-md border-2 border-background">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className="text-white"
+                            >
+                              <path
+                                d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                fill="currentColor"
+                                fillOpacity="0.3"
+                              />
+                              <path
+                                d="M2 20H22"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <img
+                          src={m.imagen}
+                          alt={m.firstname}
+                          className="h-24 w-24 rounded-full object-cover border shadow-md"
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).src =
+                              "/assets/icons/person_24dp_E8EAED.svg")
+                          }
+                        />
+                      )}
+                    </div>
                   ))}
                   {miembros.length > 4 && (
                     <div
@@ -982,15 +1096,58 @@ export default function EventPage({ params }: PageProps) {
             }`}
           >
             <div className="w-[50%] flex flex-col pl-4">
-              <p
-                className={`font-semibold text-xl underline ${
-                  isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-              >
-                {event.precio == 0 || event.precio === "0"
-                  ? "Gratis"
-                  : `$${Number(event.precio).toLocaleString("es-AR")}`}
-              </p>
+              {/* Mostrar precio tachado si es miembro del club y la salida es elegible */}
+              {isClubMember &&
+               event.deporte.toLowerCase().includes("trekking") &&
+               Number(event.precio) > 0 &&
+               Number(event.precio) <= Number(process.env.NEXT_PUBLIC_CLUB_TREKKING_MAX_SALIDA_PRICE || 10000) ? (
+                <div className="flex flex-col">
+                  <p className="text-[10px] text-muted-foreground">Precio regular:</p>
+                  <p
+                    className={`font-semibold text-lg line-through opacity-50 ${
+                      isNight ? "theme-text-primary" : "text-foreground"
+                    }`}
+                  >
+                    ${Number(event.precio).toLocaleString("es-AR")}
+                  </p>
+                  <div className="flex items-center gap-0.5">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="text-[#C95100] shrink-0"
+                    >
+                      <path
+                        d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="currentColor"
+                        fillOpacity="0.3"
+                      />
+                      <path
+                        d="M2 20H22"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <p className="text-[11px] font-bold text-[#C95100] leading-tight">Incluido en tu membresía</p>
+                  </div>
+                </div>
+              ) : (
+                <p
+                  className={`font-semibold text-xl underline ${
+                    isNight ? "theme-text-primary" : "text-foreground"
+                  }`}
+                >
+                  {event.precio == 0 || event.precio === "0"
+                    ? "Gratis"
+                    : `$${Number(event.precio).toLocaleString("es-AR")}`}
+                </p>
+              )}
               <p
                 className={`text-xs ${
                   isNight ? "theme-text-secondary" : "text-muted-foreground"
@@ -1033,7 +1190,18 @@ export default function EventPage({ params }: PageProps) {
                   }}
                   disabled={estadoFinal === "pendiente" || estadoFinal === "si"} // deshabilitar si está pendiente o ya unido
                   className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
-        ${estadoFinal === "no" ? (isNight ? "seasonal-gradient text-white" : "bg-[#C95100] text-white") : ""}
+        ${
+          estadoFinal === "no"
+            ? isClubMember &&
+              event.deporte.toLowerCase().includes("trekking") &&
+              Number(event.precio) > 0 &&
+              Number(event.precio) <= Number(process.env.NEXT_PUBLIC_CLUB_TREKKING_MAX_SALIDA_PRICE || 10000)
+              ? "bg-gradient-to-r from-[#C95100] to-[#A03D00] text-white shadow-md"
+              : isNight
+                ? "seasonal-gradient text-white"
+                : "bg-[#C95100] text-white"
+            : ""
+        }
         ${estadoFinal === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
         ${estadoFinal === "rechazado" ? "bg-red-500 text-white" : ""}
         ${estadoFinal === "si" ? (isNight ? "theme-accent-bg-primary text-white" : "bg-[#001A46] text-white") : ""}
@@ -1041,8 +1209,8 @@ export default function EventPage({ params }: PageProps) {
                 >
                   {estadoFinal === "no" && "Unirse"}
                   {estadoFinal === "pendiente" &&
-                    (isProcessingPayment || joinFreeMutation.isPending
-                      ? "Procesando pago..."
+                    (isProcessingPayment || joinFreeMutation.isPending || joinWithClubMutation.isPending
+                      ? "Procesando..."
                       : "Solicitud enviada")}
                   {estadoFinal === "rechazado" && "Reenviar"}
                   {estadoFinal === "si" && "Miembro"}
@@ -1076,6 +1244,84 @@ export default function EventPage({ params }: PageProps) {
         onProcessingChange={setIsProcessingPayment}
         isNight={isNight}
       />
+
+      {/* Modal de confirmación del Club del Trekking */}
+      {showClubConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg z-[10000]">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#C95100] to-[#A03D00] rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-white"
+                >
+                  <path
+                    d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="currentColor"
+                    fillOpacity="0.3"
+                  />
+                  <path
+                    d="M2 20H22"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Club del Trekking
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Este evento está incluido en tu membresía del Club del Trekking
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-r from-[#C95100]/10 to-[#A03D00]/10 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-700 dark:text-gray-300">Precio regular:</span>
+                <span className="text-lg font-semibold line-through text-gray-500">
+                  ${Number(event.precio).toLocaleString("es-AR")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700 dark:text-gray-300">Tu precio:</span>
+                <span className="text-2xl font-bold text-[#C95100]">Gratis</span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-6 text-center">
+              ¿Confirmas tu asistencia a este evento?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClubConfirmModal(false)}
+                disabled={joinWithClubMutation.isPending}
+                className="flex-1 py-2 px-4 border rounded-[20px] text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setShowClubConfirmModal(false);
+                  joinWithClubMutation.mutate();
+                }}
+                disabled={joinWithClubMutation.isPending}
+                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#C95100] to-[#A03D00] text-white rounded-[20px] hover:shadow-lg transition-all disabled:opacity-50"
+              >
+                {joinWithClubMutation.isPending ? "Uniendo..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showFullMap && (
         <div className="fixed inset-0 bg-black z-[99999999] flex items-center justify-center">

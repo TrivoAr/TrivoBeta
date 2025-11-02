@@ -21,6 +21,10 @@
     "add-bares": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-bares.ts",
     "add-single-bar": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/add-single-bar.ts",
     "check-bares": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/check-bares.ts",
+    "migrate:club-trekking": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/migrate-club-trekking.ts",
+    "verify:club-trekking": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/verify-club-trekking.ts",
+    "migrate:confirmacion-asistencia": "tsx -r tsconfig-paths/register -r dotenv/config ./scripts/migrate-confirmacion-asistencia.ts",
+    "create-test-membership": "node --loader tsx ./scripts/create-test-membership.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit"
@@ -42,6 +46,7 @@
     "autoprefixer": "10.4.14",
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -97,6 +102,7 @@
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/bcryptjs": "^2.4.2",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mapbox-gl": "^3.4.1",
@@ -118,6 +124,6 @@
     "sharp": "^0.34.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.20.5"
+    "tsx": "^4.20.6"
   }
 }

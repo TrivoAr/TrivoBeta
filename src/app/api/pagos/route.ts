@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     await connectDB();
     const body = await req.json();
 
-    const { salidaId, academiaId, userId, comprobanteUrl } = body;
+    const { salidaId, academiaId, userId, comprobanteUrl, estado } = body;
 
     if (!userId || !comprobanteUrl || (!salidaId && !academiaId)) {
       return NextResponse.json(
@@ -71,6 +71,11 @@ export async function POST(req: Request) {
       userId: new Types.ObjectId(userId),
       comprobanteUrl,
     };
+
+    // Agregar estado si se proporciona (ej: "aprobado" para Club del Trekking)
+    if (estado) {
+      pagoData.estado = estado;
+    }
 
     if (salidaId) {
       pagoData.salidaId = new Types.ObjectId(salidaId);
@@ -90,8 +95,8 @@ export async function POST(req: Request) {
     const pago = await Pago.create(pagoData);
 
     // Notificar al creador sobre el comprobante recibido
-    // Solo si no es un evento gratuito (que usa "EVENTO_GRATUITO" como comprobanteUrl)
-    if (comprobanteUrl !== "EVENTO_GRATUITO") {
+    // Solo si no es un evento gratuito o del Club del Trekking
+    if (comprobanteUrl !== "EVENTO_GRATUITO" && comprobanteUrl !== "CLUB_DEL_TREKKING") {
       if (salidaId) {
         await notificarCreadorComprobante(salidaId, userId, "salida");
       } else if (academiaId) {

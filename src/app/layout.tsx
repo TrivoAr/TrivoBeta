@@ -63,7 +63,7 @@ export default function RootLayout({
         {/* Analytics powered by Mixpanel */}
         <Toaster
           richColors
-          position="top-center"
+          position="top-left"
           expand={false}
           visibleToasts={3}
           offset="20px"

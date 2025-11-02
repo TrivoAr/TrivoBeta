@@ -309,6 +309,26 @@ export default function ClubDelTrekking() {
                       </span>
                     </div>
                   </div>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={() => router.push("/club-del-trekking/suscribirse")}
+                    className="mt-4 w-full bg-white hover:bg-gray-50 text-[#C95100] font-bold py-3 px-6 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Unirme al Club por $25.000</span>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Efectos de brillo */}

@@ -95,6 +95,28 @@ const UserSchema = new Schema(
 
     trialConfig: TrialConfigSchema,
 
+    clubTrekking: {
+      esMiembro: {
+        type: Boolean,
+        default: false,
+      },
+      membershipId: {
+        type: Schema.Types.ObjectId,
+        ref: "ClubTrekkingMembership",
+      },
+      badge: {
+        activo: {
+          type: Boolean,
+          default: false,
+        },
+        tipoMiembro: {
+          type: String,
+          enum: ["bronce", "plata", "oro"],
+          default: "bronce",
+        },
+      },
+    },
+
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
     resetPasswordAttempts: { type: Number, default: 0 },

@@ -132,6 +132,21 @@ export const EVENTS = {
     TOKEN_ACTIVATED: 'Notification Token Activated',
     TOKEN_DEACTIVATED: 'Notification Token Deactivated',
   },
+
+  // Club del Trekking
+  CLUB_TREKKING: {
+    SUBSCRIBED: 'Club Trekking - Subscribed',
+    CANCELLED: 'Club Trekking - Cancelled',
+    PAUSED: 'Club Trekking - Paused',
+    REACTIVATED: 'Club Trekking - Reactivated',
+    SALIDA_RESERVED: 'Club Trekking - Salida Reserved',
+    CHECK_IN: 'Club Trekking - Check In',
+    WEEKLY_LIMIT_REACHED: 'Club Trekking - Weekly Limit Reached',
+    MONTHLY_SUMMARY: 'Club Trekking - Monthly Summary',
+    PAYMENT_RENEWED: 'Club Trekking - Payment Renewed',
+    PAYMENT_FAILED: 'Club Trekking - Payment Failed',
+    BADGE_EARNED: 'Club Trekking - Badge Earned',
+  },
 } as const;
 
 // ==================== FUNCIONES HELPER ====================
@@ -616,6 +631,185 @@ export const trackNotificationTokenDeactivated = (userId: string, reason: string
   trackEvent(EVENTS.NOTIFICATION.TOKEN_DEACTIVATED, {
     user_id: userId,
     reason,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+// ==================== CLUB DEL TREKKING ====================
+
+/**
+ * Trackea cuando un usuario se suscribe al Club del Trekking
+ */
+export const trackClubTrekkingSubscribed = (membershipId: string, userId: string) => {
+  trackEvent(EVENTS.CLUB_TREKKING.SUBSCRIBED, {
+    membership_id: membershipId,
+    user_id: userId,
+    plan: 'monthly',
+    price: 25000,
+    currency: 'ARS',
+    timestamp: new Date().toISOString(),
+  });
+
+  // Registrar el cargo inicial
+  trackCharge(25000, {
+    membership_id: membershipId,
+    plan: 'monthly',
+  });
+};
+
+/**
+ * Trackea cuando un usuario cancela su membresía
+ */
+export const trackClubTrekkingCancelled = (
+  membershipId: string,
+  reason: string,
+  monthsActive?: number
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.CANCELLED, {
+    membership_id: membershipId,
+    reason,
+    months_active: monthsActive,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando un usuario pausa su membresía
+ */
+export const trackClubTrekkingPaused = (membershipId: string) => {
+  trackEvent(EVENTS.CLUB_TREKKING.PAUSED, {
+    membership_id: membershipId,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando un usuario reactiva su membresía
+ */
+export const trackClubTrekkingReactivated = (membershipId: string) => {
+  trackEvent(EVENTS.CLUB_TREKKING.REACTIVATED, {
+    membership_id: membershipId,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando un usuario reserva una salida con su membresía
+ */
+export const trackClubTrekkingSalidaReserved = (
+  membershipId: string,
+  salidaId: string,
+  salidasUsadasSemana: number,
+  properties?: Dict
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.SALIDA_RESERVED, {
+    membership_id: membershipId,
+    salida_id: salidaId,
+    salidas_usadas_semana: salidasUsadasSemana,
+    timestamp: new Date().toISOString(),
+    ...properties,
+  });
+};
+
+/**
+ * Trackea cuando un usuario hace check-in en una salida
+ */
+export const trackClubTrekkingCheckIn = (
+  membershipId: string,
+  salidaId: string,
+  onTime: boolean,
+  properties?: Dict
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.CHECK_IN, {
+    membership_id: membershipId,
+    salida_id: salidaId,
+    on_time: onTime,
+    timestamp: new Date().toISOString(),
+    ...properties,
+  });
+};
+
+/**
+ * Trackea cuando un usuario alcanza el límite semanal
+ */
+export const trackClubTrekkingWeeklyLimitReached = (membershipId: string) => {
+  trackEvent(EVENTS.CLUB_TREKKING.WEEKLY_LIMIT_REACHED, {
+    membership_id: membershipId,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea resumen mensual de uso
+ */
+export const trackClubTrekkingMonthlySummary = (
+  membershipId: string,
+  stats: {
+    totalSalidas: number;
+    kmRecorridos?: number;
+    lugaresVisitados?: number;
+  }
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.MONTHLY_SUMMARY, {
+    membership_id: membershipId,
+    total_salidas: stats.totalSalidas,
+    km_recorridos: stats.kmRecorridos,
+    lugares_visitados: stats.lugaresVisitados,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea renovación exitosa de pago
+ */
+export const trackClubTrekkingPaymentRenewed = (
+  membershipId: string,
+  paymentId: string
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.PAYMENT_RENEWED, {
+    membership_id: membershipId,
+    payment_id: paymentId,
+    amount: 25000,
+    currency: 'ARS',
+    timestamp: new Date().toISOString(),
+  });
+
+  // Registrar el cargo
+  trackCharge(25000, {
+    membership_id: membershipId,
+    payment_id: paymentId,
+    type: 'renewal',
+  });
+};
+
+/**
+ * Trackea fallo en renovación de pago
+ */
+export const trackClubTrekkingPaymentFailed = (
+  membershipId: string,
+  reason?: string
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.PAYMENT_FAILED, {
+    membership_id: membershipId,
+    reason,
+    amount: 25000,
+    currency: 'ARS',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea cuando un usuario obtiene un nuevo badge
+ */
+export const trackClubTrekkingBadgeEarned = (
+  membershipId: string,
+  badgeType: 'bronce' | 'plata' | 'oro',
+  totalSalidas: number
+) => {
+  trackEvent(EVENTS.CLUB_TREKKING.BADGE_EARNED, {
+    membership_id: membershipId,
+    badge_type: badgeType,
+    total_salidas: totalSalidas,
     timestamp: new Date().toISOString(),
   });
 };

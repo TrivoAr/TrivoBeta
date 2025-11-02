@@ -11,6 +11,7 @@ import {
   useLocationDetection,
   useSavedLocations,
 } from "@/hooks/useGeolocation";
+import { useClubMembership } from "@/hooks/useClubMembership";
 
 const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const { data: session, status } = useSession();
@@ -20,6 +21,9 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
   const [SolicitudesPendientes, setSolicitudesPendientes] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [hasInteractedWithModal, setHasInteractedWithModal] = useState(false);
+
+  // Hook de membresía del Club del Trekking
+  const { isActive: isClubMember } = useClubMembership();
 
   const {
     detectLocation,
@@ -175,22 +179,61 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
   return (
     <div className="containerTop bg-background h-[50px] w-[100%] max-w-[390px] flex justify-between items-center mt-0">
-      {/* Avatar */}
+      {/* Avatar con indicador de Club del Trekking */}
 
       {session?.user ? (
-        <Link href="/dashboard/profile">
-          <img
-            className="h-[48px] w-[48px] rounded-[15px] object-cover shadow-md"
-            src={
-              profileImage ||
-              session?.user?.imagen ||
-              "/assets/logo/Trivo T.png"
-            }
-            alt="User Profile"
-            onError={(e) => {
-              e.target.src = "/assets/logo/Trivo T.png";
-            }}
-          />
+        <Link href="/dashboard/profile" className="relative">
+          <div
+            className={`relative ${
+              isClubMember
+                ? "p-[3px] rounded-[18px] bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] shadow-lg"
+                : ""
+            }`}
+          >
+            <img
+              className={`h-[48px] w-[48px] rounded-[15px] object-cover ${
+                isClubMember ? "" : "shadow-md"
+              }`}
+              src={
+                profileImage ||
+                session?.user?.imagen ||
+                "/assets/logo/Trivo T.png"
+              }
+              alt="User Profile"
+              onError={(e) => {
+                e.target.src = "/assets/logo/Trivo T.png";
+              }}
+            />
+          </div>
+
+          {/* Badge del Club del Trekking */}
+          {isClubMember && (
+            <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-[#C95100] to-[#A03D00] rounded-full p-1 shadow-md border-2 border-background">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="currentColor"
+                  fillOpacity="0.3"
+                />
+                <path
+                  d="M2 20H22"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
         </Link>
       ) : (
         <Link href="/login">
@@ -206,7 +249,42 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
       )}
 
       <div className="flex flex-col items-center">
-        {/* Estado de ubicación */}
+        {/* Badge del Club del Trekking */}
+        {isClubMember && (
+          <div
+            onClick={() => router.push("/club-del-trekking/mi-membresia")}
+            className="flex items-center gap-1 bg-gradient-to-r from-[#C95100] to-[#A03D00] px-2 py-0.5 rounded-full cursor-pointer hover:shadow-md transition-all duration-200 mb-1"
+          >
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-white"
+            >
+              <path
+                d="M5 16L8 10L12 14L16 8L19 12V16H5Z"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="currentColor"
+                fillOpacity="0.4"
+              />
+              <path
+                d="M2 20H22"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="text-[10px] font-bold text-white">
+              Club del Trekking
+            </span>
+          </div>
+        )}
+
+        {/* Estado de ubicación - Siempre visible */}
         <div className="flex items-center gap-1 mb-1">
           <span className="text-[10px] text-gray-500">
             {locationSuccess && locationData
@@ -296,8 +374,8 @@ const TopContainer = ({ selectedLocalidad, setSelectedLocalidad }) => {
 
       {/* Modal de explicación GPS */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className="bg-card rounded-2xl p-6 max-w-sm mx-auto shadow-lg z-[10000]">
             <div className="text-center mb-4">
               <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg

@@ -99,6 +99,25 @@ const SalidaSocialSchema = new Schema(
         required: false,
       },
     ],
+
+    clubTrekking: {
+      incluidaEnMembresia: {
+        type: Boolean,
+        default: false,
+      },
+      requiereCheckIn: {
+        type: Boolean,
+        default: true,
+      },
+      cupoMiembros: {
+        type: Number,
+        default: 0,
+      },
+      miembrosActuales: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
   { timestamps: true }
 );

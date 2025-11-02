@@ -10,6 +10,7 @@ import LoginModal from "@/components/Modals/LoginModal";
 import EventModal from "@/components/EventModal";
 import { useSession } from "next-auth/react";
 import { isNightEvent } from "@/lib/theme";
+import { ClubTrekkingBadge } from "@/components/club-trekking/ClubTrekkingBadge";
 
 type EventType = {
   _id: string;
@@ -37,6 +38,12 @@ type EventType = {
   cupo: number;
   fecha?: string;
   hora?: string;
+  clubTrekking?: {
+    incluidaEnMembresia: boolean;
+    requiereCheckIn: boolean;
+    cupoMiembros: number;
+    miembrosActuales: number;
+  };
 };
 
 interface Miembro {
@@ -287,6 +294,17 @@ export default function EventCard({
           <Clock size={16} />
           {parseLocalDate(event.date)} {event.time} hs
         </p>
+
+        {/* Badge del Club del Trekking */}
+        {event.clubTrekking?.incluidaEnMembresia && (
+          <div className="pt-1">
+            <ClubTrekkingBadge
+              variant="small"
+              incluidaEnMembresia={true}
+              showLabel={true}
+            />
+          </div>
+        )}
 
         {/* Precio */}
         {event.price && (

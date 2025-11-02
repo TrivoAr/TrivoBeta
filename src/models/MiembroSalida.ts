@@ -27,6 +27,23 @@ const MiembroSalidaSchema = new Schema(
       default: "pendiente",
     },
     pago_id: { type: Schema.Types.ObjectId, ref: "Pago" },
+    usaMembresiaClub: {
+      type: Boolean,
+      default: false,
+    },
+    checkIn: {
+      realizado: {
+        type: Boolean,
+        default: false,
+      },
+      fecha: {
+        type: Date,
+      },
+      ubicacion: {
+        lat: { type: Number },
+        lng: { type: Number },
+      },
+    },
   },
   { timestamps: true }
 );
