@@ -7,6 +7,7 @@ import PushManager from "@/components/PushManager";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useClubMembership } from "@/hooks/useClubMembership";
 import { Mountain } from "lucide-react";
+import { formatClubPrice } from "@/utils/clubTrekkingPricing";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -201,7 +202,7 @@ function ProfilePage() {
                     Club del Trekking
                   </span>
                   <span className="text-white/80 text-xs">
-                    Trekkings ilimitados por $25.000/mes
+                    Trekkings ilimitados por {formatClubPrice()}/mes
                   </span>
                 </div>
               </div>
@@ -445,7 +446,7 @@ function ProfilePage() {
       )}
 
       {/* Espacio para bottom nav */}
-      <div className="mt-auto"></div>
+      <div className="pb-[80px]"></div>
     </div>
   );
 }

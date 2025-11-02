@@ -11,6 +11,7 @@ import FilterModal, {
   FilterValues,
 } from "@/components/FilterModal";
 import { Toaster } from "react-hot-toast";
+import { formatClubPrice } from "@/utils/clubTrekkingPricing";
 
 type EventType = {
   _id: string;
@@ -316,7 +317,7 @@ export default function ClubDelTrekking() {
                     className="mt-4 w-full bg-white hover:bg-gray-50 text-[#C95100] font-bold py-3 px-6 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span>Unirme al Club por $25.000</span>
+                      <span>Unirme al Club por {formatClubPrice()}</span>
                       <svg
                         width="16"
                         height="16"

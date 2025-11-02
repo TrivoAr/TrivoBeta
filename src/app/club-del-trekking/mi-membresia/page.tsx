@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useClubMembership } from "@/hooks/useClubMembership";
 import { UserClubBadge } from "@/components/club-trekking/ClubTrekkingBadge";
 import toast, { Toaster } from "react-hot-toast";
+import { formatClubPrice } from "@/utils/clubTrekkingPricing";
 
 export default function MiMembresiaPage() {
   const router = useRouter();
@@ -263,7 +264,7 @@ export default function MiMembresiaPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Precio mensual</span>
-                <span className="font-semibold text-gray-900 dark:text-white">$25.000</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatClubPrice()}</span>
               </div>
 
               {membership.estado === "activa" && (

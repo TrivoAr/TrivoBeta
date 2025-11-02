@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 import { useClubMembership } from "@/hooks/useClubMembership";
+import { formatClubPrice } from "@/utils/clubTrekkingPricing";
 
 export default function SuscribirseClubTrekking() {
   const router = useRouter();
@@ -234,7 +235,7 @@ export default function SuscribirseClubTrekking() {
             <>
               {/* SI NO TIENE MEMBRESÍA: Mostrar todo el contenido de suscripción */}
               {/* Hero Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] p-8 shadow-xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] p-8 shadow-xl isolate">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <svg viewBox="0 0 400 300" className="w-full h-full">
@@ -268,23 +269,13 @@ export default function SuscribirseClubTrekking() {
               {/* Price */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-bold text-white">$25.000</span>
+                  <span className="text-5xl font-bold text-white">{formatClubPrice()}</span>
                   <span className="text-white/80 text-lg">/mes</span>
                 </div>
                 <p className="text-white/70 text-sm">
                   Pago mensual recurrente • Cancela cuando quieras
                 </p>
               </div>
-
-              {/* Quick Stats */}
-              {salidasIncluidas > 0 && (
-                <div className="mt-4 flex items-center gap-2 text-white/90 text-sm">
-                  <Check className="w-4 h-4" />
-                  <span className="font-medium">
-                    {salidasIncluidas} salidas disponibles este mes
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Glow Effects */}
@@ -339,7 +330,7 @@ export default function SuscribirseClubTrekking() {
                     Suscríbete
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Paga $25.000/mes y accede a todas las salidas low cost
+                    Paga {formatClubPrice()}/mes y accede a todas las salidas low cost
                   </p>
                 </div>
               </div>
@@ -386,7 +377,7 @@ export default function SuscribirseClubTrekking() {
                   <li>• Solo salidas con precio ≤ $10.000</li>
                   <li>• Check-in obligatorio para validar asistencia</li>
                   <li>• Renovación automática mensual</li>
-                  <li>• Puedes pausar o cancelar cuando quieras</li>
+                  <li>• Cancela cuando quieras</li>
                 </ul>
               </div>
             </div>
