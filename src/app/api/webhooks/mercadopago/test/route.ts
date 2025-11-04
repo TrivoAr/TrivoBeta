@@ -10,6 +10,7 @@ import User from "@/models/user";
  * una transferencia real. Útil para probar el flujo de aprobación automática.
  *
  * ⚠️ IMPORTANTE: Este endpoint NO valida la firma del webhook (solo para testing)
+ * ⚠️ TEMPORALMENTE DESACTIVADO - En mantenimiento por problemas con pagos
  *
  * USO:
  * POST /api/webhooks/mercadopago/test
@@ -22,6 +23,19 @@ import User from "@/models/user";
  * }
  */
 export async function POST(req: NextRequest) {
+  // ⚠️ FUNCIONALIDAD TEMPORALMENTE DESACTIVADA
+  console.warn("⚠️ Intento de acceso a endpoint de testing desactivado");
+
+  return NextResponse.json(
+    {
+      error: "Funcionalidad temporalmente desactivada",
+      message: "El sistema de pagos automáticos está en mantenimiento, incluyendo endpoints de testing.",
+      status: "maintenance"
+    },
+    { status: 503 }
+  );
+
+  /* CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
   try {
     // Solo permitir en desarrollo
     if (process.env.NODE_ENV === "production") {
@@ -131,6 +145,7 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+  */
 }
 
 export async function GET() {

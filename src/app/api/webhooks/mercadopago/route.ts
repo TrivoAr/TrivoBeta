@@ -20,8 +20,33 @@ import { nanoid } from "nanoid";
  * - Un pago cambia de estado
  *
  * Documentación: https://www.mercadopago.com/developers/es/docs/your-integrations/notifications/webhooks
+ *
+ * ⚠️ TEMPORALMENTE DESACTIVADO - En mantenimiento por problemas con pagos
  */
 export async function POST(req: NextRequest) {
+  // ⚠️ FUNCIONALIDAD TEMPORALMENTE DESACTIVADA
+  console.warn("⚠️ Webhook MercadoPago desactivado - recibido y descartado");
+  console.warn("⚠️ Headers:", Object.fromEntries(req.headers.entries()));
+
+  // Log del body para debugging si es necesario
+  try {
+    const body = await req.json();
+    console.warn("⚠️ Body descartado:", JSON.stringify(body, null, 2));
+  } catch (e) {
+    console.warn("⚠️ No se pudo parsear body");
+  }
+
+  // Responder 200 OK para que MercadoPago no reintente
+  return NextResponse.json(
+    {
+      received: true,
+      status: "maintenance",
+      message: "Webhook temporalmente desactivado - en mantenimiento"
+    },
+    { status: 200 }
+  );
+
+  /* CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
   try {
     console.log("📥 Webhook MercadoPago recibido");
 
@@ -238,6 +263,7 @@ export async function POST(req: NextRequest) {
       error: "Internal error"
     }, { status: 200 });
   }
+  */
 }
 
 /**

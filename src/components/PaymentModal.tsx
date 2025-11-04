@@ -438,6 +438,8 @@ export default function PaymentModal({
                 </div>
               </button>
 
+              {/* ⚠️ TEMPORALMENTE DESACTIVADO - Transferencia automática MP */}
+              {false && (
               <button
                 onClick={() => setPaymentMethod("transferencia_mp")}
                 className={`w-full p-3 rounded-lg border text-left transition-colors ${
@@ -487,6 +489,7 @@ export default function PaymentModal({
                   </div>
                 </div>
               </button>
+              )}
 
               <button
                 onClick={() => setPaymentMethod("transferencia")}
