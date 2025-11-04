@@ -1,13 +1,13 @@
 import Skeleton from "react-loading-skeleton";
 import React from "react";
-
-const baseColor = "#e0e0e0";
-const highlightColor = "#f5f5f5";
+import { useSkeletonColors } from "@/hooks/useSkeletonColors";
 
 const GrupoVistaSkeleton = () => {
+  const { baseColor, highlightColor } = useSkeletonColors();
+
   return (
-    <div className="bg-gray-100 min-h-screen p-4 flex flex-col items-center">
-      <div className="max-w-md bg-white shadow-lg rounded-3xl overflow-hidden w-full">
+    <div className="bg-background min-h-screen p-4 flex flex-col items-center">
+      <div className="max-w-md bg-card shadow-lg rounded-3xl overflow-hidden w-full">
         {/* Header */}
         <div className="relative">
           <Skeleton

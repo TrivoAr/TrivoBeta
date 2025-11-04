@@ -4,6 +4,7 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
 import { nanoid } from "nanoid";
+import { notifyNewSalidaToAll } from "@/libs/notificationHelpers";
 
 async function generateUniqueShortId() {
   // Intentos para evitar colisiones
@@ -58,20 +59,20 @@ export async function POST(req: Request) {
       shortId,
     });
 
+    // Notificar a todos los usuarios sobre la nueva salida (Firebase FCM)
     try {
-      const payload = {
-        title: "Nueva salida publicada 🚀",
-        body: `${nuevaSalida.nombre} en ${nuevaSalida.localidad} el ${nuevaSalida.fecha}`,
-        url: `/salida/${nuevaSalida._id}`, // o `/s/${shortId}` si usas shortId
-      };
-
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-notification`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
-
+      console.log("[Create Salida] Enviando notificaciones a todos los usuarios...");
+      const result = await notifyNewSalidaToAll(
+        nuevaSalida._id.toString(),
+        nuevaSalida.nombre,
+        session.user.id,
+        nuevaSalida.localidad,
+        nuevaSalida.fecha
+      );
+      console.log("[Create Salida] Notificaciones enviadas:", result);
+    } catch (notifError) {
+      console.error("[Create Salida] Error enviando notificaciones:", notifError);
+      // No fallar la creación de la salida si las notificaciones fallan
     }
 
     return NextResponse.json(nuevaSalida, { status: 201 });

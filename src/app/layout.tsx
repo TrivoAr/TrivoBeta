@@ -1,7 +1,6 @@
 import Providers from "./Providers";
 import Navbar from "../components/Navbar";
 import { Toaster } from "sonner";
-import Script from "next/script";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 // Map CSS imports removed - now loaded dynamically in map components for better performance
@@ -61,31 +60,18 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body className="flex flex-col items-center w-full">
-        {/* Google Analytics - Loaded after page is interactive */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-2C913CYW7H"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-2C913CYW7H');
-          `}
-        </Script>
-
+        {/* Analytics powered by Mixpanel */}
         <Toaster
           richColors
           position="top-center"
-          expand={true}
+          expand={false}
+          visibleToasts={3}
+          offset="20px"
           toastOptions={{
-            duration: 10000,
+            duration: 5000,
             style: {
-              background: 'transparent',
-              border: 'none',
-              boxShadow: 'none',
-              padding: 0,
+              width: '100%',
+              maxWidth: 'min(640px, 90vw)', // Responsive: 90% del viewport o 640px máximo
             },
           }}
         />

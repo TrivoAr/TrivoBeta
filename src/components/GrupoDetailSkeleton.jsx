@@ -1,12 +1,12 @@
 import Skeleton from "react-loading-skeleton";
 import React from "react";
-
-const baseColor = "#e0e0e0";
-const highlightColor = "#f5f5f5";
+import { useSkeletonColors } from "@/hooks/useSkeletonColors";
 
 const GrupoDetailSkeleton = () => {
+  const { baseColor, highlightColor } = useSkeletonColors();
+
   return (
-    <div className="flex flex-col w-[390px] items-center bg-[#FEFBF9]">
+    <div className="flex flex-col w-[390px] items-center bg-background">
       {/* Header con imagen y botón */}
       <div className="relative w-full h-[190px] flex mb-2">
         <Skeleton

@@ -1,19 +1,15 @@
+// FASE 2: Sistema de notificaciones usando SOLO Firebase Cloud Messaging
+// Se eliminó Web Push API (VAPID) para simplificar y consolidar el sistema
+
 import { connectDB } from "@/libs/mongodb";
 import Notificacion from "@/models/notificacion";
-import Subscription from "@/models/subscription";
+import FCMToken from "@/models/FCMToken";
 import User from "@/models/user";
-import webPush from "web-push";
-
-// Configurar VAPID para web-push
-webPush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+import { getMessaging } from "@/libs/firebaseAdmin";
 
 interface CreateNotificationParams {
-  userId: string; // quien recibe la notificación
-  fromUserId: string; // quien generó la acción
+  userId: string;
+  fromUserId: string;
   type: string;
   message: string;
   salidaId?: string;
@@ -24,53 +20,105 @@ interface CreateNotificationParams {
   metadata?: any;
 }
 
-// Función para enviar notificación push al usuario
-async function sendPushNotification(
+/**
+ * Envía notificación push usando Firebase Cloud Messaging
+ * @param userId ID del usuario destinatario
+ * @param title Título de la notificación
+ * @param body Cuerpo del mensaje
+ * @param actionUrl URL a la que redirigir cuando se clickea
+ * @param notificationId ID de la notificación en DB
+ * @param type Tipo de notificación
+ */
+async function sendFCMNotification(
   userId: string,
   title: string,
   body: string,
-  actionUrl?: string
+  actionUrl?: string,
+  notificationId?: string,
+  type?: string
 ) {
   try {
-    // Buscar todas las suscripciones del usuario
-    const subscriptions = await Subscription.find({ user_id: userId });
+    await connectDB();
 
-    if (subscriptions.length === 0) {
+    // Buscar todos los tokens FCM activos del usuario
+    const fcmTokens = await FCMToken.find({
+      userId,
+      isActive: true,
+    }).lean();
+
+    if (fcmTokens.length === 0) {
+      console.log(`[FCM] No hay tokens activos para el usuario ${userId}`);
       return;
     }
 
-    const payload = JSON.stringify({
-      title,
-      body,
-      url: actionUrl || "/notificaciones",
-      icon: "/icon.png",
-      badge: "/badge.png",
-    });
+    const messaging = getMessaging();
 
-    // Enviar a todas las suscripciones del usuario
-    const sendPromises = subscriptions.map(async (subscription) => {
+    // Preparar mensaje FCM
+    const message = {
+      notification: {
+        title,
+        body,
+      },
+      data: {
+        url: actionUrl || "/notificaciones",
+        notificationId: notificationId || "",
+        type: type || "general",
+        timestamp: Date.now().toString(),
+      },
+      webpush: {
+        fcmOptions: {
+          link: actionUrl || "/notificaciones",
+        },
+        notification: {
+          icon: "/icons/icon-192x192.png",
+          badge: "/icons/manifest-icon-192.maskable.png",
+          tag: notificationId || "trivo-notification",
+          requireInteraction: false,
+          vibrate: [200, 100, 200],
+        },
+      },
+    };
+
+    // Enviar a todos los tokens del usuario
+    const sendPromises = fcmTokens.map(async (tokenDoc) => {
       try {
-        await webPush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: subscription.keys,
-          },
-          payload
-        );
+        await messaging.send({
+          ...message,
+          token: tokenDoc.token,
+        });
+
+        // Actualizar lastUsed
+        await FCMToken.findByIdAndUpdate(tokenDoc._id, {
+          lastUsed: new Date(),
+        });
+
+        console.log(`[FCM] Notificación enviada a token ${tokenDoc._id}`);
       } catch (error: any) {
-        // Si la suscripción es inválida, eliminarla
-        if (error.statusCode === 410 || error.statusCode === 404) {
-          await Subscription.findByIdAndDelete(subscription._id);
+        console.error(`[FCM] Error enviando a token ${tokenDoc._id}:`, error);
+
+        // Si el token es inválido, marcarlo como inactivo
+        if (
+          error.code === "messaging/invalid-registration-token" ||
+          error.code === "messaging/registration-token-not-registered"
+        ) {
+          await FCMToken.findByIdAndUpdate(tokenDoc._id, {
+            isActive: false,
+          });
+          console.log(`[FCM] Token ${tokenDoc._id} marcado como inactivo`);
         }
       }
     });
 
     await Promise.allSettled(sendPromises);
+    console.log(`[FCM] Notificaciones enviadas a ${fcmTokens.length} dispositivo(s)`);
   } catch (error) {
-    // Error sending push notification
+    console.error("[FCM] Error enviando notificaciones push:", error);
   }
 }
 
+/**
+ * Crea una notificación en la base de datos y envía push
+ */
 export async function createNotification({
   userId,
   fromUserId,
@@ -100,39 +148,51 @@ export async function createNotification({
       read: false,
     });
 
-    // Enviar notificación push al dispositivo del usuario
+    // Enviar notificación push FCM
     const pushTitle = getPushTitle(type);
-    await sendPushNotification(userId, pushTitle, message, actionUrl);
+    await sendFCMNotification(
+      userId,
+      pushTitle,
+      message,
+      actionUrl,
+      notification._id.toString(),
+      type
+    );
 
     return notification;
   } catch (error) {
+    console.error("[Notification] Error creando notificación:", error);
     throw error;
   }
 }
 
-// Función para generar títulos específicos según el tipo de notificación
+/**
+ * Obtiene el título apropiado para cada tipo de notificación
+ */
 function getPushTitle(type: string): string {
-  switch (type) {
-    case "miembro_aprobado":
-      return "🎉 Solicitud aprobada";
-    case "miembro_rechazado":
-      return "❌ Solicitud rechazada";
-    case "joined_event":
-      return "👥 Nuevo miembro";
-    case "nueva_salida":
-      return "🚀 Nueva salida";
-    case "pago_aprobado":
-      return "💰 Pago aprobado";
-    case "solicitud_academia":
-      return "🎓 Nueva solicitud";
-    case "solicitud_team":
-      return "⚽ Nueva solicitud";
-    default:
-      return "📱 Trivo";
-  }
+  const titles: Record<string, string> = {
+    miembro_aprobado: "🎉 Solicitud aprobada",
+    miembro_rechazado: "❌ Solicitud rechazada",
+    joined_event: "👥 Nuevo miembro",
+    nueva_salida: "🚀 Nueva salida",
+    pago_aprobado: "💰 Pago aprobado",
+    pago_rechazado: "❌ Pago rechazado",
+    solicitud_academia: "🎓 Nueva solicitud",
+    solicitud_team: "⚽ Nueva solicitud",
+    payment_pending: "⏳ Pago pendiente",
+    evento_cancelado: "🚫 Evento cancelado",
+    evento_modificado: "📝 Evento modificado",
+    recordatorio_evento: "⏰ Recordatorio de evento",
+    trial_expirando: "⚠️ Trial expirando",
+    nueva_clase_academia: "📚 Nueva clase",
+  };
+
+  return titles[type] || "📱 Trivo";
 }
 
-// Funciones específicas para tipos comunes de notificaciones
+// ============================================================================
+// FUNCIONES ESPECÍFICAS PARA CADA TIPO DE NOTIFICACIÓN
+// ============================================================================
 
 export async function notifyMemberApproved(
   userId: string,
@@ -179,7 +239,7 @@ export async function notifyJoinedEvent(
     type: "joined_event",
     message: `${userName} se unió a tu salida "${salidaNombre}"`,
     salidaId,
-    actionUrl: `/social/miembros/${salidaId}`, // Redirigir a gestión de miembros
+    actionUrl: `/social/miembros/${salidaId}`,
   });
 }
 
@@ -199,6 +259,139 @@ export async function notifyNewSalida(
   });
 }
 
+/**
+ * Notifica a TODOS los usuarios activos sobre una nueva salida social
+ * Esta función envía notificaciones masivas a todos los usuarios con tokens FCM activos
+ */
+export async function notifyNewSalidaToAll(
+  salidaId: string,
+  salidaNombre: string,
+  creadorId: string,
+  localidad?: string,
+  fecha?: Date
+) {
+  try {
+    await connectDB();
+
+    // Obtener TODOS los tokens FCM activos (excluyendo al creador)
+    const allTokens = await FCMToken.find({
+      isActive: true,
+      userId: { $ne: creadorId }, // Excluir al creador
+    })
+      .populate("userId", "firstname lastname")
+      .lean();
+
+    if (allTokens.length === 0) {
+      console.log("[Notify All] No hay tokens FCM activos");
+      return;
+    }
+
+    console.log(`[Notify All] Enviando a ${allTokens.length} dispositivos`);
+
+    const messaging = getMessaging();
+
+    // Preparar mensaje FCM
+    const fechaFormateada = fecha
+      ? new Date(fecha).toLocaleDateString("es-AR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        })
+      : "";
+
+    const bodyText = localidad && fecha
+      ? `${salidaNombre} en ${localidad} - ${fechaFormateada}`
+      : salidaNombre;
+
+    const message = {
+      notification: {
+        title: "🚀 Nueva salida disponible",
+        body: bodyText,
+      },
+      data: {
+        url: `/social/${salidaId}`,
+        type: "nueva_salida",
+        salidaId: salidaId,
+        timestamp: Date.now().toString(),
+      },
+      webpush: {
+        fcmOptions: {
+          link: `/social/${salidaId}`,
+        },
+        notification: {
+          icon: "/icons/icon-192x192.png",
+          badge: "/icons/manifest-icon-192.maskable.png",
+          tag: `salida-${salidaId}`,
+          requireInteraction: false,
+          vibrate: [200, 100, 200],
+        },
+      },
+    };
+
+    // Enviar a todos los tokens en paralelo
+    let successCount = 0;
+    let failCount = 0;
+
+    const sendPromises = allTokens.map(async (tokenDoc: any) => {
+      try {
+        await messaging.send({
+          ...message,
+          token: tokenDoc.token,
+        });
+
+        // Actualizar lastUsed
+        await FCMToken.findByIdAndUpdate(tokenDoc._id, {
+          lastUsed: new Date(),
+        });
+
+        successCount++;
+      } catch (error: any) {
+        failCount++;
+        console.error(`[Notify All] Error enviando a token ${tokenDoc._id}:`, error.code);
+
+        // Si el token es inválido, marcarlo como inactivo
+        if (
+          error.code === "messaging/invalid-registration-token" ||
+          error.code === "messaging/registration-token-not-registered"
+        ) {
+          await FCMToken.findByIdAndUpdate(tokenDoc._id, {
+            isActive: false,
+          });
+        }
+      }
+    });
+
+    await Promise.allSettled(sendPromises);
+
+    console.log(
+      `[Notify All] Notificaciones enviadas: ${successCount} exitosas, ${failCount} fallidas`
+    );
+
+    // Crear notificaciones en DB para cada usuario
+    const notificationPromises = allTokens.map(async (tokenDoc: any) => {
+      try {
+        await createNotification({
+          userId: tokenDoc.userId._id.toString(),
+          fromUserId: creadorId,
+          type: "nueva_salida",
+          message: `Nueva salida disponible: "${salidaNombre}"`,
+          salidaId,
+          actionUrl: `/social/${salidaId}`,
+        });
+      } catch (err) {
+        // No fallar si no se puede crear la notificación en DB
+      }
+    });
+
+    await Promise.allSettled(notificationPromises);
+
+    return { successCount, failCount, totalSent: allTokens.length };
+  } catch (error) {
+    console.error("[Notify All] Error enviando notificaciones masivas:", error);
+    throw error;
+  }
+}
+
 export async function notifyPaymentPending(
   userId: string,
   fromUserId: string,
@@ -212,7 +405,7 @@ export async function notifyPaymentPending(
     type: "payment_pending",
     message: `${userName} ha enviado el comprobante de pago para tu salida "${salidaNombre}"`,
     salidaId,
-    actionUrl: `/social/miembros/${salidaId}`, // Redirigir a gestión de miembros
+    actionUrl: `/social/miembros/${salidaId}`,
   });
 }
 
@@ -279,5 +472,118 @@ export async function notifyTeamRequest(
     message: `${userName} quiere unirse a tu team "${teamNombre}"`,
     teamSocialId,
     actionUrl: `/team-social/${teamSocialId}/solicitudes`,
+  });
+}
+
+// ============================================================================
+// FASE 4: NUEVAS FUNCIONES DE NOTIFICACIÓN
+// ============================================================================
+
+export async function notifyEventCancelled(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string,
+  razon?: string
+) {
+  const message = razon
+    ? `El evento "${salidaNombre}" ha sido cancelado. Razón: ${razon}`
+    : `El evento "${salidaNombre}" ha sido cancelado`;
+
+  return createNotification({
+    userId,
+    fromUserId,
+    type: "evento_cancelado",
+    message,
+    salidaId,
+    actionUrl: `/social/${salidaId}`,
+    metadata: { razon },
+  });
+}
+
+export async function notifyEventModified(
+  userId: string,
+  fromUserId: string,
+  salidaId: string,
+  salidaNombre: string,
+  cambios: string[]
+) {
+  const cambiosTexto = cambios.join(", ");
+
+  return createNotification({
+    userId,
+    fromUserId,
+    type: "evento_modificado",
+    message: `El evento "${salidaNombre}" fue modificado: ${cambiosTexto}`,
+    salidaId,
+    actionUrl: `/social/${salidaId}`,
+    metadata: { cambios },
+  });
+}
+
+export async function notifyEventReminder(
+  userId: string,
+  salidaId: string,
+  salidaNombre: string,
+  fechaEvento: Date
+) {
+  const fechaFormateada = fechaEvento.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return createNotification({
+    userId,
+    fromUserId: userId, // El sistema genera el recordatorio
+    type: "recordatorio_evento",
+    message: `Recordatorio: "${salidaNombre}" es mañana a las ${fechaFormateada}`,
+    salidaId,
+    actionUrl: `/social/${salidaId}`,
+    metadata: { fechaEvento: fechaEvento.toISOString() },
+  });
+}
+
+export async function notifyAcademiaTrialExpiring(
+  userId: string,
+  academiaId: string,
+  academiaNombre: string,
+  diasRestantes: number
+) {
+  return createNotification({
+    userId,
+    fromUserId: userId,
+    type: "trial_expirando",
+    message: `Tu periodo de prueba en "${academiaNombre}" expira en ${diasRestantes} días`,
+    academiaId,
+    actionUrl: `/academias/${academiaId}`,
+    metadata: { diasRestantes },
+  });
+}
+
+export async function notifyAcademiaNewClass(
+  userId: string,
+  academiaId: string,
+  academiaNombre: string,
+  fecha: Date
+) {
+  const fechaFormateada = fecha.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return createNotification({
+    userId,
+    fromUserId: userId,
+    type: "nueva_clase_academia",
+    message: `Nueva clase en "${academiaNombre}": ${fechaFormateada}`,
+    academiaId,
+    actionUrl: `/academias/${academiaId}`,
+    metadata: { fecha: fecha.toISOString() },
   });
 }

@@ -21,6 +21,24 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // Sistema responsive para Trivo
+      maxWidth: {
+        'app': '640px',        // Contenedor principal de la app
+        'app-sm': '480px',     // Contenedor pequeño (modals, formularios estrechos)
+        'app-lg': '768px',     // Contenedor grande (tablets)
+        'app-xl': '1024px',    // Contenedor extra grande (desktop)
+      },
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      aspectRatio: {
+        'cover': '390 / 190',  // Aspect ratio para covers de eventos (mantiene proporción del diseño original)
+        'card': '4 / 3',       // Para cards de eventos
+        'square': '1 / 1',     // Para avatares grandes
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -68,5 +86,54 @@ module.exports = {
   plugins: [
     require("tailwindcss-animate"),
     require("@tailwindcss/typography"),
+    // Plugin personalizado para componentes responsive de Trivo
+    function ({ addComponents }) {
+      addComponents({
+        // Contenedor principal de la app - reemplaza w-[390px]
+        '.app-container': {
+          width: '100%',
+          maxWidth: '640px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+        },
+        // Variante sin padding (para casos que ya tienen padding)
+        '.app-container-no-padding': {
+          width: '100%',
+          maxWidth: '640px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        },
+        // Contenedor estrecho (modals, formularios)
+        '.app-container-narrow': {
+          width: '100%',
+          maxWidth: '480px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+        },
+        // Contenedor ancho (tablets)
+        '.app-container-wide': {
+          width: '100%',
+          maxWidth: '768px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1.5rem',
+          paddingRight: '1.5rem',
+        },
+        // Contenedor full-width en móvil, centrado en desktop
+        '.app-container-fluid': {
+          width: '100%',
+          maxWidth: '100%',
+          '@media (min-width: 640px)': {
+            maxWidth: '640px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          },
+        },
+      })
+    },
   ],
 };

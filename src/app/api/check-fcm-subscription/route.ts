@@ -2,65 +2,43 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../../libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
-import mongoose from "mongoose";
-
-// Modelo para tokens FCM
-const FCMTokenSchema = new mongoose.Schema(
-  {
-    user_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
-    token: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    device_info: {
-      userAgent: String,
-      platform: String,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const FCMToken =
-  mongoose.models.FCMToken || mongoose.model("FCMToken", FCMTokenSchema);
+import FCMToken from "@/models/FCMToken";
 
 export async function POST(req: Request) {
   try {
-    // Conectar a la base de datos
     await connectDB();
 
-    // Obtener la sesión del usuario
     const session = await getServerSession(authOptions);
-
-    // Verificar si la sesión existe y si el user_id está presente
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Verificar si existe un token FCM para este usuario
-    const existingToken = await FCMToken.findOne({
-      user_id: session.user.id,
+    const { userId } = await req.json();
+
+    // Verificar que el userId coincida con la sesión
+    if (userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 403 }
+      );
+    }
+
+    // Buscar tokens FCM activos del usuario
+    const activeTokens = await FCMToken.find({
+      userId: session.user.id,
+      isActive: true,
+    }).lean();
+
+    return NextResponse.json({
+      subscribed: activeTokens.length > 0,
+      tokenCount: activeTokens.length,
     });
-
+  } catch (error: any) {
+    console.error("[Check FCM Subscription] Error:", error);
     return NextResponse.json(
       {
-        subscribed: !!existingToken,
-        tokenCount: existingToken ? 1 : 0,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-
-    return NextResponse.json(
-      {
-        error: "Error verificando suscripción FCM",
-        subscribed: false,
+        error: "Error checking subscription",
+        details: error.message,
       },
       { status: 500 }
     );
