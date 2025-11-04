@@ -14,8 +14,23 @@ import { nanoid } from "nanoid";
  *
  * Este endpoint se llama ANTES de que el usuario transfiera,
  * para que cuando llegue el webhook, ya exista el registro en BD.
+ *
+ * ⚠️ TEMPORALMENTE DESACTIVADO - En mantenimiento por problemas con pagos
  */
 export async function POST(req: NextRequest) {
+  // ⚠️ FUNCIONALIDAD TEMPORALMENTE DESACTIVADA
+  console.warn("⚠️ Intento de acceso a endpoint desactivado: /api/pagos/pending-transfer");
+
+  return NextResponse.json(
+    {
+      error: "Funcionalidad temporalmente desactivada",
+      message: "Los pagos automáticos están en mantenimiento. Por favor, contacta con soporte para alternativas de pago.",
+      status: "maintenance"
+    },
+    { status: 503 }
+  );
+
+  /* CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
   try {
     const session = await getServerSession(authOptions);
 
@@ -154,4 +169,5 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+  */
 }
