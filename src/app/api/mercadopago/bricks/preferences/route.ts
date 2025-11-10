@@ -10,8 +10,17 @@ export async function GET(request: NextRequest) {
     const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY;
 
     if (!publicKey) {
+      console.error("❌ NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY no está configurada");
+      console.error("Variables disponibles:", {
+        hasPublicKey: !!process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY,
+        hasAccessToken: !!(process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN),
+      });
+
       return NextResponse.json(
-        { error: "Public key no configurada" },
+        {
+          error: "Public key no configurada",
+          hint: "Verifica NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY en Vercel Environment Variables"
+        },
         { status: 500 }
       );
     }
