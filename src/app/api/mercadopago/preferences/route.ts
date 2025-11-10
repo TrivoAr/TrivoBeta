@@ -9,11 +9,17 @@ import SalidaSocial from "@/models/salidaSocial";
 
 export async function POST(request: NextRequest) {
   try {
-    // Debug environment variables
+    // Obtener la URL base desde env o construirla desde el request
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      process.env.NEXTAUTH_URL ||
+      (request.headers.get("host")
+        ? `https://${request.headers.get("host")}`
+        : "https://trivo.com.ar");
 
+    const accessToken = process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN;
 
-
-    if (!process.env.MP_ACCESS_TOKEN) {
+    if (!accessToken) {
       return NextResponse.json(
         {
           error: "Configuración de MercadoPago incompleta",
@@ -24,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize MercadoPago client
     const client = new MercadoPagoConfig({
-      accessToken: process.env.MP_ACCESS_TOKEN!,
+      accessToken: accessToken,
       options: { timeout: 10000, idempotencyKey: undefined },
     });
 
@@ -124,12 +130,12 @@ export async function POST(request: NextRequest) {
         email: session.user.email,
       },
       back_urls: {
-        success: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=success`,
-        failure: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=failure`,
-        pending: `${process.env.NEXT_PUBLIC_BASE_URL}/social/${salidaId}?payment=pending`,
+        success: `${baseUrl}/social/${salidaId}?payment=success`,
+        failure: `${baseUrl}/social/${salidaId}?payment=failure`,
+        pending: `${baseUrl}/social/${salidaId}?payment=pending`,
       },
       auto_return: "approved" as const,
-      notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/mercadopago/webhook`,
+      notification_url: `${baseUrl}/api/mercadopago/webhook`,
       external_reference: `${salidaId}-${userId}`,
       statement_descriptor: "TRIVO EVENTOS",
       expires: true,
