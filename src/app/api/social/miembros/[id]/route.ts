@@ -11,6 +11,7 @@ import {
   notifyMemberApproved,
   notifyMemberRejected,
 } from "@/libs/notificationHelpers";
+import { trackEventServer, trackChargeServer } from "@/libs/mixpanel.server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -133,6 +134,9 @@ export async function PATCH(
 
     const cupo = typeof salida.cupo === "number" ? salida.cupo : 0;
 
+    // Verificar el estado anterior del miembro
+    const estadoAnterior = miembroCompleto.estado;
+
     if (estado === "aprobado") {
       const aprobados = await MiembroSalida.countDocuments({
         salida_id: salida._id,
@@ -147,6 +151,94 @@ export async function PATCH(
     // Actualizar estado
     await MiembroSalida.updateOne({ _id: params.id }, { estado });
     await Pago.updateOne({ miembro_id: params.id }, { estado }).catch(() => {});
+
+    // ========== TRACKING DE REVENUE PARA TRANSFERENCIAS APROBADAS ==========
+    // Solo trackear si cambió de pendiente/rechazado a aprobado (evita duplicados)
+    if (estado === "aprobado" && estadoAnterior !== "aprobado") {
+      try {
+        // Buscar el pago asociado para verificar si ya fue trackeado
+        const pago = await Pago.findOne({ miembro_id: params.id });
+        const yaTrackeado = pago?.revenueTracked || false;
+
+        if (!yaTrackeado) {
+          // Convertir precio de string a número
+          let precioNumerico = 0;
+          if (salida.precio) {
+            const precioStr = String(salida.precio)
+              .replace(/[^\d.,]/g, "")
+              .replace(",", ".");
+            precioNumerico = parseFloat(precioStr);
+          }
+
+          if (precioNumerico > 0) {
+            console.log(
+              `💰 Tracking revenue (transferencia aprobada): $${precioNumerico} ARS para usuario ${usuario._id}`
+            );
+
+            // Trackear el evento de pago aprobado con revenue
+            const trackSuccess = await trackEventServer({
+              event: "Payment Approved",
+              distinctId: usuario._id.toString(),
+              properties: {
+                distinct_id: usuario._id.toString(),
+                amount: precioNumerico,
+                revenue: precioNumerico, // Propiedad especial de Mixpanel para revenue
+                event_id: salida._id.toString(),
+                event_type: "salida_social",
+                event_name: salida.nombre,
+                payment_id: pago?._id?.toString() || `transfer_${params.id}`,
+                payment_method: "transferencia_bancaria",
+                currency: "ARS",
+                source: "manual_approval",
+                approved_by: session.user.id,
+                timestamp: new Date().toISOString(),
+              },
+            });
+
+            // Registrar el cargo en el perfil del usuario para lifetime value
+            const chargeSuccess = await trackChargeServer({
+              distinctId: usuario._id.toString(),
+              amount: precioNumerico,
+              properties: {
+                event_id: salida._id.toString(),
+                event_type: "salida_social",
+                event_name: salida.nombre,
+                payment_id: pago?._id?.toString() || `transfer_${params.id}`,
+                payment_method: "transferencia_bancaria",
+                currency: "ARS",
+                timestamp: new Date().toISOString(),
+              },
+            });
+
+            // Marcar el pago como trackeado si ambos fueron exitosos
+            if (trackSuccess && chargeSuccess && pago) {
+              pago.revenueTracked = true;
+              pago.revenueTrackedAt = new Date();
+              await pago.save();
+              console.log(
+                `✅ Revenue tracking completado y marcado para usuario ${usuario._id} (transferencia)`
+              );
+            } else {
+              console.warn(
+                `⚠️ Revenue tracking puede haber fallado para usuario ${usuario._id}`
+              );
+            }
+          } else {
+            console.warn(
+              `⚠️ No se pudo obtener el precio de la salida ${salida._id} para tracking`
+            );
+          }
+        } else {
+          console.log(
+            `ℹ️ Revenue ya trackeado para miembro ${params.id}, evitando duplicado`
+          );
+        }
+      } catch (trackingError) {
+        console.error("❌ Error al trackear revenue de transferencia:", trackingError);
+        // No fallar la operación principal por error de tracking
+      }
+    }
+    // ========== FIN TRACKING ==========
 
     // Crear notificación según el estado
     try {
@@ -166,7 +258,6 @@ export async function PATCH(
         );
       }
     } catch (notificationError) {
-
       // No fallar la operación principal por error de notificación
     }
 

@@ -37,14 +37,14 @@ export function usePaymentStatus(salidaId: string, enabled = true) {
     },
     enabled,
     refetchInterval: (query) => {
-      // Si está pendiente, consultar cada 3 segundos
-      if (query.state.data?.isPending) return 3000;
+      // Si está pendiente, consultar cada 5 segundos (antes 3s - reducir carga)
+      if (query.state.data?.isPending) return 5000;
       // Si está aprobado, dejar de consultar
       if (query.state.data?.isApproved) return false;
-      // En otros casos, consultar cada 10 segundos
-      return 10000;
+      // En otros casos, consultar cada 30 segundos (antes 10s - reducir carga)
+      return 30000;
     },
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false, // No hacer polling en background
   });
 
   // Detectar cambios de estado y mostrar notificaciones

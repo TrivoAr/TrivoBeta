@@ -20,8 +20,16 @@ export async function GET(
 
     const salida = await repository.findWithPopulatedData(id);
 
-
-    return NextResponse.json(salida, { status: 200 });
+    // Configurar headers de caching para mejorar performance
+    // Los datos de salidas no cambian muy frecuentemente
+    return NextResponse.json(salida, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        // s-maxage=60: Cache en CDN/edge por 60 segundos
+        // stale-while-revalidate=120: Servir cache stale hasta 120s mientras revalida en background
+      }
+    });
   } catch (error) {
    
 

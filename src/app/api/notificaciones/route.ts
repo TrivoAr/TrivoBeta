@@ -28,6 +28,12 @@ export async function GET() {
         const academia = n.academiaId;
         const teamSocial = n.teamSocialId;
 
+        // Validar que user existe antes de procesarlo
+        if (!user || !user._id) {
+          console.warn(`Notificación ${n._id} no tiene fromUserId válido, omitiendo`);
+          return null;
+        }
+
         let imagen = "";
 
         try {
@@ -36,7 +42,6 @@ export async function GET() {
             user._id.toString()
           );
         } catch (error) {
-
           imagen = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             `${user.firstname || "User"}`
           )}&background=random&color=fff&size=128`;
@@ -96,11 +101,14 @@ export async function GET() {
       })
     );
 
-    return NextResponse.json(enriched, { status: 200 });
-  } catch (error) {
+    // Filtrar notificaciones nulas (aquellas sin fromUserId válido)
+    const validNotifications = enriched.filter((n) => n !== null);
 
+    return NextResponse.json(validNotifications, { status: 200 });
+  } catch (error) {
+    console.error("Error en /api/notificaciones:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: "Error interno del servidor", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

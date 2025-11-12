@@ -12,6 +12,7 @@ import { sendTicketEmail } from "@/libs/email/sendTicketEmail";
 import { customAlphabet } from "nanoid";
 import * as admin from "firebase-admin";
 import mongoose from "mongoose";
+import { trackEventServer, trackChargeServer } from "@/libs/mixpanel.server";
 
 // Configurar cliente de MercadoPago
 const client = new MercadoPagoConfig({
@@ -138,7 +139,13 @@ export async function POST(request: NextRequest) {
 
     // Si el pago fue aprobado, actualizar el estado del miembro
     if (paymentData.status === "approved") {
-      await procesarPagoAprobado(salidaId, userId, pagoRecord._id);
+      await procesarPagoAprobado(
+        salidaId,
+        userId,
+        pagoRecord._id,
+        paymentData.transaction_amount || 0,
+        paymentId
+      );
     }
 
     return NextResponse.json({ message: "Webhook procesado correctamente" });
@@ -173,14 +180,36 @@ function mapMercadoPagoStatus(mpStatus: string): string {
 async function procesarPagoAprobado(
   salidaId: string,
   userId: string,
-  pagoId: string
+  pagoId: string,
+  amount: number,
+  paymentId: string
 ) {
   try {
+    // Obtener información de la salida para el tracking
+    const salida = await SalidaSocial.findById(salidaId);
+
+    if (!salida) {
+      console.error(`❌ Salida ${salidaId} no encontrada para tracking`);
+      return;
+    }
+
+    // Convertir precio de string a número
+    let precioNumerico = 0;
+    if (salida.precio) {
+      const precioStr = String(salida.precio).replace(/[^\d.,]/g, "").replace(",", ".");
+      precioNumerico = parseFloat(precioStr);
+    }
+
+    // Usar el monto del pago si no se pudo obtener el precio
+    const montoFinal = precioNumerico > 0 ? precioNumerico : amount;
+
     // Buscar si ya existe un miembro para esta salida y usuario
     let miembro = await MiembroSalida.findOne({
       salida_id: salidaId,
       usuario_id: userId,
     });
+
+    const esNuevoMiembro = !miembro;
 
     if (!miembro) {
       // Crear nuevo miembro con auto-aprobación para pagos de MercadoPago
@@ -198,13 +227,72 @@ async function procesarPagoAprobado(
 
     await miembro.save();
 
+    // ========== TRACKING DE REVENUE EXACTO ==========
+    // Verificar si ya se trackeó el revenue para este pago
+    const pagoDoc = await Pagos.findById(pagoId);
+    const yaTrackeado = pagoDoc?.revenueTracked || false;
+
+    // Solo trackear si:
+    // 1. Es un nuevo miembro O cambió de estado a aprobado
+    // 2. Y NO se ha trackeado el revenue anteriormente
+    if ((esNuevoMiembro || miembro.estado === "aprobado") && !yaTrackeado) {
+      console.log(`💰 Tracking revenue: $${montoFinal} ARS para usuario ${userId}`);
+
+      // Trackear el evento de pago aprobado con revenue
+      const trackSuccess = await trackEventServer({
+        event: "Payment Approved",
+        distinctId: userId,
+        properties: {
+          distinct_id: userId,
+          amount: montoFinal,
+          revenue: montoFinal, // Propiedad especial de Mixpanel para revenue
+          event_id: salidaId,
+          event_type: "salida_social",
+          event_name: salida.nombre,
+          payment_id: paymentId,
+          payment_method: "mercadopago",
+          currency: "ARS",
+          source: "webhook_mercadopago",
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Registrar el cargo en el perfil del usuario para lifetime value
+      const chargeSuccess = await trackChargeServer({
+        distinctId: userId,
+        amount: montoFinal,
+        properties: {
+          event_id: salidaId,
+          event_type: "salida_social",
+          event_name: salida.nombre,
+          payment_id: paymentId,
+          payment_method: "mercadopago",
+          currency: "ARS",
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Marcar el pago como trackeado si ambos fueron exitosos
+      if (trackSuccess && chargeSuccess && pagoDoc) {
+        pagoDoc.revenueTracked = true;
+        pagoDoc.revenueTrackedAt = new Date();
+        await pagoDoc.save();
+        console.log(`✅ Revenue tracking completado y marcado para usuario ${userId}`);
+      } else {
+        console.warn(`⚠️ Revenue tracking puede haber fallado para usuario ${userId}`);
+      }
+    } else if (yaTrackeado) {
+      console.log(`ℹ️ Revenue ya trackeado para pago ${pagoId}, evitando duplicado`);
+    }
+    // ========== FIN TRACKING ==========
+
     // Generar y enviar QR de acceso por email
     await enviarQRAcceso(salidaId, userId, pagoId);
 
     // Notificar al creador de la salida
     await notificarCreadorPagoAprobado(salidaId, userId, "mercadopago");
   } catch (error) {
-
+    console.error("❌ Error al procesar pago aprobado:", error);
   }
 }
 

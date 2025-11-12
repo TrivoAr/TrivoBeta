@@ -262,13 +262,14 @@ export const trackPaymentInitiated = (amount: number, eventId: string, eventType
 };
 
 /**
- * Trackea pago completado
+ * Trackea pago completado con revenue tracking
  */
 export const trackPaymentCompleted = (
   amount: number,
   eventId: string,
   eventType: string,
-  paymentId?: string
+  paymentId?: string,
+  additionalData?: Dict
 ) => {
   // El timeEvent que se inició en trackPaymentInitiated
   // automáticamente calculará la duración
@@ -278,14 +279,19 @@ export const trackPaymentCompleted = (
     event_type: eventType,
     payment_id: paymentId,
     currency: 'ARS',
+    revenue: amount, // Para revenue tracking en Mixpanel
     timestamp: new Date().toISOString(),
+    ...additionalData,
   });
 
-  // Registrar el cargo en el perfil del usuario
+  // Registrar el cargo en el perfil del usuario para revenue tracking
   trackCharge(amount, {
     event_id: eventId,
     event_type: eventType,
     payment_id: paymentId,
+    currency: 'ARS',
+    timestamp: new Date().toISOString(),
+    ...additionalData,
   });
 };
 
@@ -617,5 +623,72 @@ export const trackNotificationTokenDeactivated = (userId: string, reason: string
     user_id: userId,
     reason,
     timestamp: new Date().toISOString(),
+  });
+};
+
+// ==================== REVENUE TRACKING (BACKEND) ====================
+
+/**
+ * Trackea pago aprobado desde el servidor (webhook)
+ * Esta es la función principal para revenue tracking server-side
+ */
+export const trackPaymentApprovedServer = (data: {
+  userId: string;
+  salidaId: string;
+  amount: number;
+  paymentId: string;
+  paymentMethod?: string;
+  salidaNombre?: string;
+  currency?: string;
+}) => {
+  const eventData = {
+    distinct_id: data.userId, // Identificar al usuario
+    amount: data.amount,
+    revenue: data.amount, // Propiedad especial de Mixpanel para revenue
+    event_id: data.salidaId,
+    event_type: 'salida_social',
+    payment_id: data.paymentId,
+    payment_method: data.paymentMethod || 'mercadopago',
+    salida_name: data.salidaNombre,
+    currency: data.currency || 'ARS',
+    timestamp: new Date().toISOString(),
+    source: 'webhook',
+  };
+
+  // Track el evento de pago completado
+  trackEvent(EVENTS.PAYMENTS.APPROVED, eventData);
+
+  // Registrar el cargo en el perfil del usuario
+  // IMPORTANTE: Este método incrementa el lifetime value del usuario
+  trackCharge(data.amount, {
+    event_id: data.salidaId,
+    event_type: 'salida_social',
+    payment_id: data.paymentId,
+    payment_method: data.paymentMethod || 'mercadopago',
+    currency: data.currency || 'ARS',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Trackea pago rechazado desde el servidor
+ */
+export const trackPaymentRejectedServer = (data: {
+  userId: string;
+  salidaId: string;
+  amount: number;
+  paymentId: string;
+  reason?: string;
+}) => {
+  trackEvent(EVENTS.PAYMENTS.REJECTED, {
+    distinct_id: data.userId,
+    amount: data.amount,
+    event_id: data.salidaId,
+    event_type: 'salida_social',
+    payment_id: data.paymentId,
+    reason: data.reason,
+    currency: 'ARS',
+    timestamp: new Date().toISOString(),
+    source: 'webhook',
   });
 };

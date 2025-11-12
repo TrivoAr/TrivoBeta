@@ -68,6 +68,14 @@ const PagoSchema = new Schema(
     webhookProcessedAt: {
       type: Date, // Cuándo se procesó el webhook
     },
+    // Revenue tracking
+    revenueTracked: {
+      type: Boolean,
+      default: false, // Para evitar trackear revenue duplicado
+    },
+    revenueTrackedAt: {
+      type: Date, // Cuándo se trackeó el revenue
+    },
   },
   { timestamps: true }
 );
