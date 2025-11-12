@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import {
@@ -18,6 +18,7 @@ import {
   getDistinctId,
   aliasUser,
 } from '@/libs/mixpanel';
+import { trackLogin, trackLogout } from '@/utils/mixpanelEvents';
 import type { Dict, RequestOptions } from 'mixpanel-browser';
 
 interface MixpanelContextValue {
@@ -53,13 +54,27 @@ interface MixpanelProviderProps {
 export default function MixpanelProvider({ children }: MixpanelProviderProps) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const lastTrackedPath = useRef<string | null>(null);
+  const lastIdentifiedUser = useRef<string | null>(null);
+  const hasTrackedLogin = useRef(false);
 
   // Identificar usuario cuando la sesión cambia
   useEffect(() => {
     if (session?.user) {
       const userId = session.user.id || session.user.email;
-      if (userId) {
+      if (userId && userId !== lastIdentifiedUser.current) {
+        // Obtener distinct_id anónimo antes de identificar
+        const anonymousId = getDistinctId();
+
+        // Identificar usuario
         identifyUser(userId);
+
+        // Si había un ID anónimo diferente, crear alias para fusionar perfiles
+        if (anonymousId && anonymousId !== userId) {
+          aliasUser(userId);
+        }
+
+        lastIdentifiedUser.current = userId;
 
         // Establecer propiedades del usuario
         const userProperties: Dict = {
@@ -97,20 +112,34 @@ export default function MixpanelProvider({ children }: MixpanelProviderProps) {
         setUserPropertiesOnce({
           first_seen: new Date().toISOString(),
         });
+
+        // Trackear login (solo una vez por sesión)
+        if (!hasTrackedLogin.current) {
+          // Determinar método de login basado en fromOAuth o provider
+          const method = session.user.fromOAuth ? 'google' : 'credentials';
+          trackLogin(method, userId);
+          hasTrackedLogin.current = true;
+        }
       }
     } else {
       // Reset cuando el usuario cierra sesión
+      if (lastIdentifiedUser.current) {
+        trackLogout();
+        lastIdentifiedUser.current = null;
+        hasTrackedLogin.current = false;
+      }
       resetUser();
     }
   }, [session]);
 
-  // Trackear cambios de página
+  // Trackear cambios de página (solo si realmente cambió)
   useEffect(() => {
-    if (pathname) {
+    if (pathname && pathname !== lastTrackedPath.current) {
       trackPageView(pathname, {
         path: pathname,
         timestamp: new Date().toISOString(),
       });
+      lastTrackedPath.current = pathname;
     }
   }, [pathname]);
 

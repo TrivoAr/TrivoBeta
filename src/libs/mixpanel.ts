@@ -10,7 +10,7 @@ const isBrowser = typeof window !== 'undefined';
 if (isBrowser && mixpanelToken) {
   mixpanel.init(mixpanelToken, {
     debug: isDevelopment,
-    track_pageview: true,
+    track_pageview: false, // Desactivado - usamos tracking manual con control
     persistence: 'localStorage',
     ignore_dnt: false, // Respetar Do Not Track
     secure_cookie: true,

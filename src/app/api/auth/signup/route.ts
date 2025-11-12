@@ -3,6 +3,7 @@ import User from "@/models/user";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
+import { trackEventServer, setUserPropertiesServer } from "@/libs/mixpanel.server";
 
 export async function POST(request: Request) {
   try {
@@ -46,6 +47,37 @@ export async function POST(request: Request) {
 
     // Guardar el usuario en la base de datos
     const savedUser = await user.save();
+
+    // Trackear signup en Mixpanel
+    try {
+      await trackEventServer({
+        event: "User Signup",
+        distinctId: savedUser._id.toString(),
+        properties: {
+          distinct_id: savedUser._id.toString(),
+          method: "credentials",
+          email: savedUser.email,
+          firstname: savedUser.firstname,
+          lastname: savedUser.lastname,
+          rol: savedUser.rol,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Establecer propiedades iniciales del usuario
+      await setUserPropertiesServer(savedUser._id.toString(), {
+        $email: savedUser.email,
+        $name: `${savedUser.firstname} ${savedUser.lastname}`.trim(),
+        firstname: savedUser.firstname,
+        lastname: savedUser.lastname,
+        rol: savedUser.rol,
+        $avatar: savedUser.imagen,
+        first_seen: savedUser.createdAt.toISOString(),
+      });
+    } catch (mixpanelError) {
+      console.error("Error tracking signup in Mixpanel:", mixpanelError);
+      // No fallar el signup si Mixpanel falla
+    }
 
     // Retornar una respuesta con los datos del usuario
     return NextResponse.json(
