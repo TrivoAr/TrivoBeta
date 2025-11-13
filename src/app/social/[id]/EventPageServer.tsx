@@ -27,7 +27,7 @@ async function getEventData(id: string) {
       .populate("creador_id", "firstname lastname email imagen")
       .populate("profesorId", "firstname lastname imagen telnumber bio rol")
       .populate("sponsors", "name imagen")
-      .lean();
+      .lean() as any;
 
     if (!event) {
       console.log("[EventPageServer] Event not found for ID:", id);
