@@ -122,7 +122,7 @@ export async function PATCH(
     // Obtener información completa del miembro para las notificaciones
     const miembroCompleto = await MiembroSalida.findById(params.id)
       .populate("usuario_id", "firstname lastname _id")
-      .populate("salida_id", "nombre cupo creador_id")
+      .populate("salida_id", "nombre cupo creador_id precio")
       .lean();
 
     if (!miembroCompleto) return jsonErr("Miembro no encontrado", 404);
@@ -155,10 +155,18 @@ export async function PATCH(
     // ========== TRACKING DE REVENUE PARA TRANSFERENCIAS APROBADAS ==========
     // Solo trackear si cambió de pendiente/rechazado a aprobado (evita duplicados)
     if (estado === "aprobado" && estadoAnterior !== "aprobado") {
+      console.log("[REVENUE] Iniciando tracking de transferencia aprobada");
+      console.log("[REVENUE] Usuario:", usuario._id);
+      console.log("[REVENUE] Salida:", salida.nombre);
+      console.log("[REVENUE] Precio raw:", salida.precio);
+
       try {
         // Buscar el pago asociado para verificar si ya fue trackeado
         const pago = await Pago.findOne({ miembro_id: params.id });
         const yaTrackeado = pago?.revenueTracked || false;
+
+        console.log("[REVENUE] Pago encontrado:", !!pago);
+        console.log("[REVENUE] Ya trackeado:", yaTrackeado);
 
         if (!yaTrackeado) {
           // Convertir precio de string a número
@@ -168,6 +176,9 @@ export async function PATCH(
               .replace(/[^\d.,]/g, "")
               .replace(",", ".");
             precioNumerico = parseFloat(precioStr);
+            console.log("[REVENUE] Precio convertido:", precioNumerico);
+          } else {
+            console.warn("[REVENUE] ⚠️ No hay precio en la salida");
           }
 
           if (precioNumerico > 0) {
