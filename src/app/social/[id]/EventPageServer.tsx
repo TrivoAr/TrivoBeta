@@ -12,6 +12,9 @@ interface PageProps {
 // Configurar ISR - revalidar cada 60 segundos
 export const revalidate = 60;
 
+// Permitir rutas dinámicas no pre-generadas en build time
+export const dynamicParams = true;
+
 async function getEventData(id: string) {
   try {
     await connectDB();
