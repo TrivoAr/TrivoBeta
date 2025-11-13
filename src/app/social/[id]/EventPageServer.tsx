@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { connectDB } from "@/libs/mongodb";
 import SalidaSocial from "@/models/salidaSocial";
+import User from "@/models/user";
+import Sponsors from "@/models/sponsors";
 import EventPageClient from "./EventPageClient";
 
 interface PageProps {
@@ -45,8 +47,10 @@ async function getMiembros(salidaId: string) {
   try {
     await connectDB();
 
-    // Import the model here to avoid circular dependencies
+    // Import the models here to avoid circular dependencies
     const MiembroSalida = (await import("@/models/MiembroSalida")).default;
+    const Pagos = (await import("@/models/pagos")).default;
+    // User ya está importado arriba
 
     const miembros = await MiembroSalida.find({ salidaId })
       .populate("usuario_id", "firstname lastname imagen")
