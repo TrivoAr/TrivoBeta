@@ -1,8 +1,5 @@
 import { notFound } from "next/navigation";
-import { connectDB } from "@/libs/mongodb";
-import SalidaSocial from "@/models/salidaSocial";
-import User from "@/models/user";
-import Sponsors from "@/models/sponsors";
+import { SalidaSocialRepository } from "@/libs/repository";
 import EventPageClient from "./EventPageClient";
 
 interface PageProps {
@@ -20,23 +17,12 @@ export const dynamicParams = true;
 async function getEventData(id: string) {
   try {
     console.log("[EventPageServer] Fetching event with ID:", id);
-    await connectDB();
-    console.log("[EventPageServer] Database connected");
 
-    const event = await SalidaSocial.findById(id)
-      .populate("creador_id", "firstname lastname email imagen")
-      .populate("profesorId", "firstname lastname imagen telnumber bio rol")
-      .populate("sponsors", "name imagen")
-      .lean() as any;
-
-    if (!event) {
-      console.log("[EventPageServer] Event not found for ID:", id);
-      return null;
-    }
+    const repository = new SalidaSocialRepository();
+    const event = await repository.findWithPopulatedData(id);
 
     console.log("[EventPageServer] Event found:", event.nombre);
-    // Convertir a objeto plano serializable
-    return JSON.parse(JSON.stringify(event));
+    return event as any;
   } catch (error) {
     console.error("[EventPageServer] Error fetching event:", error);
     return null;
@@ -45,12 +31,13 @@ async function getEventData(id: string) {
 
 async function getMiembros(salidaId: string) {
   try {
-    await connectDB();
-
-    // Import the models here to avoid circular dependencies
+    // Import models dinamically to ensure registration in serverless
+    const { connectDB } = await import("@/libs/mongodb");
     const MiembroSalida = (await import("@/models/MiembroSalida")).default;
+    const User = (await import("@/models/user")).default;
     const Pagos = (await import("@/models/pagos")).default;
-    // User ya está importado arriba
+
+    await connectDB();
 
     const miembros = await MiembroSalida.find({ salidaId })
       .populate("usuario_id", "firstname lastname imagen")
