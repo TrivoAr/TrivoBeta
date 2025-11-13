@@ -1,4 +1,4 @@
-import { Model, Document } from "mongoose";
+import { Model, Document, Types } from "mongoose";
 import { connectDB } from "@/libs/mongodb";
 
 export interface RepositoryOptions {
@@ -60,6 +60,11 @@ export abstract class BaseRepository<T extends Document> {
   ): Promise<T | null> {
     if (options.requireConnection !== false) {
       await this.ensureConnection();
+    }
+
+    // Validar que el ID sea un ObjectId válido
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundError(this.resourceName, id);
     }
 
     try {

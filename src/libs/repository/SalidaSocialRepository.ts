@@ -1,8 +1,8 @@
-import { BaseRepository, RepositoryOptions } from "./BaseRepository";
+import { BaseRepository, RepositoryOptions, NotFoundError } from "./BaseRepository";
 import SalidaSocial from "@/models/salidaSocial";
 import User from "@/models/user";
 import Sponsors from "@/models/sponsors";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { ImageService } from "@/libs/services/ImageService";
 
 export interface ISalidaSocial extends Document {
@@ -96,6 +96,11 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
       await this.ensureConnection();
     }
 
+    // Validar que el ID sea un ObjectId válido
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundError(this.resourceName, id);
+    }
+
     try {
       // Ensure models are registered
       // User model and Sponsors model registration check
@@ -109,10 +114,7 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
         .exec();
 
       if (!salida) {
-        throw this.handleError(
-          new Error("Not found"),
-          `buscar ${this.resourceName} por ID`
-        );
+        throw new NotFoundError(this.resourceName, id);
       }
 
       // Convert to plain object
