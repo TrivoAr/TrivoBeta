@@ -35,6 +35,11 @@ export async function GET() {
 
     // 2. Test de populate con precio
     try {
+      // Primero, verificar miembros sin populate
+      const miembroRaw = await MiembroSalida.findOne().lean();
+      const salidaIdRaw = miembroRaw ? (miembroRaw as any).salida_id : null;
+
+      // Luego, con populate
       const miembroTest = await MiembroSalida.findOne()
         .populate("salida_id", "nombre precio cupo")
         .populate("usuario_id", "firstname lastname")
@@ -45,12 +50,19 @@ export async function GET() {
         const usuario = (miembroTest as any).usuario_id;
         results.populateTest = {
           success: true,
+          salidaIdRawExists: !!salidaIdRaw,
+          salidaIdRaw: salidaIdRaw?.toString(),
           tieneSalida: !!salida,
           tieneUsuario: !!usuario,
           tienePrecio: !!salida?.precio,
           salida: salida ? {
             nombre: salida.nombre,
             precio: salida.precio,
+            cupo: salida.cupo,
+          } : null,
+          usuario: usuario ? {
+            firstname: usuario.firstname,
+            lastname: usuario.lastname,
           } : null,
         };
       } else {
