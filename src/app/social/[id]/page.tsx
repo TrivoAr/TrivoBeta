@@ -1,5 +1,8 @@
 export { default } from "./EventPageServer";
 
+// Permitir rutas dinámicas no pre-generadas en build time
+export const dynamicParams = true;
+
 // Configurar metadata dinámica
 export async function generateMetadata({ params }: { params: { id: string } }) {
   try {
