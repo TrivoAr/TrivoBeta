@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/libs/mongodb";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { miembroId: string } }
 ) {
   try {
@@ -10,21 +10,19 @@ export async function GET(
 
     const MiembroSalida = (await import("@/models/MiembroSalida")).default;
     const Pago = (await import("@/models/pagos")).default;
-    const SalidaSocial = (await import("@/models/salidaSocial")).default;
-    const User = (await import("@/models/user")).default;
 
-    // Buscar el miembro con populate
+    // Buscar el miembro con populate (incluyendo pago_id)
     const miembro = await MiembroSalida.findById(params.miembroId)
       .populate("usuario_id", "firstname lastname email")
       .populate("salida_id", "nombre precio")
+      .populate("pago_id", "estado comprobanteUrl tipoPago revenueTracked revenueTrackedAt")
       .lean();
 
     if (!miembro) {
       return NextResponse.json({ error: "Miembro no encontrado" }, { status: 404 });
     }
 
-    // Buscar el pago asociado
-    const pago = await Pago.findOne({ miembro_id: params.miembroId }).lean();
+    const pago = (miembro as any).pago_id;
 
     const salida = (miembro as any).salida_id;
     const usuario = (miembro as any).usuario_id;
@@ -45,9 +43,10 @@ export async function GET(
         precioConvertido: salida.precio ? parseFloat(String(salida.precio).replace(/[^\d.,]/g, "").replace(",", ".")) : null,
       } : "Salida no encontrada o eliminada",
       pago: pago ? {
-        id: pago._id,
-        estado: pago.estado,
-        metodoPago: (pago as any).metodoPago,
+        id: (pago as any)._id,
+        estado: (pago as any).estado,
+        tipoPago: (pago as any).tipoPago,
+        comprobanteUrl: (pago as any).comprobanteUrl,
         revenueTracked: (pago as any).revenueTracked || false,
         revenueTrackedAt: (pago as any).revenueTrackedAt || null,
       } : "Pago no encontrado",

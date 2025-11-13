@@ -12,6 +12,11 @@ const PagoSchema = new Schema(
       ref: "Academia", // Referencia a academias
       required: false,
     },
+    miembro_id: {
+      type: Schema.Types.ObjectId,
+      ref: "MiembroSalida", // Referencia al miembro de la salida
+      required: false,
+    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
