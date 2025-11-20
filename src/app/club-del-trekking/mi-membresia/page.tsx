@@ -19,13 +19,14 @@ import { Button } from "@/components/ui/button";
 import { useClubMembership } from "@/hooks/useClubMembership";
 import { UserClubBadge } from "@/components/club-trekking/ClubTrekkingBadge";
 import toast, { Toaster } from "react-hot-toast";
-import { formatClubPrice } from "@/utils/clubTrekkingPricing";
+import { useClubTrekkingConfig } from "@/hooks/useClubTrekkingConfig";
 
 export default function MiMembresiaPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { membership, loading, error, isActive, salidasRestantes, puedeReservar, refetch } =
     useClubMembership();
+  const { formattedPrice } = useClubTrekkingConfig();
   const [actionLoading, setActionLoading] = useState(false);
 
   // Redirect if not authenticated
@@ -232,11 +233,10 @@ export default function MiMembresiaPage() {
                   <div
                     className="bg-[#C95100] h-2 rounded-full transition-all duration-300"
                     style={{
-                      width: `${
-                        ((membership.usoMensual.limiteSemanal - salidasRestantes) /
+                      width: `${((membership.usoMensual.limiteSemanal - salidasRestantes) /
                           membership.usoMensual.limiteSemanal) *
                         100
-                      }%`,
+                        }%`,
                     }}
                   ></div>
                 </div>
@@ -264,7 +264,7 @@ export default function MiMembresiaPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-gray-400">Precio mensual</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatClubPrice()}</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formattedPrice}</span>
               </div>
 
               {membership.estado === "activa" && (
@@ -317,11 +317,10 @@ export default function MiMembresiaPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-2 rounded-lg ${
-                            salida.checkInRealizado
+                          className={`p-2 rounded-lg ${salida.checkInRealizado
                               ? "bg-green-100 dark:bg-green-900/20"
                               : "bg-gray-200 dark:bg-gray-600"
-                          }`}
+                            }`}
                         >
                           {salida.checkInRealizado ? (
                             <Check className="w-4 h-4 text-green-600 dark:text-green-400" />

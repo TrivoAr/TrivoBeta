@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import toast, { Toaster } from "react-hot-toast";
 import { useClubMembership } from "@/hooks/useClubMembership";
-import { formatClubPrice } from "@/utils/clubTrekkingPricing";
+import { useClubTrekkingConfig } from "@/hooks/useClubTrekkingConfig";
 
 export default function SuscribirseClubTrekking() {
   const router = useRouter();
@@ -26,6 +26,7 @@ export default function SuscribirseClubTrekking() {
   const [loading, setLoading] = useState(false);
   const [salidasIncluidas, setSalidasIncluidas] = useState(0);
   const { membership, loading: membershipLoading, isActive } = useClubMembership();
+  const { config, formattedPrice } = useClubTrekkingConfig();
 
   useEffect(() => {
     // Obtener número de salidas incluidas
@@ -235,153 +236,153 @@ export default function SuscribirseClubTrekking() {
             <>
               {/* SI NO TIENE MEMBRESÍA: Mostrar todo el contenido de suscripción */}
               {/* Hero Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] p-8 shadow-xl isolate">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <svg viewBox="0 0 400 300" className="w-full h-full">
-                <path
-                  d="M0,200 L0,150 L50,120 L100,140 L150,100 L200,130 L250,90 L300,110 L350,80 L400,100 L400,200 Z"
-                  fill="white"
-                />
-                <path
-                  d="M0,200 L0,170 L60,145 L120,165 L180,130 L240,160 L300,120 L360,140 L400,110 L400,200 Z"
-                  fill="white"
-                  opacity="0.6"
-                />
-              </svg>
-            </div>
-
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-                <Mountain className="w-4 h-4 text-white" />
-                <span className="text-white text-sm font-semibold">
-                  Club del Trekking
-                </span>
-              </div>
-
-              <h2 className="text-3xl font-bold text-white mb-3 leading-tight">
-                Aventuras ilimitadas
-              </h2>
-              <p className="text-white/90 text-base mb-6">
-                Únete a la comunidad de trekking más activa de Tucumán
-              </p>
-
-              {/* Price */}
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl font-bold text-white">{formatClubPrice()}</span>
-                  <span className="text-white/80 text-lg">/mes</span>
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] p-8 shadow-xl isolate">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <svg viewBox="0 0 400 300" className="w-full h-full">
+                    <path
+                      d="M0,200 L0,150 L50,120 L100,140 L150,100 L200,130 L250,90 L300,110 L350,80 L400,100 L400,200 Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M0,200 L0,170 L60,145 L120,165 L180,130 L240,160 L300,120 L360,140 L400,110 L400,200 Z"
+                      fill="white"
+                      opacity="0.6"
+                    />
+                  </svg>
                 </div>
-                <p className="text-white/70 text-sm">
-                  Pago mensual recurrente • Cancela cuando quieras
-                </p>
-              </div>
-            </div>
 
-            {/* Glow Effects */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-          </div>
+                <div className="relative z-10">
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+                    <Mountain className="w-4 h-4 text-white" />
+                    <span className="text-white text-sm font-semibold">
+                      Club del Trekking
+                    </span>
+                  </div>
 
-          {/* Benefits */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              ¿Qué incluye?
-            </h3>
+                  <h2 className="text-3xl font-bold text-white mb-3 leading-tight">
+                    Aventuras ilimitadas
+                  </h2>
+                  <p className="text-white/90 text-base mb-6">
+                    Únete a la comunidad de trekking más activa de Tucumán
+                  </p>
 
-            <div className="space-y-3">
-              {benefits.map((benefit, index) => (
-                <div
-                  key={index}
-                  className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-[#C95100]/10 rounded-xl text-[#C95100] shrink-0">
-                      {benefit.icon}
+                  {/* Price */}
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-5xl font-bold text-white">{formattedPrice}</span>
+                      <span className="text-white/80 text-lg">/mes</span>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                        {benefit.title}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {benefit.description}
-                      </p>
-                    </div>
-                    <Check className="w-5 h-5 text-green-500 shrink-0 mt-1" />
+                    <p className="text-white/70 text-sm">
+                      Pago mensual recurrente • Cancela cuando quieras
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* How it Works */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              ¿Cómo funciona?
-            </h3>
+                {/* Glow Effects */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+              </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  1
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">
-                    Suscríbete
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Paga {formatClubPrice()}/mes y accede a todas las salidas low cost
-                  </p>
+              {/* Benefits */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  ¿Qué incluye?
+                </h3>
+
+                <div className="space-y-3">
+                  {benefits.map((benefit, index) => (
+                    <div
+                      key={index}
+                      className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-[#C95100]/10 rounded-xl text-[#C95100] shrink-0">
+                          {benefit.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                            {benefit.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {benefit.description}
+                          </p>
+                        </div>
+                        <Check className="w-5 h-5 text-green-500 shrink-0 mt-1" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  2
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">
-                    Reserva tus salidas
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Elige tus salidas del calendario
-                  </p>
+              {/* How it Works */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  ¿Cómo funciona?
+                </h3>
+
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      1
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white mb-1">
+                        Suscríbete
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Paga {formattedPrice}/mes y accede a todas las salidas low cost
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      2
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white mb-1">
+                        Reserva tus salidas
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Elige tus salidas del calendario
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white mb-1">
+                        Haz check-in y disfruta
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Registra tu asistencia en el punto de encuentro y vive la aventura
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 bg-[#C95100] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  3
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">
-                    Haz check-in y disfruta
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Registra tu asistencia en el punto de encuentro y vive la aventura
-                  </p>
+              {/* Important Info */}
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-amber-900 dark:text-amber-200 mb-1">
+                      Información importante
+                    </p>
+                    <ul className="space-y-1 text-amber-800 dark:text-amber-300">
+                      <li>• Solo salidas con precio ≤ $10.000</li>
+                      <li>• Check-in obligatorio para validar asistencia</li>
+                      <li>• Renovación automática mensual</li>
+                      <li>• Cancela cuando quieras</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Important Info */}
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-amber-900 dark:text-amber-200 mb-1">
-                  Información importante
-                </p>
-                <ul className="space-y-1 text-amber-800 dark:text-amber-300">
-                  <li>• Solo salidas con precio ≤ $10.000</li>
-                  <li>• Check-in obligatorio para validar asistencia</li>
-                  <li>• Renovación automática mensual</li>
-                  <li>• Cancela cuando quieras</li>
-                </ul>
-              </div>
-            </div>
-          </div>
 
               {/* CTA Button */}
               <div className="sticky bottom-4 pt-4">

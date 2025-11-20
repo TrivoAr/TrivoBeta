@@ -7,6 +7,7 @@ import MiembroSalida from "@/models/MiembroSalida";
 import User from "@/models/user";
 import { authOptions } from "@/libs/authOptions";
 import { clubTrekkingHelpers } from "@/config/clubTrekking.config";
+import { getClubConfig } from "@/services/clubTrekkingConfigService";
 
 /**
  * POST /api/club-trekking/reservar
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
+    const config = await getClubConfig();
 
     const body = await req.json();
     const { membershipId, salidaId } = body;
@@ -84,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar que sea una salida de Trekking
-    if (salida.deporte !== "Trekking") {
+    if (salida.deporte !== config.DEPORTE_PERMITIDO) {
       return NextResponse.json(
         {
           error: "El Club del Trekking solo incluye salidas de Trekking. Esta salida es de " + salida.deporte,

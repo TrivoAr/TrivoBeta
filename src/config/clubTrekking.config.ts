@@ -3,22 +3,22 @@
 
 export const CLUB_TREKKING_CONFIG = {
   // Precio de la membresía mensual
-  PRECIO_MENSUAL: Number(process.env.CLUB_TREKKING_PRICE || 25000), // ARS
+  PRECIO_MENSUAL: 25000, // ARS - Valor base por defecto
 
   // Criterio de inclusión en membresía
-  MAX_PRECIO_SALIDA: Number(process.env.CLUB_TREKKING_MAX_SALIDA_PRICE || 10000), // Las salidas con precio <= $10,000 están incluidas
+  MAX_PRECIO_SALIDA: 10000, // Las salidas con precio <= $10,000 están incluidas
   DEPORTE_PERMITIDO: "Trekking", // Solo salidas de Trekking (no Ciclismo ni Running)
 
   // Límites de uso
   LIMITES: {
-    SALIDAS_POR_SEMANA: Number(process.env.CLUB_TREKKING_WEEKLY_LIMIT || 2), // Máximo 2 salidas por semana
+    SALIDAS_POR_SEMANA: 2, // Máximo 2 salidas por semana
     PAUSAS_POR_MES: 1, // Puede pausar solo 1 vez al mes
     DIAS_MINIMOS_PAUSA: 7, // Mínimo 7 días de pausa
   },
 
   // Check-in
   CHECK_IN: {
-    RADIO_METROS: Number(process.env.CLUB_TREKKING_CHECK_IN_RADIUS_METERS || 100), // Debe estar a 100m del punto de encuentro
+    RADIO_METROS: 100, // Debe estar a 100m del punto de encuentro
     TIEMPO_ANTES_MINUTOS: 30, // Puede hacer check-in 30 min antes
     TIEMPO_DESPUES_MINUTOS: 15, // Puede hacer check-in hasta 15 min después
   },

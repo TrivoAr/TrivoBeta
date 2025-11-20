@@ -8,6 +8,7 @@ import {
   CLUB_TREKKING_CONFIG,
   clubTrekkingHelpers,
 } from "@/config/clubTrekking.config";
+import { getClubConfig } from "@/services/clubTrekkingConfigService";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
 
 // Inicializar MercadoPago
@@ -65,8 +66,8 @@ export async function POST(req: NextRequest) {
 
     // Obtener la URL base de forma más robusta
     const baseUrl = process.env.NEXTAUTH_URL ||
-                    process.env.NEXT_PUBLIC_APP_URL ||
-                    `http://localhost:${process.env.PORT || 3000}`;
+      process.env.NEXT_PUBLIC_APP_URL ||
+      `http://localhost:${process.env.PORT || 3000}`;
 
     const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1');
 
@@ -78,13 +79,15 @@ export async function POST(req: NextRequest) {
 
     console.log("🔗 Back URL generada:", backUrl, "(localhost:", isLocalhost, ")");
 
+    const config = await getClubConfig();
+
     const preapprovalData = {
-      reason: CLUB_TREKKING_CONFIG.MERCADO_PAGO.MOTIVO,
+      reason: config.MERCADO_PAGO.MOTIVO,
       auto_recurring: {
-        frequency: CLUB_TREKKING_CONFIG.MERCADO_PAGO.FRECUENCIA,
-        frequency_type: CLUB_TREKKING_CONFIG.MERCADO_PAGO.TIPO_FRECUENCIA,
-        transaction_amount: CLUB_TREKKING_CONFIG.PRECIO_MENSUAL,
-        currency_id: CLUB_TREKKING_CONFIG.MERCADO_PAGO.MONEDA,
+        frequency: config.MERCADO_PAGO.FRECUENCIA,
+        frequency_type: config.MERCADO_PAGO.TIPO_FRECUENCIA,
+        transaction_amount: config.PRECIO_MENSUAL,
+        currency_id: config.MERCADO_PAGO.MONEDA,
       },
       payer_email: user.email,
       external_reference: user._id.toString(),
@@ -116,7 +119,7 @@ export async function POST(req: NextRequest) {
         fechaInicio,
         fechaFin,
         proximaFechaPago,
-        precioMensual: CLUB_TREKKING_CONFIG.PRECIO_MENSUAL,
+        precioMensual: config.PRECIO_MENSUAL,
         metodoPago: "dev-bypass",
         mercadoPagoSubscriptionId: `dev-${Date.now()}`,
         historialSalidas: [],
@@ -172,7 +175,7 @@ export async function POST(req: NextRequest) {
       },
       usoMensual: {
         salidasRealizadas: 0,
-        limiteSemanal: CLUB_TREKKING_CONFIG.LIMITES.SALIDAS_POR_SEMANA,
+        limiteSemanal: config.LIMITES.SALIDAS_POR_SEMANA,
         ultimaResetFecha: fechaInicio,
       },
     });

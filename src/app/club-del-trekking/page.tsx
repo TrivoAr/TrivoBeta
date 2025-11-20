@@ -11,7 +11,7 @@ import FilterModal, {
   FilterValues,
 } from "@/components/FilterModal";
 import { Toaster } from "react-hot-toast";
-import { formatClubPrice } from "@/utils/clubTrekkingPricing";
+import { useClubTrekkingConfig } from "@/hooks/useClubTrekkingConfig";
 
 type EventType = {
   _id: string;
@@ -108,6 +108,7 @@ export default function ClubDelTrekking() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedEvent] = useState<ModalEvent | null>(null);
+  const { formattedPrice } = useClubTrekkingConfig();
 
   useEffect(() => {
     const fetchTrekkingEvents = async () => {
@@ -317,7 +318,7 @@ export default function ClubDelTrekking() {
                     className="mt-4 w-full bg-white hover:bg-gray-50 text-[#C95100] font-bold py-3 px-6 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span>Unirme al Club por {formatClubPrice()}</span>
+                      <span>Unirme al Club por {formattedPrice}</span>
                       <svg
                         width="16"
                         height="16"
@@ -362,11 +363,10 @@ export default function ClubDelTrekking() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsFilterModalOpen(true)}
-                  className={`flex items-center gap-2 px-4 py-2  rounded-[30px] shadow-md font-medium transition-all duration-200 ${
-                    getActiveFilterCount() > 0
+                  className={`flex items-center gap-2 px-4 py-2  rounded-[30px] shadow-md font-medium transition-all duration-200 ${getActiveFilterCount() > 0
                       ? "bg-[#C95100] text-white hover:bg-[#A03D00] shadow-md"
                       : "border border-border bg-background text-foreground hover:bg-accent"
-                  }`}
+                    }`}
                 >
                   <Filter
                     size={16}
@@ -534,20 +534,20 @@ export default function ClubDelTrekking() {
                   {/* Clear All Button */}
                   {(getActiveFilterCount() > 1 ||
                     (getActiveFilterCount() > 0 && searchTerm)) && (
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setFilters({
-                          dificultad: "",
-                          localidad: "",
-                          nocturna: "",
-                        });
-                      }}
-                      className="text-xs text-[#C95100] hover:text-[#A03D00] font-medium transition-colors underline"
-                    >
-                      Limpiar todo
-                    </button>
-                  )}
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setFilters({
+                            dificultad: "",
+                            localidad: "",
+                            nocturna: "",
+                          });
+                        }}
+                        className="text-xs text-[#C95100] hover:text-[#A03D00] font-medium transition-colors underline"
+                      >
+                        Limpiar todo
+                      </button>
+                    )}
                 </div>
               )}
             </div>
@@ -583,8 +583,8 @@ export default function ClubDelTrekking() {
                   <EventCard
                     key={event._id}
                     event={event}
-                    onJoin={(e) => {}}
-                    onMap={(coords) => {}}
+                    onJoin={(e) => { }}
+                    onMap={(coords) => { }}
                   />
                 ))}
               </div>

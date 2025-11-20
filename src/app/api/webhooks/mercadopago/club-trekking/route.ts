@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/libs/mongodb";
 import ClubTrekkingMembership from "@/models/ClubTrekkingMembership";
 import User from "@/models/user";
+import Pago from "@/models/pagos";
 import { MercadoPagoConfig, Payment } from "mercadopago";
 
 // Inicializar MercadoPago
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     // Obtener información del pago desde MercadoPago
-    const paymentInfo = await payment.get({ id: data.id });
+    const paymentInfo: any = await payment.get({ id: data.id });
 
     console.log("Información del pago:", JSON.stringify(paymentInfo, null, 2));
 
@@ -117,6 +118,39 @@ async function procesarPagoAprobado(membership: any, paymentInfo: any) {
     user.clubTrekking.esMiembro = true;
     user.clubTrekking.badge.activo = true;
     await user.save();
+  }
+
+  // REGISTRAR PAGO EN HISTORIAL
+  try {
+    // Verificar si ya existe este pago para evitar duplicados
+    const pagoExistente = await Pago.findOne({
+      mercadopagoId: paymentInfo.id.toString(),
+    });
+
+    if (!pagoExistente) {
+      const nuevoPago = new Pago({
+        userId: membership.userId,
+        estado: "aprobado",
+        mercadopagoId: paymentInfo.id.toString(),
+        amount: paymentInfo.transaction_amount,
+        currency: paymentInfo.currency_id,
+        paymentMethod: paymentInfo.payment_method_id,
+        status: paymentInfo.status,
+        statusDetail: paymentInfo.status_detail,
+        externalReference: paymentInfo.external_reference,
+        mercadoPagoData: paymentInfo,
+        tipoPago: "mercadopago_automatico", // Usamos este tipo o podríamos crear uno nuevo "suscripcion"
+        webhookProcessedAt: new Date(),
+      });
+
+      await nuevoPago.save();
+      console.log("✅ Pago histórico registrado:", nuevoPago._id);
+    } else {
+      console.log("ℹ️ El pago ya estaba registrado en el historial");
+    }
+  } catch (error) {
+    console.error("❌ Error al registrar pago en historial:", error);
+    // No lanzamos error para no interrumpir el flujo principal de activación
   }
 
   // TODO: Enviar notificación de renovación exitosa

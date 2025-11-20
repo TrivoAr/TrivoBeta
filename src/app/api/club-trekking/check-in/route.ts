@@ -7,6 +7,7 @@ import MiembroSalida from "@/models/MiembroSalida";
 import User from "@/models/user";
 import { authOptions } from "@/libs/authOptions";
 import { clubTrekkingHelpers } from "@/config/clubTrekking.config";
+import { getClubConfig } from "@/services/clubTrekkingConfigService";
 
 /**
  * POST /api/club-trekking/check-in
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
+    const config = await getClubConfig();
 
     const body = await req.json();
     const { membershipId, salidaId, ubicacion } = body;
@@ -106,7 +108,7 @@ export async function POST(req: NextRequest) {
           {
             error: "Debes estar en el punto de encuentro para hacer check-in",
             distancia: Math.round(distancia),
-            distanciaPermitida: 100,
+            distanciaPermitida: config.CHECK_IN.RADIO_METROS,
           },
           { status: 400 }
         );

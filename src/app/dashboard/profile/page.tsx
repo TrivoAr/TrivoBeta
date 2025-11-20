@@ -7,7 +7,7 @@ import PushManager from "@/components/PushManager";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useClubMembership } from "@/hooks/useClubMembership";
 import { Mountain } from "lucide-react";
-import { formatClubPrice } from "@/utils/clubTrekkingPricing";
+import { useClubTrekkingConfig } from "@/hooks/useClubTrekkingConfig";
 
 function ProfilePage() {
   const { data: session, status } = useSession();
@@ -30,6 +30,7 @@ function ProfilePage() {
 
   // Hook de membresía del Club del Trekking
   const { membership, isActive: isClubMember } = useClubMembership();
+  const { formattedPrice } = useClubTrekkingConfig();
 
   // Actualizar formData cuando la sesión cambie
   useEffect(() => {
@@ -74,7 +75,7 @@ function ProfilePage() {
         const data = await res.json();
 
         setStravaConnected(data.connected);
-      } catch (error) {}
+      } catch (error) { }
     };
     checkStravaStatus();
   }, []);
@@ -92,18 +93,16 @@ function ProfilePage() {
         <div onClick={() => setShowPreview(true)} className="relative mb-4">
           {/* Container con border gradiente si es miembro */}
           <div
-            className={`relative ${
-              isClubMember
+            className={`relative ${isClubMember
                 ? "p-[4px] rounded-full bg-gradient-to-br from-[#C95100] via-[#A03D00] to-[#7A2D00] shadow-lg"
                 : ""
-            }`}
+              }`}
           >
             <img
               src={profileImage || session?.user.imagen}
               alt="Avatar"
-              className={`w-28 h-28 rounded-full object-cover ${
-                isClubMember ? "" : "shadow-md"
-              }`}
+              className={`w-28 h-28 rounded-full object-cover ${isClubMember ? "" : "shadow-md"
+                }`}
             />
           </div>
 
@@ -202,7 +201,7 @@ function ProfilePage() {
                     Club del Trekking
                   </span>
                   <span className="text-white/80 text-xs">
-                    Trekkings ilimitados por {formatClubPrice()}/mes
+                    Trekkings ilimitados por {formattedPrice}/mes
                   </span>
                 </div>
               </div>
