@@ -170,9 +170,9 @@ export async function GET(req: NextRequest) {
             dni: "",
             pago_id: miembros[index]?.pago_id
               ? {
-                  _id: miembros[index].pago_id._id,
-                  estado: miembros[index].pago_id.estado || "pendiente",
-                }
+                _id: miembros[index].pago_id._id,
+                estado: miembros[index].pago_id.estado || "pendiente",
+              }
               : null,
             usaMembresiaClub: miembros[index]?.usaMembresiaClub || false,
           };
@@ -244,7 +244,6 @@ export async function POST(req) {
     salida_id,
     usuario_id,
     rol: "miembro",
-    estado: "pendiente",
   });
 
   const salida = await SalidaSocial.findById(salida_id);

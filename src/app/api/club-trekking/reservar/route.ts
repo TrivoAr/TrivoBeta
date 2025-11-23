@@ -8,6 +8,7 @@ import User from "@/models/user";
 import { authOptions } from "@/libs/authOptions";
 import { clubTrekkingHelpers } from "@/config/clubTrekking.config";
 import { getClubConfig } from "@/services/clubTrekkingConfigService";
+import Pago from "@/models/pagos";
 
 /**
  * POST /api/club-trekking/reservar
@@ -130,12 +131,29 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar cupo
-    const miembrosActuales = await MiembroSalida.countDocuments({
+    const miembros = await MiembroSalida.find({
       salida_id: salidaId,
-      estado: { $ne: "rechazado" },
+    }).populate("pago_id");
+
+    const miembrosValidos = miembros.filter((m) => {
+      const pagoAprobado = m.pago_id?.estado === "aprobado";
+      const esClub = m.usaMembresiaClub;
+      // Consideramos válidos (ocupan cupo) a los aprobados o club, 
+      // y también a los pendientes si queremos reservarles el lugar (depende de la lógica de negocio).
+      // El código original filtraba { estado: { $ne: "rechazado" } }, lo que incluía pendientes y aprobados.
+      // Así que mantenemos esa lógica: si NO es rechazado (y asumimos que sin pago es pendiente/aprobado dependiendo del contexto).
+      // Si tiene pago, miramos el estado. Si es rechazado, no cuenta.
+      // Si es Club, cuenta.
+
+      if (esClub) return true;
+      if (m.pago_id) {
+        return m.pago_id.estado !== "rechazado";
+      }
+      // Si no tiene pago ni es club, asumimos que cuenta (pendiente)
+      return true;
     });
 
-    if (miembrosActuales >= salida.cupo) {
+    if (miembrosValidos.length >= salida.cupo) {
       return NextResponse.json(
         { error: "No hay cupo disponible" },
         { status: 400 }
@@ -147,7 +165,6 @@ export async function POST(req: NextRequest) {
       usuario_id: user._id,
       salida_id: salidaId,
       rol: "miembro",
-      estado: "aprobado", // Auto-aprobado para miembros del club
       usaMembresiaClub: true,
     });
 

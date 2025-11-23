@@ -17,10 +17,7 @@ import {
   notifyPaymentApproved,
   notifyPaymentRejected,
 } from "@/libs/notificationHelpers";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
+import { trackServerEvent, trackServerCharge } from "@/libs/mixpanelServer";
 // 🔹 GET: Buscar un pago por ID
 export async function GET(
   req: Request,
@@ -89,6 +86,43 @@ export async function PATCH(
       await procesarAcademia(pago, estado);
     }
 
+    // TRACK MIXPANEL
+    if (estado === "aprobado") {
+      try {
+        trackServerEvent("Payment Completed", pago.userId.toString(), {
+          amount: pago.amount || 0,
+          event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+          academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+          payment_method: "manual_transfer",
+          currency: "ARS",
+          timestamp: new Date().toISOString(),
+          manual_approval: true
+        });
+
+        trackServerCharge(pago.userId.toString(), pago.amount || 0, {
+          payment_method: "manual_transfer",
+          event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+          manual_approval: true
+        });
+      } catch (mixpanelError) {
+        console.error("Error tracking mixpanel event:", mixpanelError);
+      }
+    } else if (estado === "rechazado") {
+      try {
+        trackServerEvent("Payment Rejected", pago.userId.toString(), {
+          amount: pago.amount || 0,
+          event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+          academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+          payment_method: "manual_transfer",
+          currency: "ARS",
+          timestamp: new Date().toISOString(),
+          manual_rejection: true
+        });
+      } catch (mixpanelError) {
+        console.error("Error tracking mixpanel event:", mixpanelError);
+      }
+    }
+
     return NextResponse.json({ success: true, pago }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
@@ -125,13 +159,13 @@ async function procesarSalidaSocial(pago: any, estado: string) {
     if (estado === "aprobado") {
       try {
         // Actualizar estado del miembro a aprobado cuando se aprueba el pago
-        if (pago.miembro_id) {
-          await MiembroSalida.findByIdAndUpdate(
-            pago.miembro_id,
-            { estado: "aprobado" },
-            { new: true }
-          );
-        }
+        // if (pago.miembro_id) {
+        //   await MiembroSalida.findByIdAndUpdate(
+        //     pago.miembro_id,
+        //     { estado: "aprobado" },
+        //     { new: true }
+        //   );
+        // }
 
         // 1) buscar o crear ticket (idempotente)
         let ticket = await Ticket.findOne({
@@ -225,12 +259,9 @@ async function procesarAcademia(pago: any, estado: string) {
           { new: true }
         );
       } catch (updateErr) {
+        console.error("Error updating academia user status", updateErr);
       }
-    }
 
-    // TODO: Crear funciones notifyPaymentApprovedAcademia/Rejected cuando sea necesario
-    // Por ahora, seguimos usando la estructura anterior
-    if (estado === "aprobado") {
       const { createNotification } = await import("@/libs/notificationHelpers");
       await createNotification({
         userId: String(miembro._id),
@@ -253,5 +284,6 @@ async function procesarAcademia(pago: any, estado: string) {
       await sendPaymentStatusEmail(miembro.email, estado);
     }
   } catch (notifError) {
+    console.error("Error processing academia payment", notifError);
   }
 }

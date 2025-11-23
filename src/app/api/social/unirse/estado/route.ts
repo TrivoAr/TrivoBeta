@@ -4,9 +4,12 @@ import { connectDB } from "@/libs/mongodb";
 import MiembroSalida from "@/models/MiembroSalida";
 import User from "@/models/user";
 import { NextRequest, NextResponse } from "next/server";
+import Pago from "@/models/pagos";
 
 export async function POST(req: NextRequest) {
   await connectDB();
+  // Ensure Pago model is registered
+  Pago;
 
   const session = await getServerSession(authOptions);
   if (!session)
@@ -34,11 +37,14 @@ export async function POST(req: NextRequest) {
   const miembro = await MiembroSalida.findOne({
     usuario_id: user._id,
     salida_id: salidaId,
-  });
+  }).populate("pago_id");
+
+  const isPendiente =
+    !!miembro && miembro.pago_id && miembro.pago_id.estado !== "aprobado";
 
   return NextResponse.json({
     unido: !!miembro,
-    pendiente: !!miembro && !miembro.aprobado,
+    pendiente: isPendiente,
   });
 }
 

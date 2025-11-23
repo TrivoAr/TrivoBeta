@@ -6,7 +6,7 @@ import Ticket from "@/models/ticket";
 import SalidaSocial from "@/models/salidaSocial";
 import User from "@/models/user";
 import { notifyPaymentApproved } from "@/libs/notificationHelpers";
-import { sendTicketEmail } from "@/libs/sendEmail";
+import { sendTicketEmail } from "@/libs/email/sendTicketEmail";
 import crypto from "crypto";
 import { nanoid } from "nanoid";
 
@@ -205,8 +205,8 @@ export async function POST(req: NextRequest) {
         if (pago.salidaId) {
           const miembro = await MiembroSalida.findOne({ pago_id: pago._id });
           if (miembro) {
-            miembro.estado = "rechazado";
-            await miembro.save();
+            // miembro.estado = "rechazado"; // Removed
+            // await miembro.save();
           }
         }
         break;
@@ -240,6 +240,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
+import { trackServerEvent, trackServerCharge } from "@/libs/mixpanelServer";
+
 /**
  * Procesa un pago aprobado automáticamente
  */
@@ -254,6 +256,25 @@ async function procesarPagoAprobado(pago: any, paymentDetails: any) {
     await pago.save();
 
     console.log(`💾 Pago ${pago._id} actualizado a estado: aprobado`);
+
+    // TRACK MIXPANEL
+    try {
+      trackServerEvent("Payment Completed", pago.userId._id.toString(), {
+        amount: pago.amount,
+        event_id: pago.salidaId ? pago.salidaId._id.toString() : undefined,
+        academia_id: pago.academiaId ? pago.academiaId._id.toString() : undefined,
+        payment_method: "mercadopago",
+        currency: "ARS",
+        timestamp: new Date().toISOString(),
+      });
+
+      trackServerCharge(pago.userId._id.toString(), pago.amount, {
+        payment_method: "mercadopago",
+        event_id: pago.salidaId ? pago.salidaId._id.toString() : undefined,
+      });
+    } catch (mixpanelError) {
+      console.error("Error tracking mixpanel event:", mixpanelError);
+    }
 
     // PROCESAR SEGÚN TIPO (Salida Social vs Academia)
     if (pago.salidaId) {
@@ -281,9 +302,9 @@ async function procesarSalidaSocial(pago: any) {
       return;
     }
 
-    miembro.estado = "aprobado";
-    await miembro.save();
-    console.log(`✅ MiembroSalida ${miembro._id} aprobado`);
+    // miembro.estado = "aprobado"; // Removed
+    // await miembro.save();
+    console.log(`✅ MiembroSalida ${miembro._id} asociado a pago aprobado`);
 
     // 2. Crear o actualizar Ticket con QR
     let ticket = await Ticket.findOne({
@@ -337,9 +358,10 @@ async function procesarSalidaSocial(pago: any) {
     // 4. Enviar notificación push
     try {
       await notifyPaymentApproved(
-        pago.userId._id,
-        pago.salidaId._id,
-        pago._id
+        pago.userId._id.toString(),
+        pago.userId._id.toString(), // fromUserId (system)
+        pago.salidaId._id.toString(),
+        salida.nombre
       );
       console.log(`🔔 Notificación push enviada`);
     } catch (notifError) {
@@ -373,12 +395,14 @@ async function procesarAcademia(pago: any) {
 
     // Notificar
     const { createNotification } = await import("@/libs/notificationHelpers");
-    await createNotification(
-      pago.userId._id,
-      "pago_aprobado",
-      `Tu pago para la academia fue aprobado ✅`,
-      `/academias/${pago.academiaId._id}`
-    );
+    await createNotification({
+      userId: pago.userId._id.toString(),
+      fromUserId: pago.userId._id.toString(), // System notification, can use same user or admin ID
+      type: "pago_aprobado",
+      message: `Tu pago para la academia fue aprobado ✅`,
+      academiaId: pago.academiaId._id.toString(),
+      actionUrl: `/academias/${pago.academiaId._id}`
+    });
 
   } catch (error) {
     console.error("❌ Error procesando academia:", error);

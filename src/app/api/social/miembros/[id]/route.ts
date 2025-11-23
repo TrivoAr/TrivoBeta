@@ -22,8 +22,8 @@ type MiembroLean = {
   estado: "pendiente" | "aprobado" | "rechazado";
   salida_id: string | { _id: string; cupo?: number };
   usuario_id?:
-    | string
-    | { firstname?: string; lastname?: string; email?: string };
+  | string
+  | { firstname?: string; lastname?: string; email?: string };
   pago_id?: string | { estado?: string };
 };
 
@@ -54,7 +54,7 @@ export async function GET(
     const miembros = await MiembroSalida.find({ salida_id: salidaId })
       .populate("usuario_id", "firstname lastname email dni")
       .populate("pago_id", "estado")
-      .select("_id estado usuario_id pago_id salida_id createdAt")
+      .select("_id usuario_id pago_id salida_id createdAt")
       .lean();
 
     return jsonOk(miembros, 200);
@@ -74,17 +74,17 @@ export async function PUT(
       return jsonErr("Estado inválido", 400);
     }
 
-    const miembro = await MiembroSalida.findByIdAndUpdate(
-      params.id,
-      { estado },
-      { new: true }
-    )
+    // Update Pago instead of MiembroSalida
+    const miembro = await MiembroSalida.findById(params.id)
       .populate("usuario_id", "firstname lastname email")
       .populate("salida_id", "cupo")
-      .populate("pago_id", "estado")
-      .lean<MiembroLean>();
+      .populate("pago_id", "estado");
 
     if (!miembro) return jsonErr("Miembro no encontrado", 404);
+
+    if (miembro.pago_id) {
+      await Pago.findByIdAndUpdate(miembro.pago_id._id, { estado });
+    }
 
     const salidaId =
       typeof miembro.salida_id === "string"
@@ -134,8 +134,15 @@ export async function PATCH(
     const cupo = typeof salida.cupo === "number" ? salida.cupo : 0;
 
     if (estado === "aprobado") {
-      const aprobados = await MiembroSalida.countDocuments({
+      // Count approved members via Pago status
+      const miembrosSalida = await MiembroSalida.find({
         salida_id: salida._id,
+      }).select("pago_id");
+
+      const pagoIds = miembrosSalida.map((m) => m.pago_id).filter(Boolean);
+
+      const aprobados = await Pago.countDocuments({
+        _id: { $in: pagoIds },
         estado: "aprobado",
       });
 
@@ -144,9 +151,18 @@ export async function PATCH(
       }
     }
 
-    // Actualizar estado
-    await MiembroSalida.updateOne({ _id: params.id }, { estado });
-    await Pago.updateOne({ miembro_id: params.id }, { estado }).catch(() => {});
+    // Actualizar estado en Pago
+    // We assume there is a pago_id, or we try to update by member_id if that link exists in Pago
+    // The original code did: await Pago.updateOne({ miembro_id: params.id }, { estado })
+    // We should stick to that or use member.pago_id if available.
+    // The original code also updated MiembroSalida.estado, which we removed.
+
+    await Pago.updateOne({ miembro_id: params.id }, { estado }).catch(() => { });
+
+    // Also try updating via pago_id if it exists on the member doc (more robust)
+    if ((miembroCompleto as any).pago_id) {
+      await Pago.findByIdAndUpdate((miembroCompleto as any).pago_id, { estado }).catch(() => { });
+    }
 
     // Crear notificación según el estado
     try {
@@ -166,7 +182,6 @@ export async function PATCH(
         );
       }
     } catch (notificationError) {
-
       // No fallar la operación principal por error de notificación
     }
 
@@ -214,7 +229,7 @@ export async function DELETE(
     }
 
     await MiembroSalida.findByIdAndDelete(params.id);
-    await Pago.deleteOne({ miembro_id: params.id }).catch(() => {});
+    await Pago.deleteOne({ miembro_id: params.id }).catch(() => { });
 
     revalidateTag(`salida:${salidaId}`);
 

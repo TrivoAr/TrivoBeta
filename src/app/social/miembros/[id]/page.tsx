@@ -93,12 +93,17 @@ export default function EventPage({ params }: { params: { id: string } }) {
       ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
     if (isOwner) {
-      const pagoEstado = miembro.pago_id?.estado || "pendiente";
+      const pagoEstado = miembro.usaMembresiaClub
+        ? "aprobado"
+        : miembro.pago_id?.estado || "pendiente";
       const matchPago =
         paymentFilter === "todos" || pagoEstado === paymentFilter;
       return matchName && matchPago;
     }
-    return matchName && miembro.pago_id?.estado === "aprobado";
+    return (
+      matchName &&
+      (miembro.pago_id?.estado === "aprobado" || miembro.usaMembresiaClub)
+    );
   });
 
   const deleteMiembroMutation = useMutation({
@@ -225,14 +230,19 @@ export default function EventPage({ params }: { params: { id: string } }) {
   }
 
   const miembrosAprobados = safeMiembros
-    .filter((miembro) => miembro.pago_id?.estado === "aprobado")
+    .filter(
+      (miembro) =>
+        miembro.pago_id?.estado === "aprobado" || miembro.usaMembresiaClub
+    )
     .map((miembro) => ({
       dni: miembro.dni,
       nombre: miembro.nombre,
       telefono: miembro.telnumber,
       email: miembro.email,
       imagen: miembro.imagen,
-      estado: miembro.pago_id?.estado as "pendiente" | "aprobado" | "rechazado",
+      estado: (miembro.usaMembresiaClub
+        ? "aprobado"
+        : miembro.pago_id?.estado) as "pendiente" | "aprobado" | "rechazado",
     }));
 
   return (
@@ -269,10 +279,10 @@ export default function EventPage({ params }: { params: { id: string } }) {
             onChange={(e) =>
               setPaymentFilter(
                 e.target.value as
-                  | "todos"
-                  | "aprobado"
-                  | "rechazado"
-                  | "pendiente"
+                | "todos"
+                | "aprobado"
+                | "rechazado"
+                | "pendiente"
               )
             }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
@@ -407,13 +417,13 @@ export default function EventPage({ params }: { params: { id: string } }) {
                     </svg>
                   </button>
                   <div
-                    className={`w-[20px] h-[20px] rounded-full ${
-                      miembro.pago_id?.estado === "aprobado"
+                    className={`w-[20px] h-[20px] rounded-full ${miembro.pago_id?.estado === "aprobado" ||
+                        miembro.usaMembresiaClub
                         ? "bg-green-600"
                         : miembro.pago_id?.estado === "rechazado"
                           ? "bg-red-600"
                           : "bg-yellow-600"
-                    }`}
+                      }`}
                   ></div>
                 </td>
               ) : null}

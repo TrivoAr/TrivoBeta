@@ -34,12 +34,10 @@ export async function POST(req: Request) {
   // Verificar el estado del pago para determinar el estado del miembro
   const pago = await Pago.findById(pago_id);
   const esClubDelTrekking = pago?.comprobanteUrl === "CLUB_DEL_TREKKING";
-  const estadoMiembro = pago?.estado === "aprobado" ? "aprobado" : "pendiente";
 
   const nuevoMiembro = new MiembroSalida({
     usuario_id: user._id,
     salida_id: salidaId,
-    estado: estadoMiembro,
     pago_id: pago_id,
     usaMembresiaClub: esClubDelTrekking,
   });

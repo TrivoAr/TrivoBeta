@@ -21,11 +21,6 @@ const MiembroSalidaSchema = new Schema(
       enum: ["miembro", "organizador"],
       default: "miembro",
     },
-    estado: {
-      type: String,
-      enum: ["pendiente", "aprobado", "rechazado"],
-      default: "pendiente",
-    },
     pago_id: { type: Schema.Types.ObjectId, ref: "Pago" },
     usaMembresiaClub: {
       type: Boolean,
