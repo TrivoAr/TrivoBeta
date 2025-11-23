@@ -5,6 +5,7 @@ import ClubTrekkingMembership from "@/models/ClubTrekkingMembership";
 import User from "@/models/user";
 import { authOptions } from "@/libs/authOptions";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
+import { trackServerClubTrekkingCancelled } from "@/libs/mixpanelServer";
 
 // Inicializar MercadoPago
 const client = new MercadoPagoConfig({
@@ -78,6 +79,19 @@ export async function POST(req: NextRequest) {
     user.clubTrekking.esMiembro = false;
     user.clubTrekking.badge.activo = false;
     await user.save();
+
+    // Track en Mixpanel
+    // Calcular meses activos (aproximado)
+    const fechaInicio = new Date(membership.fechaInicio);
+    const fechaFin = new Date();
+    const mesesActivos = Math.max(1, Math.ceil((fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24 * 30)));
+
+    trackServerClubTrekkingCancelled(
+      user._id.toString(),
+      membership._id.toString(),
+      motivo,
+      mesesActivos
+    );
 
     return NextResponse.json(
       {

@@ -10,6 +10,7 @@ import {
 } from "@/config/clubTrekking.config";
 import { getClubConfig } from "@/services/clubTrekkingConfigService";
 import { MercadoPagoConfig, PreApproval } from "mercadopago";
+import { trackServerClubTrekkingSubscribed } from "@/libs/mixpanelServer";
 
 // Inicializar MercadoPago
 const client = new MercadoPagoConfig({
@@ -144,6 +145,14 @@ export async function POST(req: NextRequest) {
       await user.save();
 
       console.log("✅ Membresía de desarrollo creada:", membership._id);
+
+      // Track en Mixpanel (Dev Mode)
+      trackServerClubTrekkingSubscribed(
+        user._id.toString(),
+        membership._id.toString(),
+        "monthly",
+        config.PRECIO_MENSUAL
+      );
 
       return NextResponse.json({
         success: true,

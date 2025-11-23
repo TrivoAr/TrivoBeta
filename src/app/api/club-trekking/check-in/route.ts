@@ -8,6 +8,7 @@ import User from "@/models/user";
 import { authOptions } from "@/libs/authOptions";
 import { clubTrekkingHelpers } from "@/config/clubTrekking.config";
 import { getClubConfig } from "@/services/clubTrekkingConfigService";
+import { trackServerClubTrekkingCheckIn } from "@/libs/mixpanelServer";
 
 /**
  * POST /api/club-trekking/check-in
@@ -150,6 +151,15 @@ export async function POST(req: NextRequest) {
     // Agregar al historial de la membresía
     membership.agregarSalida(salidaId, fechaHoraSalida, true);
     await membership.save();
+
+    // Track en Mixpanel
+    trackServerClubTrekkingCheckIn(
+      user._id.toString(),
+      membership._id.toString(),
+      salidaId,
+      true, // asistio
+      false // penalizacionAplicada (check-in exitoso no implica penalización)
+    );
 
     return NextResponse.json(
       {

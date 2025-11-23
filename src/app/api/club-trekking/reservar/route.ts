@@ -9,6 +9,7 @@ import { authOptions } from "@/libs/authOptions";
 import { clubTrekkingHelpers } from "@/config/clubTrekking.config";
 import { getClubConfig } from "@/services/clubTrekkingConfigService";
 import Pago from "@/models/pagos";
+import { trackServerClubTrekkingSalidaReserved } from "@/libs/mixpanelServer";
 
 /**
  * POST /api/club-trekking/reservar
@@ -191,6 +192,14 @@ export async function POST(req: NextRequest) {
     }).length;
 
     const salidasRestantes = membership.usoMensual.limiteSemanal - salidasEstaSemana - 1;
+
+    // Track en Mixpanel
+    trackServerClubTrekkingSalidaReserved(
+      user._id.toString(),
+      membership._id.toString(),
+      salidaId,
+      salidasEstaSemana + 1
+    );
 
     return NextResponse.json(
       {

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 import connectDB from "@/libs/mongodb";
 import ClubTrekkingMembership from "@/models/ClubTrekkingMembership";
-import { trackClubTrekkingEvent } from "@/utils/mixpanelEvents";
+import { trackServerClubTrekkingCheckIn } from "@/libs/mixpanelServer";
 
 /**
  * POST /api/club-trekking/confirmar-asistencia
@@ -68,14 +68,13 @@ export async function POST(req: NextRequest) {
     const diasPenalizacion = membership.penalizacion.diasRestantes;
 
     // Track en Mixpanel
-    trackClubTrekkingEvent("asistencia_confirmada", {
-      userId: session.user.id,
+    trackServerClubTrekkingCheckIn(
+      session.user.id,
+      membership._id.toString(),
       salidaId,
       asistio,
-      penalizacionAplicada,
-      diasPenalizacion: penalizacionAplicada ? diasPenalizacion : 0,
-      inasistenciasConsecutivas: membership.penalizacion.inasistenciasConsecutivas,
-    });
+      penalizacionAplicada
+    );
 
     return NextResponse.json({
       success: true,
@@ -86,8 +85,8 @@ export async function POST(req: NextRequest) {
       mensaje: asistio
         ? "¡Gracias por confirmar tu asistencia!"
         : penalizacionAplicada
-        ? `Has acumulado 2 inasistencias consecutivas. No podrás reservar salidas por ${diasPenalizacion} días.`
-        : "Entendido. Recuerda que 2 inasistencias consecutivas resultan en una penalización de 3 días.",
+          ? `Has acumulado 2 inasistencias consecutivas. No podrás reservar salidas por ${diasPenalizacion} días.`
+          : "Entendido. Recuerda que 2 inasistencias consecutivas resultan en una penalización de 3 días.",
     });
   } catch (error) {
     console.error("❌ Error al confirmar asistencia:", error);
