@@ -328,40 +328,46 @@ async function procesarSalidaSocial(pago: any) {
       console.log(`🎫 Ticket actualizado: ${ticket._id}`);
     }
 
-    // 3. Enviar email con ticket (solo si no se ha enviado antes)
+    // 3. Fetch salida and user for email and notification
+    const salida = await SalidaSocial.findById(pago.salidaId._id);
+    const user = await User.findById(pago.userId._id);
+
+    if (!salida || !user) {
+      console.warn(`⚠️ No se encontró salida o usuario para pago ${pago._id}`);
+      return;
+    }
+
+    // 4. Enviar email con ticket (solo si no se ha enviado antes)
     if (!ticket.emailSentAt) {
       try {
-        const salida = await SalidaSocial.findById(pago.salidaId._id);
-        const user = await User.findById(pago.userId._id);
+        const redeemUrl = `${process.env.NEXTAUTH_URL}/r/${ticket.code}`;
+        const { qrPngDataUrl } = await import("@/libs/qr");
+        const qrDataUrl = await qrPngDataUrl(redeemUrl);
 
-        if (salida && user) {
-          const redeemUrl = `${process.env.NEXTAUTH_URL}/r/${ticket.code}`;
-          await sendTicketEmail(
-            user.email,
-            user.name,
-            salida.titulo,
-            ticket.code,
-            redeemUrl
-          );
+        await sendTicketEmail({
+          userId: pago.userId._id.toString(),
+          salidaId: pago.salidaId._id.toString(),
+          redeemUrl,
+          qrDataUrl,
+        });
 
-          ticket.emailSentAt = new Date();
-          await ticket.save();
+        ticket.emailSentAt = new Date();
+        await ticket.save();
 
-          console.log(`📧 Email enviado a ${user.email}`);
-        }
+        console.log(`📧 Email enviado a ${user.email}`);
       } catch (emailError) {
         console.error("❌ Error enviando email:", emailError);
         // No lanzar error, continuar con notificación
       }
     }
 
-    // 4. Enviar notificación push
+    // 5. Enviar notificación push
     try {
       await notifyPaymentApproved(
         pago.userId._id.toString(),
         pago.userId._id.toString(), // fromUserId (system)
         pago.salidaId._id.toString(),
-        salida.nombre
+        salida.titulo
       );
       console.log(`🔔 Notificación push enviada`);
     } catch (notifError) {
