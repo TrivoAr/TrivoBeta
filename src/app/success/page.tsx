@@ -4,7 +4,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
-const Success = () => {
+import { Suspense } from "react";
+
+const SuccessContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -227,6 +229,14 @@ const Success = () => {
         Volver al inicio
       </button>
     </div>
+  );
+};
+
+const Success = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SuccessContent />
+    </Suspense>
   );
 };
 

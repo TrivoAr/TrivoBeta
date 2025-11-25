@@ -50,11 +50,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el trial haya expirado
-    if (suscripcion.estado !== SUBSCRIPTION_CONFIG.ESTADOS.TRIAL_EXPIRADO) {
+    // Verificar que el trial haya expirado o esté pendiente de pago
+    if (
+      suscripcion.estado !== SUBSCRIPTION_CONFIG.ESTADOS.TRIAL_EXPIRADO &&
+      suscripcion.estado !== SUBSCRIPTION_CONFIG.ESTADOS.PENDIENTE
+    ) {
       return NextResponse.json(
         {
-          error: "La suscripción no está en estado de trial expirado",
+          error: "La suscripción no está en estado de trial expirado o pendiente",
           estado: suscripcion.estado,
         },
         { status: 400 }

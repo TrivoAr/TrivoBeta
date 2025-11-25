@@ -7,12 +7,13 @@ import { authOptions } from "@/libs/authOptions";
 import Academia from "@/models/academia";
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
 
   try {
-    const grupos = await Grupo.find({ academia_id: params.id });
+    const { id } = await params;
+    const grupos = await Grupo.find({ academia_id: id });
     return NextResponse.json(grupos);
   } catch (error) {
 
@@ -24,13 +25,13 @@ export async function GET(
 }
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Conectar a la base de datos
     await connectDB();
 
-    const { id } = params; // ID del miembro
+    const { id } = await params; // ID del miembro
     const body = await req.json();
     const { grupo_id } = body;
 

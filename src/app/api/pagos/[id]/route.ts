@@ -17,6 +17,7 @@ import {
   notifyPaymentApproved,
   notifyPaymentRejected,
 } from "@/libs/notificationHelpers";
+import { trackEventServer, trackChargeServer } from "@/libs/mixpanel.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,11 +25,12 @@ export const dynamic = "force-dynamic";
 // 🔹 GET: Buscar un pago por ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const pago = await Pago.findById(params.id)
+    const { id } = await params;
+    const pago = await Pago.findById(id)
       .populate("salidaId")
       .populate("academiaId")
       .populate("userId");
@@ -49,7 +51,7 @@ export async function GET(
 // 🔹 PATCH: Actualizar estado del pago y notificar
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -64,9 +66,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
     }
 
+    const { id } = await params;
+
     // Actualizamos el estado del pago
     const pago = await Pago.findByIdAndUpdate(
-      params.id,
+      id,
       { estado },
       { new: true }
     );
@@ -87,6 +91,55 @@ export async function PATCH(
     } else if (esAcademia) {
       // Lógica para academias
       await procesarAcademia(pago, estado);
+    }
+
+    // TRACK MIXPANEL - Payment Events
+    try {
+      if (estado === "aprobado") {
+        // Track Payment Completed event
+        await trackEventServer({
+          event: "Payment Completed",
+          distinctId: pago.userId.toString(),
+          properties: {
+            amount: pago.amount || 0,
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+            payment_method: "manual_transfer",
+            currency: "ARS",
+            timestamp: new Date().toISOString(),
+            manual_approval: true
+          }
+        });
+
+        // Track revenue charge
+        await trackChargeServer({
+          distinctId: pago.userId.toString(),
+          amount: pago.amount || 0,
+          properties: {
+            payment_method: "manual_transfer",
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            manual_approval: true
+          }
+        });
+      } else if (estado === "rechazado") {
+        // Track Payment Rejected event
+        await trackEventServer({
+          event: "Payment Rejected",
+          distinctId: pago.userId.toString(),
+          properties: {
+            amount: pago.amount || 0,
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+            payment_method: "manual_transfer",
+            currency: "ARS",
+            timestamp: new Date().toISOString(),
+            manual_rejection: true
+          }
+        });
+      }
+    } catch (mixpanelError) {
+      console.error("Error tracking mixpanel event:", mixpanelError);
+      // No lanzar error - el tracking no debe afectar el flujo de pago
     }
 
     return NextResponse.json({ success: true, pago }, { status: 200 });
@@ -124,15 +177,6 @@ async function procesarSalidaSocial(pago: any, estado: string) {
 
     if (estado === "aprobado") {
       try {
-        // Actualizar estado del miembro a aprobado cuando se aprueba el pago
-        if (pago.miembro_id) {
-          await MiembroSalida.findByIdAndUpdate(
-            pago.miembro_id,
-            { estado: "aprobado" },
-            { new: true }
-          );
-        }
-
         // 1) buscar o crear ticket (idempotente)
         let ticket = await Ticket.findOne({
           userId: pago.userId,
