@@ -9,7 +9,7 @@ import { SUBSCRIPTION_CONFIG } from "@/config/subscription.config";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { id: academiaId } = params;
+    const { id: academiaId } = await params;
     const userId = session.user.id;
 
     await connectDB();
@@ -71,20 +71,20 @@ export async function GET(
     return NextResponse.json({
       pago: pago
         ? {
-            id: pago._id,
-            estado: pago.estado,
-            status: pago.status,
-            statusDetail: pago.statusDetail,
-            amount: pago.amount,
-            paymentMethod: pago.paymentMethod,
-            createdAt: pago.createdAt,
-          }
+          id: pago._id,
+          estado: pago.estado,
+          status: pago.status,
+          statusDetail: pago.statusDetail,
+          amount: pago.amount,
+          paymentMethod: pago.paymentMethod,
+          createdAt: pago.createdAt,
+        }
         : null,
       miembro: miembro
         ? {
-            id: miembro._id,
-            estado: miembro.estado,
-          }
+          id: miembro._id,
+          estado: miembro.estado,
+        }
         : null,
       suscripcion: null,
       isApproved: miembro?.estado === "aceptado" && pago?.estado === "aprobado",

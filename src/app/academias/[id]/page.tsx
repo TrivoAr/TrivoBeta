@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -73,8 +73,11 @@ type Academia = {
 export default function AcademiaDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  // Unwrap params Promise (Next.js 16)
+  const { id: academiaId } = use(params);
+
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -105,14 +108,14 @@ export default function AcademiaDetailPage({
 
   // Hook para monitorear el estado del pago en tiempo real
   const { paymentStatus, isApproved, isPending } = usePaymentStatusAcademia(
-    params.id,
+    academiaId,
     !!session?.user?.id
   );
 
   const fetchReviews = async () => {
     setLoadingReviews(true);
     try {
-      const res = await axios.get(`/api/reviews/academia/${params.id}`);
+      const res = await axios.get(`/api/reviews/academia/${academiaId}`);
       const todas = res.data.reviews as Review[];
 
       // Agregar imagen a cada autor
@@ -163,7 +166,7 @@ export default function AcademiaDetailPage({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`/api/academias/${params.id}`);
+        const response = await axios.get(`/api/academias/${academiaId}`);
         setAcademia(response.data.academia);
         setGrupos(response.data.grupos);
 
@@ -188,26 +191,18 @@ export default function AcademiaDetailPage({
 
         loadGroupImages();
 
-        localStorage.setItem("academia_id", params.id);
+        localStorage.setItem("academia_id", academiaId);
         localStorage.setItem("dueño_id", response.data.academia.dueño_id._id);
 
-        // Intentar obtener la imagen del perfil
-        const loadProfileImage = async () => {
-          try {
-            const imageUrl = await getAcademyImage(
-              "profile-image.jpg",
-              params.id
-            );
-            setProfileImage(imageUrl);
-          } catch (error) {
-            // Puedes agregar una imagen predeterminada en caso de error
-            setProfileImage(
-              "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
-            );
-          }
-        };
-
-        loadProfileImage();
+        // Usar la imagen de la academia que viene del API
+        if (response.data.academia.imagenUrl) {
+          setProfileImage(response.data.academia.imagenUrl);
+        } else {
+          // Fallback si no hay imagen
+          setProfileImage(
+            "https://i.pinimg.com/736x/33/3c/3b/333c3b3436af10833aabeccd7c91c701.jpg"
+          );
+        }
       } catch (error) {
         setError("Hubo un problema al cargar los datos de la academia.");
       }
@@ -217,7 +212,7 @@ export default function AcademiaDetailPage({
       if (!session || !session.user) return;
       try {
         const miembrosResponse = await axios.get(
-          `/api/academias/${params.id}/miembros`
+          `/api/academias/${academiaId}/miembros`
         );
         const miembrosData = miembrosResponse.data.miembros;
 
@@ -245,10 +240,10 @@ export default function AcademiaDetailPage({
       if (!session?.user?.id) return;
 
       try {
-        const res = await axios.get("/api/academias/solicitudes/" + params.id, {
+        const res = await axios.get("/api/academias/solicitudes/" + academiaId, {
           params: {
             user_id: session.user.id,
-            academia_id: params.id,
+            academia_id: academiaId,
           },
         });
 
@@ -259,58 +254,6 @@ export default function AcademiaDetailPage({
       }
     };
 
-    const fetchReviews = async () => {
-      setLoadingReviews(true);
-      try {
-        const res = await axios.get(`/api/reviews/academia/${params.id}`);
-        const reviewsData = res.data.reviews;
-        const average = res.data.average;
-
-        // Agregar imagen de perfil a cada autor de reseña
-        const reviewsConImagen = await Promise.all(
-          reviewsData.map(async (review: any) => {
-            try {
-              const profileImage = await getProfileImage(
-                "profile-image.jpg",
-                review.author._id
-              );
-
-              return {
-                ...review,
-                author: {
-                  ...review.author,
-                  imagen: profileImage,
-                },
-              };
-            } catch (error) {
-              return {
-                ...review,
-                author: {
-                  ...review.author,
-                  imagen:
-                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
-                },
-              };
-            }
-          })
-        );
-
-        setReviews(reviewsConImagen);
-        setAverageRating(average);
-
-        if (session?.user?.id) {
-          const yaExiste = reviewsConImagen.find(
-            (r) => r.author._id === session.user.id
-          );
-
-          setMiReview(yaExiste || null);
-        }
-      } catch (error) {
-      } finally {
-        setLoadingReviews(false);
-      }
-    };
-
     const verificarFavorito = async () => {
       if (!session?.user?.id) return;
 
@@ -318,7 +261,7 @@ export default function AcademiaDetailPage({
         const res = await axios.get(`/api/profile`);
         const academiasFavoritas =
           res.data.favoritos?.academias?.map((a: any) => a._id) || [];
-        setEsFavorito(academiasFavoritas.includes(params.id));
+        setEsFavorito(academiasFavoritas.includes(academiaId));
       } catch (error) {
       }
     };
@@ -328,7 +271,7 @@ export default function AcademiaDetailPage({
     checkMembership();
     fetchReviews();
     verificarFavorito();
-  }, [params.id, session?.user?.id]);
+  }, [academiaId, session?.user?.id]);
 
   const toggleFavorito = async () => {
     if (!session?.user?.id) {
@@ -338,7 +281,7 @@ export default function AcademiaDetailPage({
     }
 
     try {
-      const res = await axios.post(`/api/favoritos/academias/${params.id}`);
+      const res = await axios.post(`/api/favoritos/academias/${academiaId}`);
       const data = res.data;
 
       setEsFavorito(data.favorito); // true o false según si fue agregado o removido
@@ -359,7 +302,7 @@ export default function AcademiaDetailPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          academiaId: params.id,
+          academiaId: academiaId,
           userId: session?.user?.id,
           comprobanteUrl: "EVENTO_GRATUITO",
         }),
@@ -375,7 +318,7 @@ export default function AcademiaDetailPage({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          academia_id: params.id,
+          academia_id: academiaId,
           user_id: session?.user?.id,
           pago_id: pagoData.pago._id,
         }),
@@ -390,13 +333,13 @@ export default function AcademiaDetailPage({
     onSuccess: () => {
       toast.success("¡Te uniste exitosamente a la academia!");
       queryClient.invalidateQueries({
-        queryKey: ["payment-status-academia", params.id],
+        queryKey: ["payment-status-academia", academiaId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["miembro-academia", params.id, session?.user?.id],
+        queryKey: ["miembro-academia", academiaId, session?.user?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["miembros-academia", params.id],
+        queryKey: ["miembros-academia", academiaId],
       });
       setHasActiveRequest(true);
     },
@@ -424,7 +367,7 @@ export default function AcademiaDetailPage({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            academiaId: params.id,
+            academiaId: academiaId,
           }),
         });
 
@@ -447,14 +390,14 @@ export default function AcademiaDetailPage({
 
           // Invalidar y hacer refetch inmediato
           await queryClient.invalidateQueries({
-            queryKey: ["payment-status-academia", params.id],
+            queryKey: ["payment-status-academia", academiaId],
             refetchType: "active",
           });
           await queryClient.refetchQueries({
-            queryKey: ["payment-status-academia", params.id],
+            queryKey: ["payment-status-academia", academiaId],
           });
           await queryClient.invalidateQueries({
-            queryKey: ["miembro-academia", params.id, session.user.id],
+            queryKey: ["miembro-academia", academiaId, session.user.id],
           });
 
           setHasActiveRequest(true);
@@ -573,7 +516,7 @@ export default function AcademiaDetailPage({
                 // alert("¡Link copiado al portapapeles!");
                 toast.success("¡Link copiado al portapapeles!");
               })
-              .catch((err) => {});
+              .catch((err) => { });
           }}
           className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
         >
@@ -747,39 +690,6 @@ export default function AcademiaDetailPage({
         ) : (
           <div>
             <div className="flex gap-2 flex-wrap justify-start px-4">
-              {/* {grupos.map((grupo) => (
-                <div className="flex flex-col w-[170px] gap-1">
-                  <div
-                    key={grupo._id || null}
-                    className="bg-card w-[170px] h-[144px] rounded-[15px] shadow-md cursor-pointer justify-between p-2 border border-border relative"
-                    style={{
-                      backgroundImage: `url(${groupImages[grupo._id]})`,
-                      backgroundSize: "cover",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                    }}
-                    onClick={() => router.push(`/grupos/${grupo._id}`)}
-                  >
-                    <p className=" w-[75px] bg-[#00000070] rounded-[20px] text-white font-semibold flex justify-center items-center">
-                      {grupo.tipo_grupo}
-                    </p>{" "}
-                  </div>
-                  <div className="">
-                    <p className="font-light text-sm">{grupo.nombre_grupo}</p>
-                    <div className="text-[#B8B8B8]">
-                      <div className="flex gap-1">
-                        <p className="font-extralight text-[12px]">
-                          {formatDias(grupo.dias)}, {grupo.horario}hs
-                        </p>
-                      </div>
-                      <p className="font-extralight text-[10px]">
-                        {grupo.ubicacion.split(",")[0]}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-      ))}  */}
-
               {grupos.map((grupo) => (
                 <div key={grupo._id} className="flex flex-col w-[170px] gap-1">
                   <div
@@ -1058,13 +968,13 @@ export default function AcademiaDetailPage({
                   }
                   return "unirse";
                 })() === "miembro" && (
-                  <button
-                    disabled
-                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#001a46] text-[#FDFCFA]"
-                  >
-                    Miembro
-                  </button>
-                )}
+                    <button
+                      disabled
+                      className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#001a46] text-[#FDFCFA]"
+                    >
+                      Miembro
+                    </button>
+                  )}
 
                 {(() => {
                   const suscripcion = paymentStatus?.suscripcion;
@@ -1088,17 +998,17 @@ export default function AcademiaDetailPage({
                   })();
                   return estadoFinal === "pendiente";
                 })() && (
-                  <button
-                    disabled
-                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-card text-muted-foreground border-border shadow-md"
-                  >
-                    {isProcessingPayment
-                      ? "Procesando pago..."
-                      : isPending || paymentStatus?.isPending
-                        ? "Solicitud enviada"
-                        : "Pendiente"}
-                  </button>
-                )}
+                    <button
+                      disabled
+                      className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-card text-muted-foreground border-border shadow-md"
+                    >
+                      {isProcessingPayment
+                        ? "Procesando pago..."
+                        : isPending || paymentStatus?.isPending
+                          ? "Solicitud enviada"
+                          : "Pendiente"}
+                    </button>
+                  )}
 
                 {(() => {
                   const suscripcion = paymentStatus?.suscripcion;
@@ -1122,74 +1032,77 @@ export default function AcademiaDetailPage({
                   })();
                   return estadoFinal === "configurar-pago";
                 })() && (
-                  <button
-                    onClick={async () => {
-                      const suscripcion = paymentStatus?.suscripcion;
-                      const mercadoPagoLink = suscripcion?.mercadoPago?.initPoint;
+                    <button
+                      onClick={async () => {
+                        const suscripcion = paymentStatus?.suscripcion;
+                        const mercadoPagoLink = suscripcion?.mercadoPago?.initPoint;
 
-                      // Si ya existe el link, redirigir directamente
-                      if (mercadoPagoLink) {
-                        window.location.href = mercadoPagoLink;
-                        return;
-                      }
-
-                      // Si no existe, generar el link de pago
-                      if (!suscripcion?.id) {
-                        toast.error("Error: No se encontró la suscripción");
-                        return;
-                      }
-
-                      try {
-                        setIsProcessingPayment(true);
-                        toast.loading("Generando link de pago...");
-
-                        const response = await fetch("/api/subscriptions/activate", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            suscripcionId: suscripcion.id,
-                          }),
-                        });
-
-                        const data = await response.json();
-
-                        toast.dismiss();
-
-                        if (!response.ok) {
-                          throw new Error(data.error || "Error al generar link de pago");
+                        // Si ya existe el link, redirigir directamente
+                        if (mercadoPagoLink) {
+                          window.location.href = mercadoPagoLink;
+                          return;
                         }
 
-                        if (data.mercadoPago?.initPoint) {
-                          toast.success("Redirigiendo a MercadoPago...");
-                          // Pequeño delay para que el usuario vea el mensaje
-                          setTimeout(() => {
-                            window.location.href = data.mercadoPago.initPoint;
-                          }, 500);
-                        } else {
-                          throw new Error("No se pudo generar el link de pago");
+                        // Si no existe, generar el link de pago
+                        if (!suscripcion?.id) {
+                          toast.error("Error: No se encontró la suscripción");
+                          return;
                         }
-                      } catch (error: any) {
-                        toast.error(
-                          error.message || "Error al generar link de pago. Contacta al dueño de la academia."
-                        );
-                      } finally {
-                        setIsProcessingPayment(false);
-                      }
-                    }}
-                    disabled={isProcessingPayment}
-                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isProcessingPayment ? "Procesando..." : "Activar suscripción"}
-                  </button>
-                )}
+
+                        try {
+                          setIsProcessingPayment(true);
+                          toast.loading("Generando link de pago...");
+
+                          const response = await fetch("/api/subscriptions/activate", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              suscripcionId: suscripcion.id,
+                            }),
+                          });
+
+                          const data = await response.json();
+
+                          toast.dismiss();
+
+                          if (!response.ok) {
+                            throw new Error(data.error || "Error al generar link de pago");
+                          }
+
+                          if (data.mercadoPago?.initPoint) {
+                            toast.success("Redirigiendo a MercadoPago...");
+                            // Pequeño delay para que el usuario vea el mensaje
+                            setTimeout(() => {
+                              window.location.href = data.mercadoPago.initPoint;
+                            }, 500);
+                          } else {
+                            throw new Error("No se pudo generar el link de pago");
+                          }
+                        } catch (error: any) {
+                          toast.error(
+                            error.message || "Error al generar link de pago. Contacta al dueño de la academia."
+                          );
+                        } finally {
+                          setIsProcessingPayment(false);
+                        }
+                      }}
+                      disabled={isProcessingPayment}
+                      className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isProcessingPayment ? "Procesando..." : "Activar suscripción"}
+                    </button>
+                  )}
 
                 {(() => {
                   const suscripcion = paymentStatus?.suscripcion;
                   const estadoFinal = (() => {
                     if (esMiembro) return "miembro";
                     if (hasActiveRequest) return "pendiente";
-                    // PRIORIDAD: Si trial expiró, siempre mostrar botón de configurar pago
-                    if (suscripcion?.estado === "trial_expirado") {
+                    // PRIORIDAD: Si trial expiró o está pendiente de pago, siempre mostrar botón de configurar pago
+                    if (
+                      suscripcion?.estado === "trial_expirado" ||
+                      suscripcion?.estado === "pendiente"
+                    ) {
                       return "configurar-pago";
                     }
                     if (isApproved && suscripcion?.estado !== "trial_expirado")
@@ -1205,16 +1118,16 @@ export default function AcademiaDetailPage({
                   })();
                   return estadoFinal === "unirse";
                 })() && (
-                  <button
-                    onClick={handleJoinAcademia}
-                    disabled={joinFreeAcademiaMutation.isPending}
-                    className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#C95100] text-white"
-                  >
-                    {joinFreeAcademiaMutation.isPending
-                      ? "Uniéndose..."
-                      : "Participar"}
-                  </button>
-                )}
+                    <button
+                      onClick={handleJoinAcademia}
+                      disabled={joinFreeAcademiaMutation.isPending}
+                      className="h-[35px] w-[140px] rounded-[20px] flex items-center justify-center border p-5 font-semibold text-lg bg-[#C95100] text-white"
+                    >
+                      {joinFreeAcademiaMutation.isPending
+                        ? "Uniéndose..."
+                        : "Participar"}
+                    </button>
+                  )}
               </div>
             )}
           </div>

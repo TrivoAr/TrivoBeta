@@ -20,11 +20,10 @@ export const runtime = "nodejs";
 
 type MiembroLean = {
   _id: string;
-  estado: "pendiente" | "aprobado" | "rechazado";
   salida_id: string | { _id: string; cupo?: number };
   usuario_id?:
-    | string
-    | { firstname?: string; lastname?: string; email?: string };
+  | string
+  | { firstname?: string; lastname?: string; email?: string };
   pago_id?: string | { estado?: string };
 };
 
@@ -55,7 +54,7 @@ export async function GET(
     const miembros = await MiembroSalida.find({ salida_id: salidaId })
       .populate("usuario_id", "firstname lastname email dni")
       .populate("pago_id", "estado")
-      .select("_id estado usuario_id pago_id salida_id createdAt")
+      .select("_id usuario_id pago_id salida_id createdAt")
       .lean();
 
     return jsonOk(miembros, 200);
@@ -64,43 +63,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    await connectDB();
-    const { estado } = (await req.json()) as { estado?: string };
-    if (!["pendiente", "aprobado", "rechazado"].includes(estado || "")) {
-      return jsonErr("Estado inválido", 400);
-    }
-
-    const miembro = await MiembroSalida.findByIdAndUpdate(
-      params.id,
-      { estado },
-      { new: true }
-    )
-      .populate("usuario_id", "firstname lastname email")
-      .populate("salida_id", "cupo")
-      .populate("pago_id", "estado")
-      .lean<MiembroLean>();
-
-    if (!miembro) return jsonErr("Miembro no encontrado", 404);
-
-    const salidaId =
-      typeof miembro.salida_id === "string"
-        ? miembro.salida_id
-        : miembro.salida_id?._id;
-
-    if (salidaId) {
-      revalidateTag(`salida:${salidaId}`);
-    }
-
-    return jsonOk({ message: "Estado del miembro actualizado", miembro }, 200);
-  } catch (error) {
-    return jsonErr("Error interno", 500);
-  }
-}
+// PUT endpoint removed - estado is now managed through Pago model
 
 export async function PATCH(
   req: NextRequest,
@@ -134,27 +97,23 @@ export async function PATCH(
 
     const cupo = typeof salida.cupo === "number" ? salida.cupo : 0;
 
-    // Verificar el estado anterior del miembro
-    const estadoAnterior = miembroCompleto.estado;
-
     if (estado === "aprobado") {
-      const aprobados = await MiembroSalida.countDocuments({
-        salida_id: salida._id,
+      // Contar miembros con pago aprobado
+      const pagosAprobados = await Pago.countDocuments({
+        salidaId: salida._id,
         estado: "aprobado",
       });
 
-      if (aprobados >= cupo) {
+      if (pagosAprobados >= cupo) {
         return jsonErr("No hay cupos disponibles", 409);
       }
     }
 
-    // Actualizar estado
-    await MiembroSalida.updateOne({ _id: params.id }, { estado });
-    await Pago.updateOne({ miembro_id: params.id }, { estado }).catch(() => {});
+    // Actualizar solo el estado del pago
+    await Pago.updateOne({ miembro_id: params.id }, { estado });
 
     // ========== TRACKING DE REVENUE PARA TRANSFERENCIAS APROBADAS ==========
-    // Solo trackear si cambió de pendiente/rechazado a aprobado (evita duplicados)
-    if (estado === "aprobado" && estadoAnterior !== "aprobado") {
+    if (estado === "aprobado") {
       console.log("[REVENUE] Iniciando tracking de transferencia aprobada");
       console.log("[REVENUE] Usuario:", usuario._id);
       console.log("[REVENUE] Salida:", salida.nombre);
@@ -272,7 +231,8 @@ export async function PATCH(
       // No fallar la operación principal por error de notificación
     }
 
-    revalidateTag(`salida:${salida._id}`);
+    // TODO: Fix revalidateTag for Next.js 16
+    // revalidateTag(`salida:${salida._id}`);
 
     return jsonOk({ message: "Estado actualizado correctamente" }, 200);
   } catch (error) {
@@ -316,9 +276,10 @@ export async function DELETE(
     }
 
     await MiembroSalida.findByIdAndDelete(params.id);
-    await Pago.deleteOne({ miembro_id: params.id }).catch(() => {});
+    await Pago.deleteOne({ miembro_id: params.id }).catch(() => { });
 
-    revalidateTag(`salida:${salidaId}`);
+    // TODO: Fix revalidateTag for Next.js 16
+    // revalidateTag(`salida:${salidaId}`);
 
     return jsonOk({ message: "Miembro eliminado correctamente" }, 200);
   } catch (error) {
