@@ -9,8 +9,11 @@ import { notifyPaymentPending } from "@/libs/notificationHelpers";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
 
   const session = await getServerSession(authOptions);
@@ -18,7 +21,7 @@ export async function POST(
     return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
   const { comprobanteUrl, pagoId } = await req.json();
-  const salidaId = params.id;
+  const salidaId = resolvedParams.id;
 
   const user = await User.findOne({ email: session.user?.email });
   if (!user)

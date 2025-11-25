@@ -4,16 +4,24 @@ export { default } from "./EventPageServer";
 export const dynamicParams = true;
 
 // Configurar metadata dinámica
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   try {
+    // Await params in Next.js 15+
+    const resolvedParams = await params;
+
     const { connectDB } = await import("@/libs/mongodb");
     const SalidaSocial = (await import("@/models/salidaSocial")).default;
 
     await connectDB();
 
-    const event = await SalidaSocial.findById(params.id)
+    const event = await SalidaSocial.findById(resolvedParams.id)
       .select("nombre descripcion imagen localidad")
-      .lean();
+      .lean<{
+        nombre: string;
+        descripcion?: string;
+        imagen?: string;
+        localidad?: string;
+      }>();
 
     if (!event) {
       return {

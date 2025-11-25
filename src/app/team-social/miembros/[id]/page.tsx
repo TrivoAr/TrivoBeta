@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface EventData {

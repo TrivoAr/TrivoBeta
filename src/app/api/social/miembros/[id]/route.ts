@@ -42,12 +42,14 @@ function jsonErr(msg: string, status = 500) {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const salidaId = params.id;
+    // Await params in Next.js 15+
+    const resolvedParams = await params;
+    const salidaId = resolvedParams.id;
     if (!mongoose.isValidObjectId(salidaId)) {
       return jsonErr("salida_id inválido", 400);
     }
@@ -66,7 +68,7 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -75,8 +77,11 @@ export async function PUT(
       return jsonErr("Estado inválido", 400);
     }
 
+    // Await params in Next.js 15+
+    const resolvedParams = await params;
+
     const miembro = await MiembroSalida.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       { estado },
       { new: true }
     )
@@ -104,7 +109,7 @@ export async function PUT(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -119,8 +124,11 @@ export async function PATCH(
       return jsonErr("Estado inválido", 400);
     }
 
+    // Await params in Next.js 15+
+    const resolvedParams = await params;
+
     // Obtener información completa del miembro para las notificaciones
-    const miembroCompleto = await MiembroSalida.findById(params.id)
+    const miembroCompleto = await MiembroSalida.findById(resolvedParams.id)
       .populate("usuario_id", "firstname lastname _id")
       .populate("salida_id", "nombre cupo creador_id precio")
       .lean();
@@ -149,8 +157,8 @@ export async function PATCH(
     }
 
     // Actualizar estado
-    await MiembroSalida.updateOne({ _id: params.id }, { estado });
-    await Pago.updateOne({ miembro_id: params.id }, { estado }).catch(() => {});
+    await MiembroSalida.updateOne({ _id: resolvedParams.id }, { estado });
+    await Pago.updateOne({ miembro_id: resolvedParams.id }, { estado }).catch(() => {});
 
     // ========== TRACKING DE REVENUE PARA TRANSFERENCIAS APROBADAS ==========
     // Solo trackear si cambió de pendiente/rechazado a aprobado (evita duplicados)
@@ -162,7 +170,7 @@ export async function PATCH(
 
       try {
         // Buscar el pago asociado para verificar si ya fue trackeado
-        const pago = await Pago.findOne({ miembro_id: params.id });
+        const pago = await Pago.findOne({ miembro_id: resolvedParams.id });
         const yaTrackeado = pago?.revenueTracked || false;
 
         console.log("[REVENUE] Pago encontrado:", !!pago);
@@ -282,7 +290,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -292,7 +300,10 @@ export async function DELETE(
       return jsonErr("No autorizado", 401);
     }
 
-    const miembro = await MiembroSalida.findById(params.id)
+    // Await params in Next.js 15+
+    const resolvedParams = await params;
+
+    const miembro = await MiembroSalida.findById(resolvedParams.id)
       .populate("salida_id", "creador_id")
       .lean<{
         _id: string;
@@ -315,8 +326,8 @@ export async function DELETE(
       return jsonErr("No autorizado para borrar miembros", 403);
     }
 
-    await MiembroSalida.findByIdAndDelete(params.id);
-    await Pago.deleteOne({ miembro_id: params.id }).catch(() => {});
+    await MiembroSalida.findByIdAndDelete(resolvedParams.id);
+    await Pago.deleteOne({ miembro_id: resolvedParams.id }).catch(() => {});
 
     revalidateTag(`salida:${salidaId}`);
 

@@ -6,7 +6,7 @@ import User from "@/models/user";
 // POST: toggle favorito
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
@@ -15,8 +15,11 @@ export async function POST(
     });
   }
 
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   const userEmail = session.user.email;
-  const salidaId = params.id;
+  const salidaId = resolvedParams.id;
 
   try {
     await connectDB();
@@ -60,7 +63,7 @@ export async function POST(
 // GET: verificar si ya es favorito
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
@@ -69,8 +72,11 @@ export async function GET(
     });
   }
 
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   const userEmail = session.user.email;
-  const salidaId = params.id;
+  const salidaId = resolvedParams.id;
 
   try {
     await connectDB();

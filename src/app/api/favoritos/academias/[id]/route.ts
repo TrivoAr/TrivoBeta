@@ -5,7 +5,10 @@ import User from "@/models/user";
 import { connectDB } from "@/libs/mongodb";
 import { authOptions } from "@/libs/authOptions";
 
-export async function POST(req, { params }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return new Response(JSON.stringify({ message: "No autorizado" }), {
@@ -13,8 +16,11 @@ export async function POST(req, { params }) {
     });
   }
 
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   const userEmail = session.user.email;
-  const academiaId = params.id;
+  const academiaId = resolvedParams.id;
 
   if (!academiaId) {
     return new Response(

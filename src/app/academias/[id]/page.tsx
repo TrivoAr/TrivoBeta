@@ -73,7 +73,7 @@ type Academia = {
 export default function AcademiaDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [academia, setAcademia] = useState<Academia | null>(null);
   const [grupos, setGrupos] = useState<Grupo[]>([]);

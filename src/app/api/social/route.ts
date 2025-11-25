@@ -99,7 +99,84 @@ export async function GET(req: NextRequest) {
       "firstname"
     );
 
-    return NextResponse.json(salidas, { status: 200 });
+    // Importar ImageService dinámicamente
+    const { ImageService } = await import("@/libs/services/ImageService");
+
+    // Procesar salidas para obtener URLs de Firebase con tokens frescos
+    const salidasConImagenes = await Promise.all(
+      salidas.map(async (salida) => {
+        const salidaObj = salida.toObject();
+
+        // Helper function para regenerar signed URL
+        const regenerateSignedUrl = async (url: string) => {
+          try {
+            const urlParts = url.split('/o/')[1];
+            if (!urlParts) return null;
+
+            const encodedPath = urlParts.split('?')[0];
+            const decodedPath = decodeURIComponent(encodedPath);
+
+            const { getFirebaseAdmin } = await import('@/libs/firebaseAdmin');
+            const admin = getFirebaseAdmin();
+            const bucket = admin.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+            const file = bucket.file(decodedPath);
+
+            const [exists] = await file.exists();
+            if (!exists) return null;
+
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + 7);
+
+            const [signedUrl] = await file.getSignedUrl({
+              action: 'read',
+              expires: expirationDate,
+            });
+
+            return signedUrl;
+          } catch (error) {
+            console.log(`Error regenerando URL:`, error);
+            return null;
+          }
+        };
+
+        // Procesar array de imagenes (nuevo formato)
+        if (salidaObj.imagenes && Array.isArray(salidaObj.imagenes) && salidaObj.imagenes.length > 0) {
+          const firstImage = salidaObj.imagenes[0];
+          if (firstImage.includes('firebasestorage.googleapis.com/v0/b/')) {
+            const signedUrl = await regenerateSignedUrl(firstImage);
+            if (signedUrl) {
+              return { ...salidaObj, imagen: signedUrl };
+            }
+          }
+        }
+
+        // Procesar imagen singular (formato antiguo)
+        if (salidaObj.imagen && salidaObj.imagen.includes('firebasestorage.googleapis.com/v0/b/')) {
+          const signedUrl = await regenerateSignedUrl(salidaObj.imagen);
+          if (signedUrl) {
+            return { ...salidaObj, imagen: signedUrl };
+          }
+        }
+
+        // Si no tiene imagen, intentar buscar en la nueva ubicación
+        if (!salidaObj.imagen && (!salidaObj.imagenes || salidaObj.imagenes.length === 0)) {
+          try {
+            const imageUrl = await ImageService.getImageUrl(
+              `social/${salidaObj._id}`,
+              "foto_salida.jpg",
+              1500
+            );
+            return { ...salidaObj, imagen: imageUrl };
+          } catch (error) {
+            // No hay imagen disponible
+          }
+        }
+
+        return salidaObj;
+      })
+    );
+
+    return NextResponse.json(salidasConImagenes, { status: 200 });
   } catch (error) {
 
     return NextResponse.json({ message: "Server Error" }, { status: 500 });

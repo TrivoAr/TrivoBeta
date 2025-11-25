@@ -6,8 +6,11 @@ import TeamSocial from "@/models/teamSocial";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -23,14 +26,17 @@ export async function GET(
     return new Response(JSON.stringify({ favorito: false }));
   }
 
-  const esFavorito = user.favoritos.teamSocial.includes(params.id);
+  const esFavorito = user.favoritos.teamSocial.includes(resolvedParams.id);
   return new Response(JSON.stringify({ favorito: esFavorito }));
 }
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -54,18 +60,18 @@ export async function POST(
     user.favoritos.teamSocial = [];
   }
 
-  const yaEsFavorito = user.favoritos.teamSocial.includes(params.id);
+  const yaEsFavorito = user.favoritos.teamSocial.includes(resolvedParams.id);
 
   if (yaEsFavorito) {
-    user.favoritos.teamSocial.pull(params.id);
+    user.favoritos.teamSocial.pull(resolvedParams.id);
   } else {
-    const existeEvento = await TeamSocial.findById(params.id);
+    const existeEvento = await TeamSocial.findById(resolvedParams.id);
     if (!existeEvento) {
       return new Response(JSON.stringify({ message: "Evento no encontrado" }), {
         status: 404,
       });
     }
-    user.favoritos.teamSocial.push(params.id);
+    user.favoritos.teamSocial.push(resolvedParams.id);
   }
 
   await user.save();

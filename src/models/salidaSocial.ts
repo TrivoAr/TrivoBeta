@@ -36,6 +36,10 @@ const SalidaSocialSchema = new Schema(
     imagen: {
       type: String,
     },
+    imagenes: {
+      type: [String],
+      default: [],
+    },
     locationCoords: {
       lat: { type: Number },
       lng: { type: Number },

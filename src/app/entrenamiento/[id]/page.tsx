@@ -15,7 +15,7 @@ type Entrenamiento = {
 export default function EntrenamientosUsuario({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
   const [loading, setLoading] = useState(true);

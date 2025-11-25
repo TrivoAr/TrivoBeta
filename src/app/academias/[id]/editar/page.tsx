@@ -8,7 +8,7 @@ import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 import { useSession } from "next-auth/react";
 import AcademiaEditarSkeleton from "@/components/AcademiaEditarSkeleton";
 
-export default function EditarAcademia({ params }: { params: { id: string } }) {
+export default function EditarAcademia({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [formData, setFormData] = useState({

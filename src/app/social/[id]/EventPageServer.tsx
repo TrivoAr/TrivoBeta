@@ -3,9 +3,9 @@ import { SalidaSocialRepository } from "@/libs/repository";
 import EventPageClient from "./EventPageClient";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // Configurar ISR - revalidar cada 60 segundos
@@ -57,14 +57,17 @@ async function getMiembros(salidaId: string) {
 }
 
 export default async function EventPageServer({ params }: PageProps) {
-  console.log("[EventPageServer] Loading page for ID:", params.id);
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
+  console.log("[EventPageServer] Loading page for ID:", resolvedParams.id);
   console.log("[EventPageServer] Environment:", process.env.NODE_ENV);
   console.log("[EventPageServer] MongoDB URI exists:", !!process.env.MONGODB_URI);
 
   // Fetch initial data on the server
   const [initialEvent, initialMiembros] = await Promise.all([
-    getEventData(params.id),
-    getMiembros(params.id),
+    getEventData(resolvedParams.id),
+    getMiembros(resolvedParams.id),
   ]);
 
   if (!initialEvent) {
@@ -76,7 +79,7 @@ export default async function EventPageServer({ params }: PageProps) {
   // Pass initial data to client component
   return (
     <EventPageClient
-      params={params}
+      params={resolvedParams}
       initialEvent={initialEvent}
       initialMiembros={initialMiembros}
     />

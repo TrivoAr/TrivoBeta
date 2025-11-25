@@ -6,8 +6,11 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   const url = new URL(req.url);
   const user_id = url.searchParams.get("user_id");
 

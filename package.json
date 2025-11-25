@@ -6,7 +6,7 @@
     "nodemailer": "^7.0.10"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

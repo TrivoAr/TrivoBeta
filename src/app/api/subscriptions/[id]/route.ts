@@ -15,8 +15,11 @@ import connectDB from "@/libs/mongodb";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -25,7 +28,7 @@ export async function GET(
 
     await connectDB();
 
-    const suscripcion = await Suscripcion.findById(params.id)
+    const suscripcion = await Suscripcion.findById(resolvedParams.id)
       .populate("academiaId", "nombre_academia imagen tipo_disciplina")
       .populate("grupoId", "nombre_grupo nivel horario dias");
 
@@ -45,7 +48,7 @@ export async function GET(
     const estadisticas =
       await subscriptionService.obtenerEstadisticasAsistencia(
         session.user.id,
-        params.id
+        resolvedParams.id
       );
 
     return NextResponse.json({ suscripcion, estadisticas });
@@ -60,8 +63,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -79,7 +85,7 @@ export async function PUT(
 
     await connectDB();
 
-    const suscripcion = await Suscripcion.findById(params.id).populate(
+    const suscripcion = await Suscripcion.findById(resolvedParams.id).populate(
       "academiaId"
     );
 
@@ -117,11 +123,11 @@ export async function PUT(
     let updatedSuscripcion;
     if (action === "pause") {
       updatedSuscripcion = await subscriptionService.pausarSuscripcion(
-        params.id
+        resolvedParams.id
       );
     } else if (action === "cancel") {
       updatedSuscripcion = await subscriptionService.cancelarSuscripcion(
-        params.id
+        resolvedParams.id
       );
     }
 
@@ -144,8 +150,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   // Reutilizar la lógica de PUT con action "cancel"
   const modifiedRequest = new NextRequest(request.url, {
     method: "PUT",

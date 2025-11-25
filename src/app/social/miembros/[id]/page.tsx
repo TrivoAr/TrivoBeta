@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import PaymentReviewModal from "@/components/PaymentReviewModal";
 import ExportUsuarios from "@/app/utils/ExportUsuarios";
 
-export default function EventPage({ params }: { params: { id: string } }) {
+export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();

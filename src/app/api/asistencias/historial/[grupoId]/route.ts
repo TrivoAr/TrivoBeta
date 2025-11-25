@@ -13,8 +13,11 @@ import connectDB from "@/libs/mongodb";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { grupoId: string } }
+  { params }: { params: Promise<{ grupoId: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -33,7 +36,7 @@ export async function GET(
     await connectDB();
 
     // Verificar que el grupo existe
-    const grupo = await Grupo.findById(params.grupoId).populate("academia_id");
+    const grupo = await Grupo.findById(resolvedParams.grupoId).populate("academia_id");
     if (!grupo) {
       return NextResponse.json(
         { error: "Grupo no encontrado" },
@@ -68,7 +71,7 @@ export async function GET(
 
     // Query base
     const query: any = {
-      grupoId: params.grupoId,
+      grupoId: resolvedParams.grupoId,
       asistio: true,
       fecha: {
         $gte: inicioMes,

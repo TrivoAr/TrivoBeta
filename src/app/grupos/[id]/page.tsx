@@ -60,7 +60,7 @@ type Entrenamiento = {
 export default function GrupoDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const [grupo, setGrupo] = useState<Grupo | null>(null);
   const [alumnos, setAlumnos] = useState<

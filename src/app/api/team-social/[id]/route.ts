@@ -11,12 +11,15 @@ import Sponsors from "@/models/sponsors";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
 
   try {
-    const team = await TeamSocial.findById(params.id).populate(
+    const team = await TeamSocial.findById(resolvedParams.id).populate(
       "creadorId",
       "firstname lastname imagen"
     );
@@ -84,8 +87,11 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -93,7 +99,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const salida = await TeamSocial.findById(params.id);
+  const salida = await TeamSocial.findById(resolvedParams.id);
   if (!salida) {
     return NextResponse.json(
       { message: "Salida no encontrada" },
@@ -111,7 +117,7 @@ export async function PATCH(
   const data = await req.json();
 
   try {
-    const actualizada = await TeamSocial.findByIdAndUpdate(params.id, data, {
+    const actualizada = await TeamSocial.findByIdAndUpdate(resolvedParams.id, data, {
       new: true,
     });
     return NextResponse.json(actualizada, { status: 200 });
@@ -125,8 +131,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -134,7 +143,7 @@ export async function DELETE(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const salida = await TeamSocial.findById(params.id);
+  const salida = await TeamSocial.findById(resolvedParams.id);
   if (!salida) {
     return NextResponse.json(
       { message: "Salida no encontrada" },
@@ -150,7 +159,7 @@ export async function DELETE(
   }
 
   try {
-    await TeamSocial.findByIdAndDelete(params.id);
+    await TeamSocial.findByIdAndDelete(resolvedParams.id);
     return NextResponse.json({ message: "Salida eliminada" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: "Error al eliminar" }, { status: 500 });

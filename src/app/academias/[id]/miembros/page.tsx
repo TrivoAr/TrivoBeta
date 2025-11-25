@@ -14,7 +14,7 @@ import ExportUsuarios from "@/app/utils/ExportUsuarios";
 export default function AcademiaMiembrosPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { data: session } = useSession();
   const router = useRouter();

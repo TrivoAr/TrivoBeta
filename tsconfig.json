@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "plugins": [
@@ -45,7 +45,9 @@
     "src/app/api/api.js",
     "src/components/SkeletonCard.jsx",
     "src/app/social/notificaciones/page.jsx",
-    "./.next/types/**/*.ts"
+    "./.next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "./.next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

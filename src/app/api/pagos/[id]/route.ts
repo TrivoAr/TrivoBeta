@@ -24,11 +24,14 @@ export const dynamic = "force-dynamic";
 // 🔹 GET: Buscar un pago por ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
-    const pago = await Pago.findById(params.id)
+    const pago = await Pago.findById(resolvedParams.id)
       .populate("salidaId")
       .populate("academiaId")
       .populate("userId");
@@ -49,8 +52,11 @@ export async function GET(
 // 🔹 PATCH: Actualizar estado del pago y notificar
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
 
@@ -66,7 +72,7 @@ export async function PATCH(
 
     // Actualizamos el estado del pago
     const pago = await Pago.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       { estado },
       { new: true }
     );

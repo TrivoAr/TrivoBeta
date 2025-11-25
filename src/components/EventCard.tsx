@@ -186,15 +186,18 @@ export default function EventCard({
   return (
     <div className={cardClasses} data-theme={isNight ? "night" : undefined}>
       {/* Imagen */}
-      <div
-        className="relative w-full h-[180px]"
-        style={{
-          backgroundImage: `url(${event.image})`,
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-        }}
-      >
+      <div className="relative w-full h-[180px] bg-gray-200 overflow-hidden">
+        {event.image && (
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+        )}
         <button
           className="btnFondo absolute top-2 right-5 text-white p-2 rounded-full shadow-md"
           onClick={toggleFavorito}

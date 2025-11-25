@@ -10,13 +10,14 @@ import { ImageService } from "@/libs/services/ImageService";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
 
   try {
     const repository = new SalidaSocialRepository();
-    const { id } = params;
+    const { id } = resolvedParams;
 
     const salida = await repository.findWithPopulatedData(id);
 
@@ -49,8 +50,11 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -62,7 +66,7 @@ export async function PATCH(
     const repository = new SalidaSocialRepository();
 
     const actualizada = await repository.updateWithOwnerCheck(
-      params.id,
+      resolvedParams.id,
       data,
       session.user.id
     );
@@ -90,8 +94,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
 
@@ -101,7 +108,7 @@ export async function DELETE(
 
     const repository = new SalidaSocialRepository();
 
-    await repository.deleteWithOwnerCheck(params.id, session.user.id);
+    await repository.deleteWithOwnerCheck(resolvedParams.id, session.user.id);
 
     return NextResponse.json({ message: "Salida eliminada" }, { status: 200 });
   } catch (error) {

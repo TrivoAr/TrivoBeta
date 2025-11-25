@@ -5,6 +5,9 @@ import { authOptions } from "@/libs/authOptions";
 import { connectDB } from "@/libs/mongodb";
 import Notificacion from "@/models/notificacion";
 import SalidaSocial from "@/models/salidaSocial";
+import User from "@/models/user";
+import Academia from "@/models/academia";
+import TeamSocial from "@/models/teamSocial";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 export async function GET() {

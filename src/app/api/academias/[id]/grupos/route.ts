@@ -7,12 +7,15 @@ import { authOptions } from "@/libs/authOptions";
 import Academia from "@/models/academia";
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
 
   try {
-    const grupos = await Grupo.find({ academia_id: params.id });
+    const grupos = await Grupo.find({ academia_id: resolvedParams.id });
     return NextResponse.json(grupos);
   } catch (error) {
 
@@ -24,8 +27,11 @@ export async function GET(
 }
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     // Conectar a la base de datos
     await connectDB();

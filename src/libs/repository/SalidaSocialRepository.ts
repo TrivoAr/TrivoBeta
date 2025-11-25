@@ -169,6 +169,70 @@ export class SalidaSocialRepository extends BaseRepository<ISalidaSocial> {
         };
       }
 
+      // Helper function para regenerar signed URL
+      const regenerateSignedUrl = async (url: string) => {
+        try {
+          const urlParts = url.split('/o/')[1];
+          if (!urlParts) return null;
+
+          const encodedPath = urlParts.split('?')[0];
+          const decodedPath = decodeURIComponent(encodedPath);
+
+          const { getFirebaseAdmin } = await import('@/libs/firebaseAdmin');
+          const admin = getFirebaseAdmin();
+          const bucket = admin.storage().bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+          const file = bucket.file(decodedPath);
+
+          const [exists] = await file.exists();
+          if (!exists) return null;
+
+          const expirationDate = new Date();
+          expirationDate.setDate(expirationDate.getDate() + 7);
+
+          const [signedUrl] = await file.getSignedUrl({
+            action: 'read',
+            expires: expirationDate,
+          });
+
+          return signedUrl;
+        } catch (error) {
+          console.log(`Error regenerando URL:`, error);
+          return null;
+        }
+      };
+
+      // Procesar array de imagenes (nuevo formato)
+      if (salidaObj.imagenes && Array.isArray(salidaObj.imagenes) && salidaObj.imagenes.length > 0) {
+        const firstImage = salidaObj.imagenes[0];
+        if (firstImage.includes('firebasestorage.googleapis.com/v0/b/')) {
+          const signedUrl = await regenerateSignedUrl(firstImage);
+          if (signedUrl) {
+            salidaObj.imagen = signedUrl;
+          }
+        }
+      }
+      // Procesar imagen singular (formato antiguo)
+      else if (salidaObj.imagen && salidaObj.imagen.includes('firebasestorage.googleapis.com/v0/b/')) {
+        const signedUrl = await regenerateSignedUrl(salidaObj.imagen);
+        if (signedUrl) {
+          salidaObj.imagen = signedUrl;
+        }
+      }
+      // Si no tiene imagen, intentar buscar en la nueva ubicación
+      else if (!salidaObj.imagen && (!salidaObj.imagenes || salidaObj.imagenes.length === 0)) {
+        try {
+          const salidaImageUrl = await ImageService.getImageUrl(
+            `social/${salida._id}`,
+            "foto_salida.jpg",
+            1500
+          );
+          salidaObj.imagen = salidaImageUrl;
+        } catch (error) {
+          // No image available
+          salidaObj.imagen = null;
+        }
+      }
+
       return salidaObj as PopulatedSalidaSocial;
     } catch (error) {
       throw this.handleError(

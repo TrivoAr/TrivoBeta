@@ -23,7 +23,7 @@ interface LatLng {
 export default function EditarTeamSalida({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { data: session } = useSession();
   const router = useRouter();

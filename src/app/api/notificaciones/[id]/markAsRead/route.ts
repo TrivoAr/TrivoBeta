@@ -5,14 +5,17 @@ import { connectDB } from "@/libs/mongodb";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   await connectDB();
 
   const session = await getServerSession(authOptions);
   if (!session) return new Response("No autorizado", { status: 401 });
 
-  const notificacionId = params.id;
+  const notificacionId = resolvedParams.id;
 
   try {
     const notificacion = await Notificacion.findById(notificacionId);

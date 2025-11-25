@@ -8,12 +8,15 @@ export const dynamic = "force-dynamic";
 // 🔹 GET: Obtener un sponsor por ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
 
-    const sponsor = await Sponsors.findById(params.id).lean();
+    const sponsor = await Sponsors.findById(resolvedParams.id).lean();
 
     if (!sponsor) {
       return NextResponse.json(
@@ -47,8 +50,11 @@ export async function GET(
 // 🔹 PUT: Actualizar un sponsor
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
 
@@ -65,7 +71,7 @@ export async function PUT(
     }
 
     const sponsor = await Sponsors.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       { name, imagen },
       { new: true, runValidators: true }
     );
@@ -103,12 +109,15 @@ export async function PUT(
 // 🔹 DELETE: Eliminar un sponsor
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
 
-    const sponsor = await Sponsors.findByIdAndDelete(params.id);
+    const sponsor = await Sponsors.findByIdAndDelete(resolvedParams.id);
 
     if (!sponsor) {
       return NextResponse.json(

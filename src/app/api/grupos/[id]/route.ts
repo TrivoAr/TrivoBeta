@@ -10,12 +10,15 @@ import UsuarioGrupo from "@/models/users_grupo";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
 
-    const grupo = await Grupo.findById(params.id).populate("profesor_id");
+    const grupo = await Grupo.findById(resolvedParams.id).populate("profesor_id");
 
     if (!grupo) {
       return NextResponse.json(
@@ -49,7 +52,7 @@ export async function GET(
     };
 
     // Obtener los usuarios que pertenecen a este grupo
-    const alumnos = await UsuarioGrupo.find({ grupo_id: params.id }).populate(
+    const alumnos = await UsuarioGrupo.find({ grupo_id: resolvedParams.id }).populate(
       "user_id"
     );
 
@@ -66,15 +69,18 @@ export async function GET(
 // Eliminar un grupo por ID
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const grupo = await Grupo.findById(params.id);
+    const grupo = await Grupo.findById(resolvedParams.id);
 
     if (!grupo) {
       return NextResponse.json(
@@ -95,7 +101,7 @@ export async function DELETE(
       );
     }
 
-    await Grupo.findByIdAndDelete(params.id);
+    await Grupo.findByIdAndDelete(resolvedParams.id);
     return NextResponse.json(
       { message: "Grupo eliminado con éxito" },
       { status: 200 }
@@ -111,8 +117,11 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // Await params in Next.js 15+
+  const resolvedParams = await params;
+
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
@@ -123,7 +132,7 @@ export async function PATCH(
 
     const data = await req.json();
 
-    const grupo = await Grupo.findById(params.id);
+    const grupo = await Grupo.findById(resolvedParams.id);
     if (!grupo) {
       return NextResponse.json(
         { error: "Grupo no encontrado" },

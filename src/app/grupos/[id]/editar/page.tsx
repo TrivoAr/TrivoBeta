@@ -19,7 +19,7 @@ interface LatLng {
   lng: number;
 }
 
-export default function EditarGrupo({ params }: { params: { id: string } }) {
+export default function EditarGrupo({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [imagen, setImagen] = useState<File | null>(null);
