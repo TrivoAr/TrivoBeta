@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface EventData {
@@ -43,6 +43,7 @@ interface Miembro {
 }
 
 export default function EventPage({ params }: PageProps) {
+  const { id } = use(params);
   const { data: session } = useSession();
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,7 @@ export default function EventPage({ params }: PageProps) {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`/api/team-social/${params.id}`);
+        const response = await axios.get(`/api/team-social/${id}`);
         setEvent(response.data);
       } catch (err) {
       } finally {
@@ -66,7 +67,7 @@ export default function EventPage({ params }: PageProps) {
     const fetchMiembros = async () => {
       try {
         const res = await fetch(
-          `/api/team-social/miembros?teamSocialId=${params.id}`
+          `/api/team-social/miembros?teamSocialId=${id}`
         );
         const data = await res.json();
         setMiembros(data);
@@ -76,7 +77,7 @@ export default function EventPage({ params }: PageProps) {
 
     fetchEvent();
     fetchMiembros();
-  }, [params.id, session]);
+  }, [id, session]);
 
   const filteredMiembros = miembros.filter((miembro) =>
     miembro.nombre.toLowerCase().includes(searchQuery.toLowerCase())

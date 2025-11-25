@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, use } from "react";
 import { useSession } from "next-auth/react";
 import { PATCH } from "@/app/api/grupos/route";
 import dynamic from "next/dynamic";
@@ -23,8 +23,9 @@ interface LatLng {
 export default function EditarTeamSalida({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -83,7 +84,7 @@ export default function EditarTeamSalida({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/team-social/${params.id}`);
+        const res = await fetch(`/api/team-social/${id}`);
         const data = await res.json();
 
         setFormData({
@@ -137,7 +138,7 @@ export default function EditarTeamSalida({
     };
 
     fetchData();
-  }, [params.id, provinces]);
+  }, [id, provinces]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -175,16 +176,6 @@ export default function EditarTeamSalida({
     }
   };
 
-  //   const handleCoordsChange = (coords: LatLng) => {
-  //   setMarkerPos(coords);
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     lat: coords.lat,
-  //     lng: coords.lng,
-  //     locationCoords: coords,
-  //   }));
-  // };
-
   const handleCoordsChange = async (coords: LatLng) => {
     setMarkerPos(coords);
 
@@ -209,6 +200,7 @@ export default function EditarTeamSalida({
       ubicacion: suggestion.display_name,
       lat: coords.lat,
       lng: coords.lng,
+      locationCoords: coords,
     }));
     setMarkerPos(coords); // 👈 Esto hace que el mapa se actualice
     setSuggestions([]);
@@ -376,7 +368,7 @@ export default function EditarTeamSalida({
         sponsors: selectedSponsors.length > 0 ? selectedSponsors : [],
       };
 
-      await fetch(`/api/team-social/${params.id}`, {
+      await fetch(`/api/team-social/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
@@ -391,17 +383,6 @@ export default function EditarTeamSalida({
     }
   };
 
-  // const handleDelete = async () => {
-  //   const confirm = window.confirm(
-  //     "¿Estás seguro que querés eliminar esta salida?"
-  //   );
-  //   if (!confirm) return;
-
-  //   toast.loading("Borrando social team");
-  //   await fetch(`/api/team-social/${params.id}`, { method: "DELETE" });
-  //   router.push("/dashboard");
-  // };
-
   const handleDelete = async () => {
     const confirm = window.confirm(
       "¿Estás seguro que querés eliminar esta salida?"
@@ -411,7 +392,7 @@ export default function EditarTeamSalida({
     const toastId = toast.loading("Borrando social team...");
 
     try {
-      const response = await fetch(`/api/team-social/${params.id}`, {
+      const response = await fetch(`/api/team-social/${id}`, {
         method: "DELETE",
       });
 

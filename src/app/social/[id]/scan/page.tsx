@@ -1,8 +1,9 @@
 "use client";
 import { Scanner } from "@yudiel/react-qr-scanner";
-import { useState } from "react";
+import { useState, use } from "react";
 
-export default function ScanPage({ params }: { params: { id: string } }) {
+export default function ScanPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [result, setResult] = useState<string | null>(null);
 
   const handleScan = (codes: { rawValue: string }[]) => {

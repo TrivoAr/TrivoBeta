@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -15,8 +15,9 @@ type Entrenamiento = {
 export default function EntrenamientosUsuario({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const [entrenamientos, setEntrenamientos] = useState<Entrenamiento[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export default function EntrenamientosUsuario({
     const fetchEntrenamientos = async () => {
       try {
         const response = await axios.get(
-          `/api/entrenamientos?user=${params.id}`
+          `/api/entrenamientos?user=${id}`
         );
         setEntrenamientos(response.data);
       } catch (error) {
@@ -37,7 +38,7 @@ export default function EntrenamientosUsuario({
     };
 
     fetchEntrenamientos();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) return <div>Cargando entrenamientos...</div>;
   if (error) return <div>{error}</div>;
