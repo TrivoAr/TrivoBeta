@@ -4,16 +4,18 @@ export { default } from "./EventPageServer";
 export const dynamicParams = true;
 
 // Configurar metadata dinámica
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   try {
     const { connectDB } = await import("@/libs/mongodb");
     const SalidaSocial = (await import("@/models/salidaSocial")).default;
 
     await connectDB();
 
-    const event = await SalidaSocial.findById(params.id)
+    const { id } = await params;
+
+    const event = await SalidaSocial.findById(id)
       .select("nombre descripcion imagen localidad")
-      .lean();
+      .lean() as any;
 
     if (!event) {
       return {

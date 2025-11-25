@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, use } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -58,7 +58,8 @@ interface SalidaSocial {
   imagen?: string;
 }
 
-export default function EditarSalida({ params }: { params: { id: string } }) {
+export default function EditarSalida({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { data: session } = useSession();
   const [imagen, setImagen] = useState<File | null>(null);
@@ -88,9 +89,9 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
 
   // -------- Query salida --------
   const salidaQuery = useQuery({
-    queryKey: ["salida", params.id],
+    queryKey: ["salida", id],
     queryFn: async (): Promise<SalidaSocial> => {
-      const res = await fetch(`/api/social/${params.id}`, {
+      const res = await fetch(`/api/social/${id}`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Error cargando salida");
@@ -106,8 +107,8 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
         ...salidaQuery.data,
         sponsors: Array.isArray(salidaQuery.data.sponsors)
           ? salidaQuery.data.sponsors.map((s) =>
-              typeof s === "string" ? s : s._id
-            )
+            typeof s === "string" ? s : s._id
+          )
           : [],
       };
       setLocalSalida(salidaData);
@@ -153,7 +154,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   // -------- Mutation update --------
   const updateMutation = useMutation<SalidaSocial, Error, SalidaSocial>({
     mutationFn: async (payload: SalidaSocial) => {
-      const res = await fetch(`/api/social/${params.id}`, {
+      const res = await fetch(`/api/social/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +172,7 @@ export default function EditarSalida({ params }: { params: { id: string } }) {
   // -------- Mutation delete --------
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/social/${params.id}`, {
+      const res = await fetch(`/api/social/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

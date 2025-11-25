@@ -6,6 +6,7 @@ import {
   FormEvent,
   HtmlHTMLAttributes,
   useMemo,
+  use,
 } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,8 @@ interface LatLng {
   lng: number;
 }
 
-export default function EditarGrupo({ params }: { params: { id: string } }) {
+export default function EditarGrupo({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [imagen, setImagen] = useState<File | null>(null);
@@ -49,13 +51,11 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Obtener los datos del grupo
   const fetchGrupo = async () => {
     const toastId = toast.loading("Cargando datos del grupo...");
     try {
-      const response = await axios.get(`/api/grupos/${params.id}`);
+      const response = await axios.get(`/api/grupos/${id}`);
       setFormData((prev) => ({
         ...prev,
         ...response.data.grupo,
@@ -99,7 +99,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
     event.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.patch(`/api/grupos/${params.id}`, formData);
+      const response = await axios.patch(`/api/grupos/${id}`, formData);
       if (response.status === 200) {
         toast.success("¡Grupo actualizado con éxito!");
         router.push("/dashboard");
@@ -152,7 +152,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
 
     try {
       setUploadingImage(true);
-      const imageUrl = await saveGroupImage(file, params.id);
+      const imageUrl = await saveGroupImage(file, id);
       setProfileImage(imageUrl);
       alert("Imagen actualizada con éxito.");
     } catch (error) {
@@ -199,26 +199,6 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
     }
   };
 
-  // const handleDelete = async () => {
-  //   const confirmDelete = confirm(
-  //     "¿Estás seguro de que deseas eliminar este grupo?"
-  //   );
-  //   if (!confirmDelete) return;
-
-  //   try {
-  //     const response = await axios.delete(`/api/grupos/${params.id}/eliminar`);
-  //     if (response.status === 200) {
-  //       toast.success("¡Grupo eliminado con éxito!");
-  //       router.push("/dashboard");
-  //     } else {
-  //       throw new Error("Error al eliminar el grupo");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error al eliminar:", error);
-  //     toast.error("Error al eliminar el grupo.");
-  //   }
-  // };
-
   const handleDelete = () => {
     toast.custom(
       (t) => (
@@ -234,7 +214,7 @@ export default function EditarGrupo({ params }: { params: { id: string } }) {
 
                 try {
                   const response = await axios.delete(
-                    `/api/grupos/${params.id}/eliminar`
+                    `/api/grupos/${id}/eliminar`
                   );
                   if (response.status === 200) {
                     toast.success("¡Grupo eliminado con éxito!", {

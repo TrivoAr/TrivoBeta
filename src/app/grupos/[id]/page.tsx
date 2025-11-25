@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ModalEntrenamiento from "@/components/Modals/ModalEntrenamiento";
@@ -46,6 +46,7 @@ type Alumno = {
   firstname: string;
   lastname: string;
   email: string;
+  profileImage?: string;
 };
 
 type Entrenamiento = {
@@ -60,15 +61,14 @@ type Entrenamiento = {
 export default function GrupoDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const [grupo, setGrupo] = useState<Grupo | null>(null);
-  const [alumnos, setAlumnos] = useState<
-    (Alumno & { profileImage?: string })[]
-  >([]);
+  const [alumnos, setAlumnos] = useState<Alumno[]>([]);
   const [entrenamientoData, setEntrenamientoData] = useState<Entrenamiento>({
     alumno_id: "",
-    grupo_id: params.id,
+    grupo_id: id,
     fecha: "",
     descripcion: "",
     objetivo: "",
@@ -99,7 +99,7 @@ export default function GrupoDetailPage({
   });
 
   // useEffect(() => {
-  //   if (!userId || !params.id) return; // Verificar que el userId y el params.id estén disponibles
+  //   if (!userId || !id) return; // Verificar que el userId y el id estén disponibles
 
   //   const checkUserAccess = async () => {
   //     try {
@@ -142,7 +142,7 @@ export default function GrupoDetailPage({
   //     });
   //   }
   //   checkUserAccess(); // Ejecutar la función para verificar el acceso
-  // }, [params.id, userId]);
+  // }, [id, userId]);
 
   useEffect(() => {
     // if (isAuthorized === false) {
@@ -153,7 +153,7 @@ export default function GrupoDetailPage({
     const fetchGrupo = async () => {
       try {
         // Si el usuario tiene acceso, cargamos los detalles del grupo
-        const response = await axios.get(`/api/grupos/${params.id}`);
+        const response = await axios.get(`/api/grupos/${id}`);
 
         const alumnosData = response.data.alumnos.map(
           (item: any) => item.user_id
@@ -162,7 +162,7 @@ export default function GrupoDetailPage({
         try {
           const imageUrl = await getGroupImage(
             "foto_perfil_grupo.jpg",
-            params.id
+            id
           );
           setGroupImage(imageUrl);
         } catch {
@@ -198,7 +198,7 @@ export default function GrupoDetailPage({
 
     // }
     fetchGrupo();
-  }, [isAuthorized, params.id]);
+  }, [isAuthorized, id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -221,7 +221,7 @@ export default function GrupoDetailPage({
 
     try {
       setUploadingImage(true);
-      const imageUrl = await saveGroupImage(file, params.id);
+      const imageUrl = await saveGroupImage(file, id);
       setGroupImage(imageUrl);
       alert("Imagen actualizada con éxito.");
     } catch (error) {
@@ -742,7 +742,7 @@ export default function GrupoDetailPage({
                   lat: grupo.locationCoords.lat,
                   lng: grupo.locationCoords.lng,
                 }}
-                onChange={() => {}} // No necesitamos editar, solo mostrar
+                onChange={() => { }} // No necesitamos editar, solo mostrar
                 editable={false}
                 showControls={false}
                 style="mapbox://styles/mapbox/navigation-night-v1"
@@ -811,7 +811,7 @@ export default function GrupoDetailPage({
                 lat: grupo.locationCoords.lat,
                 lng: grupo.locationCoords.lng,
               }}
-              onChange={() => {}}
+              onChange={() => { }}
               editable={false}
               showControls={true}
               style="mapbox://styles/mapbox/streets-v12"

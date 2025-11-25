@@ -41,12 +41,13 @@ function jsonErr(msg: string, status = 500) {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const salidaId = params.id;
+    const { id } = await params;
+    const salidaId = id;
     if (!mongoose.isValidObjectId(salidaId)) {
       return jsonErr("salida_id inválido", 400);
     }
@@ -67,11 +68,12 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
+    const { id } = await params;
 
     if (!session?.user) {
       return jsonErr("No autorizado", 401);
@@ -83,7 +85,7 @@ export async function PATCH(
     }
 
     // Obtener información completa del miembro para las notificaciones
-    const miembroCompleto = await MiembroSalida.findById(params.id)
+    const miembroCompleto = await MiembroSalida.findById(id)
       .populate("usuario_id", "firstname lastname _id")
       .populate("salida_id", "nombre cupo creador_id precio")
       .lean();
@@ -110,7 +112,7 @@ export async function PATCH(
     }
 
     // Actualizar solo el estado del pago
-    await Pago.updateOne({ miembro_id: params.id }, { estado });
+    await Pago.updateOne({ miembro_id: id }, { estado });
 
     // ========== TRACKING DE REVENUE PARA TRANSFERENCIAS APROBADAS ==========
     if (estado === "aprobado") {
@@ -121,7 +123,7 @@ export async function PATCH(
 
       try {
         // Buscar el pago asociado para verificar si ya fue trackeado
-        const pago = await Pago.findOne({ miembro_id: params.id });
+        const pago = await Pago.findOne({ miembro_id: id });
         const yaTrackeado = pago?.revenueTracked || false;
 
         console.log("[REVENUE] Pago encontrado:", !!pago);
@@ -156,7 +158,7 @@ export async function PATCH(
                 event_id: salida._id.toString(),
                 event_type: "salida_social",
                 event_name: salida.nombre,
-                payment_id: pago?._id?.toString() || `transfer_${params.id}`,
+                payment_id: pago?._id?.toString() || `transfer_${id}`,
                 payment_method: "transferencia_bancaria",
                 currency: "ARS",
                 source: "manual_approval",
@@ -173,7 +175,7 @@ export async function PATCH(
                 event_id: salida._id.toString(),
                 event_type: "salida_social",
                 event_name: salida.nombre,
-                payment_id: pago?._id?.toString() || `transfer_${params.id}`,
+                payment_id: pago?._id?.toString() || `transfer_${id}`,
                 payment_method: "transferencia_bancaria",
                 currency: "ARS",
                 timestamp: new Date().toISOString(),
@@ -200,7 +202,7 @@ export async function PATCH(
           }
         } else {
           console.log(
-            `ℹ️ Revenue ya trackeado para miembro ${params.id}, evitando duplicado`
+            `ℹ️ Revenue ya trackeado para miembro ${id}, evitando duplicado`
           );
         }
       } catch (trackingError) {
@@ -242,17 +244,18 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
+    const { id } = await params;
 
     if (!session?.user) {
       return jsonErr("No autorizado", 401);
     }
 
-    const miembro = await MiembroSalida.findById(params.id)
+    const miembro = await MiembroSalida.findById(id)
       .populate("salida_id", "creador_id")
       .lean<{
         _id: string;
@@ -275,8 +278,8 @@ export async function DELETE(
       return jsonErr("No autorizado para borrar miembros", 403);
     }
 
-    await MiembroSalida.findByIdAndDelete(params.id);
-    await Pago.deleteOne({ miembro_id: params.id }).catch(() => { });
+    await MiembroSalida.findByIdAndDelete(id);
+    await Pago.deleteOne({ miembro_id: id }).catch(() => { });
 
     // TODO: Fix revalidateTag for Next.js 16
     // revalidateTag(`salida:${salidaId}`);

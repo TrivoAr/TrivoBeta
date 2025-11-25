@@ -226,10 +226,10 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 
-export default function TicketPage({ params }: { params: { code: string } }) {
-  const { code } = params;
+export default function TicketPage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = use(params);
   const [state, setState] = useState<any>({ loading: true });
   const [redeeming, setRedeeming] = useState(false);
   const [msg, setMsg] = useState("");
@@ -345,11 +345,10 @@ export default function TicketPage({ params }: { params: { code: string } }) {
         <button
           onClick={handleRedeem}
           disabled={redeeming || !isIssued}
-          className={`h-12 w-full rounded-xl text-[15px] font-medium shadow-sm transition ${
-            isIssued
+          className={`h-12 w-full rounded-xl text-[15px] font-medium shadow-sm transition ${isIssued
               ? "bg-slate-900 text-white hover:bg-slate-800"
               : "bg-slate-200 text-slate-500"
-          }`}
+            }`}
         >
           {redeeming ? "Canjeando…" : "Canjear entrada"}
         </button>

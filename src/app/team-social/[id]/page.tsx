@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Image from "next/image";
@@ -14,9 +14,9 @@ import { se } from "date-fns/locale";
 import PaymentModal from "@/components/PaymentModal";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 interface EventData {
@@ -70,6 +70,7 @@ interface Miembro {
 }
 
 export default function TeamEventPage({ params }: PageProps) {
+  const { id } = use(params);
   const { data: session } = useSession();
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,7 +127,7 @@ export default function TeamEventPage({ params }: PageProps) {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`/api/team-social/${params.id}`);
+        const response = await axios.get(`/api/team-social/${id}`);
         setEvent(response.data);
       } catch (err) {
         setError("Error al cargar el evento");
@@ -138,7 +139,7 @@ export default function TeamEventPage({ params }: PageProps) {
     const fetchMiembros = async () => {
       try {
         const res = await fetch(
-          `/api/team-social/miembros?teamSocialId=${params.id}`
+          `/api/team-social/miembros?teamSocialId=${id}`
         );
         const data = await res.json();
         setMiembros(data);
@@ -174,7 +175,7 @@ export default function TeamEventPage({ params }: PageProps) {
     fetchMiembros();
     if (session) checkUnido();
     checkFavorito();
-  }, [params.id, session]);
+  }, [id, session]);
 
   const handleAccion = async () => {
     if (!session) {
@@ -208,7 +209,7 @@ export default function TeamEventPage({ params }: PageProps) {
 
   const checkFavorito = async () => {
     try {
-      const res = await fetch(`/api/favoritos/teamsocial/${params.id}`);
+      const res = await fetch(`/api/favoritos/teamsocial/${id}`);
       const data = await res.json();
       setFavorito(data.favorito);
     } catch (err) {
@@ -223,7 +224,7 @@ export default function TeamEventPage({ params }: PageProps) {
       return;
     }
     try {
-      const res = await fetch(`/api/favoritos/teamsocial/${params.id}`, {
+      const res = await fetch(`/api/favoritos/teamsocial/${id}`, {
         method: "POST",
       });
 
@@ -627,7 +628,7 @@ export default function TeamEventPage({ params }: PageProps) {
                         lat: event.locationCoords.lat,
                         lng: event.locationCoords.lng,
                       }}
-                      onChange={() => {}}
+                      onChange={() => { }}
                       editable={false}
                       showControls={false} // callback vacío si no quieres actualizar nada
                     />
@@ -721,8 +722,8 @@ export default function TeamEventPage({ params }: PageProps) {
                       alt={m.nombre}
                       className="h-16 w-16 rounded-full object-cover border shadow-md"
                       onError={(e) =>
-                        ((e.target as HTMLImageElement).src =
-                          "/assets/icons/person_24dp_E8EAED.svg")
+                      ((e.target as HTMLImageElement).src =
+                        "/assets/icons/person_24dp_E8EAED.svg")
                       }
                     />
                   ))}
@@ -847,8 +848,8 @@ export default function TeamEventPage({ params }: PageProps) {
                       alt={sponsor.name}
                       className="w-24 h-24 rounded-full object-cover border"
                       onError={(e) =>
-                        ((e.target as HTMLImageElement).src =
-                          "/assets/icons/business.svg")
+                      ((e.target as HTMLImageElement).src =
+                        "/assets/icons/business.svg")
                       }
                     />
                   </div>
@@ -896,9 +897,8 @@ export default function TeamEventPage({ params }: PageProps) {
       </div> */}
 
       <div
-        className={`fixed w-full left-1/2 -translate-x-1/2 z-50 ${
-          session ? "bottom-[80px]" : "bottom-0"
-        }`}
+        className={`fixed w-full left-1/2 -translate-x-1/2 z-50 ${session ? "bottom-[80px]" : "bottom-0"
+          }`}
       >
         <div className="bg-background shadow-lg h-[120px] border-t px-4 flex justify-between items-center">
           {/* Información del evento */}
@@ -912,13 +912,12 @@ export default function TeamEventPage({ params }: PageProps) {
 
             <div className="flex w-full justify-between mt-2">
               <p
-                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium ${
-                  (event.cupo - miembros.length) / event.cupo > 0.5
-                    ? "bg-green-100 text-green-800"
-                    : (event.cupo - miembros.length) / event.cupo > 0.2
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                }`}
+                className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium ${(event.cupo - miembros.length) / event.cupo > 0.5
+                  ? "bg-green-100 text-green-800"
+                  : (event.cupo - miembros.length) / event.cupo > 0.2
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-red-100 text-red-800"
+                  }`}
               >
                 Cupos: {event.cupo - miembros.length}/{event.cupo}
               </p>
