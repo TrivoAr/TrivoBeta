@@ -8,12 +8,12 @@ import mongoose from "mongoose";
 // GET - Obtener bar específico
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function GET(
 // PATCH - Actualizar bar (solo admin/staff)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -56,7 +56,7 @@ export async function PATCH(
     //   return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
     // }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json(
@@ -106,7 +106,7 @@ export async function PATCH(
 // DELETE - Eliminar bar (solo admin)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
@@ -121,7 +121,7 @@ export async function DELETE(
     //   return NextResponse.json({ error: "Sin permisos" }, { status: 403 });
     // }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!mongoose.isValidObjectId(id)) {
       return NextResponse.json(

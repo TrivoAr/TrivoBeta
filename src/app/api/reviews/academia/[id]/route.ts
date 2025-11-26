@@ -4,9 +4,9 @@ import Review from "@/models/Review";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/libs/authOptions";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const reviews = await Review.find({ academia: id })
@@ -30,7 +30,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   const session = await getServerSession(authOptions);
@@ -39,7 +39,7 @@ export async function PUT(
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const { rating, comment } = await req.json();
 
   if (!rating || rating < 1 || rating > 5) {

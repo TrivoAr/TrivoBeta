@@ -3,16 +3,18 @@ import { connectDB } from "@/libs/mongodb";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { miembroId: string } }
+  { params }: { params: Promise<{ miembroId: string }> }
 ) {
   try {
     await connectDB();
+
+    const { miembroId } = await params;
 
     const MiembroSalida = (await import("@/models/MiembroSalida")).default;
     const Pago = (await import("@/models/pagos")).default;
 
     // Buscar el miembro con populate (incluyendo pago_id)
-    const miembro = await MiembroSalida.findById(params.miembroId)
+    const miembro = await MiembroSalida.findById(miembroId)
       .populate("usuario_id", "firstname lastname email")
       .populate("salida_id", "nombre precio")
       .populate("pago_id", "estado comprobanteUrl tipoPago revenueTracked revenueTrackedAt")
@@ -29,7 +31,7 @@ export async function GET(
 
     return NextResponse.json({
       miembro: {
-        id: params.miembroId,
+        id: miembroId,
         estado: (miembro as any).estado,
         createdAt: (miembro as any).createdAt,
       },

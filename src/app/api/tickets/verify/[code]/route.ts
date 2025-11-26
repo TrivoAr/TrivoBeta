@@ -74,12 +74,13 @@ type TicketWithSalida = {
 
 export async function GET(
   _: Request,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   await connectDB();
 
   try {
-    const t = (await Ticket.findOne({ code: params.code })
+    const { code } = await params;
+    const t = (await Ticket.findOne({ code })
       .populate({
         path: "salidaId",
         model: SalidaSocial, // 👈 usamos directamente el modelo importado

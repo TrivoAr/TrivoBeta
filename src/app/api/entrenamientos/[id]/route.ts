@@ -8,7 +8,7 @@ import { ObjectId } from "mongodb";
 // PATCH: Actualizar el estado de un entrenamiento
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +17,7 @@ export async function PATCH(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
@@ -63,10 +63,10 @@ export async function PATCH(
 // GET: Obtener un entrenamiento específico por ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }

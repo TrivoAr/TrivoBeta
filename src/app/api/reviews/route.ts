@@ -111,7 +111,7 @@ export async function POST(req) {
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   const session = await getServerSession(authOptions);
@@ -120,7 +120,7 @@ export async function PUT(
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const { rating, comment } = await req.json();
 
   if (!rating || rating < 1 || rating > 5) {
