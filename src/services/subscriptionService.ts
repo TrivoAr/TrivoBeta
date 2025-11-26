@@ -44,6 +44,26 @@ export const subscriptionService = {
       };
     }
 
+    // Verificar si la academia ofrece clases gratis
+    const Academia = (await import("@/models/academia")).default;
+    const academia = await Academia.findById(academiaId);
+
+    if (!academia) {
+      return {
+        puedeUsarTrial: false,
+        razon: "Academia no encontrada",
+        yaUsoTrial: false,
+      };
+    }
+
+    if (!academia.clase_gratis) {
+      return {
+        puedeUsarTrial: false,
+        razon: "Esta academia no ofrece clases gratuitas",
+        yaUsoTrial: false,
+      };
+    }
+
     // Si el trial no está habilitado, nadie puede usarlo
     if (!subscriptionHelpers.isTrialEnabled()) {
       return {
@@ -103,7 +123,7 @@ export const subscriptionService = {
     const fechaInicio = new Date();
     const estado = puedeUsarTrial
       ? SUBSCRIPTION_CONFIG.ESTADOS.TRIAL
-      : SUBSCRIPTION_CONFIG.ESTADOS.ACTIVA;
+      : SUBSCRIPTION_CONFIG.ESTADOS.PENDIENTE;
 
     const suscripcion = await Suscripcion.create({
       userId,

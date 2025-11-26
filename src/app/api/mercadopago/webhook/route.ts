@@ -217,12 +217,10 @@ async function procesarPagoAprobado(
         salida_id: salidaId,
         usuario_id: userId,
         pago_id: pagoId,
-        estado: "aprobado", // Auto-aprobación para MercadoPago
       });
     } else {
-      // Actualizar miembro existente y auto-aprobar para MercadoPago
+      // Actualizar miembro existente con pago de MercadoPago
       miembro.pago_id = pagoId;
-      miembro.estado = "aprobado"; // Auto-aprobación para MercadoPago
     }
 
     await miembro.save();
@@ -232,10 +230,8 @@ async function procesarPagoAprobado(
     const pagoDoc = await Pagos.findById(pagoId);
     const yaTrackeado = pagoDoc?.revenueTracked || false;
 
-    // Solo trackear si:
-    // 1. Es un nuevo miembro O cambió de estado a aprobado
-    // 2. Y NO se ha trackeado el revenue anteriormente
-    if ((esNuevoMiembro || miembro.estado === "aprobado") && !yaTrackeado) {
+    // Solo trackear si es un nuevo miembro y NO se ha trackeado el revenue anteriormente
+    if (esNuevoMiembro && !yaTrackeado) {
       console.log(`💰 Tracking revenue: $${montoFinal} ARS para usuario ${userId}`);
 
       // Trackear el evento de pago aprobado con revenue

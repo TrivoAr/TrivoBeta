@@ -38,13 +38,13 @@ async function getUserImageUrl(user: any): Promise<string> {
 // Obtener los miembros de la academia y sus grupos
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
 
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
 
@@ -220,7 +220,7 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const url = new URL(req.url);
   const user_id = url.searchParams.get("user_id");
@@ -235,7 +235,7 @@ export async function DELETE(
   try {
     await connectDB(); // Conexión a la base de datos
 
-    const { id } = params; // ID de la academia
+    const { id } = await params; // ID de la academia
 
     // 1. Eliminar la relación entre el usuario y la academia
     const eliminarUsuarioAcademia = await UsuarioAcademia.deleteOne({

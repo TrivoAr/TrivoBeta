@@ -14,14 +14,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     await connectDB();
 
-    const event = await SalidaSocial.findById(resolvedParams.id)
+    const event = await SalidaSocial.findById(params.id)
       .select("nombre descripcion imagen localidad")
-      .lean<{
-        nombre: string;
-        descripcion?: string;
-        imagen?: string;
-        localidad?: string;
-      }>();
+      .lean();
 
     if (!event) {
       return {

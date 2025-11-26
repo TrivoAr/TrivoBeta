@@ -9,11 +9,13 @@ export const dynamic = "force-dynamic"; // evita SSG/caché para nuevos códigos
 export default async function ShortRedirect({
   params,
 }: {
-  params: { shortId: string };
+  params: Promise<{ shortId: string }>;
 }) {
   await connectDB();
 
-  const ev = (await SalidaSocial.findOne({ shortId: params.shortId })
+  const { shortId } = await params;
+
+  const ev = (await SalidaSocial.findOne({ shortId })
     .select("_id")
     .lean()) as { _id: Types.ObjectId } | null;
 

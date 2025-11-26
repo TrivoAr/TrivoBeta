@@ -7,7 +7,9 @@ import toast, { Toaster } from "react-hot-toast";
 import lock from "../../../public/assets/icons/Group 2.svg";
 import user from "../../../public/assets/icons/User.svg";
 
-export default function Signin() {
+import { Suspense } from "react";
+
+function SigninContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -269,5 +271,13 @@ export default function Signin() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function Signin() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SigninContent />
+    </Suspense>
   );
 }

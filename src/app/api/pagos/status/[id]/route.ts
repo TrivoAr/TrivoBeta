@@ -7,7 +7,7 @@ import MiembroSalida from "@/models/MiembroSalida";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { id: salidaId } = params;
+    const { id: salidaId } = await params;
     const userId = session.user.id;
 
     await connectDB();
@@ -26,34 +26,32 @@ export async function GET(
       userId,
     }).sort({ createdAt: -1 });
 
-    // Buscar el estado del miembro
-    const miembro = await MiembroSalida.findOne({
+    // Populate pago_id to get estado
+    const miembroWithPago = await MiembroSalida.findOne({
       salida_id: salidaId,
       usuario_id: userId,
-    });
+    }).populate("pago_id", "estado");
 
     return NextResponse.json({
       pago: pago
         ? {
-            id: pago._id,
-            estado: pago.estado,
-            status: pago.status,
-            statusDetail: pago.statusDetail,
-            amount: pago.amount,
-            paymentMethod: pago.paymentMethod,
-            createdAt: pago.createdAt,
-          }
+          id: pago._id,
+          estado: pago.estado,
+          status: pago.status,
+          statusDetail: pago.statusDetail,
+          amount: pago.amount,
+          paymentMethod: pago.paymentMethod,
+          createdAt: pago.createdAt,
+        }
         : null,
-      miembro: miembro
+      miembro: miembroWithPago
         ? {
-            id: miembro._id,
-            estado: miembro.estado,
-          }
+          id: miembroWithPago._id,
+          estado: (miembroWithPago.pago_id as any)?.estado || "pendiente",
+        }
         : null,
-      isApproved: miembro?.estado === "aprobado" && pago?.estado === "aprobado",
-      isPending:
-        pago?.estado === "pendiente" ||
-        (pago?.estado === "aprobado" && miembro?.estado === "pendiente"),
+      isApproved: pago?.estado === "aprobado",
+      isPending: pago?.estado === "pendiente",
     });
   } catch (error) {
 

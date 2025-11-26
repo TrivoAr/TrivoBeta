@@ -17,6 +17,7 @@ import {
   notifyPaymentApproved,
   notifyPaymentRejected,
 } from "@/libs/notificationHelpers";
+import { trackEventServer, trackChargeServer } from "@/libs/mixpanel.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -95,6 +96,55 @@ export async function PATCH(
       await procesarAcademia(pago, estado);
     }
 
+    // TRACK MIXPANEL - Payment Events
+    try {
+      if (estado === "aprobado") {
+        // Track Payment Completed event
+        await trackEventServer({
+          event: "Payment Completed",
+          distinctId: pago.userId.toString(),
+          properties: {
+            amount: pago.amount || 0,
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+            payment_method: "manual_transfer",
+            currency: "ARS",
+            timestamp: new Date().toISOString(),
+            manual_approval: true
+          }
+        });
+
+        // Track revenue charge
+        await trackChargeServer({
+          distinctId: pago.userId.toString(),
+          amount: pago.amount || 0,
+          properties: {
+            payment_method: "manual_transfer",
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            manual_approval: true
+          }
+        });
+      } else if (estado === "rechazado") {
+        // Track Payment Rejected event
+        await trackEventServer({
+          event: "Payment Rejected",
+          distinctId: pago.userId.toString(),
+          properties: {
+            amount: pago.amount || 0,
+            event_id: pago.salidaId ? pago.salidaId.toString() : undefined,
+            academia_id: pago.academiaId ? pago.academiaId.toString() : undefined,
+            payment_method: "manual_transfer",
+            currency: "ARS",
+            timestamp: new Date().toISOString(),
+            manual_rejection: true
+          }
+        });
+      }
+    } catch (mixpanelError) {
+      console.error("Error tracking mixpanel event:", mixpanelError);
+      // No lanzar error - el tracking no debe afectar el flujo de pago
+    }
+
     return NextResponse.json({ success: true, pago }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
@@ -117,12 +167,6 @@ async function procesarSalidaSocial(pago: any, estado: string) {
       return;
     }
 
-    // Notificación para el miembro
-    const mensajeMiembro =
-      estado === "aprobado"
-        ? `Tu pago para la salida "${salida.nombre}" fue aprobado ✅`
-        : `Tu pago para la salida "${salida.nombre}" fue rechazado ❌`;
-
     const nanoid = customAlphabet(
       "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
       24
@@ -130,15 +174,6 @@ async function procesarSalidaSocial(pago: any, estado: string) {
 
     if (estado === "aprobado") {
       try {
-        // Actualizar estado del miembro a aprobado cuando se aprueba el pago
-        if (pago.miembro_id) {
-          await MiembroSalida.findByIdAndUpdate(
-            pago.miembro_id,
-            { estado: "aprobado" },
-            { new: true }
-          );
-        }
-
         // 1) buscar o crear ticket (idempotente)
         let ticket = await Ticket.findOne({
           userId: pago.userId,
@@ -213,12 +248,6 @@ async function procesarAcademia(pago: any, estado: string) {
       return;
     }
 
-    // Notificación para el miembro
-    const mensajeMiembro =
-      estado === "aprobado"
-        ? `Tu pago para la academia "${academia.nombre_academia}" fue aprobado ✅`
-        : `Tu pago para la academia "${academia.nombre_academia}" fue rechazado ❌`;
-
     if (estado === "aprobado") {
       try {
         // Actualizar estado del miembro a "aceptado" cuando se aprueba el pago
@@ -242,7 +271,7 @@ async function procesarAcademia(pago: any, estado: string) {
         userId: String(miembro._id),
         fromUserId: String(dueño._id),
         type: "pago_aprobado",
-        message: mensajeMiembro,
+        message: `Tu pago para la academia "${academia.nombre_academia}" fue aprobado ✅`,
         academiaId: String(academia._id),
         actionUrl: `/academias/${academia._id}`,
       });
@@ -252,7 +281,7 @@ async function procesarAcademia(pago: any, estado: string) {
         userId: String(miembro._id),
         fromUserId: String(dueño._id),
         type: "pago_rechazado",
-        message: mensajeMiembro,
+        message: `Tu pago para la academia "${academia.nombre_academia}" fue rechazado ❌`,
         academiaId: String(academia._id),
         actionUrl: `/academias/${academia._id}`,
       });

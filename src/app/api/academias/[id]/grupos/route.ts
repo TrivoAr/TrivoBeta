@@ -36,7 +36,7 @@ export async function PUT(
     // Conectar a la base de datos
     await connectDB();
 
-    const { id } = params; // ID del miembro
+    const { id } = await params; // ID del miembro
     const body = await req.json();
     const { grupo_id } = body;
 

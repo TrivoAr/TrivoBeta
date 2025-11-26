@@ -27,17 +27,20 @@ interface PaymentReviewModalProps {
   pagoId?: string;
 }
 
-const Document = dynamic<{
-  file: string | File | Uint8Array;
-  onLoadSuccess?: (pdf: PDFDocumentProxy) => void;
-  children: React.ReactNode;
-}>(
-  () => import("react-pdf/dist/esm/entry.webpack").then((mod) => mod.Document),
+import { pdfjs } from "react-pdf";
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
+
+const Document = dynamic(
+  () => import("react-pdf").then((mod) => mod.Document),
   { ssr: false }
 );
 
-const Page = dynamic<{ pageNumber: number; width?: number }>(
-  () => import("react-pdf/dist/esm/entry.webpack").then((mod) => mod.Page),
+const Page = dynamic(
+  () => import("react-pdf").then((mod) => mod.Page),
   { ssr: false }
 );
 
@@ -116,13 +119,12 @@ export default function PaymentReviewModal({
             <p className="text-sm">
               Estado actual:{" "}
               <span
-                className={`font-bold capitalize ${
-                  pago.estado === "aprobado"
+                className={`font-bold capitalize ${pago.estado === "aprobado"
                     ? "text-green-600"
                     : pago.estado === "rechazado"
                       ? "text-red-600"
                       : "text-yellow-600"
-                }`}
+                  }`}
               >
                 {pago.estado}
               </span>

@@ -3,14 +3,15 @@ import { connectDB } from "@/libs/mongodb";
 import Academia from "@/models/academia";
 import Grupo from "@/models/grupo";
 import { getProfileImage } from "@/app/api/profile/getProfileImage";
+import { getAcademyImage } from "@/app/api/academias/getAcademyImage";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -33,15 +34,29 @@ export async function GET(
     const grupos = await Grupo.find({ academia_id: id });
 
     // Obtener imagen del dueño desde Firebase
-    let imagenUrl;
+    let imagenDueño;
     try {
-      imagenUrl = await getProfileImage(
+      imagenDueño = await getProfileImage(
         "profile-image.jpg",
         academia.dueño_id._id.toString()
       );
     } catch (error) {
-      imagenUrl =
+      imagenDueño =
         "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg";
+    }
+
+    // Obtener imagen de la academia desde Firebase
+    let imagenUrl;
+    try {
+      imagenUrl = await getAcademyImage("foto_academia.jpg", id);
+    } catch (error) {
+      // Fallback a profile-image.jpg si foto_academia.jpg no existe
+      try {
+        imagenUrl = await getAcademyImage("profile-image.jpg", id);
+      } catch (fallbackError) {
+        // Placeholder si no hay imagen
+        imagenUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(academia.nombre_academia)}&background=C95100&color=fff&size=310x115`;
+      }
     }
 
     // Reemplazar el dueño con un objeto personalizado
@@ -51,12 +66,13 @@ export async function GET(
       lastname: academia.dueño_id.lastname,
       telnumber: academia.dueño_id.telnumber,
       instagram: academia.dueño_id.instagram,
-      imagen: imagenUrl,
+      imagen: imagenDueño,
     };
 
     const responseAcademia = {
       ...academia.toObject(),
       dueño_id: dueñoInfo,
+      imagenUrl, // Agregar la imagen de la academia
     };
 
     return NextResponse.json(

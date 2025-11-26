@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import PaymentReviewModal from "@/components/PaymentReviewModal";
 import ExportUsuarios from "@/app/utils/ExportUsuarios";
 
 export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -32,12 +33,12 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     isLoading: loadingEvent,
     error: errorEvent,
   } = useQuery({
-    queryKey: ["event", params.id],
+    queryKey: ["event", id],
     queryFn: async () => {
-      const res = await axios.get(`/api/social/${params.id}`);
+      const res = await axios.get(`/api/social/${id}`);
       return res.data;
     },
-    enabled: !!params.id,
+    enabled: !!id,
     retry: 2,
     retryDelay: 1000,
   });
@@ -47,9 +48,9 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     isLoading: loadingMiembros,
     error: errorMiembros,
   } = useQuery({
-    queryKey: ["miembros", params.id],
+    queryKey: ["miembros", id],
     queryFn: async () => {
-      const res = await fetch(`/api/social/miembros?salidaId=${params.id}`, {
+      const res = await fetch(`/api/social/miembros?salidaId=${id}`, {
         headers: {
           "Cache-Control": "no-cache",
         },
@@ -72,7 +73,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       const data = await res.json();
       return Array.isArray(data) ? data : [];
     },
-    enabled: !!params.id,
+    enabled: !!id,
     retry: (failureCount, error) => {
       if (error.message.includes("500") || error.message.includes("timeout")) {
         return failureCount < 1; // Solo 1 reintento para errores de servidor
@@ -108,7 +109,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     },
     onSuccess: () => {
       toast.success("Miembro borrado correctamente ✅");
-      queryClient.invalidateQueries({ queryKey: ["miembros", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["miembros", id] });
     },
     onError: (err: any) => {
       toast.error("❌ No se pudo borrar al miembro");
@@ -157,7 +158,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           </p>
           <button
             onClick={() =>
-              queryClient.invalidateQueries({ queryKey: ["event", params.id] })
+              queryClient.invalidateQueries({ queryKey: ["event", id] })
             }
             className="px-4 py-2 bg-orange-500 text-white rounded"
           >
@@ -191,7 +192,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           <button
             onClick={() =>
               queryClient.invalidateQueries({
-                queryKey: ["miembros", params.id],
+                queryKey: ["miembros", id],
               })
             }
             className="px-4 py-2 bg-[#C95100] text-white rounded"
@@ -269,10 +270,10 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
             onChange={(e) =>
               setPaymentFilter(
                 e.target.value as
-                  | "todos"
-                  | "aprobado"
-                  | "rechazado"
-                  | "pendiente"
+                | "todos"
+                | "aprobado"
+                | "rechazado"
+                | "pendiente"
               )
             }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
@@ -407,13 +408,12 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                     </svg>
                   </button>
                   <div
-                    className={`w-[20px] h-[20px] rounded-full ${
-                      miembro.pago_id?.estado === "aprobado"
-                        ? "bg-green-600"
-                        : miembro.pago_id?.estado === "rechazado"
-                          ? "bg-red-600"
-                          : "bg-yellow-600"
-                    }`}
+                    className={`w-[20px] h-[20px] rounded-full ${miembro.pago_id?.estado === "aprobado"
+                      ? "bg-green-600"
+                      : miembro.pago_id?.estado === "rechazado"
+                        ? "bg-red-600"
+                        : "bg-yellow-600"
+                      }`}
                   ></div>
                 </td>
               ) : null}
