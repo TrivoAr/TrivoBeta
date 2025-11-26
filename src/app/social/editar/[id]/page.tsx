@@ -58,7 +58,8 @@ interface SalidaSocial {
   imagen?: string;
 }
 
-export default function EditarSalida({ params }: { params: { id: string } }) {
+export default function EditarSalida({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { data: session } = useSession();
   const [imagen, setImagen] = useState<File | null>(null);

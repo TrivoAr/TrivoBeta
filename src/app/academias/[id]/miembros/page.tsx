@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +16,7 @@ export default function AcademiaMiembrosPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -39,12 +40,12 @@ export default function AcademiaMiembrosPage({
     isLoading: loadingAcademia,
     error: errorAcademia,
   } = useQuery({
-    queryKey: ["academia", params.id],
+    queryKey: ["academia", id],
     queryFn: async () => {
-      const res = await axios.get(`/api/academias/${params.id}`);
+      const res = await axios.get(`/api/academias/${id}`);
       return res.data.academia;
     },
-    enabled: !!params.id,
+    enabled: !!id,
     retry: 2,
     retryDelay: 1000,
   });
@@ -54,9 +55,9 @@ export default function AcademiaMiembrosPage({
     isLoading: loadingMiembros,
     error: errorMiembros,
   } = useQuery({
-    queryKey: ["miembros-academia", params.id],
+    queryKey: ["miembros-academia", id],
     queryFn: async () => {
-      const res = await fetch(`/api/academias/${params.id}/miembros`, {
+      const res = await fetch(`/api/academias/${id}/miembros`, {
         headers: {
           "Cache-Control": "no-cache",
         },
@@ -78,7 +79,7 @@ export default function AcademiaMiembrosPage({
       const data = await res.json();
       return Array.isArray(data.miembros) ? data.miembros : [];
     },
-    enabled: !!params.id,
+    enabled: !!id,
     retry: (failureCount, error) => {
       if (error.message.includes("500") || error.message.includes("timeout")) {
         return failureCount < 1;
@@ -94,12 +95,12 @@ export default function AcademiaMiembrosPage({
     data: grupos = [],
     isLoading: loadingGrupos,
   } = useQuery({
-    queryKey: ["grupos-academia", params.id],
+    queryKey: ["grupos-academia", id],
     queryFn: async () => {
-      const res = await axios.get(`/api/grupos?academiaId=${params.id}`);
+      const res = await axios.get(`/api/grupos?academiaId=${id}`);
       return res.data.grupos || [];
     },
-    enabled: !!params.id,
+    enabled: !!id,
   });
   */
 
@@ -129,14 +130,14 @@ export default function AcademiaMiembrosPage({
   const deleteMiembroMutation = useMutation({
     mutationFn: async (miembroId: string) => {
       const res = await axios.delete(
-        `/api/academias/${params.id}/miembros?user_id=${miembroId}`
+        `/api/academias/${id}/miembros?user_id=${miembroId}`
       );
       return res.data;
     },
     onSuccess: () => {
       toast.success("Miembro borrado correctamente ✅");
       queryClient.invalidateQueries({
-        queryKey: ["miembros-academia", params.id],
+        queryKey: ["miembros-academia", id],
       });
     },
     onError: (err: any) => {
@@ -148,7 +149,7 @@ export default function AcademiaMiembrosPage({
   /*
   const asignarGrupoMutation = useMutation({
     mutationFn: async ({ userId, grupoId }: { userId: string; grupoId: string }) => {
-      const res = await axios.put(`/api/academias/${params.id}/miembros`, {
+      const res = await axios.put(`/api/academias/${id}/miembros`, {
         user_id: userId,
         grupo_id: grupoId,
       });
@@ -156,7 +157,7 @@ export default function AcademiaMiembrosPage({
     },
     onSuccess: () => {
       toast.success("Grupo asignado correctamente ✅");
-      queryClient.invalidateQueries({ queryKey: ["miembros-academia", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["miembros-academia", id] });
       setEditandoGrupo(null);
       setGrupoSeleccionado(null);
     },
@@ -220,7 +221,7 @@ export default function AcademiaMiembrosPage({
           <button
             onClick={() =>
               queryClient.invalidateQueries({
-                queryKey: ["academia", params.id],
+                queryKey: ["academia", id],
               })
             }
             className="px-4 py-2 bg-orange-500 text-white rounded"
@@ -253,7 +254,7 @@ export default function AcademiaMiembrosPage({
           <button
             onClick={() =>
               queryClient.invalidateQueries({
-                queryKey: ["miembros-academia", params.id],
+                queryKey: ["miembros-academia", id],
               })
             }
             className="px-4 py-2 bg-[#C95100] text-white rounded"

@@ -963,7 +963,7 @@ export default function TeamEventPage({ params }: PageProps) {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        salidaId={params.id}
+        salidaId={id}
         precio={event.precio}
         cbu={event.cbu}
         alias={event.alias}

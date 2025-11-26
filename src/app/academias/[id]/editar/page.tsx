@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, use } from "react";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import AcademiaEditarSkeleton from "@/components/AcademiaEditarSkeleton";
 
 export default function EditarAcademia({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { data: session } = useSession();
   const [formData, setFormData] = useState({
@@ -37,9 +38,9 @@ export default function EditarAcademia({ params }: { params: Promise<{ id: strin
         router.push("/dashboard"); // Redirige si no está autorizado
         return;
       }
-      const response = await axios.get(`/api/academias/${params.id}`);
+      const response = await axios.get(`/api/academias/${id}`);
       setFormData(response.data.academia);
-      const imageUrl = await getAcademyImage("profile-image.jpg", params.id);
+      const imageUrl = await getAcademyImage("profile-image.jpg", id);
       setProfileImage(imageUrl);
       setFormData((prev) => ({ ...prev, imagen: imageUrl }));
 
@@ -63,7 +64,7 @@ export default function EditarAcademia({ params }: { params: Promise<{ id: strin
 
     try {
       const response = await axios.put(
-        `/api/academias/${params.id}/editar`,
+        `/api/academias/${id}/editar`,
         formData
       );
 
@@ -103,7 +104,7 @@ export default function EditarAcademia({ params }: { params: Promise<{ id: strin
 
     try {
       const response = await axios.delete(
-        `/api/academias/${params.id}/eliminar`
+        `/api/academias/${id}/eliminar`
       );
 
       if (response.status === 200) {
@@ -123,7 +124,7 @@ export default function EditarAcademia({ params }: { params: Promise<{ id: strin
 
     try {
       setUploadingImage(true);
-      const imageUrl = await saveAcademyImage(file, params.id);
+      const imageUrl = await saveAcademyImage(file, id);
 
       setFormData((prev) => ({
         ...prev,

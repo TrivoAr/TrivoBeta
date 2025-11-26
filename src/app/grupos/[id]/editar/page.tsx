@@ -51,6 +51,7 @@ export default function EditarGrupo({ params }: { params: Promise<{ id: string }
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Obtener los datos del grupo
   const fetchGrupo = async () => {
     const toastId = toast.loading("Cargando datos del grupo...");
