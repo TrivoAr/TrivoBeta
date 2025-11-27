@@ -67,6 +67,7 @@ interface EventData {
   duracion: string;
   descripcion: string;
   imagen: string;
+  imagenes?: string[];
   localidad: string;
   telefonoOrganizador: string;
   whatsappLink: string;
@@ -139,6 +140,7 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
   const [showFullMapPuntoDeEncuntro, setShowFullMapPuntoDeEncuntro] =
     useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Hook para monitorear el estado del pago en tiempo real
   const { paymentStatus, isApproved, isPending } = usePaymentStatus(
@@ -463,14 +465,81 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
       data-theme={isNight ? "night" : undefined}
     >
       <div className="relative w-full aspect-cover max-h-[250px]">
-        <div
-          style={{
-            backgroundImage: `url(${event.imagen})`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
-          }}
-          className="w-full h-full object-cover"
-        />
+        {/* Carrusel de imágenes */}
+        {(() => {
+          const imagesToShow = event.imagenes && event.imagenes.length > 0
+            ? event.imagenes
+            : event.imagen
+            ? [event.imagen]
+            : [];
+
+          if (imagesToShow.length === 0) {
+            return (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-400">Sin imagen</span>
+              </div>
+            );
+          }
+
+          return (
+            <>
+              <div
+                style={{
+                  backgroundImage: `url(${imagesToShow[currentImageIndex]})`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                }}
+                className="w-full h-full object-cover transition-all duration-300"
+              />
+
+              {/* Indicadores de imágenes */}
+              {imagesToShow.length > 1 && (
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+                  {imagesToShow.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentImageIndex
+                          ? 'bg-white w-6'
+                          : 'bg-white/60 hover:bg-white/80'
+                      }`}
+                      aria-label={`Ir a imagen ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Botones de navegación */}
+              {imagesToShow.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentImageIndex((prev) =>
+                      prev === 0 ? imagesToShow.length - 1 : prev - 1
+                    )}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors z-10"
+                    aria-label="Imagen anterior"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setCurrentImageIndex((prev) =>
+                      prev === imagesToShow.length - 1 ? 0 : prev + 1
+                    )}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 transition-colors z-10"
+                    aria-label="Imagen siguiente"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </>
+          );
+        })()}
 
         {/* Botón volver */}
         <button

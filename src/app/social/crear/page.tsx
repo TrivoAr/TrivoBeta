@@ -127,6 +127,8 @@ export default function CrearSalidaPage() {
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
+  const [imagenes, setImagenes] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const defaultCoords: LatLng = { lat: -26.8333, lng: -65.2167 };
 
   // Coordenadas centrales de cada provincia
@@ -147,10 +149,34 @@ export default function CrearSalidaPage() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImagen(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      setImagenes(filesArray);
+
+      // Crear URLs de preview para todas las imágenes
+      const urls = filesArray.map(file => URL.createObjectURL(file));
+      setPreviewUrls(urls);
+
+      // Mantener compatibilidad con código existente (primera imagen)
+      setImagen(filesArray[0]);
+      setPreviewUrl(urls[0]);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImagenes = imagenes.filter((_, i) => i !== index);
+    const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
+
+    setImagenes(newImagenes);
+    setPreviewUrls(newPreviewUrls);
+
+    // Actualizar primera imagen si existe
+    if (newImagenes.length > 0) {
+      setImagen(newImagenes[0]);
+      setPreviewUrl(newPreviewUrls[0]);
+    } else {
+      setImagen(null);
+      setPreviewUrl(null);
     }
   };
 
@@ -201,21 +227,27 @@ export default function CrearSalidaPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let imageUrl = "";
     setIsSubmitting(true);
 
-    if (imagen) {
+    // Subir múltiples imágenes a Firebase
+    const imageUrls: string[] = [];
+    if (imagenes.length > 0) {
       const storage = await getStorageInstance();
-      const imageRef = ref(storage, `salidas/${uuidv4()}`);
-      await uploadBytes(imageRef, imagen);
-      imageUrl = await getDownloadURL(imageRef);
+
+      for (const file of imagenes) {
+        const imageRef = ref(storage, `salidas/${uuidv4()}`);
+        await uploadBytes(imageRef, file);
+        const url = await getDownloadURL(imageRef);
+        imageUrls.push(url);
+      }
     }
 
     const coordsToSave = formData.coords || defaultCoords;
 
     const salidaData = {
       ...formData,
-      imagen: imageUrl,
+      imagen: imageUrls.length > 0 ? imageUrls[0] : "", // Primera imagen para compatibilidad
+      imagenes: imageUrls, // Array completo de imágenes
       locationCoords: coordsToSave,
       coords: undefined, // Remove the coords field since we're using locationCoords
       cupo: formData.cupo || 0, // Ensure cupo is a number
@@ -998,24 +1030,58 @@ export default function CrearSalidaPage() {
         />
       </label>
       <label className="block">
-        Imagen
-        <div className="w-full h-40 bg-card border shadow-md rounded-md flex items-center justify-center relative overflow-hidden">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="absolute w-full h-full opacity-0 cursor-pointer z-10"
-          />
-          {previewUrl ? (
-            <img
-              src={previewUrl}
-              alt="Vista previa"
-              className="w-full h-full object-cover absolute top-0 left-0"
-            />
-          ) : (
-            <span className="text-gray-500 z-0">Subir imagen</span>
-          )}
+        <div className="flex items-center justify-between mb-2">
+          <span>Imágenes {previewUrls.length > 0 && `(${previewUrls.length})`}</span>
+          <span className="text-xs text-gray-500">Máximo 5 imágenes</span>
         </div>
+
+        {/* Preview de imágenes existentes */}
+        {previewUrls.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {previewUrls.map((url, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={url}
+                  alt={`Vista previa ${index + 1}`}
+                  className="w-full h-24 object-cover rounded-md border"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+                {index === 0 && (
+                  <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-xs px-2 py-0.5 rounded">
+                    Principal
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Input para subir más imágenes */}
+        {previewUrls.length < 5 && (
+          <div className="w-full h-32 bg-card border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center relative overflow-hidden hover:border-orange-500 transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+            />
+            <div className="text-center z-0 pointer-events-none">
+              <svg className="mx-auto h-8 w-8 text-gray-400 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-sm text-gray-500">
+                {previewUrls.length === 0 ? 'Seleccionar imágenes' : 'Agregar más imágenes'}
+              </span>
+            </div>
+          </div>
+        )}
       </label>
 
       <label className="block">

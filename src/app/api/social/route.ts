@@ -141,13 +141,21 @@ export async function GET(req: NextRequest) {
 
         // Procesar array de imagenes (nuevo formato)
         if (salidaObj.imagenes && Array.isArray(salidaObj.imagenes) && salidaObj.imagenes.length > 0) {
-          const firstImage = salidaObj.imagenes[0];
-          if (firstImage.includes('firebasestorage.googleapis.com/v0/b/')) {
-            const signedUrl = await regenerateSignedUrl(firstImage);
-            if (signedUrl) {
-              return { ...salidaObj, imagen: signedUrl };
-            }
-          }
+          // Regenerar signed URLs para todas las imágenes
+          const regeneratedImagenes = await Promise.all(
+            salidaObj.imagenes.map(async (imgUrl) => {
+              if (imgUrl.includes('firebasestorage.googleapis.com/v0/b/')) {
+                return await regenerateSignedUrl(imgUrl) || imgUrl;
+              }
+              return imgUrl;
+            })
+          );
+
+          return {
+            ...salidaObj,
+            imagenes: regeneratedImagenes,
+            imagen: regeneratedImagenes[0], // Primera imagen para compatibilidad
+          };
         }
 
         // Procesar imagen singular (formato antiguo)
