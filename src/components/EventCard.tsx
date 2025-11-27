@@ -118,43 +118,44 @@ export default function EventCard({ event }: EventCardProps) {
             className={esFavorito ? "fill-red-500 text-red-500" : "text-gray-600 dark:text-gray-300"}
           />
         </button>
+
+        {/* Bottom Badges */}
+        <div className="absolute bottom-2 left-2 z-10 flex gap-2">
+          {event.category && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white backdrop-blur-sm">
+              {event.category}
+            </span>
+          )}
+          {event.dificultad && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white backdrop-blur-sm">
+              {event.dificultad.charAt(0).toUpperCase() + event.dificultad.slice(1)}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-2">
         {/* Title */}
-        <h3 className="font-bold text-lg text-foreground line-clamp-2 leading-tight">
+        <h3 className="font-light text-lg text-foreground line-clamp-2 leading-tight">
           {event.title}
         </h3>
 
-        {/* Location, Price, and Difficulty Chips */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Location and Price - Inline with separators */}
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
           {/* Location */}
-          <span className="text-sm text-muted-foreground">
-            {event.localidad}
-          </span>
+          <span>{event.localidad}</span>
 
-          {/* Price Chip */}
+          {/* Price */}
           {event.price !== undefined && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 font-medium">
-              {event.price === "0" || event.price === "0.00"
-                ? "Gratis"
-                : `$${Number(event.price).toLocaleString("es-AR")}`}
-            </span>
-          )}
-
-          {/* Difficulty Chip */}
-          {event.dificultad && (
-            <span
-              className={`text-xs px-2.5 py-1 rounded-full font-medium ${event.dificultad.toLowerCase() === "facil"
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                  : event.dificultad.toLowerCase() === "media"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                    : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                }`}
-            >
-              {event.dificultad.charAt(0).toUpperCase() + event.dificultad.slice(1)}
-            </span>
+            <>
+              <span>•</span>
+              <span>
+                {event.price === "0" || event.price === "0.00"
+                  ? "Gratis"
+                  : `$${Number(event.price).toLocaleString("es-AR")}`}
+              </span>
+            </>
           )}
         </div>
       </div>

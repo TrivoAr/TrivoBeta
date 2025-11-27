@@ -1,20 +1,19 @@
 import React from "react";
 import Image from "next/image";
 import { Heart, MapPin, Clock, TrendingUp } from "lucide-react";
-import RatingStars from "./RatingStars";
+import { getImagenesToShow } from "@/utils/imageFallbacks";
 
 interface TrailCardProps {
     id: string;
     title: string;
     image: string;
+    imagenes?: string[];
     location: string;
     localidad?: string;
     difficulty?: "facil" | "media" | "dificil";
     category?: string;
     distance?: string;
     duration?: string;
-    rating?: number;
-    reviewCount?: number;
     isFavorite?: boolean;
     onFavoriteToggle?: (id: string) => void;
     onClick?: () => void;
@@ -31,14 +30,13 @@ export default function TrailCard({
     id,
     title,
     image,
+    imagenes,
     location,
     localidad,
     difficulty,
     category,
     distance,
     duration,
-    rating = 0,
-    reviewCount = 0,
     isFavorite = false,
     onFavoriteToggle,
     onClick,
@@ -51,20 +49,24 @@ export default function TrailCard({
 
     const difficultyInfo = difficulty ? difficultyConfig[difficulty] : null;
 
+    // Obtener la imagen con fallback
+    const images = getImagenesToShow(imagenes, image, category);
+    const displayImage = images[0];
+
     return (
         <div
             onClick={onClick}
             className="group cursor-pointer bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700"
         >
             {/* Image Container */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 dark:bg-gray-700">
+            <div className="relative h-[320px] overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <Image
-                    src={image || "/assets/icons/placeholder.png"}
+                    src={displayImage}
                     alt={title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     priority={priority}
-                    sizes="(max-width: 390px) 50vw, 195px"
+                    sizes="(max-width: 640px) 100vw, 640px"
                 />
 
                 {/* Favorite Button */}
@@ -79,64 +81,49 @@ export default function TrailCard({
                     />
                 </button>
 
-                {/* Difficulty Badge */}
-                {difficultyInfo && (
-                    <div className="absolute top-2 left-2 z-10">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${difficultyInfo.color}`}>
-                            {difficultyInfo.label}
-                        </span>
-                    </div>
-                )}
-
-                {/* Category Badge */}
-                {category && (
-                    <div className="absolute bottom-2 left-2 z-10">
+                {/* Bottom Badges */}
+                <div className="absolute bottom-2 left-2 z-10 flex gap-2">
+                    {category && (
                         <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white backdrop-blur-sm">
                             {category}
                         </span>
-                    </div>
-                )}
+                    )}
+                    {difficulty && (
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-black/60 text-white backdrop-blur-sm">
+                            {difficultyInfo?.label}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Content */}
-            <div className="p-3 space-y-2">
+            <div className="p-4 space-y-2">
                 {/* Title */}
-                <h3 className="font-semibold text-sm text-foreground line-clamp-2 leading-tight min-h-[2.5rem]">
+                <h3 className="font-light text-lg text-foreground line-clamp-2 leading-tight">
                     {title}
                 </h3>
 
-                {/* Location */}
-                <div className="flex items-start gap-1 text-xs text-muted-foreground">
-                    <MapPin size={14} className="mt-0.5 flex-shrink-0" />
-                    <span className="line-clamp-1">{localidad || location}</span>
-                </div>
+                {/* Location and Stats - Inline with separators */}
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
+                    {/* Location */}
+                    <span>{localidad || location}</span>
 
-                {/* Stats */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {/* Distance */}
                     {distance && (
-                        <div className="flex items-center gap-1">
-                            <TrendingUp size={12} />
+                        <>
+                            <span>•</span>
                             <span>{distance}</span>
-                        </div>
+                        </>
                     )}
+
+                    {/* Duration */}
                     {duration && (
-                        <div className="flex items-center gap-1">
-                            <Clock size={12} />
+                        <>
+                            <span>•</span>
                             <span>{duration}</span>
-                        </div>
+                        </>
                     )}
                 </div>
-
-                {/* Rating */}
-                {rating > 0 && (
-                    <div className="flex items-center gap-1.5 pt-1">
-                        <RatingStars rating={rating} size={12} />
-                        <span className="text-xs font-medium text-foreground">{rating.toFixed(1)}</span>
-                        {reviewCount > 0 && (
-                            <span className="text-xs text-muted-foreground">({reviewCount})</span>
-                        )}
-                    </div>
-                )}
             </div>
         </div>
     );

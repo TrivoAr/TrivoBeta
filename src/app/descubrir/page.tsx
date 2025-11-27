@@ -17,6 +17,7 @@ type EventType = {
   hora: string;
   precio: string;
   imagen: string;
+  imagenes?: string[];
   ubicacion: string;
   creador_id: any;
   localidad: string;
@@ -206,7 +207,7 @@ export default function DescubrirPage() {
       </div>
 
       {/* Sport Category Tabs */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div className="bg-background border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
         <div className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide">
           {sportCategories.map((category) => {
             const Icon = category.icon;
@@ -229,33 +230,33 @@ export default function DescubrirPage() {
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-6">
-        {/* Filter Section */}
+      <div className="bg-background px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+        {/* Filter and Results Section */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsFilterModalOpen(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
-                getActiveFilterCount() > 0
-                  ? "bg-[#C95100] text-white shadow-md"
-                  : "border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
-            >
-              <Filter size={16} />
-              <span>
-                {getActiveFilterCount() > 0
-                  ? `${getActiveFilterCount()} filtro${getActiveFilterCount() !== 1 ? "s" : ""}`
-                  : "Filtros"}
-              </span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-200 ${
+              getActiveFilterCount() > 0
+                ? "bg-[#C95100] text-white shadow-md"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+          >
+            <Filter size={16} />
+            <span>
+              {getActiveFilterCount() > 0
+                ? `${getActiveFilterCount()} filtro${getActiveFilterCount() !== 1 ? "s" : ""}`
+                : "Filtros"}
+            </span>
+          </button>
 
           {/* Results count */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground font-medium">
             {filteredEvents.length} resultado{filteredEvents.length !== 1 ? "s" : ""}
           </div>
         </div>
+      </div>
 
+      <div className="px-4 py-6 space-y-6">
         {/* Active filters chips */}
         {getActiveFilterCount() > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -328,21 +329,20 @@ export default function DescubrirPage() {
             <div className="animate-spin rounded-full h-10 w-10 border-3 border-[#C95100] border-t-transparent"></div>
           </div>
         ) : filteredEvents.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             {filteredEvents.map((event, index) => (
               <TrailCard
                 key={event._id}
                 id={event._id}
                 title={event.nombre}
                 image={event.imagen}
+                imagenes={event.imagenes}
                 location={event.ubicacion}
                 localidad={event.localidad}
                 difficulty={event.dificultad as "facil" | "media" | "dificil"}
                 category={event.deporte}
                 distance={event.stravaMap ? "5.2 km" : undefined}
                 duration={event.hora ? `${event.hora}` : undefined}
-                rating={4.5}
-                reviewCount={12}
                 isFavorite={favorites.has(event._id)}
                 onFavoriteToggle={handleFavoriteToggle}
                 onClick={() => handleCardClick(event._id)}

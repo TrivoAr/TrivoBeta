@@ -18,6 +18,7 @@ import {
   Calendar,
   DollarSign,
 } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { useSearchParams } from "next/navigation";
 import { getImagenesToShow } from "@/utils/imageFallbacks";
@@ -686,6 +687,7 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 w-full py-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-colors shadow-md"
             >
+              <FaWhatsapp size={24} />
               Unirse al grupo
             </a>
           </div>
