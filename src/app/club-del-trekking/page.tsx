@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Filter, MapPin, Calendar, Search, ChevronLeft } from "lucide-react";
-import EventCard from "@/components/EventCard";
+import TrekkingEventCard from "@/components/TrekkingEventCard";
 import EventModal from "@/components/EventModal";
 import EmptyState from "@/components/EmptyState";
 import FilterModal, {
@@ -19,6 +19,7 @@ type EventType = {
   time: string;
   price: string;
   image: string;
+  imagenes?: string[];
   location: string;
   creadorId: string;
   localidad: string;
@@ -137,6 +138,7 @@ export default function ClubDelTrekking() {
             time: item.hora,
             price: item.precio,
             image: item.imagen,
+            imagenes: item.imagenes, // Agregar el array de imágenes
             category: item.deporte,
             creadorId: item.creador_id?._id || item.creador_id,
             localidad: item.localidad,
@@ -559,11 +561,9 @@ export default function ClubDelTrekking() {
             ) : filteredEvents.length > 0 ? (
               <div className="space-y-4">
                 {filteredEvents.map((event) => (
-                  <EventCard
+                  <TrekkingEventCard
                     key={event._id}
                     event={event}
-                    onJoin={(e) => {}}
-                    onMap={(coords) => {}}
                   />
                 ))}
               </div>

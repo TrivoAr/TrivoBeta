@@ -258,21 +258,19 @@ export default function Home() {
         <div className="flex gap-3 p-1 bg-muted rounded-xl">
           <button
             onClick={() => setContentFilter("salidas")}
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
-              contentFilter === "salidas"
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${contentFilter === "salidas"
                 ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Salidas Sociales
           </button>
           <button
             onClick={() => setContentFilter("academias")}
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
-              contentFilter === "academias"
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${contentFilter === "academias"
                 ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Academias
           </button>
@@ -304,11 +302,10 @@ export default function Home() {
               {/* Filter Button */}
               <button
                 onClick={() => setIsFilterModalOpen(true)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all duration-200 ${
-                  getActiveFilterCount() > 0
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all duration-200 ${getActiveFilterCount() > 0
                     ? "bg-[#C95100] text-white hover:bg-[#A03D00]"
                     : "border border-border bg-background text-foreground hover:bg-accent"
-                }`}
+                  }`}
               >
                 <Filter
                   size={16}
@@ -331,7 +328,7 @@ export default function Home() {
           {contentFilter === "salidas" && !loadingSalidas && (
             <>
               {filteredSalidas.length > 0 ? (
-                <div className="flex flex-col gap-4 items-center">
+                <div className="flex flex-col gap-4 w-full">
                   {filteredSalidas.map((salida) => (
                     <EventCard
                       key={salida._id}
