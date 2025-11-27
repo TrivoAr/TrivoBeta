@@ -12,6 +12,11 @@ import { getProfileImage } from "@/app/api/profile/getProfileImage";
 
 export async function GET() {
   await connectDB();
+
+  // Asegurar que todos los modelos estén registrados antes de populate
+  // Esto previene el error "Schema hasn't been registered"
+  const _ensureModelsRegistered = [SalidaSocial, User, Academia, TeamSocial];
+
   const session = await getServerSession(authOptions);
   if (!session)
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
