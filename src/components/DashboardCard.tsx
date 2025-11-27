@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { QrCode, Users, Pencil, Trash2 } from "lucide-react"; // Íconos elegantes
 import Image from "next/image";
+import { getDeporteFallbackImage } from "@/utils/imageFallbacks";
 
 type Props = {
   event: {
@@ -35,7 +36,7 @@ export default function DashboardCard({
         onClick={() => router.push(`/social/${event._id}`)}
       >
         <Image
-          src={event.image || "/placeholder.jpg"}
+          src={event.image || getDeporteFallbackImage(event.category)}
           alt={event.title}
           width={310}
           height={115}

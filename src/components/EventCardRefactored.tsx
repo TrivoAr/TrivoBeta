@@ -8,6 +8,7 @@ import { BaseCard, BaseButton, IconButton, useModal } from "@/components/base";
 import { useFavorites, useMembers } from "@/hooks";
 import EventModal from "@/components/EventModal";
 import LoginModal from "@/components/Modals/LoginModal";
+import { getDeporteFallbackImage } from "@/utils/imageFallbacks";
 
 export interface EventType {
   _id: string;
@@ -182,7 +183,7 @@ export default function EventCardRefactored({
   return (
     <>
       <BaseCard
-        image={event.image}
+        image={event.image || getDeporteFallbackImage(event.category)}
         imageAlt={event.title}
         variant="elevated"
         size="default"

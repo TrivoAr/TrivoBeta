@@ -10,6 +10,7 @@ import LoginModal from "@/components/Modals/LoginModal";
 import EventModal from "@/components/EventModal";
 import { useSession } from "next-auth/react";
 import { isNightEvent } from "@/lib/theme";
+import { getDeporteFallbackImage } from "@/utils/imageFallbacks";
 
 type EventType = {
   _id: string;
@@ -187,17 +188,16 @@ export default function EventCard({
     <div className={cardClasses} data-theme={isNight ? "night" : undefined}>
       {/* Imagen */}
       <div className="relative w-full h-[180px] bg-gray-200 overflow-hidden">
-        {event.image && (
-          <img
-            src={event.image}
-            alt={event.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
-          />
-        )}
+        <img
+          src={event.image || getDeporteFallbackImage(event.category)}
+          alt={event.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            // Si falla la imagen, usar fallback
+            target.src = getDeporteFallbackImage(event.category);
+          }}
+        />
         <button
           className="btnFondo absolute top-2 right-5 text-white p-2 rounded-full shadow-md"
           onClick={toggleFavorito}

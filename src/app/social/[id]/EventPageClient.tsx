@@ -13,6 +13,7 @@ import { isNightEvent } from "@/lib/theme";
 import { Activity, MapPin, Clock, BarChart3 } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/usePaymentStatus";
 import { useSearchParams } from "next/navigation";
+import { getImagenesToShow } from "@/utils/imageFallbacks";
 
 // Dynamic imports for better code splitting with Intersection Observer
 const LazyStravaMap = dynamic(() => import("@/components/LazyStravaMap"), {
@@ -467,19 +468,12 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
       <div className="relative w-full aspect-cover max-h-[250px]">
         {/* Carrusel de imágenes */}
         {(() => {
-          const imagesToShow = event.imagenes && event.imagenes.length > 0
-            ? event.imagenes
-            : event.imagen
-            ? [event.imagen]
-            : [];
-
-          if (imagesToShow.length === 0) {
-            return (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">Sin imagen</span>
-              </div>
-            );
-          }
+          // Usar helper que incluye fallback según deporte
+          const imagesToShow = getImagenesToShow(
+            event.imagenes,
+            event.imagen,
+            event.deporte
+          );
 
           return (
             <>
