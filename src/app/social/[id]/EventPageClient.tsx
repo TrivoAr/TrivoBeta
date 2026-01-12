@@ -311,13 +311,14 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
   });
 
   const handleAccion = () => {
+    if (event.url) {
+      window.open(event.url, "_blank");
+      return;
+    }
+
     if (!session) {
       toast.error("Debes iniciar sesión");
       setShowLoginModal(true);
-      return;
-    }
-    if (event.url) {
-      window.open(event.url, "_blank");
       return;
     }
 
@@ -463,292 +464,198 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
       style={isNight ? { backgroundColor: "#2d3748" } : {}}
       data-theme={isNight ? "night" : undefined}
     >
-      <div className="relative w-full aspect-cover max-h-[250px]">
+      <div className="relative w-full aspect-[4/3] md:aspect-[16/9] lg:max-h-[400px]">
         <div
           style={{
             backgroundImage: `url(${event.imagen})`,
-            backgroundPosition: "center",
-            backgroundSize: "cover",
           }}
-          className="w-full h-full object-cover"
+          className="w-full h-full bg-cover bg-center"
         />
 
-        {/* Botón volver */}
-        <button
-          onClick={() => router.back()}
-          className="absolute top-2 left-3 btnFondo shadow-md rounded-full w-9 h-9 flex justify-center items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="black"
-            className="w-5 h-5"
+        {/* Header Overlay Buttons */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
+          <button
+            onClick={() => router.back()}
+            className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 19.5L8.25 12l7.5-7.5"
-            />
-          </svg>
-        </button>
-
-        <button
-          onClick={() => toggleFavoritoMutation.mutate()}
-          className="absolute top-2 right-[55px] btnFondo shadow-md rounded-full p-2 flex justify-center items-center"
-        >
-          {favorito ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="red"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.5 4 5.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 18.5 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
-              stroke="black"
               viewBox="0 0 24 24"
-              width="24"
-              height="24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-6 h-6 text-black"
             >
-              <path
-                d="M12.1 21.35l-1.1-1.05C5.14 15.24 2 12.32 2 8.5 2 6 3.98 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44h1.74C14.09 5.01 15.76 4 17.5 4 20.02 4 22 6 22 8.5c0 3.82-3.14 6.74-8.9 11.8l-1 1.05z"
-                strokeWidth="2"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
-          )}
-        </button>
-        <button
-          onClick={() => {
-            const url = event.shortId
-              ? `${window.location.origin}/s/${event.shortId}`
-              : window.location.href;
+          </button>
 
-            if (navigator.share) {
-              navigator.share({ title: event.nombre, url }).catch(() => { });
-            } else {
-              navigator.clipboard
-                .writeText(url)
-                .then(() => toast.success("¡Link copiado al portapapeles!"))
-                .catch((err) => { });
-            }
-          }}
-          className="btnFondo absolute top-2 right-2 text-white p-2 rounded-full shadow-md"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-          >
-            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              <path
-                d="M20 13L20 18C20 19.1046 19.1046 20 18 20L6 20C4.89543 20 4 19.1046 4 18L4 13"
-                stroke="#000000"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></path>
-              <path
-                d="M16 8L12 4M12 4L8 8M12 4L12 16"
-                stroke="#000000"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></path>
-            </g>
-          </svg>
-        </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                const url = event.shortId
+                  ? `${window.location.origin}/s/${event.shortId}`
+                  : window.location.href;
+
+                if (navigator.share) {
+                  navigator.share({ title: event.nombre, url }).catch(() => { });
+                } else {
+                  navigator.clipboard
+                    .writeText(url)
+                    .then(() => toast.success("Link copiado"))
+                    .catch(() => { });
+                }
+              }}
+              className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-black">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+              </svg>
+            </button>
+
+            <button
+              onClick={() => toggleFavoritoMutation.mutate()}
+              className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+            >
+              {favorito ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#C95100" className="w-6 h-6">
+                  <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-black">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="px-4 py-2">
-        <h1
-          className={`text-xl font-semibold text-center ${isNight ? "theme-text-primary" : "text-foreground"
-            }`}
-        >
-          {event.nombre}
-        </h1>
-        <div
-          className={`text-sm flex flex-col w-full gap-1 justify-center items-center ${isNight ? "theme-text-secondary" : "text-[#808488]"
-            }`}
-        >
-          <div className="flex items-center justify-center">
-            <svg
-              height="13px"
-              width="13px"
-              version="1.1"
-              id="Layer_1"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-              fill="#FF3D00"
-              stroke="#FF3D00"
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <path
-                  style={{ fill: "#FF3D00" }}
-                  d="M255.999,0C166.683,0,94.278,72.405,94.278,161.722c0,81.26,62.972,235.206,161.722,350.278 c98.75-115.071,161.722-269.018,161.722-350.278C417.722,72.405,345.316,0,255.999,0z"
-                ></path>{" "}
-                <g style={{ opacity: "0.1" }}>
-                  {" "}
-                  <path d="M168.207,125.87c15.735-64.065,67.63-109.741,128.634-120.664C283.794,1.811,270.109,0,255.999,0 C166.683,0,94.277,72.405,94.277,161.722c0,73.715,51.824,207.247,135.167,317.311C170.39,349.158,150.032,199.872,168.207,125.87z "></path>{" "}
-                </g>{" "}
-                <path
-                  style={{ fill: "#FFFF" }}
-                  d="M255.999,235.715c-40.81,0-74.014-33.203-74.019-74.014c0.005-40.795,33.209-73.998,74.019-73.998 s74.014,33.203,74.019,74.014C330.015,202.513,296.809,235.715,255.999,235.715z"
-                ></path>{" "}
-              </g>
-            </svg>
-            <span>{event.localidad}</span>
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-4"></div>
-        </div>
 
-        <div className="w-full flex items-center flex-col mt-6">
-          <div className="flex items-center justify-start gap-2 w-[90%]">
-            <div className="h-[80px] w-[80px] bg-card shadow-md rounded-full flex justify-center items-center border">
-              <img
-                src={event.creador_id.imagen}
-                alt="Organizador"
-                className="h-[70px] w-[70px] rounded-full object-cover border"
-              />
-            </div>
-
-            <span
-              className={`text-sm pr-[20px] font-light ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              Organizado por {event.creador_id.firstname}{" "}
-              {event.creador_id.lastname}
-            </span>
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-6"></div>
-        </div>
-
-        <div className="w-full flex flex-col items-center mt-6">
-          <div className="w-[80%] flex flex-col items-center gap-3">
-            <div
-              className={`text-sm flex items-center w-full font-light gap-1 ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              <Activity
-                size={20}
-                style={{
-                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
-                }}
-              />
-              {event.deporte}
-            </div>
-            <div
-              className={`text-sm flex items-center w-full font-light gap-1 ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              <MapPin
-                size={20}
-                style={{
-                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
-                }}
-              />
-              {event.localidad}
-            </div>
-            <div
-              className={`text-sm flex items-center w-full font-light gap-1 ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              <Clock
-                size={18}
-                style={{
-                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
-                }}
-              />
-              {event.duracion} de duración de la salida
-            </div>
-            <div
-              className={`text-sm flex items-center w-full font-light gap-1 capitalize ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              <BarChart3
-                size={18}
-                style={{
-                  color: isNight ? "var(--theme-text-primary)" : "currentColor",
-                }}
-              />
-              {event.dificultad}
-            </div>
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
-        </div>
-        <div className="w-full flex flex-col items-center mt-6">
-          <div className="w-[90%]">
-            <DescriptionMarkdown text={event.descripcion} isNight={isNight} />
-          </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
-        </div>
-
-        <div className="w-full flex flex-col items-center mt-6">
-          <div className="w-[90%]">
-            <p className="mb-2">
-              <span
-                className={`text-lg font-normal ${isNight ? "theme-text-primary" : "text-foreground"
-                  }`}
-              >
-                Punto de encuentro
+      <div className="px-5 py-6 space-y-8">
+        {/* Title and Badge Section */}
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between items-start gap-4">
+            <h1 className={`text-2xl font-bold leading-tight ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+              {event.nombre}
+            </h1>
+            {event.dificultad && (
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-[#FFF9C4] text-[#FBC02D] capitalize shrink-0`}>
+                {event.dificultad}
               </span>
-              <br />
-              <span
-                className={`text-sm mb-2 font-extralight ${isNight ? "theme-text-secondary" : "text-muted-foreground"
-                  }`}
-              >
-                {event.ubicacion}
-              </span>
-            </p>
-            {event.locationCoords ? (
-              <div className="w-full relative h-[300px] rounded-xl overflow-hidden border z-0">
-                <LazyMap
-                  position={{
-                    lat: event.locationCoords.lat,
-                    lng: event.locationCoords.lng,
-                  }}
-                  onChange={() => { }}
-                  editable={false}
-                  showControls={false}
-                  className="w-full h-full"
-                />
-                <div
-                  className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
-                  onClick={() => setShowFullMapPuntoDeEncuntro(true)}
-                >
-                  Tocar para ampliar
-                </div>
-              </div>
-            ) : (
-              <p
-                className={`text-sm ${isNight ? "theme-text-secondary" : "text-muted-foreground"
-                  }`}
-              >
-                No hay coordenadas disponibles.
-              </p>
             )}
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-7"></div>
+
+          <div className={`flex items-center gap-1.5 text-sm font-medium ${isNight ? "theme-text-secondary" : "text-gray-500"}`}>
+            <MapPin size={16} className="text-[#C95100]" />
+            <span>{event.localidad}, {event.ubicacion.split(',')[1]?.trim() || 'Argentina'}</span>
+          </div>
+        </div>
+
+        {/* Info Cards Row */}
+        <div className="flex flex-wrap gap-3">
+          {/* Duration Card */}
+          <div className={`flex flex-col items-center justify-center p-4 rounded-[20px] min-w-[100px] ${isNight ? "bg-gray-800" : "bg-gray-50"}`}>
+            <span className={`text-xl font-bold ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+              {event.duracion.split(' ')[0]}
+            </span>
+            <span className={`text-xs uppercase mt-1 ${isNight ? "theme-text-secondary" : "text-gray-500"}`}>
+              {event.duracion.split(' ')[1] || 'HS'}
+            </span>
+            <span className={`text-[10px] mt-1 ${isNight ? "theme-text-secondary" : "text-gray-400"}`}>
+              Tiempo estimado
+            </span>
+          </div>
+
+          {/* Tags Chips - Simulated for visual match */}
+          <div className="flex gap-2 items-center">
+            <span className={`px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${isNight ? "bg-gray-800 theme-text-primary" : "bg-gray-100 text-gray-700"}`}>
+              <Activity size={16} className="text-[#C95100]" />
+              {event.deporte}
+            </span>
+            {/* Optional: 'Ida y vuelta' badge if applicable, hardcoded/simulated for now based on image, or removed if no data */}
+          </div>
+        </div>
+
+        <div className="w-full border-b border-gray-100 dark:border-gray-700"></div>
+
+        {/* Details Section */}
+        <div>
+          <h2 className={`text-lg font-bold mb-3 ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+            Detalles del evento
+          </h2>
+          <div className={`prose prose-sm max-w-none ${isNight ? "text-gray-300" : "text-gray-600"}`}>
+            <DescriptionMarkdown text={event.descripcion} isNight={isNight} />
+          </div>
+
+          {/* Add Date/Time/Participants minimal list if needed, or stick to removed as requested? 
+               Image shows "02 de septiembre...", "0/10 participantes", "$Price".
+               User said: "sacar los detalles del profesor participatnes, cupo".
+               So I will add ONLY the Date/Time here if not in footer?
+               Actually footer has date/time. So I can skip it here to be cleaner, or add just date as "Detalle". 
+               Let's keep it clean as per image "Detalles del evento" text block.
+           */}
+        </div>
+
+        {/* Organizer Section (Minimal) */}
+        <div>
+          <h2 className={`text-lg font-bold mb-4 ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+            Organizado por
+          </h2>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 shrink-0">
+              <img src={event.creador_id.imagen} alt={event.creador_id.firstname} className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p className={`font-medium ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+                {event.creador_id.firstname} {event.creador_id.lastname}
+              </p>
+              <p className={`text-sm ${isNight ? "theme-text-secondary" : "text-gray-500"}`}>
+                Organizador
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Section */}
+        <div>
+          <h2 className={`text-lg font-bold mb-3 ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+            Punto de encuentro
+          </h2>
+          <p className={`text-sm mb-4 leading-relaxed ${isNight ? "theme-text-secondary" : "text-gray-500"}`}>
+            {event.ubicacion}
+          </p>
+
+          {event.locationCoords && (
+            <div className="w-full h-[180px] rounded-[20px] overflow-hidden relative shadow-sm border border-gray-100 dark:border-gray-700">
+              <LazyMap
+                position={{
+                  lat: event.locationCoords.lat,
+                  lng: event.locationCoords.lng,
+                }}
+                onChange={() => { }}
+                editable={false}
+                showControls={false}
+                className="w-full h-full"
+              />
+              {/* Map overlay interaction hint */}
+              <div
+                className="absolute inset-0 bg-transparent cursor-pointer"
+                onClick={() => setShowFullMapPuntoDeEncuntro(true)}
+              />
+              <button
+                className="absolute bottom-3 right-3 bg-white text-black text-xs font-bold p-2 rounded-full shadow-md z-10 hover:bg-gray-50 uppercase tracking-wide"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowFullMapPuntoDeEncuntro(true);
+                }}
+              >
+                <span className="flex items-center gap-1">
+                  <MapPin size={12} />
+                  Ver mapa
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {event.stravaMap?.id ? (
@@ -801,29 +708,25 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
 
 
 
-        <div className="flex flex-col items-center mt-8">
-          <div className="w-[90%]">
-            <h2
-              className={`text-lg font-normal mb-1 ${isNight ? "theme-text-primary" : "text-foreground"
-                }`}
-            >
-              Grupo de Whatsapp
+        {/* WhatsApp Group */}
+        {event.whatsappLink && (
+          <div>
+            <h2 className={`text-lg font-bold mb-3 ${isNight ? "theme-text-primary" : "text-gray-900"}`}>
+              Grupo de WhatsApp
             </h2>
-            {event.whatsappLink && (
-              <div className="flex justify-center mt-2">
-                <a
-                  href={event.whatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border w-full py-1 rounded-[10px] font-light bg-card shadow-md justify-center"
-                >
-                  Unirse{" "}
-                </a>
-              </div>
-            )}
+            <a
+              href={event.whatsappLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-[20px] font-bold text-center flex items-center justify-center gap-2 transition-colors shadow-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+              </svg>
+              Unirse al grupo
+            </a>
           </div>
-          <div className="w-[90%] border-b borderb-[#808488] mt-8"></div>
-        </div>
+        )}
 
 
 
@@ -881,71 +784,48 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
           </div>
         )}
 
+        {/* Sticky Footer */}
         <div
-          className={`fixed w-[100%] left-1/2 -translate-x-1/2 z-50
-    ${session ? "bottom-[80px]" : "bottom-[1px]"}`}
+          className={`fixed bottom-0 left-0 right-0 p-4 border-t z-50 transition-colors
+            ${isNight ? "bg-[#1a202c] border-gray-700" : "bg-white border-gray-100"}
+          `}
         >
-          <div
-            className={`shadow-md h-[120px] border flex justify-between items-center ${isNight
-              ? "theme-bg-secondary border-gray-600"
-              : "bg-card border-border"
-              }`}
-          >
-            <div className="w-[50%] flex flex-col pl-4">
-              <p
-                className={`font-semibold text-xl underline ${isNight ? "theme-text-primary" : "text-foreground"
-                  }`}
-              >
+          <div className="max-w-app mx-auto flex items-center justify-between gap-4">
+            <div className="flex flex-col">
+              <span className={`text-xl font-bold leading-none ${isNight ? "text-white" : "text-black"}`}>
                 {event.precio == 0 || event.precio === "0"
                   ? "Gratis"
                   : `$${Number(event.precio).toLocaleString("es-AR")}`}
-              </p>
-              <p
-                className={`text-xs ${isNight ? "theme-text-secondary" : "text-muted-foreground"
-                  }`}
+              </span>
+              <span className={`text-xs mt-1 ${isNight ? "text-gray-400" : "text-gray-500"}`}>
+                {parseLocalDate(event.fecha)} • {event.hora} hs
+              </span>
+            </div>
+
+            {session?.user?.id === event.creador_id._id ? (
+              <button
+                onClick={() => router.push(`/social/editar/${event._id}`)}
+                className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-[15px] transition-colors"
               >
-                {parseLocalDate(event.fecha)}, {event.hora} hs
-              </p>
-              <div className="flex w-full justify-between">
-
-              </div>
-            </div>
-
-            <div className="flex h-[60px] w-[50%] justify-center items-center">
-              {session?.user?.id === event.creador_id._id ? (
-                // Si es el creador, mostrar botón editar
-                <button
-                  onClick={() => router.push(`/social/editar/${event._id}`)}
-                  className={`h-[30px] shadow-md text-sm rounded-[10px] flex items-center justify-center border w-[90px] font-semibold ${isNight
-                    ? "theme-bg-primary border-gray-600 theme-text-primary"
-                    : "bg-card border-border text-foreground"
-                    }`}
-                >
-                  Editar
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    handleAccion();
-                  }}
-                  disabled={estadoFinal === "pendiente" || estadoFinal === "si"} // deshabilitar si está pendiente o ya unido
-                  className={`rounded-[20px] w-auto px-4 flex justify-center items-center font-semibold text-lg
-        ${estadoFinal === "no" ? (isNight ? "seasonal-gradient text-white" : "bg-[#C95100] text-white") : ""}
-        ${estadoFinal === "pendiente" ? "bg-gray-400 text-white opacity-50" : ""}
-        ${estadoFinal === "rechazado" ? "bg-red-500 text-white" : ""}
-        ${estadoFinal === "si" ? (isNight ? "theme-accent-bg-primary text-white" : "bg-[#001A46] text-white") : ""}
-      `}
-                >
-                  {estadoFinal === "no" && "Unirse"}
-                  {estadoFinal === "pendiente" &&
-                    (isProcessingPayment || joinFreeMutation.isPending
-                      ? "Procesando pago..."
-                      : "Solicitud enviada")}
-                  {estadoFinal === "rechazado" && "Reenviar"}
-                  {estadoFinal === "si" && "Miembro"}
-                </button>
-              )}
-            </div>
+                Editar
+              </button>
+            ) : (
+              <button
+                onClick={handleAccion}
+                disabled={estadoFinal === "pendiente" || estadoFinal === "si"}
+                className={`px-8 py-3 rounded-[15px] font-bold text-white transition-all shadow-md
+                    ${estadoFinal === "no" ? "bg-[#C95100] hover:bg-[#A04100]" : ""}
+                    ${estadoFinal === "pendiente" ? "bg-gray-400 cursor-not-allowed" : ""}
+                    ${estadoFinal === "rechazado" ? "bg-red-500 hover:bg-red-600" : ""}
+                    ${estadoFinal === "si" ? "bg-green-600 hover:bg-green-700" : ""}
+                  `}
+              >
+                {estadoFinal === "no" && "Unirse"}
+                {estadoFinal === "pendiente" && "Solicitud enviada"}
+                {estadoFinal === "rechazado" && "Reenviar"}
+                {estadoFinal === "si" && "Ya sos miembro"}
+              </button>
+            )}
           </div>
         </div>
 
