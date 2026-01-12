@@ -103,6 +103,10 @@ const SalidaSocialSchema = new Schema(
         required: false,
       },
     ],
+    url: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );

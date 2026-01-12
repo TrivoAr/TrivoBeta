@@ -48,7 +48,7 @@ function EditProfilePage() {
             setProfileImage(url || data.imagen);
           } else {
           }
-        } catch (error) {}
+        } catch (error) { }
       };
 
       fetchProfile();
@@ -213,7 +213,7 @@ function EditProfilePage() {
   };
 
   return (
-    <div className="w-[390px] min-h-screen bg-background px-4 pt-6 pb-24 flex flex-col items-center text-foreground">
+    <div className="min-h-screen bg-background px-4 pt-6 pb-24 flex flex-col items-center text-foreground">
       <h1 className="text-2xl font-medium  w-full text-left mb-4">
         Editar Perfil
       </h1>

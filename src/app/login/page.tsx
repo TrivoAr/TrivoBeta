@@ -51,7 +51,7 @@ function SigninContent() {
   // Mostrar loading mientras se verifica la sesión
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen w-[380px] bg-background">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C95100]"></div>
           <p className="text-muted-foreground">Verificando sesión...</p>
@@ -99,7 +99,7 @@ function SigninContent() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-[380px] bg-background font-sans">
+    <div className="flex items-center justify-center min-h-screen bg-background font-sans">
       <Toaster position="top-center" />
 
       <div className="w-full h-full bg-background overflow-hidden">

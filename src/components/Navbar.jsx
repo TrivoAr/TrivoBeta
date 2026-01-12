@@ -67,22 +67,7 @@ function Navbar() {
                 Salida
               </Link>
 
-              <>
-                <Link
-                  href="/team-social/crear"
-                  onClick={() => setIsModalOpen(false)}
-                  className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-                >
-                  Social Team
-                </Link>
-                <Link
-                  href="/academias/crear"
-                  onClick={() => setIsModalOpen(false)}
-                  className="py-2 rounded-[20px] bg-[#C95100] text-white font-bold shadow-md"
-                >
-                  Grupo de entrenamiento
-                </Link>
-              </>
+
 
               <button
                 onClick={() => setIsModalOpen(false)}

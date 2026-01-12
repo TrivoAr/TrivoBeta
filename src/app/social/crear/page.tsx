@@ -124,6 +124,7 @@ export default function CrearSalidaPage() {
     alias: "",
     sponsors: [] as string[],
     profesorId: "",
+    url: "",
   });
 
   const [imagen, setImagen] = useState<File | null>(null);
@@ -853,16 +854,14 @@ export default function CrearSalidaPage() {
         {/* Mostrar ubicación detectada */}
         {formData.provincia && formData.localidad && (
           <div
-            className={`p-3 border rounded-[15px] ${
-              gpsLocationDetected
-                ? "bg-green-50 border-green-200"
-                : "bg-gray-50 border-gray-200"
-            }`}
+            className={`p-3 border rounded-[15px] ${gpsLocationDetected
+              ? "bg-green-50 border-green-200"
+              : "bg-gray-50 border-gray-200"
+              }`}
           >
             <p
-              className={`text-sm ${
-                gpsLocationDetected ? "text-green-700" : "text-gray-600"
-              }`}
+              className={`text-sm ${gpsLocationDetected ? "text-green-700" : "text-gray-600"
+                }`}
             >
               {gpsLocationDetected ? (
                 <>
@@ -940,8 +939,8 @@ export default function CrearSalidaPage() {
         />
       </label>
 
-      <label className="block">
-        Cupo
+      {/* <label className="block">
+        Cupo (Opcional)
         <input
           name="cupo"
           type="number"
@@ -950,7 +949,7 @@ export default function CrearSalidaPage() {
           placeholder="Cantidad maxima de personas"
           className="w-full px-4 py-4 border shadow-sm rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
-      </label>
+      </label> */}
 
       <label className="block">
         Fecha
@@ -1015,6 +1014,17 @@ export default function CrearSalidaPage() {
           value={formData.whatsappLink || ""}
           onChange={handleChange}
           placeholder="https://chat.whatsapp.com/..."
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
+        />
+      </label>
+
+      <label className="block">
+        Forms de Google
+        <input
+          name="url"
+          value={formData.url || ""}
+          onChange={handleChange}
+          placeholder="https://docs.google.com/forms/..."
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
         />
       </label>

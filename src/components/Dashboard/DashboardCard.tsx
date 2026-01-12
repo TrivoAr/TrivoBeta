@@ -120,7 +120,7 @@ export const DashboardCard = ({
 
   const cardClasses = useMemo(() => {
     const baseClasses =
-      "flex-shrink-0 w-[310px] h-[240px] rounded-[20px] overflow-hidden shadow-md relative border mx-auto mb-4 transition-all duration-300";
+      "flex-shrink-0 w-full h-[240px] rounded-[20px] overflow-hidden shadow-md relative border mx-auto mb-4 transition-all duration-300";
     return `${baseClasses} ${isNight ? "border-gray-600" : "border-border bg-card"}`;
   }, [isNight]);
 
@@ -137,11 +137,10 @@ export const DashboardCard = ({
 
   return (
     <div
-      className={`${cardClasses} ${
-        onClick
+      className={`${cardClasses} ${onClick
           ? "cursor-pointer hover:shadow-lg transition-shadow duration-200"
           : ""
-      }`}
+        }`}
       onClick={handleCardClick}
       data-theme={isNight ? "night" : undefined}
       style={cardStyle}
@@ -150,13 +149,13 @@ export const DashboardCard = ({
       <div className="relative h-[115px] bg-muted">
         {imageLoading && (
           <div className="absolute inset-0">
-            <Skeleton height={115} width={310} />
+            <Skeleton height={115} width="100%" />
           </div>
         )}
         <Image
           src={image}
           alt={title}
-          width={310}
+          width={400}
           height={115}
           className={`w-full h-full object-cover ${imageLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
           onLoad={handleImageLoad}

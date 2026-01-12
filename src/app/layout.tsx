@@ -59,7 +59,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className="flex flex-col items-center w-full">
+      <body className="flex flex-col w-full">
         {/* Analytics powered by Mixpanel */}
         <Toaster
           richColors
@@ -77,7 +77,7 @@ export default function RootLayout({
         />
         <ServiceWorkerRegistration />
         <Providers>
-          <div className="">{children}</div>
+          <div className="w-full">{children}</div>
           <Navbar />
         </Providers>
       </body>

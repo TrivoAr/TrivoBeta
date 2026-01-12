@@ -57,6 +57,7 @@ interface SalidaSocial {
   sponsors?: (string | { _id: string })[];
   imagen?: string;
   imagenes?: string[];
+  url?: string;
 }
 
 export default function EditarSalida({ params }: { params: Promise<{ id: string }> }) {
@@ -443,7 +444,8 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
         />
 
         {/* Cupo */}
-        <input
+        {/* Cupo */}
+        {/* <input
           name="cupo"
           type="number"
           value={localSalida?.cupo || ""}
@@ -455,7 +457,7 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
           }
           placeholder="Cupo"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
-        />
+        /> */}
 
         {/* Fecha y Hora */}
         <div className="flex gap-3 mb-3">
@@ -525,8 +527,23 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
         />
 
+        {/* URL Externa */}
+        <input
+          name="url"
+          value={localSalida?.url || ""}
+          onChange={(e) =>
+            setLocalSalida((prev: any) => ({
+              ...prev,
+              url: e.target.value,
+            }))
+          }
+          placeholder="Forms de Google"
+          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card text-muted-foreground"
+        />
+
         {/* Profesor */}
-        <div className="space-y-2">
+        {/* Profesor */}
+        {/* <div className="space-y-2">
           <label className="block text-sm font-medium">
             Profesor (opcional)
           </label>
@@ -549,7 +566,7 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
             ))}
           </select>
 
-          {/* Mostrar preview del profesor seleccionado */}
+          {/* Mostrar preview del profesor seleccionado * /}
           {localSalida?.profesorId && profesQuery.data && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px]">
               {(() => {
@@ -579,7 +596,7 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
               })()}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Selector de Sponsor */}
         <div className="space-y-2">

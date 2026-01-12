@@ -40,6 +40,7 @@ export interface ISalidaSocial extends Document {
   profesorId?: any;
   shortId?: string;
   sponsors?: any[];
+  url?: string;
   createdAt: Date;
   updatedAt: Date;
 }

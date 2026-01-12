@@ -251,150 +251,50 @@ export default function Home() {
           setSelectedLocalidad={setSelectedLocalidad}
         />
 
-        {/* Banner del Club del Trekking */}
+
         <ClubDelTrekking />
 
-        {/* Filter Tabs */}
-        <div className="flex gap-3 p-1 bg-muted rounded-xl">
-          <button
-            onClick={() => setContentFilter("salidas")}
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${contentFilter === "salidas"
-                ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Salidas Sociales
-          </button>
-          <button
-            onClick={() => setContentFilter("academias")}
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${contentFilter === "academias"
-                ? "bg-white dark:bg-gray-800 text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Academias
-          </button>
-        </div>
 
-        {/* Content Section */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="text-xl font-semibold text-foreground">
-              {contentFilter === "salidas"
-                ? "Próximas salidas"
-                : "Academias destacadas"}
-            </h1>
-            <div className="flex items-center gap-2">
-              {/* Clear Filters Button - Solo visible cuando hay filtros activos */}
-              {getActiveFilterCount() > 0 && (
-                <button
-                  onClick={handleClearFilters}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium transition-all duration-200 border border-red-200 dark:border-red-800 bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  title="Limpiar filtros"
-                >
-                  <Trash2 size={16} />
-                  <span className="text-xs font-bold">
-                    {getActiveFilterCount()}
-                  </span>
-                </button>
-              )}
+          <>
+            {filteredSalidas.length > 0 ? (
+              <div className="flex flex-col gap-4 w-full">
+                {filteredSalidas.map((salida) => (
+                  <EventCard
+                    key={salida._id}
+                    event={{
+                      _id: salida._id,
+                      title: salida.nombre,
+                      date: salida.fecha,
+                      time: salida.hora,
+                      price: salida.precio,
+                      image: salida.imagen,
+                      location: salida.ubicacion,
+                      creadorId:
+                        typeof salida.creador_id === "string"
+                          ? salida.creador_id
+                          : salida.creador_id._id,
+                      localidad: salida.localidad,
+                      category: salida.deporte,
+                      dificultad: salida.dificultad,
+                      teacher:
+                        typeof salida.creador_id === "string"
+                          ? ""
+                          : `${salida.creador_id.firstname} ${salida.creador_id.lastname}`,
+                      cupo: salida.cupo,
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="Sin salidas disponibles"
+                description="Una vez que carguemos salidas, las vas a ver acá."
+                imageSrc="/assets/icons/emptyTrekking.png"
+              />
+            )}
+          </>
 
-              {/* Filter Button */}
-              <button
-                onClick={() => setIsFilterModalOpen(true)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl font-medium transition-all duration-200 ${getActiveFilterCount() > 0
-                    ? "bg-[#C95100] text-white hover:bg-[#A03D00]"
-                    : "border border-border bg-background text-foreground hover:bg-accent"
-                  }`}
-              >
-                <Filter
-                  size={16}
-                  className={
-                    getActiveFilterCount() > 0 ? "text-white" : "text-[#C95100]"
-                  }
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Loading State */}
-          {(loadingSalidas || loadingAcademias) && (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#C95100] border-t-transparent"></div>
-            </div>
-          )}
-
-          {/* Salidas List */}
-          {contentFilter === "salidas" && !loadingSalidas && (
-            <>
-              {filteredSalidas.length > 0 ? (
-                <div className="flex flex-col gap-4 w-full">
-                  {filteredSalidas.map((salida) => (
-                    <EventCard
-                      key={salida._id}
-                      event={{
-                        _id: salida._id,
-                        title: salida.nombre,
-                        date: salida.fecha,
-                        time: salida.hora,
-                        price: salida.precio,
-                        image: salida.imagen,
-                        location: salida.ubicacion,
-                        creadorId:
-                          typeof salida.creador_id === "string"
-                            ? salida.creador_id
-                            : salida.creador_id._id,
-                        localidad: salida.localidad,
-                        category: salida.deporte,
-                        dificultad: salida.dificultad,
-                        teacher:
-                          typeof salida.creador_id === "string"
-                            ? ""
-                            : `${salida.creador_id.firstname} ${salida.creador_id.lastname}`,
-                        cupo: salida.cupo,
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Sin salidas disponibles"
-                  description="Una vez que carguemos salidas, las vas a ver acá."
-                  imageSrc="/assets/icons/emptyTrekking.png"
-                />
-              )}
-            </>
-          )}
-
-          {/* Academias Grid */}
-          {contentFilter === "academias" && !loadingAcademias && (
-            <>
-              {filteredAcademias.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {filteredAcademias.map((academia, index) => (
-                    <AirbnbCard
-                      key={academia._id}
-                      id={academia._id}
-                      title={academia.nombre_academia}
-                      image={academia.imagenUrl}
-                      category={academia.tipo_disciplina}
-                      localidad={academia.localidad}
-                      price={academia.precio}
-                      onClick={() => router.push(`/academias/${academia._id}`)}
-                      type="academia"
-                      priority={index < 2} // Priorizar las primeras 2 imágenes para LCP
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="Sin academias disponibles"
-                  description="Próximamente agregaremos academias en tu zona."
-                  imageSrc="/assets/icons/emptyTrekking.png"
-                />
-              )}
-            </>
-          )}
         </section>
         <div className="pb-[200px]"></div>
 
