@@ -422,26 +422,21 @@ export default function EditarSalida({ params }: { params: Promise<{ id: string 
         </select>
 
         {/* Precio */}
-        <input
-          name="precio"
-          value={localSalida?.precio || ""}
-          onChange={(e) =>
-            setLocalSalida((prev: any) => ({ ...prev, precio: e.target.value }))
-          }
-          placeholder="Precio"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
-        />
+        {/* Precio */}
+        <div className="w-full">
+          <input
+            name="precio"
+            value={localSalida?.precio || ""}
+            onChange={(e) =>
+              setLocalSalida((prev: any) => ({ ...prev, precio: e.target.value }))
+            }
+            placeholder="Precio"
+            className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card mb-1"
+          />
+          <span className="text-sm text-gray-500 ml-1">Coloca 0 si es gratis</span>
+        </div>
 
-        {/* Alias / CBU */}
-        <input
-          name="alias"
-          value={localSalida?.alias || ""}
-          onChange={(e) =>
-            setLocalSalida((prev: any) => ({ ...prev, alias: e.target.value }))
-          }
-          placeholder="Alias/CBU"
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
-        />
+
 
         {/* Cupo */}
         {/* Cupo */}

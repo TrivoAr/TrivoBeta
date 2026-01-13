@@ -18,6 +18,8 @@ import {
 } from "@/hooks/useArgentinaLocations";
 import { useSponsors } from "@/hooks/useSponsors";
 
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
 // Dynamic imports for code splitting
 const DescriptionEditor = dynamic(() => import("@/components/DescriptionEditor"), {
   ssr: false,
@@ -929,14 +931,16 @@ export default function CrearSalidaPage() {
       </label>
 
       <label className="block">
-        CBU/Alias
+        Precio
         <input
-          name="alias"
-          value={formData.alias}
+          name="precio"
+          type="number"
+          value={formData.precio}
           onChange={handleChange}
-          placeholder="Alias"
+          placeholder="Precio"
           className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white mb-2"
         />
+        <span className="text-sm text-gray-500">Coloca 0 si es gratis</span>
       </label>
 
       {/* <label className="block">
@@ -1094,37 +1098,7 @@ export default function CrearSalidaPage() {
         )}
       </label>
 
-      <label className="block">
-        Actividades Strava
-        <select
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
-          onChange={(e) => {
-            const selectedId = e.target.value;
-            const selectedActivity = activities.find(
-              (a) => a.id.toString() === selectedId
-            );
 
-            if (selectedActivity) {
-              setFormData((prev) => ({
-                ...prev,
-                stravaMap: {
-                  id: selectedActivity.map.id,
-                  summary_polyline: selectedActivity.map.summary_polyline,
-                  polyline: selectedActivity.map.polyline,
-                  resource_state: selectedActivity.map.resource_state,
-                },
-              }));
-            }
-          }}
-        >
-          <option value="">Selecciona una actividad</option>
-          {activities?.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name} - {Math.round(a.distance / 1000)} km
-            </option>
-          ))}
-        </select>
-      </label>
 
       {/* <label className="block">
         Seleccionar Profesor
@@ -1143,72 +1117,7 @@ export default function CrearSalidaPage() {
         </select>
       </label> */}
 
-      <label className="block relative">
-        Asignar profesor
-        <input
-          type="text"
-          value={queryProfesor} // <- usa el estado de búsqueda
-          onChange={(e) => {
-            const value = e.target.value;
-            setQueryProfesor(value);
 
-            // Filtrar sugerencias localmente
-            const filtered = profes.filter((p) =>
-              p.firstname.toLowerCase().includes(value.toLowerCase())
-            );
-            setProfesorSuggestions(filtered);
-          }}
-          placeholder="Buscar profesor..."
-          className="w-full px-4 py-4 border shadow-md rounded-[15px] focus:outline-none focus:ring-2 focus:ring-orange-500 bg-card"
-        />
-        {profesorSuggestions.length > 0 && (
-          <ul className="absolute top-full left-0 right-0 bg-card border shadow-md rounded-md max-h-40 overflow-y-auto z-50">
-            {profesorSuggestions.map((p) => (
-              <li
-                key={p._id}
-                className="px-4 py-2 cursor-pointer hover:bg-orange-100"
-                onClick={() => {
-                  setFormData((prev) => ({ ...prev, profesorId: p._id }));
-                  setQueryProfesor(`${p.firstname} ${p.lastname}`);
-                  setProfesorSuggestions([]);
-                }}
-              >
-                {p.firstname} {p.lastname}
-              </li>
-            ))}
-          </ul>
-        )}
-        {/* Mostrar preview del profesor seleccionado */}
-        {formData.profesorId && queryProfesor && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-[15px] mt-2">
-            {(() => {
-              const selectedProfesor = profes.find(
-                (p) => p._id === formData.profesorId
-              );
-              return selectedProfesor ? (
-                <div className="flex items-center gap-3">
-                  {selectedProfesor.imagen && (
-                    <img
-                      src={selectedProfesor.imagen}
-                      alt={`${selectedProfesor.firstname} ${selectedProfesor.lastname}`}
-                      className="w-12 h-12 object-cover rounded-full border-2 border-blue-300"
-                    />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">
-                      👨‍🏫 Profesor seleccionado: {selectedProfesor.firstname}{" "}
-                      {selectedProfesor.lastname}
-                    </p>
-                    <p className="text-xs text-blue-600">
-                      Este profesor aparecerá como instructor de la salida
-                    </p>
-                  </div>
-                </div>
-              ) : null;
-            })()}
-          </div>
-        )}
-      </label>
 
       {/* Selector de Sponsor */}
       <div className="space-y-2">

@@ -539,7 +539,18 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
               {event.nombre}
             </h1>
             {event.dificultad && (
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-[#FFF9C4] text-[#FBC02D] capitalize shrink-0`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold capitalize shrink-0
+                  ${event.dificultad.toLowerCase() === "facil"
+                    ? "bg-green-100 text-green-700"
+                    : event.dificultad.toLowerCase() === "medio"
+                      ? "bg-[#FFF9C4] text-[#FBC02D]" // Yellow
+                      : event.dificultad.toLowerCase() === "dificil"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-100 text-gray-700" // Default
+                  }
+                `}
+              >
                 {event.dificultad}
               </span>
             )}
@@ -786,7 +797,7 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
 
         {/* Sticky Footer */}
         <div
-          className={`fixed bottom-0 left-0 right-0 p-4 border-t z-50 transition-colors
+          className={`fixed bottom-[90px] left-0 right-0 p-4 border-t z-50 transition-colors
             ${isNight ? "bg-[#1a202c] border-gray-700" : "bg-white border-gray-100"}
           `}
         >
@@ -798,7 +809,11 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
                   : `$${Number(event.precio).toLocaleString("es-AR")}`}
               </span>
               <span className={`text-xs mt-1 ${isNight ? "text-gray-400" : "text-gray-500"}`}>
-                {parseLocalDate(event.fecha)} • {event.hora} hs
+                {new Date(event.fecha + 'T00:00:00').toLocaleDateString("es-AR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric"
+                })} • {event.hora} hs
               </span>
             </div>
 
@@ -814,7 +829,7 @@ export default function EventPageClient({ params, initialEvent, initialMiembros 
                 onClick={handleAccion}
                 disabled={estadoFinal === "pendiente" || estadoFinal === "si"}
                 className={`px-8 py-3 rounded-[15px] font-bold text-white transition-all shadow-md
-                    ${estadoFinal === "no" ? "bg-[#C95100] hover:bg-[#A04100]" : ""}
+                    ${estadoFinal === "no" ? "bg-[#25D366] hover:bg-[#20bd5a]" : ""}
                     ${estadoFinal === "pendiente" ? "bg-gray-400 cursor-not-allowed" : ""}
                     ${estadoFinal === "rechazado" ? "bg-red-500 hover:bg-red-600" : ""}
                     ${estadoFinal === "si" ? "bg-green-600 hover:bg-green-700" : ""}

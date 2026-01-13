@@ -125,7 +125,7 @@ function Navbar() {
 
           {/* Crear salida */}
 
-          {session.user.rol === "admin" ? (
+          {["admin", "profe", "dueño de academia"].includes(session.user.rol) ? (
             <NavItem
               label="Crear salida"
               icon={
